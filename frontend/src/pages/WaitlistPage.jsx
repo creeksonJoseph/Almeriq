@@ -11,7 +11,8 @@ import {
   ArrowRight, CheckCircle2, Loader2,
   Building2, TrendingUp, Briefcase, Truck,
   Sparkles, Globe2, ShieldCheck, Zap, Users, Lock,
-  ChevronRight, ArrowUpRight, Cpu, Layers, BarChart3
+  ChevronRight, ArrowUpRight, Cpu, Layers, BarChart3,
+  User, Mail
 } from "lucide-react";
 import { useWaitlist } from "../hooks/useWaitlist";
 
@@ -135,38 +136,6 @@ function Hero() {
             <p className="text-base sm:text-lg text-[#d0c5af] font-light leading-relaxed">
               ALIMERIQ connects <strong className="text-white font-medium">founders</strong>, <strong className="text-white font-medium">investors</strong>, <strong className="text-white font-medium">job seekers</strong>, and <strong className="text-white font-medium">infrastructure providers</strong> into one seamless ecosystem. Everything your venture needs in one place.
             </p>
-          </div>
-        </div>
-
-        {/* Telemetry Strip */}
-        <div className="mt-16 pt-8 border-t border-[#282a2f] grid grid-cols-2 md:grid-cols-4 gap-6 bg-[#111318] p-6 rounded-2xl">
-          <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">04</span>
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wider text-white">Pillars Unified</span>
-              <span className="text-xs text-[#d0c5af]">Founders, Investors, Jobs, Assets</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">20+</span>
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wider text-white">Industries Covered</span>
-              <span className="text-xs text-[#d0c5af]">Fintech, Deeptech, Logistics, Energy</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">50+</span>
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wider text-white">Target Countries</span>
-              <span className="text-xs text-[#d0c5af]">KES, INR, AED, BRL, USD Support</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">100%</span>
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wider text-white">All-In-One Workflow</span>
-              <span className="text-xs text-[#d0c5af]">Integrated platform experience</span>
-            </div>
           </div>
         </div>
       </div>
@@ -487,204 +456,279 @@ function WaitlistFormSection() {
   };
 
   return (
-    <section id="access-console" aria-labelledby="console-heading" className="w-full bg-[#0c0e13] py-24 relative overflow-hidden">
-      {/* Golden Light Accent */}
+    <section id="access-console" aria-labelledby="console-heading" className="w-full bg-[#0c0e13] py-28 relative overflow-hidden">
+      {/* Ambient Radial Accent */}
       <div className="absolute -bottom-32 right-1/4 w-[600px] h-[400px] bg-[#f2ca50]/5 blur-[160px] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         {/* Framing Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 id="console-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium mb-4">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/25 text-[10px] font-mono font-bold tracking-[0.2em] text-[#f2ca50] uppercase mb-4 shadow-[0_0_15px_rgba(242,202,80,0.1)]">
+            ACCESS CONSOLE
+          </span>
+          <h2 id="console-heading" className="font-serif text-4xl sm:text-6xl text-[#e2e2e9] font-medium mb-4">
             Join the ALIMERIQ Network
           </h2>
-          <p className="text-base text-[#d0c5af]">
-            Sign up now for early access — whether you're building a startup, looking to invest, searching for startup jobs, or listing infrastructure.
+          <p className="text-base sm:text-lg text-[#d0c5af] font-light leading-relaxed">
+            Select your role to request early access — whether you're building a startup, looking to invest, searching for startup roles, or leasing assets.
           </p>
         </div>
 
-        {/* Application Console Box */}
-        <div className="bg-[#111318] p-8 sm:p-12 border border-[#282a2f] rounded-3xl shadow-2xl">
-          {/* aria-live status region */}
-          <div
-            ref={resultRef}
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            tabIndex={-1}
-            className="outline-none"
-          >
-            {status === "success" && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle2 size={32} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
-                </div>
-                <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-3">
-                  You're on the list, {form.full_name.split(" ")[0]}! 🎉
-                </h3>
-                <p className="text-sm text-[#d0c5af] leading-relaxed mb-2">
-                  A confirmation email has been dispatched to:
-                </p>
-                <p className="text-base font-semibold text-[#f2ca50] mb-6">{form.email}</p>
-                <p className="text-xs text-[#d0c5af] max-w-md mx-auto">
-                  We'll reach out the moment ALIMERIQ goes live. Keep building. 🚀
-                </p>
-              </div>
-            )}
+        {/* Double-Bezel Hardware Console Outer Shell */}
+        <div className="bg-[#0c0e13] p-2.5 sm:p-3.5 border border-[#262832] rounded-[2.5rem] shadow-2xl relative">
+          {/* Inner Core Enclosure */}
+          <div className="bg-[#111318] p-8 sm:p-12 border border-[#20222a] rounded-[calc(2.5rem-0.75rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] relative overflow-hidden">
+            {/* Top Ambient Hairline Accent */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-[#f2ca50]/35 to-transparent absolute top-0 left-0" />
 
-            {status === "duplicate" && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-[#f2ca50]/15 border border-[#f2ca50]/40 flex items-center justify-center mx-auto mb-6">
-                  <Zap size={30} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
-                </div>
-                <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-3">Already Registered!</h3>
-                <p className="text-sm text-[#d0c5af] leading-relaxed mb-6">
-                  <span className="text-[#f2ca50] font-semibold">{form.email}</span> is already on the ALIMERIQ waitlist. We'll be in touch soon.
-                </p>
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="px-6 py-2.5 rounded-lg border border-[#282a2f] text-sm text-[#d0c5af] hover:text-white hover:border-[#f2ca50] transition-colors"
-                >
-                  Use a different email address
-                </button>
-              </div>
-            )}
-          </div>
-
-          {(status === "idle" || status === "loading" || status === "error") && (
-            <form id="waitlist-form" onSubmit={handleSubmit} noValidate className="space-y-8">
-              {/* Role Selection Group */}
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-[#d0c5af] block mb-3">
-                  Select Your Primary Role <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {ROLES.map((r) => {
-                    const Icon = r.icon;
-                    const pressed = form.role === r.id;
-                    return (
-                      <button
-                        key={r.id}
-                        type="button"
-                        id={`role-${r.id.toLowerCase().replace(/\s+/g, "-")}`}
-                        className={`p-3.5 rounded-xl border text-left flex flex-col justify-between transition-all min-h-[52px] ${
-                          pressed
-                            ? "bg-[#1a1b21] border-[#f2ca50] text-white shadow-[0_0_16px_rgba(242,202,80,0.15)]"
-                            : "bg-[#16181e] border-[#282a2f] text-[#d0c5af] hover:border-[#33353a] hover:text-white"
-                        }`}
-                        aria-pressed={pressed}
-                        onClick={() => setRole(r.id)}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon size={16} color={pressed ? C.gold : C.muted} aria-hidden="true" />
-                          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: pressed ? C.gold : undefined }}>
-                            {r.id}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Two Column Inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="full-name" className="text-xs font-bold uppercase tracking-wider text-[#d0c5af] block mb-2">
-                    Full Name <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
-                  </label>
-                  <input
-                    id="full-name"
-                    name="full_name"
-                    type="text"
-                    required
-                    minLength={2}
-                    maxLength={100}
-                    autoComplete="name"
-                    placeholder="e.g. Grace Kiptum"
-                    value={form.full_name}
-                    onChange={setField("full_name")}
-                    onBlur={blur("full_name")}
-                    className="w-full bg-[#16181e] text-white px-4 py-3.5 rounded-xl border border-[#282a2f] text-sm placeholder-[#99907c] focus:outline-none focus:border-[#f2ca50] transition-colors min-h-[48px]"
-                    aria-required="true"
-                    aria-describedby={touched.full_name && !form.full_name.trim() ? "name-error" : undefined}
-                  />
-                  {touched.full_name && !form.full_name.trim() && (
-                    <p id="name-error" role="alert" className="text-xs text-[#ffb4ab] mt-2">
-                      Please enter your full name.
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="work-email" className="text-xs font-bold uppercase tracking-wider text-[#d0c5af] block mb-2">
-                    Email Address <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
-                  </label>
-                  <input
-                    id="work-email"
-                    name="email"
-                    type="email"
-                    required
-                    maxLength={254}
-                    autoComplete="email"
-                    inputMode="email"
-                    placeholder="you@company.com"
-                    value={form.email}
-                    onChange={setField("email")}
-                    onBlur={blur("email")}
-                    className="w-full bg-[#16181e] text-white px-4 py-3.5 rounded-xl border border-[#282a2f] text-sm placeholder-[#99907c] focus:outline-none focus:border-[#f2ca50] transition-colors min-h-[48px]"
-                    aria-required="true"
-                    aria-describedby={touched.email && !form.email.includes("@") ? "email-error" : undefined}
-                  />
-                  {touched.email && !form.email.includes("@") && (
-                    <p id="email-error" role="alert" className="text-xs text-[#ffb4ab] mt-2">
-                      Please enter a valid email address.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Server error message */}
-              {status === "error" && serverError && (
-                <div id="server-error" role="alert" className="p-4 bg-[#ffb4ab]/10 border border-[#ffb4ab]/30 rounded-xl text-xs text-[#ffb4ab]">
-                  {serverError}
+            {/* aria-live status region */}
+            <div
+              ref={resultRef}
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              tabIndex={-1}
+              className="outline-none"
+            >
+              {status === "success" && (
+                <div className="text-center py-12 px-4">
+                  <div className="w-16 h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(242,202,80,0.2)]">
+                    <CheckCircle2 size={32} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
+                  </div>
+                  <span className="inline-block px-3 py-1 rounded-full bg-[#f2ca50]/10 text-[10px] font-mono font-bold tracking-widest text-[#f2ca50] uppercase mb-3">
+                    REGISTRATION CONFIRMED
+                  </span>
+                  <h3 className="font-serif text-3xl sm:text-4xl text-white font-medium mb-3">
+                    You're on the list, {form.full_name.split(" ")[0]}! 🎉
+                  </h3>
+                  <p className="text-sm text-[#d0c5af] leading-relaxed mb-2">
+                    A confirmation email has been dispatched to:
+                  </p>
+                  <p className="text-lg font-semibold text-[#f2ca50] mb-6 font-mono">{form.email}</p>
+                  <div className="p-4 bg-[#14161e] border border-[#262832] rounded-2xl max-w-md mx-auto text-xs text-[#d0c5af] mb-8">
+                    Role registered: <strong className="text-white font-medium">{form.role}</strong> &middot; We'll notify you the moment early access opens.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="px-6 py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-[#d0c5af] hover:text-white hover:border-[#f2ca50] transition-all"
+                  >
+                    Register another team member
+                  </button>
                 </div>
               )}
 
-              {/* Submit Button */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button
-                  id="waitlist-submit"
-                  type="submit"
-                  aria-disabled={(!canSubmit || status === "loading") ? "true" : "false"}
-                  onClick={(e) => { if (!canSubmit || status === "loading") e.preventDefault(); }}
-                  className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-xs font-bold tracking-wider uppercase transition-all min-h-[52px] ${
-                    canSubmit && status !== "loading"
-                      ? "bg-[#f2ca50] text-[#111318] hover:bg-[#d4af37] shadow-[0_0_24px_rgba(242,202,80,0.3)] cursor-pointer"
-                      : "bg-[#282a2f] text-[#99907c] cursor-not-allowed"
-                  }`}
-                >
-                  {status === "loading" ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-                      <span className="visually-hidden">Joining the waitlist…</span>
-                      <span>Joining waitlist…</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Request Early Access</span>
-                      <ArrowRight size={16} aria-hidden="true" />
-                    </>
-                  )}
-                </button>
-
-                <div className="flex items-center gap-2 text-xs text-[#d0c5af]">
-                  <Lock size={14} color={C.gold} aria-hidden="true" />
-                  <span>No spam • Direct access when live</span>
+              {status === "duplicate" && (
+                <div className="text-center py-12 px-4">
+                  <div className="w-16 h-16 rounded-full bg-[#f2ca50]/15 border border-[#f2ca50]/40 flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(242,202,80,0.15)]">
+                    <Zap size={30} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
+                  </div>
+                  <span className="inline-block px-3 py-1 rounded-full bg-[#f2ca50]/10 text-[10px] font-mono font-bold tracking-widest text-[#f2ca50] uppercase mb-3">
+                    PREVIOUSLY REGISTERED
+                  </span>
+                  <h3 className="font-serif text-3xl text-white font-medium mb-3">Already Registered!</h3>
+                  <p className="text-sm text-[#d0c5af] leading-relaxed mb-6 max-w-md mx-auto">
+                    <span className="text-[#f2ca50] font-semibold">{form.email}</span> is already on the ALIMERIQ priority waitlist. We will reach out directly.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="px-6 py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-[#d0c5af] hover:text-white hover:border-[#f2ca50] transition-colors"
+                  >
+                    Use a different email address
+                  </button>
                 </div>
-              </div>
-            </form>
-          )}
+              )}
+            </div>
+
+            {(status === "idle" || status === "loading" || status === "error") && (
+              <form id="waitlist-form" onSubmit={handleSubmit} noValidate className="space-y-8">
+                {/* Role Selection Group */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#d0c5af]">
+                      01 / SELECT YOUR ROLE <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
+                    </label>
+                    <span className="text-[11px] font-mono text-[#99907c]">Required</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {ROLES.map((r) => {
+                      const Icon = r.icon;
+                      const pressed = form.role === r.id;
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          id={`role-${r.id.toLowerCase().replace(/\s+/g, "-")}`}
+                          className={`group p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-300 min-h-[120px] relative overflow-hidden ${
+                            pressed
+                              ? "bg-gradient-to-b from-[#181a22] to-[#12141a] border-[#f2ca50] shadow-[0_0_25px_rgba(242,202,80,0.14)] ring-1 ring-[#f2ca50]/30"
+                              : "bg-[#13141a] border-[#22242c] text-[#d0c5af] hover:border-[#3a3d48] hover:bg-[#161820]"
+                          }`}
+                          aria-pressed={pressed}
+                          onClick={() => setRole(r.id)}
+                        >
+                          {/* Active Top Highlight Line */}
+                          {pressed && (
+                            <div className="h-0.5 w-full bg-[#f2ca50] absolute top-0 left-0" />
+                          )}
+
+                          <div className="flex items-center justify-between w-full mb-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 ${
+                              pressed ? "bg-[#f2ca50]/15 border border-[#f2ca50]/30 text-[#f2ca50]" : "bg-[#1b1d25] border border-[#282a33] text-[#99907c]"
+                            }`}>
+                              <Icon size={19} color={pressed ? C.gold : undefined} aria-hidden="true" />
+                            </div>
+                            {pressed ? (
+                              <div className="w-5 h-5 rounded-full bg-[#f2ca50] flex items-center justify-center text-[#111318]">
+                                <CheckCircle2 size={13} strokeWidth={3} aria-hidden="true" />
+                              </div>
+                            ) : (
+                              <div className="w-4 h-4 rounded-full border border-[#2e303b] group-hover:border-[#f2ca50]/50 transition-colors" />
+                            )}
+                          </div>
+
+                          <div>
+                            <span className="font-serif text-base font-semibold block transition-colors" style={{ color: pressed ? C.gold : "#ffffff" }}>
+                              {r.id}
+                            </span>
+                            <p className="text-[11px] text-[#99907c] leading-relaxed mt-1 group-hover:text-[#c5beb0] transition-colors">
+                              {r.desc}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Two Column Machined Inputs */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-[11px] font-mono font-bold uppercase tracking-widest text-[#d0c5af]">
+                      02 / IDENTIFICATION DETAILS <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
+                    </label>
+                    <span className="text-[11px] font-mono text-[#99907c]">Confidential</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Name Input */}
+                    <div>
+                      <label htmlFor="full-name" className="text-xs font-semibold text-[#d0c5af] block mb-2">
+                        Full Name <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
+                      </label>
+                      <div className="relative flex items-center group">
+                        <div className="absolute left-4 pointer-events-none text-[#99907c] group-focus-within:text-[#f2ca50] transition-colors">
+                          <User size={18} aria-hidden="true" />
+                        </div>
+                        <input
+                          id="full-name"
+                          name="full_name"
+                          type="text"
+                          required
+                          minLength={2}
+                          maxLength={100}
+                          autoComplete="name"
+                          placeholder="e.g. Grace Kiptum"
+                          value={form.full_name}
+                          onChange={setField("full_name")}
+                          onBlur={blur("full_name")}
+                          className="w-full bg-[#0d0e13] text-white pl-11 pr-4 py-3.5 rounded-xl border border-[#23252d] text-sm placeholder-[#55534f] focus:outline-none focus:border-[#f2ca50] focus:ring-2 focus:ring-[#f2ca50]/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] transition-all min-h-[52px]"
+                          aria-required="true"
+                          aria-describedby={touched.full_name && !form.full_name.trim() ? "name-error" : undefined}
+                        />
+                      </div>
+                      {touched.full_name && !form.full_name.trim() && (
+                        <p id="name-error" role="alert" className="text-xs text-[#ffb4ab] mt-2 flex items-center gap-1">
+                          <span>Please enter your full name.</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Email Input */}
+                    <div>
+                      <label htmlFor="work-email" className="text-xs font-semibold text-[#d0c5af] block mb-2">
+                        Email Address <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
+                      </label>
+                      <div className="relative flex items-center group">
+                        <div className="absolute left-4 pointer-events-none text-[#99907c] group-focus-within:text-[#f2ca50] transition-colors">
+                          <Mail size={18} aria-hidden="true" />
+                        </div>
+                        <input
+                          id="work-email"
+                          name="email"
+                          type="email"
+                          required
+                          maxLength={254}
+                          autoComplete="email"
+                          inputMode="email"
+                          placeholder="you@company.com"
+                          value={form.email}
+                          onChange={setField("email")}
+                          onBlur={blur("email")}
+                          className="w-full bg-[#0d0e13] text-white pl-11 pr-4 py-3.5 rounded-xl border border-[#23252d] text-sm placeholder-[#55534f] focus:outline-none focus:border-[#f2ca50] focus:ring-2 focus:ring-[#f2ca50]/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] transition-all min-h-[52px]"
+                          aria-required="true"
+                          aria-describedby={touched.email && !form.email.includes("@") ? "email-error" : undefined}
+                        />
+                      </div>
+                      {touched.email && !form.email.includes("@") && (
+                        <p id="email-error" role="alert" className="text-xs text-[#ffb4ab] mt-2 flex items-center gap-1">
+                          <span>Please enter a valid email address.</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Server error message */}
+                {status === "error" && serverError && (
+                  <div id="server-error" role="alert" className="p-4 bg-[#ffb4ab]/10 border border-[#ffb4ab]/30 rounded-xl text-xs text-[#ffb4ab] flex items-center gap-2">
+                    <Zap size={16} color="#ffb4ab" className="shrink-0" aria-hidden="true" />
+                    <span>{serverError}</span>
+                  </div>
+                )}
+
+                {/* Action Bar & CTA Button */}
+                <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-[#23252e]">
+                  <button
+                    id="waitlist-submit"
+                    type="submit"
+                    aria-disabled={(!canSubmit || status === "loading") ? "true" : "false"}
+                    onClick={(e) => { if (!canSubmit || status === "loading") e.preventDefault(); }}
+                    className={`group w-full sm:w-auto inline-flex items-center justify-between pl-8 pr-3 py-3.5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 min-h-[56px] ${
+                      canSubmit && status !== "loading"
+                        ? "bg-[#f2ca50] text-[#111318] hover:bg-[#d4af37] shadow-[0_0_32px_rgba(242,202,80,0.25)] cursor-pointer active:scale-[0.98]"
+                        : "bg-[#22242c] text-[#787265] cursor-not-allowed"
+                    }`}
+                  >
+                    {status === "loading" ? (
+                      <>
+                        <span className="visually-hidden">Joining the waitlist…</span>
+                        <span>Joining waitlist…</span>
+                        <div className="w-9 h-9 rounded-full bg-[#111318]/15 flex items-center justify-center ml-4">
+                          <Loader2 size={16} className="animate-spin text-[#111318]" aria-hidden="true" />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span>Request Early Access</span>
+                        {/* Nested "Button-in-Button" Trailing Icon Island */}
+                        <div className="w-9 h-9 rounded-full bg-[#111318]/15 flex items-center justify-center ml-4 group-hover:translate-x-1 group-hover:scale-105 transition-all duration-300">
+                          <ArrowRight size={16} className="text-[#111318]" aria-hidden="true" />
+                        </div>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex items-center gap-2 text-xs text-[#99907c] bg-[#14161d] px-4 py-2.5 rounded-full border border-[#22242c]">
+                    <Lock size={14} color={C.gold} aria-hidden="true" />
+                    <span>Strict Privacy Guarantee &bull; Direct access when live</span>
+                  </div>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       </div>
     </section>
