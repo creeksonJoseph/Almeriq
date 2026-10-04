@@ -103,10 +103,10 @@ function Header() {
         <div className="flex items-center gap-4">
           <a
             href="#access-console"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f2ca50] text-[#111318] text-xs font-bold uppercase tracking-wider hover:bg-[#d4af37] transition-all shadow-[0_0_24px_-4px_rgba(242,202,80,0.3)]"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-[#f2ca50] text-[#111318] text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-[#d4af37] transition-all shadow-[0_0_24px_-4px_rgba(242,202,80,0.3)] whitespace-nowrap shrink-0"
           >
             Request Early Access
-            <ArrowRight size={14} aria-hidden="true" />
+            <ArrowRight size={13} className="shrink-0" aria-hidden="true" />
           </a>
         </div>
       </div>
@@ -687,13 +687,13 @@ function WaitlistFormSection() {
                 )}
 
                 {/* Action Bar & CTA Button */}
-                <div className="pt-4 sm:pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 border-t border-[#23252e]">
+                <div className="pt-4 sm:pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 border-t border-[#23252e]">
                   <button
                     id="waitlist-submit"
                     type="submit"
                     aria-disabled={(!canSubmit || status === "loading") ? "true" : "false"}
                     onClick={(e) => { if (!canSubmit || status === "loading") e.preventDefault(); }}
-                    className={`group w-full sm:w-auto inline-flex items-center justify-between pl-6 sm:pl-8 pr-2.5 sm:pr-3 py-3 sm:py-3.5 rounded-full text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-all duration-300 min-h-[48px] sm:min-h-[56px] ${
+                    className={`group w-auto inline-flex items-center justify-between pl-5 sm:pl-8 pr-2 sm:pr-3 py-2.5 sm:py-3.5 rounded-full text-[10px] sm:text-xs font-bold tracking-widest uppercase transition-all duration-300 min-h-[42px] sm:min-h-[52px] ${
                       canSubmit && status !== "loading"
                         ? "bg-[#f2ca50] text-[#111318] hover:bg-[#d4af37] shadow-[0_0_32px_rgba(242,202,80,0.25)] cursor-pointer active:scale-[0.98]"
                         : "bg-[#22242c] text-[#787265] cursor-not-allowed"
@@ -703,16 +703,16 @@ function WaitlistFormSection() {
                       <>
                         <span className="visually-hidden">Joining the waitlist…</span>
                         <span>Joining waitlist…</span>
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#111318]/15 flex items-center justify-center ml-3 sm:ml-4">
-                          <Loader2 size={16} className="animate-spin text-[#111318]" aria-hidden="true" />
+                        <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-[#111318]/15 flex items-center justify-center ml-2.5 sm:ml-4">
+                          <Loader2 size={14} className="animate-spin text-[#111318]" aria-hidden="true" />
                         </div>
                       </>
                     ) : (
                       <>
                         <span>Request Early Access</span>
                         {/* Nested "Button-in-Button" Trailing Icon Island */}
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#111318]/15 flex items-center justify-center ml-3 sm:ml-4 group-hover:translate-x-1 group-hover:scale-105 transition-all duration-300">
-                          <ArrowRight size={16} className="text-[#111318]" aria-hidden="true" />
+                        <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-[#111318]/15 flex items-center justify-center ml-2.5 sm:ml-4 group-hover:translate-x-1 group-hover:scale-105 transition-all duration-300">
+                          <ArrowRight size={14} className="text-[#111318]" aria-hidden="true" />
                         </div>
                       </>
                     )}
