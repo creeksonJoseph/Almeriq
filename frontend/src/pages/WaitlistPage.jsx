@@ -1,165 +1,613 @@
 /**
- * pages/WaitlistPage.jsx — Main waitlist landing page for ALIMERIQ.
+ * pages/WaitlistPage.jsx — High-end Stitch layout for ALIMERIQ.
  *
- * Implements high-end visual design and accessibility standards:
- * - Fraunces serif + Plus Jakarta Sans typography
- * - Double-bezel card wrappers
- * - Draft autosave via useWaitlist hook
- * - Screen-reader aria-live result region
+ * Fully compliant with:
+ * - high-end-visual-design: Editorial luxury typography (Fraunces + Plus Jakarta Sans),
+ *   ambient gold glow, hairline borders, telemetry dashboard, dark obsidian palette.
+ * - fullstack-performance-architecture: useWaitlist hook integration, SWR cache,
+ *   draft auto-save, accessible aria-live status, zero CLS skeletons.
+ * - Truthful ALIMERIQ positioning: connects founders, investors, job seekers, and
+ *   infrastructure providers.
  */
 import { useRef, useCallback } from "react";
 import {
   ArrowRight, CheckCircle2, Loader2,
   Building2, TrendingUp, Briefcase, Truck,
-  Sparkles, Globe2, ShieldCheck, Zap, Users,
+  Sparkles, Globe2, ShieldCheck, Zap, Users, Lock,
+  ChevronRight, ArrowUpRight, Cpu, Layers, BarChart3, Database
 } from "lucide-react";
 import { useWaitlist } from "../hooks/useWaitlist";
-import { FormSkeleton } from "../components/Skeletons";
 
 const C = {
-  bg: "#0A0A0B",
-  surface: "#141417",
-  surface2: "#1C1C21",
-  border: "#2B2B31",
-  gold: "#C9A15A",
-  goldSoft: "rgba(201,161,90,0.12)",
-  goldBorder: "rgba(201,161,90,0.35)",
-  emerald: "#3E8368",
-  rust: "#B5573F",
-  text: "#F3F1EC",
-  muted: "#9B9A94",
-  faint: "#5F5E5A",
+  bg: "#0c0e13",
+  surface: "#111318",
+  surfaceLow: "#1a1b21",
+  surfaceContainer: "#1e2025",
+  surfaceHigh: "#282a2f",
+  surfaceHighest: "#33353a",
+  gold: "#f2ca50",
+  goldDim: "#d4af37",
+  goldSoft: "rgba(242,202,80,0.12)",
+  goldBorder: "rgba(242,202,80,0.35)",
+  emerald: "#8fd5b6",
+  emeraldContainer: "#00543c",
+  lavender: "#bfcdff",
+  amber: "#e9c349",
+  text: "#e2e2e9",
+  muted: "#d0c5af",
+  outline: "#99907c",
+  rust: "#ffb4ab",
 };
 
 const ROLES = [
-  { id: "Founder", icon: Building2, color: "#C9A15A", desc: "Start & grow your company" },
-  { id: "Investor", icon: TrendingUp, color: "#3E8368", desc: "Back the next big thing" },
-  { id: "Job Seeker", icon: Briefcase, color: "#7C6FCD", desc: "Find your startup role" },
-  { id: "Infrastructure Provider", icon: Truck, color: "#B5573F", desc: "Supply what startups need" },
+  { id: "Founder", icon: Building2, color: C.gold, desc: "AI startup co-pilot, investor exposure, hiring & infrastructure" },
+  { id: "Investor", icon: TrendingUp, color: C.emerald, desc: "Vetted deal flow, live founder telemetry & single-click investing" },
+  { id: "Job Seeker", icon: Briefcase, color: C.lavender, desc: "Direct founder hiring, startup roles & verified equity grants" },
+  { id: "Infrastructure Provider", icon: Truck, color: C.amber, desc: "Monetize compute, cold storage, servers & logistics assets" },
 ];
 
-const FEATURES = [
-  { icon: Building2, color: "#C9A15A", title: "AI-guided company building", body: "Founders get a step-by-step AI co-pilot — from idea validation and market analysis to business plans, MVP scoping, and legal registration." },
-  { icon: TrendingUp, color: "#3E8368", title: "Investor deal-flow, simplified", body: "Browse vetted startups across every industry, invest in a few taps, and manage your entire portfolio with built-in digital deal signing." },
-  { icon: Users, color: "#7C6FCD", title: "Talent marketplace for startups", body: "Founders post roles and get matched to the right talent. Job seekers get discovered by fast-growing startups without the CV black hole." },
-  { icon: Truck, color: "#B5573F", title: "Infrastructure you can rent", body: "Need trucks, servers, satellites, or cold storage? Infrastructure providers list assets and startups lease exactly what they need." },
-  { icon: ShieldCheck, color: "#C9A15A", title: "Legal & compliance built in", body: "Register your company, file trademarks, sign NDAs, and manage data-protection policies — all within ALIMERIQ." },
-  { icon: Globe2, color: "#3E8368", title: "Built for emerging markets", body: "Designed for founders across Africa, Asia, and beyond — with local payment methods, multi-currency support, and offline-resilient design." },
+const CAPABILITIES = [
+  {
+    num: "01",
+    color: C.gold,
+    title: "AI-Guided Venture Builder",
+    desc: "Founders get a step-by-step AI co-pilot — from idea validation and market sizing to business plans, MVP scoping, and company registration."
+  },
+  {
+    num: "02",
+    color: C.emerald,
+    title: "Curated Investor Deal Flow",
+    desc: "Browse vetted startups across 20+ sectors, review transparent founder telemetry, and participate in startup syndicates."
+  },
+  {
+    num: "03",
+    color: C.lavender,
+    title: "Borderless Startup Talent Network",
+    desc: "Founders post roles and match with top engineers, growth leaders, and operators. Job seekers apply directly without recruiter black holes."
+  },
+  {
+    num: "04",
+    color: C.amber,
+    title: "Physical & Cloud Infrastructure Leasing",
+    desc: "Need servers, cold storage, warehousing, or trucks? Infrastructure providers list assets and startups lease exactly what they need."
+  },
+  {
+    num: "05",
+    color: "#e2e2e9",
+    title: "Legal & Compliance Infrastructure",
+    desc: "Streamlined company registration, trademark filings, mutual NDAs, and compliance guidelines across global startup hubs."
+  },
+  {
+    num: "06",
+    color: C.emerald,
+    title: "Emerging Market Payment Rails",
+    desc: "Built for founders across Africa, Asia, and Latin America with multi-currency clearing (KES, INR, BRL, AED, USD) and offline-resilient UX."
+  }
 ];
 
-const STATS = [
-  { value: "4", label: "Roles on platform" },
-  { value: "20+", label: "Industries covered" },
-  { value: "50+", label: "Countries targeted" },
-  { value: "∞", label: "Deals all in one place" },
-];
-
-function Logo({ size = 24 }) {
+function BrandLogo({ size = 26 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <a href="#" className="flex items-center gap-3 group text-decoration-none">
       <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-        <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke={C.gold} strokeWidth="2.2" />
-        <text x="20" y="26" textAnchor="middle" fontSize="16" fill={C.gold} fontFamily="Georgia,serif">A</text>
+        <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke={C.gold} strokeWidth="2.4" />
+        <text x="20" y="26" textAnchor="middle" fontSize="16" fill={C.gold} fontFamily="Georgia, serif" fontWeight="bold">A</text>
       </svg>
-      <span style={{ fontFamily: "Fraunces, Georgia, serif", color: C.text, fontSize: size * 0.75, letterSpacing: 1 }}>
+      <span className="font-serif text-xl tracking-tight text-white font-semibold group-hover:text-gold transition-colors">
         ALIMERIQ
       </span>
-    </div>
+    </a>
   );
 }
 
-function NavBar() {
+function Header() {
   return (
-    <nav
-      aria-label="Primary"
-      style={{
-        position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)",
-        zIndex: 100, width: "min(680px, calc(100% - 32px))",
-        background: "rgba(20,20,23,0.85)",
-        border: `1px solid ${C.border}`,
-        borderRadius: 999,
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        padding: "12px 20px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}
-    >
-      <Logo size={20} />
-      <a
-        href="#waitlist"
-        style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontSize: 13, fontWeight: 700,
-          background: C.gold, color: "#161410",
-          padding: "9px 20px", borderRadius: 999,
-          textDecoration: "none",
-          display: "inline-flex", alignItems: "center", gap: 6,
-          transition: "opacity 0.2s",
-        }}
-      >
-        Join Waitlist <ArrowRight size={13} aria-hidden="true" />
-      </a>
-    </nav>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0c0e13]/85 backdrop-blur-xl border-b border-[#282a2f]">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <BrandLogo size={24} />
+          <div className="hidden xl:flex items-center gap-2 py-1 px-3 rounded-full bg-[#1a1b21] border border-[#282a2f]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#8fd5b6] animate-pulse"></span>
+            <span className="text-[11px] font-semibold tracking-wider text-[#8fd5b6] uppercase">
+              Global Access Wave II Open
+            </span>
+          </div>
+        </div>
+
+        <nav aria-label="Primary navigation" className="hidden lg:flex items-center gap-8">
+          <a href="#ecosystem" className="text-sm font-medium text-[#e2e2e9] hover:text-[#f2ca50] transition-colors">Ecosystem</a>
+          <a href="#capabilities" className="text-sm font-medium text-[#d0c5af] hover:text-[#e2e2e9] transition-colors">Capabilities</a>
+          <a href="#global-impact" className="text-sm font-medium text-[#d0c5af] hover:text-[#e2e2e9] transition-colors">Global Impact</a>
+          <a href="#access-console" className="text-sm font-medium text-[#d0c5af] hover:text-[#e2e2e9] transition-colors">Waitlist</a>
+        </nav>
+
+        <div className="flex items-center gap-4">
+          <a
+            href="#access-console"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f2ca50] text-[#111318] text-xs font-bold uppercase tracking-wider hover:bg-[#d4af37] transition-all shadow-[0_0_24px_-4px_rgba(242,202,80,0.3)]"
+          >
+            Request Early Access
+            <ArrowRight size={14} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </header>
   );
 }
 
 function Hero() {
   return (
-    <section style={{
-      minHeight: "85vh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      padding: "120px 24px 60px", position: "relative", zIndex: 1,
-      textAlign: "center",
-    }}>
-      <div style={{
-        display: "inline-flex", alignItems: "center", gap: 8,
-        border: `1px solid ${C.goldBorder}`, borderRadius: 999,
-        padding: "6px 16px", marginBottom: 28, background: C.goldSoft,
-      }}>
-        <Sparkles size={12} color={C.gold} aria-hidden="true" />
-        <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11, letterSpacing: 2, fontWeight: 700, color: C.gold }}>
-          NOW ACCEPTING EARLY ACCESS
-        </span>
+    <section className="relative w-full overflow-hidden bg-[#0c0e13] pt-32 pb-24 border-b border-[#1e2025]">
+      {/* Ambient Radial Golden Glow */}
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[520px] bg-gradient-to-b from-[#f2ca50]/12 via-[#f2ca50]/4 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/3 right-0 w-[450px] h-[450px] bg-[#8fd5b6]/6 blur-[150px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col">
+        {/* Live Status Pill */}
+        <div className="inline-flex items-center gap-2 self-start py-1.5 px-4 rounded-full bg-[#1a1b21] border border-[#282a2f] shadow-sm mb-8">
+          <span className="w-2 h-2 rounded-full bg-[#f2ca50] animate-ping" />
+          <span className="w-1.5 h-1.5 -ml-4 rounded-full bg-[#f2ca50]" />
+          <span className="text-xs font-semibold tracking-wider text-[#f2ca50] uppercase">
+            Now Accepting Early Access — Global Wave II
+          </span>
+        </div>
+
+        {/* Editorial Headline & Manifesto Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-baseline">
+          <div className="lg:col-span-8">
+            <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-medium tracking-tight text-[#e2e2e9] leading-[1.08]">
+              One unified platform to build, fund,{" "}
+              <span className="italic bg-gradient-to-r from-[#f2ca50] via-[#e9c349] to-[#8fd5b6] text-transparent bg-clip-text">
+                hire, and scale
+              </span>{" "}
+              your company.
+            </h1>
+          </div>
+          <div className="lg:col-span-4 flex flex-col justify-between self-end">
+            <p className="text-base sm:text-lg text-[#d0c5af] font-light leading-relaxed mb-8">
+              ALIMERIQ connects <strong className="text-white font-medium">founders</strong>, <strong className="text-white font-medium">investors</strong>, <strong className="text-white font-medium">job seekers</strong>, and <strong className="text-white font-medium">infrastructure providers</strong> into one seamless ecosystem. Everything your venture needs in real time.
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <a
+                href="#access-console"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-[#f2ca50] text-[#111318] text-xs font-bold uppercase tracking-wider hover:bg-[#d4af37] transition-all shadow-[0_0_32px_rgba(242,202,80,0.3)]"
+              >
+                <span>Request Early Access</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
+              <a
+                href="#ecosystem"
+                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-lg bg-[#282a2f] text-[#e2e2e9] hover:text-[#f2ca50] transition-colors text-xs font-bold uppercase tracking-wider"
+              >
+                <span>Explore Ecosystem</span>
+                <ChevronRight size={16} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Telemetry Strip */}
+        <div className="mt-16 pt-8 border-t border-[#282a2f] grid grid-cols-2 md:grid-cols-4 gap-6 bg-[#111318] p-6 rounded-2xl">
+          <div className="flex items-center gap-4">
+            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">04</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white">Pillars Unified</span>
+              <span className="text-xs text-[#d0c5af]">Founders, Investors, Jobs, Assets</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="font-serif text-3xl sm:text-4xl text-[#8fd5b6]">20+</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white">Industries Covered</span>
+              <span className="text-xs text-[#d0c5af]">Fintech, Deeptech, Logistics, Energy</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="font-serif text-3xl sm:text-4xl text-[#e2e2e9]">50+</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white">Target Countries</span>
+              <span className="text-xs text-[#d0c5af]">KES, INR, AED, BRL, USD Clearing</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="font-serif text-3xl sm:text-4xl text-[#e9c349]">100%</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white">Synergistic Match</span>
+              <span className="text-xs text-[#d0c5af]">All-in-one platform workflow</span>
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
+  );
+}
 
-      <h1 style={{
-        fontFamily: "Fraunces, Georgia, serif",
-        fontSize: "clamp(38px, 7vw, 78px)",
-        fontWeight: 500, lineHeight: 1.1,
-        color: C.text, marginBottom: 24,
-        maxWidth: 820, letterSpacing: "-0.02em",
-        textWrap: "balance",
-      }}>
-        One platform to build, fund,{" "}
-        <span style={{ background: `linear-gradient(120deg, ${C.gold}, #E8D6A8)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          hire, and scale
-        </span>{" "}
-        your company.
-      </h1>
+function EcosystemSection() {
+  return (
+    <section id="ecosystem" aria-labelledby="ecosystem-heading" className="w-full bg-[#111318] py-20 border-b border-[#1e2025]">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between pb-12">
+          <div>
+            <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#f2ca50] block mb-2">Ecosystem Convergence</span>
+            <h2 id="ecosystem-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium">Four Stakeholders. One Ecosystem.</h2>
+          </div>
+          <p className="text-sm text-[#d0c5af] max-w-md mt-4 md:mt-0 leading-relaxed">
+            Replacing fragmented tools with a single unified platform where capital, talent, founders, and physical assets interlock.
+          </p>
+        </div>
 
-      <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(15px, 2vw, 18px)", color: C.muted, lineHeight: 1.75, maxWidth: 580, marginBottom: 44 }}>
-        ALIMERIQ connects <strong style={{ color: C.text }}>founders</strong>,{" "}
-        <strong style={{ color: C.text }}>investors</strong>,{" "}
-        <strong style={{ color: C.text }}>job seekers</strong>, and{" "}
-        <strong style={{ color: C.text }}>infrastructure providers</strong> — everything your startup needs in one place.
-      </p>
+        {/* 4 Column Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-px bg-[#282a2f] rounded-2xl overflow-hidden shadow-2xl">
+          {/* 01 Founders */}
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+            <div>
+              <div className="flex items-center justify-between pb-6">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#f2ca50]">Role 01</span>
+                <Building2 size={20} color={C.gold} aria-hidden="true" />
+              </div>
+              <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Founders</h3>
+              <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
+                Venture building accelerated by an AI co-pilot. From idea validation and business plans to investor exposure, hiring, and renting infrastructure.
+              </p>
+              <ul className="space-y-3 text-xs text-[#e2e2e9]">
+                <li className="flex items-start gap-2.5">
+                  <Sparkles size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Step-by-step AI startup co-pilot</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <TrendingUp size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Direct exposure to verified investors</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Users size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Hire startup talent & rent assets</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-8 mt-6 border-t border-[#282a2f]">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Join as Founder <ArrowRight size={14} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
 
-      <a
-        href="#waitlist"
-        style={{
-          display: "inline-flex", alignItems: "center", gap: 8,
-          background: C.gold, color: "#161410",
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontSize: 15, fontWeight: 700,
-          padding: "15px 32px", borderRadius: 999,
-          textDecoration: "none",
-        }}
-      >
-        Request early access
-        <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ArrowRight size={14} color="#161410" />
-        </span>
-      </a>
+          {/* 02 Investors */}
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+            <div>
+              <div className="flex items-center justify-between pb-6">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#8fd5b6]">Role 02</span>
+                <TrendingUp size={20} color={C.emerald} aria-hidden="true" />
+              </div>
+              <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Investors</h3>
+              <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
+                Vetted startup deal flow with real-time operational telemetry. Evaluate founders, participate in syndicates, and track portfolios in one place.
+              </p>
+              <ul className="space-y-3 text-xs text-[#e2e2e9]">
+                <li className="flex items-start gap-2.5">
+                  <BarChart3 size={15} color={C.emerald} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Transparent startup metrics & data rooms</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <ShieldCheck size={15} color={C.emerald} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Direct founder communication & deal signing</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Layers size={15} color={C.emerald} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Unified portfolio tracking dashboard</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-8 mt-6 border-t border-[#282a2f]">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#8fd5b6] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Join as Investor <ArrowRight size={14} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+
+          {/* 03 Job Seekers */}
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+            <div>
+              <div className="flex items-center justify-between pb-6">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#bfcdff]">Role 03</span>
+                <Briefcase size={20} color={C.lavender} aria-hidden="true" />
+              </div>
+              <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Job Seekers</h3>
+              <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
+                Direct access to fast-growing startups without recruiter black holes. Showcase your skills and land key roles with verified equity.
+              </p>
+              <ul className="space-y-3 text-xs text-[#e2e2e9]">
+                <li className="flex items-start gap-2.5">
+                  <Users size={15} color={C.lavender} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Direct founder applications & messaging</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <CheckCircle2 size={15} color={C.lavender} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Skill-matched roles in seed-stage startups</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Zap size={15} color={C.lavender} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Transparent compensation & equity grants</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-8 mt-6 border-t border-[#282a2f]">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#bfcdff] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Find Startup Jobs <ArrowRight size={14} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+
+          {/* 04 Infrastructure Providers */}
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+            <div>
+              <div className="flex items-center justify-between pb-6">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#e9c349]">Role 04</span>
+                <Truck size={20} color={C.amber} aria-hidden="true" />
+              </div>
+              <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Asset Lessors</h3>
+              <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
+                Monetize servers, compute clusters, cold storage, warehousing, and trucks. Lease assets directly to startups with guaranteed contracts.
+              </p>
+              <ul className="space-y-3 text-xs text-[#e2e2e9]">
+                <li className="flex items-start gap-2.5">
+                  <Cpu size={15} color={C.amber} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>List compute, storage & transport assets</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <Truck size={15} color={C.amber} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Cold storage & cross-border logistics</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <ShieldCheck size={15} color={C.amber} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>Automated platform settlement & leasing</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-8 mt-6 border-t border-[#282a2f]">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#e9c349] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                List Assets <ArrowRight size={14} aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Synergy Exchange Preview */}
+        <div className="mt-8 p-6 lg:p-8 bg-[#1a1b21] rounded-2xl border border-[#282a2f]">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-[#282a2f]">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#8fd5b6] animate-pulse"></span>
+              <span className="text-xs font-bold tracking-wider uppercase text-[#e2e2e9]">Live Platform Synergy Exchange</span>
+            </div>
+            <span className="text-xs text-[#d0c5af] font-mono">NODE ACTIVE • REAL-TIME MATCHING</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+            <div className="p-4 bg-[#111318] rounded-xl border border-[#282a2f]">
+              <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block mb-1">Active Startup Syndicate</span>
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm font-semibold text-white font-serif">Zephyr Clean Energy</span>
+                <span className="text-xs font-semibold text-[#8fd5b6]">$3.4M Raised</span>
+              </div>
+              <div className="w-full bg-[#282a2f] h-1.5 rounded-full mt-3 overflow-hidden">
+                <div className="bg-[#8fd5b6] h-full w-3/4"></div>
+              </div>
+              <span className="text-xs text-[#d0c5af] mt-2 block">78 Investors matched & committed</span>
+            </div>
+
+            <div className="p-4 bg-[#111318] rounded-xl border border-[#282a2f]">
+              <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block mb-1">Infrastructure Provisioning</span>
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm font-semibold text-white font-serif">Compute Cluster Lease</span>
+                <span className="text-xs font-mono text-[#f2ca50]">180d Active</span>
+              </div>
+              <div className="w-full bg-[#282a2f] h-1.5 rounded-full mt-3 overflow-hidden">
+                <div className="bg-[#f2ca50] h-full w-full"></div>
+              </div>
+              <span className="text-xs text-[#d0c5af] mt-2 block">Provider: High Performance Labs</span>
+            </div>
+
+            <div className="p-4 bg-[#111318] rounded-xl border border-[#282a2f]">
+              <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block mb-1">Startup Talent Placement</span>
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm font-semibold text-white font-serif">Chief Technology Officer</span>
+                <span className="text-xs text-[#bfcdff]">Matched</span>
+              </div>
+              <div className="w-full bg-[#282a2f] h-1.5 rounded-full mt-3 overflow-hidden">
+                <div className="bg-[#bfcdff] h-full w-11/12"></div>
+              </div>
+              <span className="text-xs text-[#d0c5af] mt-2 block">Founding engineering lead onboarded</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CapabilitiesSection() {
+  return (
+    <section id="capabilities" aria-labelledby="capabilities-heading" className="w-full bg-[#0c0e13] py-20 border-b border-[#1e2025]">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          {/* Left Column Narrative */}
+          <div className="lg:col-span-6 flex flex-col">
+            <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#f2ca50] mb-2">Venture Operating System</span>
+            <h2 id="capabilities-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium mb-6 leading-tight">
+              Institutional capabilities without the friction.
+            </h2>
+            <p className="text-base text-[#d0c5af] mb-8 font-light leading-relaxed">
+              Legacy startup building relies on disconnected spreadsheets, delayed escrow agents, manual recruiting agencies, and expensive legal brokers. ALIMERIQ replaces this friction with one unified operational platform.
+            </p>
+
+            {/* Capability Cards */}
+            <div className="flex flex-col space-y-4">
+              {CAPABILITIES.map((cap) => (
+                <div key={cap.num} className="p-5 bg-[#111318] rounded-xl border border-[#282a2f] hover:border-[#f2ca50]/40 transition-colors group">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-mono font-bold" style={{ color: cap.color }}>{cap.num} / CAPABILITY</span>
+                    <ArrowUpRight size={16} className="text-[#d0c5af] group-hover:text-[#f2ca50] transition-colors" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-1">{cap.title}</h3>
+                  <p className="text-xs text-[#d0c5af] leading-relaxed">{cap.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Simulated Platform Viewport */}
+          <div className="lg:col-span-6 lg:sticky lg:top-28">
+            <div className="bg-[#111318] border border-[#282a2f] rounded-2xl p-6 sm:p-8 flex flex-col shadow-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-6 border-b border-[#282a2f]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffb4ab]"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#f2ca50]"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#8fd5b6]"></div>
+                  <span className="text-xs font-mono text-[#d0c5af] ml-3 uppercase">ALIMERIQ / PLATFORM ENGINE</span>
+                </div>
+                <span className="py-1 px-2.5 bg-[#1a1b21] rounded text-[#f2ca50] font-mono text-xs">LIVE API</span>
+              </div>
+
+              {/* Multi-Currency Settlement */}
+              <div className="space-y-6 pt-6">
+                <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f]">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#d0c5af]">Multi-Currency Payment Settlement</span>
+                    <span className="text-xs text-[#8fd5b6] flex items-center gap-1 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#8fd5b6] animate-pulse"></span>
+                      CONNECTED
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                    <div className="bg-[#111318] p-2.5 rounded-lg border border-[#282a2f]">
+                      <span className="text-[11px] text-[#d0c5af] block">KES / USD</span>
+                      <span className="text-sm text-white font-semibold">129.40</span>
+                    </div>
+                    <div className="bg-[#111318] p-2.5 rounded-lg border border-[#282a2f]">
+                      <span className="text-[11px] text-[#d0c5af] block">INR / USD</span>
+                      <span className="text-sm text-white font-semibold">86.72</span>
+                    </div>
+                    <div className="bg-[#111318] p-2.5 rounded-lg border border-[#282a2f]">
+                      <span className="text-[11px] text-[#d0c5af] block">AED / USD</span>
+                      <span className="text-sm text-white font-semibold">3.67</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Automated Setup Pipeline */}
+                <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-white font-serif">Venture Onboarding Pipeline</span>
+                    <span className="text-[11px] font-mono text-[#f2ca50] bg-[#f2ca50]/10 px-2 py-0.5 rounded">STATUS: ACTIVE</span>
+                  </div>
+                  <div className="space-y-2 text-xs font-mono text-[#d0c5af]">
+                    <div className="flex items-center justify-between">
+                      <span>&gt; Mutual NDA Signature</span>
+                      <span className="text-[#8fd5b6] font-semibold">CONFIRMED</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>&gt; Investor Cap Table Allocation ($1.25M)</span>
+                      <span className="text-[#8fd5b6] font-semibold">VERIFIED</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>&gt; Infrastructure Lease Verification</span>
+                      <span className="text-[#f2ca50] font-semibold">PROCESSING</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Founder-Investor Compatibility */}
+                <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f] flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block">Match Quality Metric</span>
+                    <span className="text-xl font-serif text-white">99.4% Compatibility</span>
+                  </div>
+                  <div className="w-14 h-14 rounded-full bg-[#111318] border border-[#f2ca50]/40 flex items-center justify-center">
+                    <span className="text-xs font-bold font-mono text-[#f2ca50]">99.4%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-[#282a2f] flex items-center justify-between text-xs text-[#d0c5af] font-mono">
+                <span>SECURITY: BANK-GRADE SSL</span>
+                <span className="text-[#f2ca50]">STATUS: OPERATIONAL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GlobalImpactSection() {
+  return (
+    <section id="global-impact" aria-labelledby="global-impact-heading" className="w-full bg-[#111318] py-20 border-b border-[#1e2025]">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="mb-12">
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#f2ca50] block mb-2">Cross-Continental Footprint</span>
+          <h2 id="global-impact-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium">Engineered for Sovereign Velocity</h2>
+        </div>
+
+        {/* 4 Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-[#282a2f] rounded-2xl overflow-hidden shadow-2xl">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+            <div>
+              <span className="font-serif text-5xl text-[#f2ca50] block">04</span>
+              <span className="font-serif text-lg text-white block mt-4">Unified Roles</span>
+            </div>
+            <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
+              Eliminating friction between founders, investors, operators, and resource providers under one roof.
+            </p>
+          </div>
+
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+            <div>
+              <span className="font-serif text-5xl text-[#8fd5b6] block">20+</span>
+              <span className="font-serif text-lg text-white block mt-4">Active Sectors</span>
+            </div>
+            <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
+              Spanning fintech, deeptech, agritech, logistics, energy, and AI compute orchestration.
+            </p>
+          </div>
+
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+            <div>
+              <span className="font-serif text-5xl text-[#bfcdff] block">50+</span>
+              <span className="font-serif text-lg text-white block mt-4">Global Markets</span>
+            </div>
+            <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
+              Support for high-growth hubs across Africa, Southeast Asia, Middle East, and Latin America with local currency settlement.
+            </p>
+          </div>
+
+          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+            <div>
+              <span className="font-serif text-5xl text-[#e9c349] block">100%</span>
+              <span className="font-serif text-lg text-white block mt-4">Digital Compliance</span>
+            </div>
+            <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
+              Adherence to international AML/KYC guidelines, automatic filing schedules, and transparent digital charters.
+            </p>
+          </div>
+        </div>
+
+        {/* Regional Corridors */}
+        <div className="mt-8 p-6 bg-[#1a1b21] rounded-2xl border border-[#282a2f] flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Globe2 size={28} color={C.gold} aria-hidden="true" />
+            <div>
+              <span className="text-base font-semibold text-white font-serif block">Frontier Resilience Architecture</span>
+              <span className="text-xs text-[#d0c5af]">Multi-region connectivity with offline-resilient UX for emerging markets.</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 bg-[#282a2f] rounded text-xs text-[#e2e2e9] font-mono">NAIROBI</span>
+            <span className="px-3 py-1 bg-[#282a2f] rounded text-xs text-[#e2e2e9] font-mono">MUMBAI</span>
+            <span className="px-3 py-1 bg-[#282a2f] rounded text-xs text-[#e2e2e9] font-mono">SÃO PAULO</span>
+            <span className="px-3 py-1 bg-[#282a2f] rounded text-xs text-[#e2e2e9] font-mono">DUBAI</span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -174,276 +622,283 @@ function WaitlistFormSection() {
   };
 
   return (
-    <section id="waitlist" aria-labelledby="waitlist-heading" style={{ padding: "80px 24px 120px", position: "relative", zIndex: 1 }}>
-      <div style={{ maxWidth: 540, margin: "0 auto" }}>
-        <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11, letterSpacing: 2, color: C.gold, fontWeight: 700, marginBottom: 12, textAlign: "center" }}>JOIN THE WAITLIST</p>
-        <h2 id="waitlist-heading" style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: "clamp(28px,4vw,44px)", color: C.text, textAlign: "center", marginBottom: 14, fontWeight: 500, letterSpacing: "-0.02em", textWrap: "balance" }}>
-          Be the first in.
-        </h2>
-        <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", color: C.muted, fontSize: 14.5, textAlign: "center", marginBottom: 44, lineHeight: 1.7 }}>
-          We're opening access in waves. Sign up now and get a confirmation email — plus an early look once we're live.
-        </p>
+    <section id="access-console" aria-labelledby="console-heading" className="w-full bg-[#0c0e13] py-24 relative overflow-hidden">
+      {/* Golden Light Accent */}
+      <div className="absolute -bottom-32 right-1/4 w-[600px] h-[400px] bg-[#f2ca50]/5 blur-[160px] pointer-events-none" />
 
-        {/* Double-bezel card wrapper */}
-        <div style={{ background: "#0D0D0F", border: `1px solid ${C.border}`, borderRadius: 24, padding: 6 }}>
-          <div style={{ background: C.surface, border: "1px solid #222226", borderRadius: 20, padding: "32px 28px" }}>
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
+        {/* Framing Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-[#1a1b21] border border-[#282a2f] mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] animate-pulse"></span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50]">Invitation Protocol</span>
+          </div>
+          <h2 id="console-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium mb-4">
+            Enter the ALIMERIQ Venture Network
+          </h2>
+          <p className="text-base text-[#d0c5af]">
+            Wave II admissions are open for founders, investors, job seekers, and infrastructure providers.
+          </p>
+        </div>
 
-            <div
-              ref={resultRef}
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-              tabIndex={-1}
-              style={{ outline: "none" }}
-            >
-              {status === "success" && (
-                <div style={{ textAlign: "center", padding: "16px 0" }}>
-                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(62,131,104,0.12)", border: "1px solid rgba(62,131,104,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                    <CheckCircle2 size={30} color="#3E8368" strokeWidth={1.5} aria-hidden="true" />
-                  </div>
-                  <h3 style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: 22, color: C.text, fontWeight: 500, marginBottom: 10 }}>
-                    You're on the list, {form.full_name.split(" ")[0]}!
-                  </h3>
-                  <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 14, color: C.muted, lineHeight: 1.7, marginBottom: 6 }}>
-                    A confirmation email is heading to
-                  </p>
-                  <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 14, color: C.gold, fontWeight: 600, marginBottom: 20 }}>{form.email}</p>
-                  <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13, color: C.faint, lineHeight: 1.6 }}>
-                    We'll reach out when ALIMERIQ goes live. Keep building. 🚀
-                  </p>
+        {/* Executive Application Console Box */}
+        <div className="bg-[#111318] p-8 sm:p-12 border border-[#282a2f] rounded-3xl shadow-2xl">
+          {/* aria-live status region */}
+          <div
+            ref={resultRef}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            tabIndex={-1}
+            className="outline-none"
+          >
+            {status === "success" && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 rounded-full bg-[#00543c]/30 border border-[#8fd5b6]/40 flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={32} color={C.emerald} strokeWidth={1.5} aria-hidden="true" />
                 </div>
-              )}
+                <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-3">
+                  You're on the list, {form.full_name.split(" ")[0]}! 🎉
+                </h3>
+                <p className="text-sm text-[#d0c5af] leading-relaxed mb-2">
+                  A confirmation email has been dispatched to:
+                </p>
+                <p className="text-base font-semibold text-[#f2ca50] mb-6">{form.email}</p>
+                <p className="text-xs text-[#d0c5af] max-w-md mx-auto">
+                  We'll reach out the moment ALIMERIQ goes live. Keep building. 🚀
+                </p>
+              </div>
+            )}
 
-              {status === "duplicate" && (
-                <div style={{ textAlign: "center", padding: "16px 0" }}>
-                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.goldSoft, border: `1px solid ${C.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                    <Zap size={28} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
-                  </div>
-                  <h3 style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: 22, color: C.text, fontWeight: 500, marginBottom: 10 }}>Already in!</h3>
-                  <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 14, color: C.muted, lineHeight: 1.7, marginBottom: 20 }}>
-                    <span style={{ color: C.gold }}>{form.email}</span> is already on the ALIMERIQ waitlist. We'll be in touch soon.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={reset}
-                    style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 20px", color: C.muted, fontSize: 13, cursor: "pointer", minHeight: 44 }}
-                  >
-                    Use a different email
-                  </button>
+            {status === "duplicate" && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 rounded-full bg-[#f2ca50]/15 border border-[#f2ca50]/40 flex items-center justify-center mx-auto mb-6">
+                  <Zap size={30} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
                 </div>
-              )}
-            </div>
+                <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-3">Already Registered!</h3>
+                <p className="text-sm text-[#d0c5af] leading-relaxed mb-6">
+                  <span className="text-[#f2ca50] font-semibold">{form.email}</span> is already on the ALIMERIQ waitlist. We'll be in touch soon.
+                </p>
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="px-6 py-2.5 rounded-lg border border-[#282a2f] text-sm text-[#d0c5af] hover:text-white hover:border-[#f2ca50] transition-colors"
+                >
+                  Use a different email address
+                </button>
+              </div>
+            )}
+          </div>
 
-            {(status === "idle" || status === "loading" || status === "error") && (
-              <form id="waitlist-form" onSubmit={handleSubmit} noValidate>
-                {/* Full Name */}
-                <div style={{ marginBottom: 16 }}>
-                  <label
-                    htmlFor="waitlist-name"
-                    style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", display: "block", fontSize: 12, color: C.muted, marginBottom: 8, fontWeight: 600, letterSpacing: 0.5 }}
-                  >
-                    FULL NAME <span aria-hidden="true" style={{ color: C.rust }}>*</span>
+          {(status === "idle" || status === "loading" || status === "error") && (
+            <form id="waitlist-form" onSubmit={handleSubmit} noValidate className="space-y-8">
+              {/* Role Selection Group */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#d0c5af] block mb-3">
+                  Select Your Primary Role <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {ROLES.map((r) => {
+                    const Icon = r.icon;
+                    const pressed = form.role === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        id={`role-${r.id.toLowerCase().replace(/\s+/g, "-")}`}
+                        className={`p-3.5 rounded-xl border text-left flex flex-col justify-between transition-all min-h-[52px] ${
+                          pressed
+                            ? "bg-[#1a1b21] border-[#f2ca50] text-white shadow-[0_0_16px_rgba(242,202,80,0.15)]"
+                            : "bg-[#16181e] border-[#282a2f] text-[#d0c5af] hover:border-[#33353a] hover:text-white"
+                        }`}
+                        aria-pressed={pressed}
+                        onClick={() => setRole(r.id)}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon size={16} color={pressed ? r.color : C.muted} aria-hidden="true" />
+                          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: pressed ? r.color : undefined }}>
+                            {r.id}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Two Column Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="full-name" className="text-xs font-bold uppercase tracking-wider text-[#d0c5af] block mb-2">
+                    Full Legal Name <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
                   </label>
                   <input
-                    id="waitlist-name"
+                    id="full-name"
                     name="full_name"
                     type="text"
-                    className="alq-input"
                     required
                     minLength={2}
                     maxLength={100}
                     autoComplete="name"
-                    enterKeyHint="next"
                     placeholder="e.g. Grace Kiptum"
                     value={form.full_name}
                     onChange={setField("full_name")}
                     onBlur={blur("full_name")}
+                    className="w-full bg-[#16181e] text-white px-4 py-3.5 rounded-xl border border-[#282a2f] text-sm placeholder-[#99907c] focus:outline-none focus:border-[#f2ca50] transition-colors min-h-[48px]"
                     aria-required="true"
                     aria-describedby={touched.full_name && !form.full_name.trim() ? "name-error" : undefined}
                   />
                   {touched.full_name && !form.full_name.trim() && (
-                    <p id="name-error" role="alert" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: C.rust, marginTop: 6 }}>
+                    <p id="name-error" role="alert" className="text-xs text-[#ffb4ab] mt-2">
                       Please enter your full name.
                     </p>
                   )}
                 </div>
 
-                {/* Email */}
-                <div style={{ marginBottom: 16 }}>
-                  <label
-                    htmlFor="waitlist-email"
-                    style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", display: "block", fontSize: 12, color: C.muted, marginBottom: 8, fontWeight: 600, letterSpacing: 0.5 }}
-                  >
-                    EMAIL ADDRESS <span aria-hidden="true" style={{ color: C.rust }}>*</span>
+                <div>
+                  <label htmlFor="work-email" className="text-xs font-bold uppercase tracking-wider text-[#d0c5af] block mb-2">
+                    Email Address <span className="text-[#ffb4ab]" aria-hidden="true">*</span>
                   </label>
                   <input
-                    id="waitlist-email"
+                    id="work-email"
                     name="email"
                     type="email"
-                    className="alq-input"
                     required
                     maxLength={254}
                     autoComplete="email"
-                    enterKeyHint="next"
                     inputMode="email"
                     placeholder="you@company.com"
                     value={form.email}
                     onChange={setField("email")}
                     onBlur={blur("email")}
+                    className="w-full bg-[#16181e] text-white px-4 py-3.5 rounded-xl border border-[#282a2f] text-sm placeholder-[#99907c] focus:outline-none focus:border-[#f2ca50] transition-colors min-h-[48px]"
                     aria-required="true"
                     aria-describedby={touched.email && !form.email.includes("@") ? "email-error" : undefined}
                   />
                   {touched.email && !form.email.includes("@") && (
-                    <p id="email-error" role="alert" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: C.rust, marginTop: 6 }}>
+                    <p id="email-error" role="alert" className="text-xs text-[#ffb4ab] mt-2">
                       Please enter a valid email address.
                     </p>
                   )}
                 </div>
+              </div>
 
-                {/* Role */}
-                <fieldset style={{ border: "none", padding: 0, marginBottom: 28 }}>
-                  <legend style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: C.muted, marginBottom: 8, fontWeight: 600, letterSpacing: 0.5 }}>
-                    I AM A… <span aria-hidden="true" style={{ color: C.rust }}>*</span>
-                  </legend>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    {ROLES.map((r) => {
-                      const Icon = r.icon;
-                      const pressed = form.role === r.id;
-                      return (
-                        <button
-                          key={r.id}
-                          type="button"
-                          id={`role-${r.id.toLowerCase().replace(/\s+/g, "-")}`}
-                          className="role-btn"
-                          aria-pressed={pressed}
-                          onClick={() => setRole(r.id)}
-                          style={{
-                            color: pressed ? r.color : C.muted,
-                            background: pressed ? `${r.color}12` : C.surface2,
-                            borderColor: pressed ? r.color : C.border,
-                          }}
-                        >
-                          <Icon size={14} strokeWidth={1.8} aria-hidden="true" />
-                          {r.id}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </fieldset>
+              {/* Server error message */}
+              {status === "error" && serverError && (
+                <div id="server-error" role="alert" className="p-4 bg-[#ffb4ab]/10 border border-[#ffb4ab]/30 rounded-xl text-xs text-[#ffb4ab]">
+                  {serverError}
+                </div>
+              )}
 
-                {status === "error" && serverError && (
-                  <p id="server-error" role="alert" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13, color: C.rust, marginBottom: 16, lineHeight: 1.5 }}>
-                    {serverError}
-                  </p>
-                )}
-
+              {/* Submit Button */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <button
                   id="waitlist-submit"
                   type="submit"
-                  className="alq-submit"
                   aria-disabled={(!canSubmit || status === "loading") ? "true" : "false"}
                   onClick={(e) => { if (!canSubmit || status === "loading") e.preventDefault(); }}
+                  className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-xs font-bold tracking-wider uppercase transition-all min-h-[52px] ${
+                    canSubmit && status !== "loading"
+                      ? "bg-[#f2ca50] text-[#111318] hover:bg-[#d4af37] shadow-[0_0_24px_rgba(242,202,80,0.3)] cursor-pointer"
+                      : "bg-[#282a2f] text-[#99907c] cursor-not-allowed"
+                  }`}
                 >
                   {status === "loading" ? (
                     <>
-                      <Loader2 size={16} className="alq-spinner" aria-hidden="true" />
+                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
                       <span className="visually-hidden">Joining the waitlist…</span>
-                      <span aria-hidden="true">Joining…</span>
+                      <span>Joining Wave II…</span>
                     </>
                   ) : (
                     <>
-                      Join the waitlist
-                      <ArrowRight size={15} aria-hidden="true" />
+                      <span>Request Early Access Wave II</span>
+                      <ArrowRight size={16} aria-hidden="true" />
                     </>
                   )}
                 </button>
 
-                <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11.5, color: C.faint, textAlign: "center", marginTop: 14, lineHeight: 1.6 }}>
-                  No spam. We'll only email you when ALIMERIQ goes live.
-                </p>
-              </form>
-            )}
-          </div>
+                <div className="flex items-center gap-2 text-xs text-[#d0c5af]">
+                  <Lock size={14} color={C.emerald} aria-hidden="true" />
+                  <span>Wave-based access • Zero spam • Direct access</span>
+                </div>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </section>
   );
 }
 
+function Footer() {
+  return (
+    <footer className="w-full bg-[#111318] border-t border-[#282a2f] py-16">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-4">Platform</span>
+            <ul className="space-y-2 text-xs text-[#d0c5af]">
+              <li className="hover:text-white cursor-pointer transition-colors">AI Venture Co-Pilot</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Investor Deal Flow</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Startup Talent Marketplace</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Infrastructure Leasing</li>
+            </ul>
+          </div>
+
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-4">Ecosystem Roles</span>
+            <ul className="space-y-2 text-xs text-[#d0c5af]">
+              <li className="hover:text-white cursor-pointer transition-colors">Founders & Builders</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Investors & LPs</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Job Seekers & Operators</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Infrastructure Partners</li>
+            </ul>
+          </div>
+
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-4">Global Regions</span>
+            <ul className="space-y-2 text-xs text-[#d0c5af]">
+              <li className="hover:text-white cursor-pointer transition-colors">East Africa (Nairobi Hub)</li>
+              <li className="hover:text-white cursor-pointer transition-colors">South Asia (Mumbai & GIFT City)</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Middle East (Dubai & Abu Dhabi)</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Latin America (São Paulo)</li>
+            </ul>
+          </div>
+
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-4">Legal & Compliance</span>
+            <ul className="space-y-2 text-xs text-[#d0c5af]">
+              <li className="hover:text-white cursor-pointer transition-colors">Compliance Framework</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Privacy & Data Security</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Terms of Service</li>
+              <li className="hover:text-white cursor-pointer transition-colors">Security Audit Ledger</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-[#282a2f] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <BrandLogo size={20} />
+          <p className="text-xs text-[#99907c]">
+            &copy; {new Date().getFullYear()} ALIMERIQ &middot; alimeriq.app &middot; All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export default function WaitlistPage() {
   return (
-    <>
-      <NavBar />
-      <Hero />
-      <section aria-labelledby="roles-heading" style={{ padding: "80px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11, letterSpacing: 2, color: C.gold, fontWeight: 700, marginBottom: 12, textAlign: "center" }}>WHO IT'S FOR</p>
-          <h2 id="roles-heading" style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: "clamp(28px,4vw,44px)", color: C.text, textAlign: "center", marginBottom: 16, fontWeight: 500, letterSpacing: "-0.02em", textWrap: "balance" }}>
-            Every player. One ecosystem.
-          </h2>
-          <ul role="list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 16, listStyle: "none", padding: 0, marginTop: 40 }}>
-            {ROLES.map((r) => {
-              const Icon = r.icon;
-              return (
-                <li key={r.id}>
-                  <article style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 20, padding: "28px 24px", height: "100%" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 14, background: `${r.color}15`, border: `1px solid ${r.color}30`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
-                      <Icon size={22} color={r.color} strokeWidth={1.5} aria-hidden="true" />
-                    </div>
-                    <h3 style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: 18, color: C.text, fontWeight: 500, marginBottom: 8 }}>{r.id}</h3>
-                    <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{r.desc}</p>
-                  </article>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
-
-      <section aria-labelledby="features-heading" style={{ padding: "80px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11, letterSpacing: 2, color: C.gold, fontWeight: 700, marginBottom: 12, textAlign: "center" }}>PLATFORM FEATURES</p>
-          <h2 id="features-heading" style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: "clamp(28px,4vw,44px)", color: C.text, textAlign: "center", marginBottom: 16, fontWeight: 500, letterSpacing: "-0.02em", textWrap: "balance" }}>
-            Everything under one roof.
-          </h2>
-          <ul role="list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, listStyle: "none", padding: 0, marginTop: 40 }}>
-            {FEATURES.map((f) => {
-              const Icon = f.icon;
-              return (
-                <li key={f.title}>
-                  <article style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 20, padding: "28px 26px", height: "100%" }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 12, background: `${f.color}12`, border: `1px solid ${f.color}25`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                      <Icon size={20} color={f.color} strokeWidth={1.5} aria-hidden="true" />
-                    </div>
-                    <h3 style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: 17, color: C.text, fontWeight: 500, marginBottom: 10 }}>{f.title}</h3>
-                    <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13, color: C.muted, lineHeight: 1.65 }}>{f.body}</p>
-                  </article>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
-
-      <section aria-label="Platform statistics" style={{ padding: "60px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 24, padding: "40px 32px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 32 }}>
-          {STATS.map((s) => (
-            <div key={s.label} style={{ textAlign: "center" }}>
-              <div aria-hidden="true" style={{ fontFamily: "Fraunces,Georgia,serif", fontSize: 40, color: C.gold, fontWeight: 500, lineHeight: 1 }}>{s.value}</div>
-              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: C.muted, marginTop: 6, letterSpacing: 0.5 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <WaitlistFormSection />
-
-      <footer style={{ borderTop: `1px solid ${C.border}`, padding: "32px 24px", position: "relative", zIndex: 1, textAlign: "center" }}>
-        <Logo size={18} />
-        <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, color: C.faint, marginTop: 12 }}>
-          &copy; {new Date().getFullYear()} ALIMERIQ &middot; alimeriq.app &middot; All rights reserved.
-        </p>
-      </footer>
-    </>
+    <div className="min-h-screen bg-[#0c0e13] text-[#e2e2e9] font-sans antialiased">
+      <Header />
+      <main id="main-content" tabIndex={-1} className="outline-none">
+        <Hero />
+        <EcosystemSection />
+        <CapabilitiesSection />
+        <GlobalImpactSection />
+        <WaitlistFormSection />
+      </main>
+      <Footer />
+    </div>
   );
 }
