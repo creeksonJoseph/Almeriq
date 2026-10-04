@@ -107,13 +107,6 @@ function Header() {
           <BrandLogo size={24} />
         </div>
 
-        <nav aria-label="Primary navigation" className="hidden lg:flex items-center gap-8">
-          <a href="#ecosystem" className="text-sm font-medium text-[#e2e2e9] hover:text-[#f2ca50] transition-colors">Ecosystem</a>
-          <a href="#capabilities" className="text-sm font-medium text-[#d0c5af] hover:text-[#e2e2e9] transition-colors">Capabilities</a>
-          <a href="#global-impact" className="text-sm font-medium text-[#d0c5af] hover:text-[#e2e2e9] transition-colors">Global Impact</a>
-          <a href="#access-console" className="text-sm font-medium text-[#d0c5af] hover:text-[#e2e2e9] transition-colors">Waitlist</a>
-        </nav>
-
         <div className="flex items-center gap-4">
           <a
             href="#access-console"
@@ -135,14 +128,7 @@ function Hero() {
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[520px] bg-gradient-to-b from-[#f2ca50]/12 via-[#f2ca50]/4 to-transparent blur-[140px] pointer-events-none" />
       <div className="absolute top-1/3 right-0 w-[450px] h-[450px] bg-[#8fd5b6]/6 blur-[150px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col">
-        {/* Clean Status Pill */}
-        <div className="inline-flex items-center gap-2 self-start py-1.5 px-4 rounded-full bg-[#1a1b21] border border-[#282a2f] shadow-sm mb-8">
-          <span className="text-xs font-semibold tracking-wider text-[#f2ca50] uppercase">
-            EARLY ACCESS NOW OPEN
-          </span>
-        </div>
-
+      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col pt-4">
         {/* Editorial Headline & Mission */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-baseline">
           <div className="lg:col-span-8">
@@ -449,12 +435,7 @@ function CapabilitiesSection() {
             <div className="bg-[#111318] border border-[#282a2f] rounded-2xl p-6 sm:p-8 flex flex-col shadow-2xl">
               {/* Header */}
               <div className="flex items-center justify-between pb-6 border-b border-[#282a2f]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffb4ab]"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#f2ca50]"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#8fd5b6]"></div>
-                  <span className="text-xs font-mono text-[#d0c5af] ml-3 uppercase">ALIMERIQ / DASHBOARD ENGINE</span>
-                </div>
+                <span className="text-xs font-mono text-[#d0c5af] uppercase">ALIMERIQ / DASHBOARD ENGINE</span>
                 <span className="py-1 px-2.5 bg-[#1a1b21] rounded text-[#f2ca50] font-mono text-xs">READY</span>
               </div>
 
