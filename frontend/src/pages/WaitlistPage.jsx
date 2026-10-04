@@ -505,15 +505,15 @@ function CapabilitiesSection() {
                   </div>
                 </div>
 
-                {/* Platform Match Quality */}
+                {/* Platform Match Engine */}
                 <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f] flex items-center justify-between">
                   <div>
                     <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block">Matching Technology</span>
                     <span className="text-xl font-serif text-white">Smart Match Engine</span>
                   </div>
-                  <div className="w-14 h-14 rounded-full bg-[#111318] border border-[#f2ca50]/40 flex items-center justify-center">
-                    <Sparkles size={20} color={C.gold} aria-hidden="true" />
-                  </div>
+                  <span className="text-xs font-mono text-[#8fd5b6] bg-[#8fd5b6]/10 px-3 py-1.5 rounded-lg border border-[#8fd5b6]/20">
+                    ACTIVE
+                  </span>
                 </div>
               </div>
 
