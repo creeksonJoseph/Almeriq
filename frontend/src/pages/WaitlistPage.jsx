@@ -1,13 +1,10 @@
 /**
- * pages/WaitlistPage.jsx — Clean, grounded layout for ALIMERIQ.
+ * pages/WaitlistPage.jsx — Strict 2-accent luxury design for ALIMERIQ.
  *
- * Fully compliant with:
- * - high-end-visual-design: Editorial luxury typography (Fraunces + Plus Jakarta Sans),
- *   ambient gold glow, hairline borders, telemetry dashboard, dark obsidian palette.
- * - fullstack-performance-architecture: useWaitlist hook integration, SWR cache,
- *   draft auto-save, accessible aria-live status, zero CLS skeletons.
- * - Truthful ALIMERIQ positioning: connects founders, investors, job seekers, and
- *   infrastructure providers cleanly without hallucinations or fake data.
+ * Color discipline:
+ * - Primary accent: Champagne Gold (#f2ca50) reserved for brand, CTAs, focus, and metrics.
+ * - Monochrome base: Obsidian (#0c0e13 / #111318) + Warm White (#e2e2e9) + Muted Gray (#d0c5af).
+ * - Zero rainbow/multi-color clutter (all blue, lavender, green, and amber noise removed).
  */
 import { useRef } from "react";
 import {
@@ -24,15 +21,10 @@ const C = {
   surfaceLow: "#1a1b21",
   surfaceContainer: "#1e2025",
   surfaceHigh: "#282a2f",
-  surfaceHighest: "#33353a",
   gold: "#f2ca50",
   goldDim: "#d4af37",
   goldSoft: "rgba(242,202,80,0.12)",
   goldBorder: "rgba(242,202,80,0.35)",
-  emerald: "#8fd5b6",
-  emeraldContainer: "#00543c",
-  lavender: "#bfcdff",
-  amber: "#e9c349",
   text: "#e2e2e9",
   muted: "#d0c5af",
   outline: "#99907c",
@@ -41,9 +33,9 @@ const C = {
 
 const ROLES = [
   { id: "Founder", icon: Building2, color: C.gold, desc: "AI startup co-pilot, investor exposure, hiring & infrastructure" },
-  { id: "Investor", icon: TrendingUp, color: C.emerald, desc: "Vetted deal flow, live founder metrics & investment tracking" },
-  { id: "Job Seeker", icon: Briefcase, color: C.lavender, desc: "Direct founder hiring, startup roles & transparent equity" },
-  { id: "Infrastructure Provider", icon: Truck, color: C.amber, desc: "Monetize compute, cold storage, servers & logistics assets" },
+  { id: "Investor", icon: TrendingUp, color: C.gold, desc: "Vetted deal flow, live founder metrics & investment tracking" },
+  { id: "Job Seeker", icon: Briefcase, color: C.gold, desc: "Direct founder hiring, startup roles & transparent equity" },
+  { id: "Infrastructure Provider", icon: Truck, color: C.gold, desc: "Monetize compute, cold storage, servers & logistics assets" },
 ];
 
 const CAPABILITIES = [
@@ -55,31 +47,31 @@ const CAPABILITIES = [
   },
   {
     num: "02",
-    color: C.emerald,
+    color: C.gold,
     title: "Curated Investor Deal Flow",
     desc: "Browse vetted startups across 20+ sectors, review transparent founder metrics, and participate in startup syndicates."
   },
   {
     num: "03",
-    color: C.lavender,
+    color: C.gold,
     title: "Borderless Startup Talent Network",
     desc: "Founders post roles and match with top engineers, growth leaders, and operators. Job seekers apply directly without recruiter black holes."
   },
   {
     num: "04",
-    color: C.amber,
+    color: C.gold,
     title: "Physical & Cloud Infrastructure Leasing",
     desc: "Need servers, cold storage, warehousing, or trucks? Infrastructure providers list assets and startups lease exactly what they need."
   },
   {
     num: "05",
-    color: "#e2e2e9",
+    color: C.gold,
     title: "Legal & Compliance Infrastructure",
     desc: "Streamlined company registration, trademark filings, mutual NDAs, and compliance guidelines across global startup hubs."
   },
   {
     num: "06",
-    color: C.emerald,
+    color: C.gold,
     title: "Emerging Market Payment Rails",
     desc: "Built for founders across Africa, Asia, and Latin America with multi-currency clearing (KES, INR, BRL, AED, USD) and resilient UX."
   }
@@ -92,7 +84,7 @@ function BrandLogo({ size = 26 }) {
         <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke={C.gold} strokeWidth="2.4" />
         <text x="20" y="26" textAnchor="middle" fontSize="16" fill={C.gold} fontFamily="Georgia, serif" fontWeight="bold">A</text>
       </svg>
-      <span className="font-serif text-xl tracking-tight text-white font-semibold group-hover:text-gold transition-colors">
+      <span className="font-serif text-xl tracking-tight text-white font-semibold group-hover:text-[#f2ca50] transition-colors">
         ALIMERIQ
       </span>
     </a>
@@ -126,7 +118,6 @@ function Hero() {
     <section className="relative w-full overflow-hidden bg-[#0c0e13] pt-32 pb-24 border-b border-[#1e2025]">
       {/* Ambient Radial Golden Glow */}
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[520px] bg-gradient-to-b from-[#f2ca50]/12 via-[#f2ca50]/4 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/3 right-0 w-[450px] h-[450px] bg-[#8fd5b6]/6 blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col pt-4">
         {/* Editorial Headline & Mission */}
@@ -134,7 +125,7 @@ function Hero() {
           <div className="lg:col-span-8">
             <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-medium tracking-tight text-[#e2e2e9] leading-[1.08]">
               One unified platform to build, fund,{" "}
-              <span className="italic bg-gradient-to-r from-[#f2ca50] via-[#e9c349] to-[#8fd5b6] text-transparent bg-clip-text">
+              <span className="italic text-[#f2ca50]">
                 hire, and scale
               </span>{" "}
               your company.
@@ -152,13 +143,6 @@ function Hero() {
                 <span>Request Early Access</span>
                 <ArrowRight size={16} aria-hidden="true" />
               </a>
-              <a
-                href="#ecosystem"
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-lg bg-[#282a2f] text-[#e2e2e9] hover:text-[#f2ca50] transition-colors text-xs font-bold uppercase tracking-wider"
-              >
-                <span>Explore Ecosystem</span>
-                <ChevronRight size={16} aria-hidden="true" />
-              </a>
             </div>
           </div>
         </div>
@@ -173,21 +157,21 @@ function Hero() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#8fd5b6]">20+</span>
+            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">20+</span>
             <div className="flex flex-col">
               <span className="text-xs font-semibold uppercase tracking-wider text-white">Industries Covered</span>
               <span className="text-xs text-[#d0c5af]">Fintech, Deeptech, Logistics, Energy</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#e2e2e9]">50+</span>
+            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">50+</span>
             <div className="flex flex-col">
               <span className="text-xs font-semibold uppercase tracking-wider text-white">Target Countries</span>
               <span className="text-xs text-[#d0c5af]">KES, INR, AED, BRL, USD Support</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-serif text-3xl sm:text-4xl text-[#e9c349]">100%</span>
+            <span className="font-serif text-3xl sm:text-4xl text-[#f2ca50]">100%</span>
             <div className="flex flex-col">
               <span className="text-xs font-semibold uppercase tracking-wider text-white">All-In-One Workflow</span>
               <span className="text-xs text-[#d0c5af]">Integrated platform experience</span>
@@ -242,7 +226,7 @@ function EcosystemSection() {
               </ul>
             </div>
             <div className="pt-8 mt-6 border-t border-[#282a2f]">
-              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50] inline-flex items-center gap-1">
                 Join as Founder <ArrowRight size={14} aria-hidden="true" />
               </a>
             </div>
@@ -252,8 +236,8 @@ function EcosystemSection() {
           <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
-                <span className="text-xs font-bold tracking-widest uppercase text-[#8fd5b6]">Role 02</span>
-                <TrendingUp size={20} color={C.emerald} aria-hidden="true" />
+                <span className="text-xs font-bold tracking-widest uppercase text-[#f2ca50]">Role 02</span>
+                <TrendingUp size={20} color={C.gold} aria-hidden="true" />
               </div>
               <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Investors</h3>
               <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
@@ -261,21 +245,21 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <BarChart3 size={15} color={C.emerald} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <BarChart3 size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Transparent startup metrics & data rooms</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <ShieldCheck size={15} color={C.emerald} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <ShieldCheck size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Direct founder communication & deal signing</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Layers size={15} color={C.emerald} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <Layers size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Unified portfolio tracking dashboard</span>
                 </li>
               </ul>
             </div>
             <div className="pt-8 mt-6 border-t border-[#282a2f]">
-              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#8fd5b6] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50] inline-flex items-center gap-1">
                 Join as Investor <ArrowRight size={14} aria-hidden="true" />
               </a>
             </div>
@@ -285,8 +269,8 @@ function EcosystemSection() {
           <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
-                <span className="text-xs font-bold tracking-widest uppercase text-[#bfcdff]">Role 03</span>
-                <Briefcase size={20} color={C.lavender} aria-hidden="true" />
+                <span className="text-xs font-bold tracking-widest uppercase text-[#f2ca50]">Role 03</span>
+                <Briefcase size={20} color={C.gold} aria-hidden="true" />
               </div>
               <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Job Seekers</h3>
               <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
@@ -294,21 +278,21 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <Users size={15} color={C.lavender} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <Users size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Direct founder applications & messaging</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={15} color={C.lavender} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <CheckCircle2 size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Skill-matched roles in seed-stage startups</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Zap size={15} color={C.lavender} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <Zap size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Transparent compensation & equity grants</span>
                 </li>
               </ul>
             </div>
             <div className="pt-8 mt-6 border-t border-[#282a2f]">
-              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#bfcdff] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50] inline-flex items-center gap-1">
                 Find Startup Jobs <ArrowRight size={14} aria-hidden="true" />
               </a>
             </div>
@@ -318,8 +302,8 @@ function EcosystemSection() {
           <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
-                <span className="text-xs font-bold tracking-widest uppercase text-[#e9c349]">Role 04</span>
-                <Truck size={20} color={C.amber} aria-hidden="true" />
+                <span className="text-xs font-bold tracking-widest uppercase text-[#f2ca50]">Role 04</span>
+                <Truck size={20} color={C.gold} aria-hidden="true" />
               </div>
               <h3 className="font-serif text-2xl text-[#e2e2e9] font-medium mb-3">Asset Lessors</h3>
               <p className="text-xs text-[#d0c5af] leading-relaxed mb-6">
@@ -327,21 +311,21 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <Cpu size={15} color={C.amber} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <Cpu size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>List compute, storage & transport assets</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Truck size={15} color={C.amber} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <Truck size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Cold storage & cross-border logistics</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <ShieldCheck size={15} color={C.amber} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <ShieldCheck size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Automated platform settlement & leasing</span>
                 </li>
               </ul>
             </div>
             <div className="pt-8 mt-6 border-t border-[#282a2f]">
-              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#e9c349] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <a href="#access-console" className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50] inline-flex items-center gap-1">
                 List Assets <ArrowRight size={14} aria-hidden="true" />
               </a>
             </div>
@@ -362,10 +346,10 @@ function EcosystemSection() {
               <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block mb-1">Founder & Investor Connection</span>
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-semibold text-white font-serif">Startup Syndicates</span>
-                <span className="text-xs font-semibold text-[#8fd5b6]">Direct Match</span>
+                <span className="text-xs font-semibold text-[#f2ca50]">Direct Match</span>
               </div>
               <div className="w-full bg-[#282a2f] h-1.5 rounded-full mt-3 overflow-hidden">
-                <div className="bg-[#8fd5b6] h-full w-3/4"></div>
+                <div className="bg-[#f2ca50] h-full w-3/4"></div>
               </div>
               <span className="text-xs text-[#d0c5af] mt-2 block">Connect founders directly with investors</span>
             </div>
@@ -386,10 +370,10 @@ function EcosystemSection() {
               <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block mb-1">Startup Talent Placement</span>
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-semibold text-white font-serif">Key Role Matching</span>
-                <span className="text-xs text-[#bfcdff]">Direct Apply</span>
+                <span className="text-xs text-[#f2ca50]">Direct Apply</span>
               </div>
               <div className="w-full bg-[#282a2f] h-1.5 rounded-full mt-3 overflow-hidden">
-                <div className="bg-[#bfcdff] h-full w-11/12"></div>
+                <div className="bg-[#f2ca50] h-full w-11/12"></div>
               </div>
               <span className="text-xs text-[#d0c5af] mt-2 block">Hire founding engineers and growth leads</span>
             </div>
@@ -417,7 +401,7 @@ function CapabilitiesSection() {
           <div className="flex flex-col divide-y divide-[#282a2f]/60">
             {CAPABILITIES.map((cap) => (
               <div key={cap.num} className="py-6 first:pt-0 last:pb-0">
-                <span className="text-xs font-mono font-bold block mb-2" style={{ color: cap.color }}>{cap.num} / CAPABILITY</span>
+                <span className="text-xs font-mono font-bold block mb-2 text-[#f2ca50]">{cap.num} / CAPABILITY</span>
                 <h3 className="text-xl font-semibold text-white font-serif mb-2">{cap.title}</h3>
                 <p className="text-sm text-[#d0c5af] leading-relaxed font-light">{cap.desc}</p>
               </div>
@@ -452,7 +436,7 @@ function GlobalImpactSection() {
 
           <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
-              <span className="font-serif text-5xl text-[#8fd5b6] block">20+</span>
+              <span className="font-serif text-5xl text-[#f2ca50] block">20+</span>
               <span className="font-serif text-lg text-white block mt-4">Active Sectors</span>
             </div>
             <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
@@ -462,7 +446,7 @@ function GlobalImpactSection() {
 
           <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
-              <span className="font-serif text-5xl text-[#bfcdff] block">50+</span>
+              <span className="font-serif text-5xl text-[#f2ca50] block">50+</span>
               <span className="font-serif text-lg text-white block mt-4">Global Markets</span>
             </div>
             <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
@@ -472,7 +456,7 @@ function GlobalImpactSection() {
 
           <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
-              <span className="font-serif text-5xl text-[#e9c349] block">100%</span>
+              <span className="font-serif text-5xl text-[#f2ca50] block">100%</span>
               <span className="font-serif text-lg text-white block mt-4">Digital Compliance</span>
             </div>
             <p className="text-xs text-[#d0c5af] mt-4 leading-relaxed">
@@ -543,8 +527,8 @@ function WaitlistFormSection() {
           >
             {status === "success" && (
               <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-[#00543c]/30 border border-[#8fd5b6]/40 flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle2 size={32} color={C.emerald} strokeWidth={1.5} aria-hidden="true" />
+                <div className="w-16 h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={32} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
                 </div>
                 <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-3">
                   You're on the list, {form.full_name.split(" ")[0]}! 🎉
@@ -604,8 +588,8 @@ function WaitlistFormSection() {
                         onClick={() => setRole(r.id)}
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <Icon size={16} color={pressed ? r.color : C.muted} aria-hidden="true" />
-                          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: pressed ? r.color : undefined }}>
+                          <Icon size={16} color={pressed ? C.gold : C.muted} aria-hidden="true" />
+                          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: pressed ? C.gold : undefined }}>
                             {r.id}
                           </span>
                         </div>
@@ -707,7 +691,7 @@ function WaitlistFormSection() {
                 </button>
 
                 <div className="flex items-center gap-2 text-xs text-[#d0c5af]">
-                  <Lock size={14} color={C.emerald} aria-hidden="true" />
+                  <Lock size={14} color={C.gold} aria-hidden="true" />
                   <span>No spam • Direct access when live</span>
                 </div>
               </div>
