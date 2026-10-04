@@ -494,9 +494,6 @@ function WaitlistFormSection() {
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         {/* Framing Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-[#1a1b21] border border-[#282a2f] mb-4">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#f2ca50]">Early Access Registration</span>
-          </div>
           <h2 id="console-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium mb-4">
             Join the ALIMERIQ Network
           </h2>
