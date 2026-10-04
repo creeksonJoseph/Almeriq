@@ -216,7 +216,7 @@ function EcosystemSection() {
         {/* 4 Column Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-px bg-[#282a2f] rounded-2xl overflow-hidden shadow-2xl">
           {/* 01 Founders */}
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
                 <span className="text-xs font-bold tracking-widest uppercase text-[#f2ca50]">Role 01</span>
@@ -249,7 +249,7 @@ function EcosystemSection() {
           </div>
 
           {/* 02 Investors */}
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
                 <span className="text-xs font-bold tracking-widest uppercase text-[#8fd5b6]">Role 02</span>
@@ -282,7 +282,7 @@ function EcosystemSection() {
           </div>
 
           {/* 03 Job Seekers */}
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
                 <span className="text-xs font-bold tracking-widest uppercase text-[#bfcdff]">Role 03</span>
@@ -315,7 +315,7 @@ function EcosystemSection() {
           </div>
 
           {/* 04 Infrastructure Providers */}
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors group">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between pb-6">
                 <span className="text-xs font-bold tracking-widest uppercase text-[#e9c349]">Role 04</span>
@@ -403,106 +403,25 @@ function EcosystemSection() {
 function CapabilitiesSection() {
   return (
     <section id="capabilities" aria-labelledby="capabilities-heading" className="w-full bg-[#0c0e13] py-20 border-b border-[#1e2025]">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          {/* Left Column Narrative */}
-          <div className="lg:col-span-6 flex flex-col">
-            <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#f2ca50] mb-2">Venture Operating System</span>
-            <h2 id="capabilities-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium mb-6 leading-tight">
-              Institutional capabilities without the friction.
-            </h2>
-            <p className="text-base text-[#d0c5af] mb-8 font-light leading-relaxed">
-              Legacy startup building relies on disconnected spreadsheets, delayed escrow agents, manual recruiting agencies, and expensive legal brokers. ALIMERIQ replaces this friction with one unified operational platform.
-            </p>
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="flex flex-col">
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#f2ca50] mb-2">Venture Operating System</span>
+          <h2 id="capabilities-heading" className="font-serif text-3xl sm:text-5xl text-[#e2e2e9] font-medium mb-6 leading-tight">
+            Institutional capabilities without the friction.
+          </h2>
+          <p className="text-base text-[#d0c5af] mb-12 font-light leading-relaxed max-w-3xl">
+            Legacy startup building relies on disconnected spreadsheets, delayed escrow agents, manual recruiting agencies, and expensive legal brokers. ALIMERIQ replaces this friction with one unified operational platform.
+          </p>
 
-            {/* Capability Cards */}
-            <div className="flex flex-col space-y-4">
-              {CAPABILITIES.map((cap) => (
-                <div key={cap.num} className="p-5 bg-[#111318] rounded-xl border border-[#282a2f] hover:border-[#f2ca50]/40 transition-colors group">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono font-bold" style={{ color: cap.color }}>{cap.num} / CAPABILITY</span>
-                    <ArrowUpRight size={16} className="text-[#d0c5af] group-hover:text-[#f2ca50] transition-colors" aria-hidden="true" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-1">{cap.title}</h3>
-                  <p className="text-xs text-[#d0c5af] leading-relaxed">{cap.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Column: Platform Dashboard Viewport */}
-          <div className="lg:col-span-6 lg:sticky lg:top-28">
-            <div className="bg-[#111318] border border-[#282a2f] rounded-2xl p-6 sm:p-8 flex flex-col shadow-2xl">
-              {/* Header */}
-              <div className="flex items-center justify-between pb-6 border-b border-[#282a2f]">
-                <span className="text-xs font-mono text-[#d0c5af] uppercase">ALIMERIQ / DASHBOARD ENGINE</span>
-                <span className="py-1 px-2.5 bg-[#1a1b21] rounded text-[#f2ca50] font-mono text-xs">READY</span>
+          {/* Capabilities List */}
+          <div className="flex flex-col divide-y divide-[#282a2f]/60">
+            {CAPABILITIES.map((cap) => (
+              <div key={cap.num} className="py-6 first:pt-0 last:pb-0">
+                <span className="text-xs font-mono font-bold block mb-2" style={{ color: cap.color }}>{cap.num} / CAPABILITY</span>
+                <h3 className="text-xl font-semibold text-white font-serif mb-2">{cap.title}</h3>
+                <p className="text-sm text-[#d0c5af] leading-relaxed font-light">{cap.desc}</p>
               </div>
-
-              {/* Multi-Currency Settlement */}
-              <div className="space-y-6 pt-6">
-                <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f]">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#d0c5af]">Multi-Currency Payment Rails</span>
-                    <span className="text-xs text-[#8fd5b6] flex items-center gap-1 font-mono">
-                      SUPPORTED
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                    <div className="bg-[#111318] p-2.5 rounded-lg border border-[#282a2f]">
-                      <span className="text-[11px] text-[#d0c5af] block">KES / USD</span>
-                      <span className="text-sm text-white font-semibold">Supported</span>
-                    </div>
-                    <div className="bg-[#111318] p-2.5 rounded-lg border border-[#282a2f]">
-                      <span className="text-[11px] text-[#d0c5af] block">INR / USD</span>
-                      <span className="text-sm text-white font-semibold">Supported</span>
-                    </div>
-                    <div className="bg-[#111318] p-2.5 rounded-lg border border-[#282a2f]">
-                      <span className="text-[11px] text-[#d0c5af] block">AED / USD</span>
-                      <span className="text-sm text-white font-semibold">Supported</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Automated Setup Pipeline */}
-                <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-white font-serif">Venture Onboarding Pipeline</span>
-                    <span className="text-[11px] font-mono text-[#f2ca50] bg-[#f2ca50]/10 px-2 py-0.5 rounded">PLATFORM FEATURES</span>
-                  </div>
-                  <div className="space-y-2 text-xs font-mono text-[#d0c5af]">
-                    <div className="flex items-center justify-between">
-                      <span>&gt; Guided Business Plan & Market Validation</span>
-                      <span className="text-[#8fd5b6] font-semibold">INCLUDED</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>&gt; Verified Investor Cap Table Exposure</span>
-                      <span className="text-[#8fd5b6] font-semibold">INCLUDED</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>&gt; Asset & Infrastructure Rental Directory</span>
-                      <span className="text-[#f2ca50] font-semibold">INCLUDED</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Platform Match Engine */}
-                <div className="p-4 bg-[#1a1b21] rounded-xl border border-[#282a2f] flex items-center justify-between">
-                  <div>
-                    <span className="text-[11px] uppercase tracking-wider text-[#d0c5af] block">Matching Technology</span>
-                    <span className="text-xl font-serif text-white">Smart Match Engine</span>
-                  </div>
-                  <span className="text-xs font-mono text-[#8fd5b6] bg-[#8fd5b6]/10 px-3 py-1.5 rounded-lg border border-[#8fd5b6]/20">
-                    ACTIVE
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[#282a2f] flex items-center justify-between text-xs text-[#d0c5af] font-mono">
-                <span>SECURITY: BANK-GRADE SSL</span>
-                <span className="text-[#f2ca50]">STATUS: ONLINE</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -521,7 +440,7 @@ function GlobalImpactSection() {
 
         {/* 4 Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-[#282a2f] rounded-2xl overflow-hidden shadow-2xl">
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
               <span className="font-serif text-5xl text-[#f2ca50] block">04</span>
               <span className="font-serif text-lg text-white block mt-4">Unified Roles</span>
@@ -531,7 +450,7 @@ function GlobalImpactSection() {
             </p>
           </div>
 
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
               <span className="font-serif text-5xl text-[#8fd5b6] block">20+</span>
               <span className="font-serif text-lg text-white block mt-4">Active Sectors</span>
@@ -541,7 +460,7 @@ function GlobalImpactSection() {
             </p>
           </div>
 
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
               <span className="font-serif text-5xl text-[#bfcdff] block">50+</span>
               <span className="font-serif text-lg text-white block mt-4">Global Markets</span>
@@ -551,7 +470,7 @@ function GlobalImpactSection() {
             </p>
           </div>
 
-          <div className="p-8 bg-[#111318] flex flex-col justify-between hover:bg-[#1a1b21] transition-colors">
+          <div className="p-8 bg-[#111318] flex flex-col justify-between">
             <div>
               <span className="font-serif text-5xl text-[#e9c349] block">100%</span>
               <span className="font-serif text-lg text-white block mt-4">Digital Compliance</span>
