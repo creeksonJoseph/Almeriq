@@ -1,0 +1,15 @@
+/* Skeleton pulse — CSS only, GPU-safe (opacity only) */
+@keyframes skeleton-shimmer {
+  0%   { opacity: 0.55; }
+  50%  { opacity: 0.25; }
+  100% { opacity: 0.55; }
+}
+.skeleton-pulse {
+  background: #1C1C21;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  will-change: opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-pulse { animation: none; opacity: 0.4; }
+}
+.skeleton-form { display: flex; flex-direction: column; }
