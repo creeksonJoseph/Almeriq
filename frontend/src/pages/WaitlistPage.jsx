@@ -520,9 +520,6 @@ function WaitlistFormSection() {
 
               {status === "duplicate" && (
                 <div className="text-center py-8 sm:py-12 px-2 sm:px-4">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#f2ca50]/15 border border-[#f2ca50]/40 flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-[0_0_30px_rgba(242,202,80,0.15)]">
-                    <Zap size={26} color={C.gold} strokeWidth={1.5} aria-hidden="true" />
-                  </div>
                   <span className="inline-block px-3 py-1 rounded-full bg-[#f2ca50]/10 text-[10px] font-mono font-bold tracking-widest text-[#f2ca50] uppercase mb-2.5 sm:mb-3">
                     PREVIOUSLY REGISTERED
                   </span>
