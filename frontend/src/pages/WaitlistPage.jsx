@@ -132,18 +132,9 @@ function Hero() {
             </h1>
           </div>
           <div className="lg:col-span-4 flex flex-col justify-between self-end">
-            <p className="text-base sm:text-lg text-[#d0c5af] font-light leading-relaxed mb-8">
+            <p className="text-base sm:text-lg text-[#d0c5af] font-light leading-relaxed">
               ALIMERIQ connects <strong className="text-white font-medium">founders</strong>, <strong className="text-white font-medium">investors</strong>, <strong className="text-white font-medium">job seekers</strong>, and <strong className="text-white font-medium">infrastructure providers</strong> into one seamless ecosystem. Everything your venture needs in one place.
             </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <a
-                href="#access-console"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-[#f2ca50] text-[#111318] text-xs font-bold uppercase tracking-wider hover:bg-[#d4af37] transition-all shadow-[0_0_32px_rgba(242,202,80,0.3)]"
-              >
-                <span>Request Early Access</span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </a>
-            </div>
           </div>
         </div>
 
