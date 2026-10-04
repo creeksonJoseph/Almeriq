@@ -1,0 +1,93 @@
+# ─── Python / FastAPI ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# FastAPI specifics
+*.log
+alembic.ini
+migrations/versions/
+uploads/
+
+# uv / pip / poetry lockfile artifacts
+pip-wheel-metadata/
+.pip-cache/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# MyPy / Pyright
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+
+# ─── Node / Vite / React ──────────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+.cache/
+
+# Vite build output
+frontend/dist/
+frontend/.vite/
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ─── OS & Editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# ─── Docker ───────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+*.swp
+*~
