@@ -10,7 +10,7 @@ import { useRef } from "react";
 import {
   ArrowRight, CheckCircle2, Loader2,
   Building2, TrendingUp, Briefcase, Truck,
-  Sparkles, Globe2, ShieldCheck, Zap, Users, Lock,
+  Sparkles, Globe2, ShieldCheck, Users, Lock,
   ChevronRight, ArrowUpRight, Cpu, Layers, BarChart3,
   User, Mail
 } from "lucide-react";
@@ -246,7 +246,7 @@ function EcosystemSection() {
                   <span>Skill-matched roles in seed-stage startups</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Zap size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <CheckCircle2 size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
                   <span>Transparent compensation & equity grants</span>
                 </li>
               </ul>
@@ -463,9 +463,6 @@ function WaitlistFormSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Framing Header */}
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10 lg:mb-12">
-          <span className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/25 text-[10px] font-mono font-bold tracking-[0.2em] text-[#f2ca50] uppercase mb-3 sm:mb-4 shadow-[0_0_15px_rgba(242,202,80,0.1)]">
-            ACCESS CONSOLE
-          </span>
           <h2 id="console-heading" className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#e2e2e9] font-medium mb-2.5 sm:mb-4">
             Join the ALIMERIQ Network
           </h2>
@@ -681,7 +678,6 @@ function WaitlistFormSection() {
                 {/* Server error message */}
                 {status === "error" && serverError && (
                   <div id="server-error" role="alert" className="p-3.5 sm:p-4 bg-[#ffb4ab]/10 border border-[#ffb4ab]/30 rounded-lg sm:rounded-xl text-xs text-[#ffb4ab] flex items-center gap-2">
-                    <Zap size={16} color="#ffb4ab" className="shrink-0" aria-hidden="true" />
                     <span>{serverError}</span>
                   </div>
                 )}
