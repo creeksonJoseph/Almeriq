@@ -1,4 +1,4 @@
-"""api/routers/waitlist.py — HTTP only: parse, delegate, respond. No queries or business rules."""
+"""api/routers/waitlist.py - HTTP only: parse, delegate, respond. No queries or business rules."""
 from __future__ import annotations
 
 from fastapi import APIRouter, BackgroundTasks, Response

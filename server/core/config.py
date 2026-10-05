@@ -1,4 +1,4 @@
-"""core/config.py — singleton settings loaded once at startup."""
+"""core/config.py - singleton settings loaded once at startup."""
 from __future__ import annotations
 import os
 from dotenv import load_dotenv

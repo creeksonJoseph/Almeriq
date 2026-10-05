@@ -1,5 +1,5 @@
 /**
- * lib/api.js — thin axios client with SWR cache + request dedup (§10).
+ * lib/api.js - thin axios client with SWR cache + request dedup (§10).
  *
  * Configured for production deployment at https://api.alimeriq.app
  * with fallback to local development server.

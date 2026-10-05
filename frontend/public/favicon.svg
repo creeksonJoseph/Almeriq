@@ -1,19 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
-  <!-- Outer diamond stroke -->
-  <polygon
-    points="20,2 37,20 20,38 3,20"
-    fill="none"
-    stroke="#C9A15A"
-    stroke-width="2"
-  />
-  <!-- "A" letterform -->
-  <text
-    x="20"
-    y="26"
-    text-anchor="middle"
-    font-size="16"
-    fill="#C9A15A"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-weight="500"
-  >A</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44">
+  <!-- ALIMERIQ "Network A" mark - bold strokes scale cleanly to 16px -->
+  <!-- Left leg -->
+  <line x1="5" y1="39" x2="22" y2="5" stroke="#f2ca50" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Right leg -->
+  <line x1="39" y1="39" x2="22" y2="5" stroke="#f2ca50" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Crossbar -->
+  <line x1="12.5" y1="27" x2="31.5" y2="27" stroke="#f2ca50" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Node: apex convergence point -->
+  <circle cx="22" cy="5" r="3.2" fill="#f2ca50"/>
+  <!-- Node: crossbar left endpoint -->
+  <circle cx="12.5" cy="27" r="2.4" fill="#f2ca50"/>
+  <!-- Node: crossbar right endpoint -->
+  <circle cx="31.5" cy="27" r="2.4" fill="#f2ca50"/>
 </svg>

@@ -1,4 +1,4 @@
-"""services/waitlist.py — business logic and side-effect orchestration.
+"""services/waitlist.py - business logic and side-effect orchestration.
 
 Principle §1: persist first, return 201, then do expensive side effects
 (email send) in a background task. The router passes a BackgroundTasks
@@ -22,17 +22,17 @@ resend.api_key = RESEND_API_KEY
 from datetime import datetime, timezone
 
 ROLE_LINES = {
-    "Founder": "As a <strong>Founder</strong>, you'll get guided step-by-step — idea validation, market analysis, business plan, MVP scope, and legal registration.",
+    "Founder": "As a <strong>Founder</strong>, you'll get guided step-by-step - idea validation, market analysis, business plan, MVP scope, and legal registration.",
     "Investor": "As an <strong>Investor</strong>, you'll access a curated pipeline of vetted startups and manage every deal in one place.",
     "Job Seeker": "As a <strong>Job Seeker</strong>, you'll be matched with fast-growing startups that need your exact skills.",
-    "Infrastructure Provider": "As an <strong>Infrastructure Provider</strong>, you'll list your assets — trucks, servers, satellites — and connect with startups ready to pay.",
+    "Infrastructure Provider": "As an <strong>Infrastructure Provider</strong>, you'll list your assets - trucks, servers, satellites - and connect with startups ready to pay.",
 }
 
 FEATURES = [
     "AI-guided company building for Founders",
     "Curated investor deal-flow &amp; portfolio management",
     "Smart talent matching for startup roles",
-    "Infrastructure marketplace — lease what you need",
+    "Infrastructure marketplace - lease what you need",
     "Digital deal signing &amp; payment in one place",
 ]
 
@@ -67,7 +67,7 @@ def _build_email_html(full_name: str, email: str, role: str) -> str:
         You're on the list, {full_name.split()[0]}. 🎉
       </h1>
       <p style="margin:0 0 24px;font-size:14px;color:#9B9A94;line-height:1.7;">
-        Welcome to ALIMERIQ — connecting <strong style="color:#F3F1EC;">founders</strong>,
+        Welcome to ALIMERIQ - connecting <strong style="color:#F3F1EC;">founders</strong>,
         <strong style="color:#F3F1EC;">investors</strong>,
         <strong style="color:#F3F1EC;">job seekers</strong>, and
         <strong style="color:#F3F1EC;">infrastructure providers</strong> under one roof.
@@ -96,7 +96,7 @@ def _build_email_html(full_name: str, email: str, role: str) -> str:
 </html>"""
 
 
-# ── background task — idempotent, catches its own exceptions (§5) ─────────────
+# ── background task - idempotent, catches its own exceptions (§5) ─────────────
 def _send_confirmation_email(full_name: str, email: str, role: str) -> None:
     """Runs after the 201 is already sent. Must be idempotent and self-contained."""
     try:
@@ -108,7 +108,7 @@ def _send_confirmation_email(full_name: str, email: str, role: str) -> None:
         })
         logger.info("Confirmation email sent to %s", email)
     except Exception:
-        # Log but do not crash — nobody sees background-task exceptions (§5)
+        # Log but do not crash - nobody sees background-task exceptions (§5)
         logger.exception("Failed to send confirmation email to %s", email)
 
 

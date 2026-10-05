@@ -1,4 +1,4 @@
-"""repositories/waitlist.py — all DB queries for the waitlist table. No business rules here."""
+"""repositories/waitlist.py - all DB queries for the waitlist table. No business rules here."""
 from __future__ import annotations
 import asyncpg
 from core.db import get_pool
@@ -34,7 +34,7 @@ async def email_exists(email: str) -> bool:
 
 
 async def count_all() -> int:
-    """Aggregate in SQL — never load rows to len() them (§3)."""
+    """Aggregate in SQL - never load rows to len() them (§3)."""
     pool = get_pool()
     async with pool.acquire() as conn:
         return await conn.fetchval("SELECT COUNT(*) FROM waitlist") or 0

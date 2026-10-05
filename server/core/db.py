@@ -1,4 +1,4 @@
-"""core/db.py — asyncpg connection pool, created once at lifespan."""
+"""core/db.py - asyncpg connection pool, created once at lifespan."""
 from __future__ import annotations
 import asyncpg
 from .config import DATABASE_URL
@@ -17,5 +17,5 @@ async def close_pool() -> None:
 
 
 def get_pool() -> asyncpg.Pool:
-    assert _pool is not None, "DB pool not initialised — call init_pool() first."
+    assert _pool is not None, "DB pool not initialised - call init_pool() first."
     return _pool

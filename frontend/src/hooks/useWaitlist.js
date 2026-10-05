@@ -1,5 +1,5 @@
 /**
- * hooks/useWaitlist.js — stateful logic for the waitlist form.
+ * hooks/useWaitlist.js - stateful logic for the waitlist form.
  *
  * Separates data-fetching / mutation logic from the presentational component.
  * Draft autosave: persists in-progress form to localStorage (§13).
@@ -32,7 +32,7 @@ export function useWaitlist() {
   const [status, setStatus] = useState("idle");            // idle|loading|success|duplicate|error
   const [serverError, setServerError] = useState("");
 
-  // §13 — draft autosave on every change (debounced at 500ms)
+  // §13 - draft autosave on every change (debounced at 500ms)
   useEffect(() => {
     if (status === "success") return;                      // don't save after submit
     const t = setTimeout(() => saveDraft(form), 500);
@@ -71,7 +71,7 @@ export function useWaitlist() {
           email: form.email.trim(),
           role: form.role,
         });
-        clearDraft();                    // §13 — clear after successful submit
+        clearDraft();                    // §13 - clear after successful submit
         setStatus("success");
       } catch (err) {
         if (err.status === 409) {

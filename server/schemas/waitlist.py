@@ -1,4 +1,4 @@
-"""schemas/waitlist.py — request + response validation models. No DB logic here."""
+"""schemas/waitlist.py - request + response validation models. No DB logic here."""
 from __future__ import annotations
 from pydantic import BaseModel, EmailStr, field_validator
 

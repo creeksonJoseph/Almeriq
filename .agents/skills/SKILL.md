@@ -1,13 +1,13 @@
 ---
 name: fullstack-performance-architecture
-description: Architectural playbook for building fast, scalable full-stack web apps (REST API + SPA frontend + relational DB). Covers layered backend structure, database indexing, N+1 elimination, keyset pagination, background tasks, HTTP caching (GZip, ETag, Cache-Control), React progressive rendering with Suspense and skeletons, client-side SWR cache with request dedup, content-visibility for long feeds, and bundle chunking. Use this skill whenever the user starts a new project, designs or scaffolds a backend or frontend, adds a feed/list/detail page, asks about pagination, caching, slow endpoints, slow page loads, query optimization, or project structure — even if they don't mention "architecture". Follow these patterns by default for any web app that has a database and a UI.
+description: Architectural playbook for building fast, scalable full-stack web apps (REST API + SPA frontend + relational DB). Covers layered backend structure, database indexing, N+1 elimination, keyset pagination, background tasks, HTTP caching (GZip, ETag, Cache-Control), React progressive rendering with Suspense and skeletons, client-side SWR cache with request dedup, content-visibility for long feeds, and bundle chunking. Use this skill whenever the user starts a new project, designs or scaffolds a backend or frontend, adds a feed/list/detail page, asks about pagination, caching, slow endpoints, slow page loads, query optimization, or project structure - even if they don't mention "architecture". Follow these patterns by default for any web app that has a database and a UI.
 ---
 
 # Full-Stack Performance Architecture
 
 Default architecture for web apps with a REST API, relational DB, and SPA frontend. Technology-agnostic principles first; reference code uses FastAPI + SQLAlchemy + PostgreSQL and React + Vite (map to the user's stack: Django/ORM, Express/Prisma, Vue, etc.).
 
-**How to apply:** Follow these patterns by default when scaffolding or reviewing a project. Skip any pattern that has no use case (e.g. no feed → no keyset pagination). Don't add infrastructure the project doesn't have (Redis, CDN, queues) — use the "no extra infra" fallback in each section.
+**How to apply:** Follow these patterns by default when scaffolding or reviewing a project. Skip any pattern that has no use case (e.g. no feed → no keyset pagination). Don't add infrastructure the project doesn't have (Redis, CDN, queues) - use the "no extra infra" fallback in each section.
 
 ---
 
@@ -68,12 +68,12 @@ Without indexes, Postgres does a sequential scan for every FK filter and sort.
 | Child rows by parent (`WHERE setup_id = ?`) | single-column on the FK |
 | Rows by owner (`WHERE user_id = ?`) | single-column on `user_id` |
 | Default feed sort (`ORDER BY created_at DESC`) | `created_at` (or composite matching the sort) |
-| "Did user X like/favorite Y?" | **composite** `(user_id, target_id)` — make it `UNIQUE` for toggle tables |
+| "Did user X like/favorite Y?" | **composite** `(user_id, target_id)` - make it `UNIQUE` for toggle tables |
 | Chronological child lists | `created_at` on child table |
 
 Checklist per table: FKs ✔ owner column ✔ sort column ✔ composite lookup for join/toggle tables ✔.
 
-Ship indexes in a migration (Alembic/Django/Prisma migrate), never by hand in prod. Verify with `EXPLAIN ANALYZE` — you want `Index Scan`/`Index Only Scan`, not `Seq Scan`. Don't over-index write-heavy tables; each index costs on insert.
+Ship indexes in a migration (Alembic/Django/Prisma migrate), never by hand in prod. Verify with `EXPLAIN ANALYZE` - you want `Index Scan`/`Index Only Scan`, not `Seq Scan`. Don't over-index write-heavy tables; each index costs on insert.
 
 ---
 
@@ -102,7 +102,7 @@ def get_page(db: Session, cursor: int | None = None, limit: int = 48) -> list[Se
 - **one-to-many / many-to-many** → `selectinload` (batched IN)
 - Equivalents: Django `select_related` / `prefetch_related`; Prisma `include`; TypeORM `relations`.
 
-**Counts and flags — don't load collections just to count them:**
+**Counts and flags - don't load collections just to count them:**
 
 ```python
 like_count = db.query(func.count(Like.id)).filter(Like.setup_id == setup.id).scalar() or 0
@@ -116,7 +116,7 @@ For a *list* of rows, avoid one count query per row: use a grouped query (`GROUP
 
 ## 4. Keyset (Cursor) Pagination
 
-`OFFSET 1000 LIMIT 48` scans and discards 1000 rows — latency grows linearly with depth. Keyset pagination is an index seek: constant time at any depth.
+`OFFSET 1000 LIMIT 48` scans and discards 1000 rows - latency grows linearly with depth. Keyset pagination is an index seek: constant time at any depth.
 
 ```sql
 SELECT * FROM setups
@@ -130,7 +130,7 @@ Rules:
 - Always include a unique tiebreaker (`id`).
 - Fetch `limit + 1` rows to know if another page exists; return `next_cursor` (last item's key) or `null`.
 - Cap `limit` server-side (e.g. max 100).
-- Keyset can't jump to "page 37" — use it for infinite scroll / feeds, keep OFFSET only for small admin tables.
+- Keyset can't jump to "page 37" - use it for infinite scroll / feeds, keep OFFSET only for small admin tables.
 
 Response shape:
 
@@ -181,7 +181,7 @@ Think in tiers, cheapest first:
 - Keys are namespaced: `feed:{cursor}:{limit}`, `detail:{id}`, `similar:{id}:page:{p}`.
 - Always set a TTL.
 - **Invalidate on write** in the service layer (e.g. creating a post purges `feed:*`). Invalidation lives in services, never routers.
-- No Redis? Use a small in-process TTL dict (`cachetools.TTLCache`) — fine for a single instance.
+- No Redis? Use a small in-process TTL dict (`cachetools.TTLCache`) - fine for a single instance.
 - **Never cache per-user fields in shared entries.** Cache the public payload; merge `is_liked`/`is_favorited` for the current user at serve time.
 
 ---
@@ -196,7 +196,7 @@ Typically cuts JSON 60–80%. (Brotli at the reverse proxy/CDN if available.)
 
 ### 7.2 Cache-Control
 - **Public, non-personalized** responses: `Cache-Control: public, max-age=60, stale-while-revalidate=300`
-- **Anything containing user-specific data** (is_liked, private profile): `Cache-Control: private, no-cache` (or `private, max-age=0, must-revalidate`) — **never `public`**, or a CDN will leak one user's data to another.
+- **Anything containing user-specific data** (is_liked, private profile): `Cache-Control: private, no-cache` (or `private, max-age=0, must-revalidate`) - **never `public`**, or a CDN will leak one user's data to another.
 - Mutating endpoints: `no-store`.
 
 ### 7.3 ETag / 304
@@ -212,7 +212,7 @@ def etag_response(request: Request, response: Response, data, *, public: bool, m
     )
     return data
 ```
-Note: ETags save **bandwidth**, not DB work — the query still ran. Pair with a server cache (§6) to save both. ETag must be computed on stable serialization (`sort_keys=True`).
+Note: ETags save **bandwidth**, not DB work - the query still ran. Pair with a server cache (§6) to save both. ETag must be computed on stable serialization (`sort_keys=True`).
 
 ---
 
@@ -234,7 +234,7 @@ Render the page shell immediately; each region loads and displays independently.
 Guidelines:
 - Critical content first (hero, title, primary action); secondary data behind `<Suspense>`.
 - Wrap Suspense regions in an error boundary so one failed region doesn't blank the page.
-- Start parallel fetches early (route loader / top of component) — don't create request waterfalls (fetch A → then B).
+- Start parallel fetches early (route loader / top of component) - don't create request waterfalls (fetch A → then B).
 
 ### Skeleton system
 One `Skeletons` file with a skeleton per major UI region (`CardSkeleton`, `GridSkeleton`, `ListSkeleton`, `CommentsSkeleton`, `HeroSkeleton`).
@@ -247,7 +247,7 @@ One `Skeletons` file with a skeleton per major UI region (`CardSkeleton`, `GridS
 ## 9. Frontend: Pagination & Infinite Scroll
 
 ```js
-// useFeed.js — cursor-based
+// useFeed.js - cursor-based
 const [items, setItems] = useState([]);
 const [cursor, setCursor] = useState(null);
 const [hasMore, setHasMore] = useState(true);
@@ -306,7 +306,7 @@ export function useDataCache(key, fetcher) {
 - **Dedup:** simultaneous identical requests share one promise.
 - **ETag:** send `If-None-Match`; on `304` keep existing data and **skip state updates** (no re-render).
 - **Invalidate** cache keys after mutations (`cache.delete(key)` or prefix sweep).
-- If the project already uses TanStack Query / SWR, use them instead — same semantics, don't hand-roll.
+- If the project already uses TanStack Query / SWR, use them instead - same semantics, don't hand-roll.
 
 ---
 

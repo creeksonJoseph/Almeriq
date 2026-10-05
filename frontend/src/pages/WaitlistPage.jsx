@@ -1,5 +1,5 @@
 /**
- * pages/WaitlistPage.jsx — Strict 2-accent luxury design for ALIMERIQ.
+ * pages/WaitlistPage.jsx - Strict 2-accent luxury design for ALIMERIQ.
  *
  * Color discipline:
  * - Primary accent: Champagne Gold (#f2ca50) reserved for brand, CTAs, focus, and metrics.
@@ -10,11 +10,10 @@ import { useRef } from "react";
 import {
   ArrowRight, CheckCircle2, Loader2,
   Building2, TrendingUp, Briefcase, Truck,
-  Sparkles, Globe2, ShieldCheck, Users, Lock,
-  ChevronRight, ArrowUpRight, Cpu, Layers, BarChart3,
-  User, Mail
+  Globe2, Lock, User, Mail
 } from "lucide-react";
 import { useWaitlist } from "../hooks/useWaitlist";
+import BrandLogo from "../components/BrandLogo";
 
 const C = {
   bg: "#0c0e13",
@@ -44,7 +43,7 @@ const CAPABILITIES = [
     num: "01",
     color: C.gold,
     title: "AI-Guided Venture Builder",
-    desc: "Founders get a step-by-step AI co-pilot — from idea validation and market sizing to business plans, MVP scoping, and company registration."
+    desc: "Founders get a step-by-step AI co-pilot - from idea validation and market sizing to business plans, MVP scoping, and company registration."
   },
   {
     num: "02",
@@ -78,19 +77,7 @@ const CAPABILITIES = [
   }
 ];
 
-function BrandLogo({ size = 26 }) {
-  return (
-    <a href="#" className="flex items-center gap-3 group text-decoration-none">
-      <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-        <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke={C.gold} strokeWidth="2.4" />
-        <text x="20" y="26" textAnchor="middle" fontSize="16" fill={C.gold} fontFamily="Georgia, serif" fontWeight="bold">A</text>
-      </svg>
-      <span className="font-serif text-xl tracking-tight text-white font-semibold group-hover:text-[#f2ca50] transition-colors">
-        ALIMERIQ
-      </span>
-    </a>
-  );
-}
+
 
 function Header() {
   return (
@@ -172,15 +159,15 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-2.5 sm:space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <Sparkles size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Step-by-step AI startup co-pilot</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <TrendingUp size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Direct exposure to verified investors</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Users size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Hire startup talent & rent assets</span>
                 </li>
               </ul>
@@ -205,15 +192,15 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-2.5 sm:space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <BarChart3 size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Transparent startup metrics & data rooms</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <ShieldCheck size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Direct founder communication & deal signing</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Layers size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Unified portfolio tracking dashboard</span>
                 </li>
               </ul>
@@ -238,15 +225,15 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-2.5 sm:space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <Users size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Direct founder applications & messaging</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Skill-matched roles in seed-stage startups</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Transparent compensation & equity grants</span>
                 </li>
               </ul>
@@ -271,15 +258,15 @@ function EcosystemSection() {
               </p>
               <ul className="space-y-2.5 sm:space-y-3 text-xs text-[#e2e2e9]">
                 <li className="flex items-start gap-2.5">
-                  <Cpu size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>List compute, storage & transport assets</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <Truck size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Cold storage & cross-border logistics</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <ShieldCheck size={15} color={C.gold} className="shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] shrink-0 mt-1.5" aria-hidden="true" />
                   <span>Automated platform settlement & leasing</span>
                 </li>
               </ul>
@@ -467,7 +454,7 @@ function WaitlistFormSection() {
             Join the ALIMERIQ Network
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-[#d0c5af] font-light leading-relaxed">
-            Select your role to request early access — whether you're building a startup, looking to invest, searching for startup roles, or leasing assets.
+            Select your role to request early access - whether you're building a startup, looking to invest, searching for startup roles, or leasing assets.
           </p>
         </div>
 

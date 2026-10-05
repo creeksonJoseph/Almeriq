@@ -1,5 +1,5 @@
 /**
- * components/Skeletons.jsx — §8 skeleton system.
+ * components/Skeletons.jsx - §8 skeleton system.
  *
  * Rules:
  *  - Match real dimensions → zero CLS.

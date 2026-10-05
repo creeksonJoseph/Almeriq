@@ -14,7 +14,7 @@ body {
   background: #0A0A0B;
   color: #F3F1EC;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 1rem; /* >= 16px — prevents iOS zoom on focus */
+  font-size: 1rem; /* >= 16px - prevents iOS zoom on focus */
   min-height: 100dvh;
   overflow-x: hidden;
 }

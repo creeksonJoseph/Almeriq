@@ -1,5 +1,5 @@
 """
-main.py — App factory, middleware registration, lifespan.
+main.py - App factory, middleware registration, lifespan.
 
 Follows fullstack-performance-architecture §1, §5, §6, §7.
 Layers: main → api/routers → services → repositories → core
@@ -16,7 +16,7 @@ from fastapi.middleware.gzip import GZipMiddleware  # §7.1
 from core.db import init_pool, close_pool, get_pool
 from api.routers.waitlist import router as waitlist_router
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s — %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
 
 
 # ── DB schema bootstrap ───────────────────────────────────────────────────────
@@ -58,16 +58,16 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title="ALIMERIQ API",
-    description="Waitlist API for ALIMERIQ — the platform connecting founders, investors, job seekers and infrastructure providers.",
+    description="Waitlist API for ALIMERIQ - the platform connecting founders, investors, job seekers and infrastructure providers.",
     version="0.1.0",
 )
 
-# §7.1 — GZip: typically cuts JSON 60-80%
+# §7.1 - GZip: typically cuts JSON 60-80%
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
 from core.config import ALLOWED_ORIGINS
 
-# CORS — dynamic allowed origins from environment (defaults to allow all or specified domains)
+# CORS - dynamic allowed origins from environment (defaults to allow all or specified domains)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS if ALLOWED_ORIGINS != ["*"] else ["*"],
@@ -80,7 +80,7 @@ app.add_middleware(
 app.include_router(waitlist_router)
 
 
-# ── Health check — public, short-TTL cacheable (§7.2) ────────────────────────
+# ── Health check - public, short-TTL cacheable (§7.2) ────────────────────────
 @app.get("/health", tags=["ops"])
 async def health():
     return {"status": "ok"}
