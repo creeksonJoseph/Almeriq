@@ -16,6 +16,7 @@ from fastapi.middleware.gzip import GZipMiddleware  # §7.1
 from core.db import init_pool, close_pool, get_pool
 from api.routers.waitlist import router as waitlist_router
 from api.routers.health import router as health_router
+from api.routers.auth import router as auth_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
 
@@ -23,10 +24,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(messa
 # ── DB schema bootstrap ───────────────────────────────────────────────────────
 async def _ensure_schema() -> None:
     """
-    Create the waitlist table if absent and ensure all required indexes exist.
-    §2 Indexes:
-      - email UNIQUE → implicit B-tree index (covers equality seeks).
-      - joined_at   → explicit B-tree for chronological sorts / dashboard queries.
+    Create the waitlist and users tables if absent and ensure all required indexes exist.
     In production, migrate via Alembic; this is the no-extra-infra fallback.
     """
     pool = get_pool()
@@ -40,9 +38,20 @@ async def _ensure_schema() -> None:
                 joined_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
             );
 
-            -- §2: index the sort column used in ORDER BY joined_at DESC queries
             CREATE INDEX IF NOT EXISTS idx_waitlist_joined_at
                 ON waitlist (joined_at DESC);
+
+            CREATE TABLE IF NOT EXISTS users (
+                id              SERIAL       PRIMARY KEY,
+                full_name       TEXT         NOT NULL,
+                email           TEXT         NOT NULL UNIQUE,
+                hashed_password TEXT         NOT NULL,
+                role            TEXT         NOT NULL DEFAULT 'user',
+                created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_users_email
+                ON users (email);
         """)
 
 
@@ -59,7 +68,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title="ALIMERIQ API",
-    description="Waitlist API for ALIMERIQ - the platform connecting founders, investors, job seekers and infrastructure providers.",
+    description="Waitlist & Authentication API for ALIMERIQ.",
     version="0.1.0",
 )
 
@@ -80,4 +89,6 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(health_router)
 app.include_router(waitlist_router)
+app.include_router(auth_router)
+
 
