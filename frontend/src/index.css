@@ -12,7 +12,7 @@ html {
 
 body {
   background: #0A0A0B;
-  color: #F3F1EC;
+  color: #FFFFFF;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 1rem; /* >= 16px - prevents iOS zoom on focus */
   min-height: 100dvh;
@@ -70,7 +70,7 @@ body {
   border: 1px solid #2B2B31;
   border-radius: 12px;
   padding: 13px 16px;
-  color: #F3F1EC;
+  color: #FFFFFF;
   outline: none;
   transition: border-color 0.2s;
   min-height: 48px;      /* minimum tap target */
@@ -83,7 +83,7 @@ body {
 .alq-input:user-invalid {
   border-color: #B5573F;
 }
-.alq-input::placeholder { color: #5F5E5A; }
+.alq-input::placeholder { color: rgba(255, 255, 255, 0.7); }
 
 /* ── Role pill buttons ───────────────────────────────── */
 .role-btn {
@@ -94,7 +94,7 @@ body {
   border: 1px solid #2B2B31;
   border-radius: 12px;
   padding: 12px 14px;
-  color: #9B9A94;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -133,7 +133,7 @@ body {
 }
 .alq-submit[aria-disabled="true"] {
   background: #2B2B31;
-  color: #5F5E5A;
+  color: rgba(255, 255, 255, 0.6);
   cursor: not-allowed;
 }
 .alq-submit:not([aria-disabled="true"]):hover {

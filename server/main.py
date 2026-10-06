@@ -15,6 +15,7 @@ from fastapi.middleware.gzip import GZipMiddleware  # §7.1
 
 from core.db import init_pool, close_pool, get_pool
 from api.routers.waitlist import router as waitlist_router
+from api.routers.health import router as health_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
 
@@ -77,10 +78,6 @@ app.add_middleware(
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
+app.include_router(health_router)
 app.include_router(waitlist_router)
 
-
-# ── Health check - public, short-TTL cacheable (§7.2) ────────────────────────
-@app.get("/health", tags=["ops"])
-async def health():
-    return {"status": "ok"}
