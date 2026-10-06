@@ -1,9 +1,16 @@
-"""api/routers/auth.py - Authentication routes using HttpOnly, Secure cookies."""
+"""api/routers/auth.py - Endpoints for 2-Phase Auth & Progressive Onboarding Wizard."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Response, Depends, status
 from core.config import COOKIE_NAME, COOKIE_SECURE, COOKIE_SAMESITE, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-from schemas.auth import UserRegisterRequest, UserLoginRequest, UserResponse, AuthMessageResponse
+from schemas.auth import (
+    UserRegisterRequest,
+    UserLoginRequest,
+    GoogleAuthRequest,
+    UserOnboardingRequest,
+    UserResponse,
+    AuthMessageResponse,
+)
 from services import auth as svc
 from api.dependencies import get_current_user
 
@@ -16,9 +23,9 @@ def _set_auth_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
-        httponly=True,         # §Security: Block JavaScript access to prevent XSS token theft
-        secure=COOKIE_SECURE,  # §Security: Require HTTPS transport
-        samesite=COOKIE_SAMESITE, # §Security: Mitigate CSRF attacks
+        httponly=True,         # Block JavaScript access to prevent token theft
+        secure=COOKIE_SECURE,  # Require HTTPS transport
+        samesite=COOKIE_SAMESITE, # Mitigate CSRF
         max_age=max_age_seconds,
         path="/",
     )
@@ -39,26 +46,22 @@ def _clear_auth_cookie(response: Response) -> None:
 @router.post("/api/auth/register", status_code=status.HTTP_201_CREATED, response_model=AuthMessageResponse)
 async def register(body: UserRegisterRequest, response: Response) -> dict:
     """
-    Register a new user account.
-    Sets HttpOnly auth_token cookie upon successful registration.
+    Phase 1: Minimal Sign-Up (Email & Password only).
     """
     response.headers["Cache-Control"] = "no-store"
     user, token = await svc.register_user(
-        full_name=body.full_name,
         email=body.email,
         password=body.password,
-        role=body.role,
     )
     _set_auth_cookie(response, token)
-    return {"message": "Account created successfully", "user": user}
+    return {"message": "Account created. Please complete onboarding.", "user": user}
 
 
 @router.post("/auth/login", status_code=status.HTTP_200_OK, response_model=AuthMessageResponse)
 @router.post("/api/auth/login", status_code=status.HTTP_200_OK, response_model=AuthMessageResponse)
 async def login(body: UserLoginRequest, response: Response) -> dict:
     """
-    Authenticate user credentials.
-    Sets HttpOnly auth_token cookie upon successful login.
+    Phase 1: Minimal Login.
     """
     response.headers["Cache-Control"] = "no-store"
     user, token = await svc.authenticate_user(
@@ -67,6 +70,44 @@ async def login(body: UserLoginRequest, response: Response) -> dict:
     )
     _set_auth_cookie(response, token)
     return {"message": "Logged in successfully", "user": user}
+
+
+@router.post("/auth/google", status_code=status.HTTP_200_OK, response_model=AuthMessageResponse)
+@router.post("/api/auth/google", status_code=status.HTTP_200_OK, response_model=AuthMessageResponse)
+async def google_auth(body: GoogleAuthRequest, response: Response) -> dict:
+    """
+    Phase 1: Google OAuth Sign-In / Registration.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    user, token = await svc.authenticate_google_user(credential=body.credential)
+    _set_auth_cookie(response, token)
+    return {"message": "Google authentication successful", "user": user}
+
+
+@router.post("/auth/onboarding", status_code=status.HTTP_200_OK, response_model=AuthMessageResponse)
+@router.post("/api/auth/onboarding", status_code=status.HTTP_200_OK, response_model=AuthMessageResponse)
+async def complete_onboarding(
+    body: UserOnboardingRequest,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    """
+    Phase 2: Post-Signup Onboarding Wizard.
+    Updates step details (Personal, Identity Verification, Role selection)
+    and marks onboarding completed when finished.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    # Mark completed if role is provided or explicitly indicated
+    is_complete = bool(body.role or (body.full_name and body.id_number))
+    updated_user = await svc.update_onboarding(
+        user_id=current_user["id"],
+        full_name=body.full_name,
+        nationality=body.nationality,
+        id_number=body.id_number,
+        role=body.role,
+        is_complete=is_complete,
+    )
+    return {"message": "Onboarding step saved", "user": updated_user}
 
 
 @router.post("/auth/logout", status_code=status.HTTP_200_OK)
@@ -88,7 +129,6 @@ async def get_me(
 ) -> dict:
     """
     Retrieve current authenticated user profile.
-    Requires valid HttpOnly cookie session.
     """
     response.headers["Cache-Control"] = "no-store"
     return current_user

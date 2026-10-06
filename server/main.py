@@ -42,16 +42,23 @@ async def _ensure_schema() -> None:
                 ON waitlist (joined_at DESC);
 
             CREATE TABLE IF NOT EXISTS users (
-                id              SERIAL       PRIMARY KEY,
-                full_name       TEXT         NOT NULL,
-                email           TEXT         NOT NULL UNIQUE,
-                hashed_password TEXT         NOT NULL,
-                role            TEXT         NOT NULL DEFAULT 'user',
-                created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+                id                   SERIAL       PRIMARY KEY,
+                email                TEXT         NOT NULL UNIQUE,
+                hashed_password      TEXT         NULL,
+                full_name            TEXT         NULL,
+                nationality          TEXT         NULL,
+                id_number            TEXT         NULL,
+                role                 TEXT         NOT NULL DEFAULT 'user',
+                onboarding_completed BOOLEAN      NOT NULL DEFAULT FALSE,
+                google_id            TEXT         NULL UNIQUE,
+                created_at           TIMESTAMPTZ  NOT NULL DEFAULT NOW()
             );
 
             CREATE INDEX IF NOT EXISTS idx_users_email
                 ON users (email);
+
+            CREATE INDEX IF NOT EXISTS idx_users_google_id
+                ON users (google_id);
         """)
 
 

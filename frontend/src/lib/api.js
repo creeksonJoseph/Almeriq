@@ -1,16 +1,17 @@
 /**
- * lib/api.js - thin axios client with SWR cache + request dedup (§10).
+ * lib/api.js - thin axios client with SWR cache + request dedup & auth methods.
  *
- * Configured for production deployment at https://api.alimeriq.app
- * with fallback to local development server.
+ * Configured for production deployment with fallback to local development server.
+ * withCredentials: true ensures HttpOnly cookies are automatically attached.
  */
 import axios from "axios";
 
 // ── Base Axios Instance ───────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 export const apiClient = axios.create({
   baseURL: API_BASE,
+  withCredentials: true, // Crucial for sending/receiving HttpOnly cookies
   headers: {
     "Content-Type": "application/json",
   },
@@ -71,11 +72,7 @@ export function invalidate(key) {
   cache.delete(key);
 }
 
-// ── Waitlist POST Mutation ────────────────────────────────────────────────────
-/**
- * Submit waitlist registration using Axios
- * @param {{ full_name: string, email: string, role: string }} payload
- */
+// ── Waitlist Mutation ────────────────────────────────────────────────────────
 export async function postWaitlist(payload) {
   try {
     const response = await apiClient.post("/waitlist", payload);
@@ -85,5 +82,91 @@ export async function postWaitlist(payload) {
     const err = new Error(detail);
     err.status = error.response?.status;
     throw err;
+  }
+}
+
+// ── Authentication & Onboarding API Methods ─────────────────────────────────
+
+/**
+ * Phase 1: Low-Friction Gate Sign Up
+ */
+export async function registerApi({ email, password }) {
+  try {
+    const response = await apiClient.post("/auth/register", { email, password });
+    return response.data;
+  } catch (error) {
+    const detail = error.response?.data?.detail || error.message || "Failed to register";
+    const err = new Error(detail);
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+/**
+ * Phase 1: Low-Friction Gate Login
+ */
+export async function loginApi({ email, password }) {
+  try {
+    const response = await apiClient.post("/auth/login", { email, password });
+    return response.data;
+  } catch (error) {
+    const detail = error.response?.data?.detail || error.message || "Failed to log in";
+    const err = new Error(detail);
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+/**
+ * Phase 1: Google Social Authentication
+ */
+export async function googleAuthApi(credential) {
+  try {
+    const response = await apiClient.post("/auth/google", { credential });
+    return response.data;
+  } catch (error) {
+    const detail = error.response?.data?.detail || error.message || "Google authentication failed";
+    const err = new Error(detail);
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+/**
+ * Phase 2: Onboarding Wizard Step Update
+ */
+export async function onboardingApi(payload) {
+  try {
+    const response = await apiClient.post("/auth/onboarding", payload);
+    return response.data;
+  } catch (error) {
+    const detail = error.response?.data?.detail || error.message || "Failed to save onboarding data";
+    const err = new Error(detail);
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+/**
+ * Get Current Authenticated User Session
+ */
+export async function getMeApi() {
+  try {
+    const response = await apiClient.get("/auth/me");
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Log out user & clear cookie
+ */
+export async function logoutApi() {
+  try {
+    const response = await apiClient.post("/auth/logout");
+    return response.data;
+  } catch (error) {
+    return null;
   }
 }

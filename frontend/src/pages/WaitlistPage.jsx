@@ -772,17 +772,16 @@ function Footer() {
   );
 }
 
-export default function WaitlistPage() {
+export default function WaitlistPage({ onOpenAuth }) {
   return (
-    <div className="min-h-screen bg-[#0c0e13] text-white font-sans antialiased">
-      <Header />
-      <main id="main-content" tabIndex={-1} className="outline-none">
+    <div className="bg-[#0c0e13] text-white font-sans antialiased">
+      <div>
         <Hero />
         <EcosystemSection />
         <CapabilitiesSection />
         <GlobalImpactSection />
         <WaitlistFormSection />
-      </main>
+      </div>
       <Footer />
     </div>
   );
