@@ -127,8 +127,10 @@ async def join_waitlist(
     """
     try:
         await repo.create_entry(full_name, email, role)
-    except asyncpg.UniqueViolationError:
-        raise HTTPException(status_code=409, detail="This email is already on the waitlist.")
+    except Exception as exc:
+        if "unique" in str(exc).lower() or isinstance(exc, asyncpg.UniqueViolationError):
+            raise HTTPException(status_code=409, detail="This email is already on the waitlist.")
+        raise
 
     # §5: pass primitives, not ORM objects; task is idempotent, logs its own errors
     background_tasks.add_task(_send_confirmation_email, full_name, email, role)

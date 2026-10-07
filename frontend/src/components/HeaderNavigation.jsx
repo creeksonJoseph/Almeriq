@@ -44,7 +44,7 @@ export default function HeaderNavigation({
                 {path === "/dashboard" ? "View Platform" : "Go to Dashboard"}
               </button>
 
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] border border-white/10 text-xs text-gray-300">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] border border-white/10 text-xs text-white">
                 <span className="w-2 h-2 rounded-full bg-[#C9A15A]" />
                 <span className="font-semibold text-white truncate max-w-[120px]">
                   {currentUser.full_name || currentUser.email.split("@")[0]}
@@ -54,25 +54,13 @@ export default function HeaderNavigation({
               <button
                 type="button"
                 onClick={onLogout}
-                className="px-3 py-2 rounded-full text-xs text-gray-400 hover:text-white transition-colors"
+                className="px-3 py-2 rounded-full text-xs text-white hover:text-white/80 transition-colors"
               >
                 Sign Out
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              {/* Sign In Link */}
-              <Link
-                to="/login"
-                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border ${
-                  path === "/login"
-                    ? "bg-white/15 border-white/30 text-white"
-                    : "bg-transparent border-white/10 text-gray-300 hover:text-white hover:border-white/20"
-                }`}
-              >
-                Sign In
-              </Link>
-
               {/* Join Waitlist CTA Button */}
               <button
                 type="button"

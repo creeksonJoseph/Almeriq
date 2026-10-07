@@ -38,14 +38,14 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
                 <span className="px-3 py-1 rounded-full bg-[#3E8368]/15 border border-[#3E8368]/30 text-[10px] uppercase tracking-[0.2em] font-semibold text-[#52B788]">
                   Verified Account
                 </span>
-                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.2em] font-semibold text-gray-300 font-mono">
+                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.2em] font-semibold text-white font-mono">
                   {getRoleLabel(user?.role)}
                 </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-display font-semibold text-white tracking-tight">
                 Welcome, {user?.full_name || user?.email?.split("@")[0]}
               </h1>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-white mt-1">
                 Your workspace is active and your identity verification is recorded.
               </p>
             </div>
@@ -54,7 +54,7 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
               <button
                 type="button"
                 onClick={onRestartOnboarding}
-                className="px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 transition-all"
+                className="px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all"
               >
                 Edit Profile
               </button>
@@ -76,16 +76,16 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
         <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-2 backdrop-blur-xl">
           <div className="bg-[#12121A] rounded-[calc(2rem-0.375rem)] p-6 space-y-4 border border-white/5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-gray-400 uppercase tracking-widest">Account</span>
+              <span className="text-xs font-mono text-white uppercase tracking-widest">Account</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div>
-              <p className="text-xs text-gray-400">Email Address</p>
+              <p className="text-xs text-white">Email Address</p>
               <p className="text-sm font-semibold text-white font-mono truncate">{user?.email}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Member ID</p>
-              <p className="text-xs text-gray-300 font-mono">ALQ-USR-{String(user?.id).padStart(5, "0")}</p>
+              <p className="text-xs text-white">Member ID</p>
+              <p className="text-xs text-white font-mono">ALQ-USR-{String(user?.id).padStart(5, "0")}</p>
             </div>
           </div>
         </div>
@@ -94,16 +94,16 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
         <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-2 backdrop-blur-xl">
           <div className="bg-[#12121A] rounded-[calc(2rem-0.375rem)] p-6 space-y-4 border border-white/5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-gray-400 uppercase tracking-widest">Legal Identity</span>
+              <span className="text-xs font-mono text-white uppercase tracking-widest">Legal Identity</span>
               <span className="text-[#C9A15A] text-xs font-semibold">Step 2 Verified</span>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Nationality</p>
+              <p className="text-xs text-white">Nationality</p>
               <p className="text-sm font-semibold text-white">{user?.nationality || "Not specified"}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">ID / Passport Ref</p>
-              <p className="text-xs text-gray-300 font-mono">
+              <p className="text-xs text-white">ID / Passport Ref</p>
+              <p className="text-xs text-white font-mono">
                 {user?.id_number ? `•••• •••• ${user.id_number.slice(-4)}` : "Verified"}
               </p>
             </div>
@@ -114,15 +114,15 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
         <div className="bg-white/[0.02] border border-white/10 rounded-[2rem] p-2 backdrop-blur-xl">
           <div className="bg-[#12121A] rounded-[calc(2rem-0.375rem)] p-6 space-y-4 border border-white/5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-gray-400 uppercase tracking-widest">Platform Role</span>
+              <span className="text-xs font-mono text-white uppercase tracking-widest">Platform Role</span>
               <span className="text-xs font-semibold text-emerald-400">Active</span>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Primary Intent</p>
+              <p className="text-xs text-white">Primary Intent</p>
               <p className="text-sm font-semibold text-[#C9A15A]">{getRoleLabel(user?.role)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Onboarding Status</p>
+              <p className="text-xs text-white">Onboarding Status</p>
               <p className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
                 <span>✓ Phase 1 & 2 Completed</span>
               </p>
@@ -137,7 +137,7 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
           <h3 className="text-xl font-display font-semibold text-white">
             Ready to explore Alimeriq Infrastructure?
           </h3>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-white mt-1">
             Access founder toolkits, investor capital matching, and registered infrastructure nodes.
           </p>
         </div>

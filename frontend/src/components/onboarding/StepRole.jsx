@@ -40,7 +40,7 @@ export default function StepRole({
         <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
           What is your primary goal?
         </h2>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-white mt-1">
           Select your role so we can tailor your Alimeriq dashboard instantly.
         </p>
       </div>
@@ -62,11 +62,11 @@ export default function StepRole({
               <div className="space-y-1 pr-4">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm text-white">{r.title}</span>
-                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-white/5 text-gray-300 font-mono">
+                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-white/5 text-white font-mono">
                     {r.badge}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 leading-relaxed">{r.desc}</p>
+                <p className="text-xs text-white leading-relaxed">{r.desc}</p>
               </div>
 
               <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${

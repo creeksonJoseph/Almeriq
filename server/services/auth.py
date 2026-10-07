@@ -28,11 +28,13 @@ async def register_user(email: str, password: str) -> tuple[dict, str]:
             email=email,
             hashed_password=hashed_pw,
         )
-    except asyncpg.UniqueViolationError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists",
-        )
+    except Exception as exc:
+        if "unique" in str(exc).lower() or isinstance(exc, asyncpg.UniqueViolationError):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An account with this email already exists",
+            )
+        raise
 
     token = create_access_token(data={"sub": str(user["id"]), "email": user["email"]})
     return user, token

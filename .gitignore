@@ -28,8 +28,6 @@ ENV/
 
 # FastAPI specifics
 *.log
-alembic.ini
-migrations/versions/
 uploads/
 
 # uv / pip / poetry lockfile artifacts

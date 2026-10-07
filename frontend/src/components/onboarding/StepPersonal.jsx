@@ -15,14 +15,14 @@ export default function StepPersonal({
         <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
           Personal Details
         </h2>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-white mt-1">
           Let’s start by setting up your identity on Alimeriq.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-gray-300 mb-1.5">
+          <label className="block text-xs font-medium text-white mb-1.5">
             Full Legal Name
           </label>
           <input
@@ -36,7 +36,7 @@ export default function StepPersonal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-300 mb-1.5">
+          <label className="block text-xs font-medium text-white mb-1.5">
             Nationality / Primary Country
           </label>
           <select

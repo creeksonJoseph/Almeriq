@@ -40,7 +40,7 @@ export default function OnboardingWizard({ user, onComplete }) {
               <span className="px-3 py-1 rounded-full bg-[#C9A15A]/10 border border-[#C9A15A]/20 text-[10px] uppercase tracking-[0.2em] font-semibold text-[#C9A15A]">
                 Phase 2 • Step {step} of 3
               </span>
-              <span className="text-xs text-gray-400 font-mono">
+              <span className="text-xs text-white font-mono">
                 {step === 1 && "Personal Info"}
                 {step === 2 && "Identity Verification"}
                 {step === 3 && "Role & Intent"}

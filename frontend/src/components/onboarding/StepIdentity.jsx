@@ -13,14 +13,14 @@ export default function StepIdentity({
         <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
           Identity Verification
         </h2>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-white mt-1">
           Required for legal company registration and compliance.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-gray-300 mb-1.5">
+          <label className="block text-xs font-medium text-white mb-1.5">
             National ID Number / Passport Number
           </label>
           <input
@@ -44,7 +44,7 @@ export default function StepIdentity({
             <h4 className="text-xs font-semibold text-white mb-0.5">
               Why we ask for identity numbers
             </h4>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-xs text-white leading-relaxed">
               Required for legal company registration, compliance, and regulatory verification when executing infrastructure or investment contracts.
             </p>
           </div>

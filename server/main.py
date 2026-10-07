@@ -13,7 +13,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware  # §7.1
 
-from core.db import init_pool, close_pool, get_pool
+from sqlalchemy import text
+from core.db import engine, close_db
+from models import Base
 from api.routers.waitlist import router as waitlist_router
 from api.routers.health import router as health_router
 from api.routers.auth import router as auth_router
@@ -24,51 +26,29 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(messa
 # ── DB schema bootstrap ───────────────────────────────────────────────────────
 async def _ensure_schema() -> None:
     """
-    Create the waitlist and users tables if absent and ensure all required indexes exist.
-    In production, migrate via Alembic; this is the no-extra-infra fallback.
+    Fallback schema bootstrap for local dev.
+    In production, migrations run via Alembic in preDeployCommand.
     """
-    pool = get_pool()
-    async with pool.acquire() as conn:
-        await conn.execute("""
-            CREATE TABLE IF NOT EXISTS waitlist (
-                id          SERIAL       PRIMARY KEY,
-                full_name   TEXT         NOT NULL,
-                email       TEXT         NOT NULL UNIQUE,    -- B-tree index via UNIQUE
-                role        TEXT         NOT NULL,
-                joined_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_waitlist_joined_at
-                ON waitlist (joined_at DESC);
-
-            CREATE TABLE IF NOT EXISTS users (
-                id                   SERIAL       PRIMARY KEY,
-                email                TEXT         NOT NULL UNIQUE,
-                hashed_password      TEXT         NULL,
-                full_name            TEXT         NULL,
-                nationality          TEXT         NULL,
-                id_number            TEXT         NULL,
-                role                 TEXT         NOT NULL DEFAULT 'user',
-                onboarding_completed BOOLEAN      NOT NULL DEFAULT FALSE,
-                google_id            TEXT         NULL UNIQUE,
-                created_at           TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_users_email
-                ON users (email);
-
-            CREATE INDEX IF NOT EXISTS idx_users_google_id
-                ON users (google_id);
-        """)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(text("""
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS hashed_password TEXT NULL;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name TEXT NULL;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS nationality TEXT NULL;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS id_number TEXT NULL;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT NULL;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+        """))
 
 
 # ── Lifespan ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_pool()
     await _ensure_schema()
     yield
-    await close_pool()
+    await close_db()
 
 
 # ── App factory ───────────────────────────────────────────────────────────────

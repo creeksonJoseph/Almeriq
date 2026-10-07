@@ -98,7 +98,7 @@ export default function LoginPage() {
               <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
                 Sign In to Alimeriq
               </h2>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-white mt-1">
                 Enter your credentials to access your dashboard
               </p>
             </div>
@@ -114,7 +114,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                <label className="block text-xs font-medium text-white mb-1.5">
                   Email Address
                 </label>
                 <input
@@ -128,7 +128,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                <label className="block text-xs font-medium text-white mb-1.5">
                   Password
                 </label>
                 <input
@@ -159,7 +159,7 @@ export default function LoginPage() {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10" />
               </div>
-              <span className="relative px-3 bg-[#0D0D12] text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+              <span className="relative px-3 bg-[#0D0D12] text-[11px] font-medium text-white uppercase tracking-wider">
                 Or continue with
               </span>
             </div>
@@ -176,7 +176,7 @@ export default function LoginPage() {
             )}
 
             <div className="mt-6 pt-5 border-t border-white/5 text-center">
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-white">
                 Don't have an account yet?{" "}
                 <Link to="/signup" className="font-semibold text-[#C9A15A] hover:underline">
                   Create an Account →

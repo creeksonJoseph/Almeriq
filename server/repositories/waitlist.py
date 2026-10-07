@@ -1,40 +1,58 @@
-"""repositories/waitlist.py - all DB queries for the waitlist table. No business rules here."""
+"""repositories/waitlist.py - SQLAlchemy 2.0 repository for Waitlist model."""
 from __future__ import annotations
-import asyncpg
-from core.db import get_pool
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.db import async_session_factory
+from models.waitlist import Waitlist
 
 
-async def create_entry(full_name: str, email: str, role: str) -> None:
-    """
-    Insert a new waitlist row.
-    Raises asyncpg.UniqueViolationError if the email already exists.
+async def create_entry(
+    full_name: str,
+    email: str,
+    role: str,
+    session: AsyncSession | None = None,
+) -> Waitlist:
+    """Insert a new waitlist entry using SQLAlchemy 2.0."""
+    normalized_email = email.lower().strip()
+    entry = Waitlist(
+        full_name=full_name.strip(),
+        email=normalized_email,
+        role=role.strip(),
+    )
 
-    Index note (§2):
-      - email: already covered by UNIQUE constraint (B-tree index).
-      - joined_at: indexed for chronological queries / dashboard sorting.
-        Created in _ensure_schema() at startup.
-    """
-    pool = get_pool()
-    async with pool.acquire() as conn:
-        await conn.execute(
-            "INSERT INTO waitlist (full_name, email, role) VALUES ($1, $2, $3)",
-            full_name,
-            email,
-            role,
-        )
+    if session is not None:
+        session.add(entry)
+        await session.flush()
+        return entry
 
-
-async def email_exists(email: str) -> bool:
-    pool = get_pool()
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT 1 FROM waitlist WHERE email = $1 LIMIT 1", email
-        )
-        return row is not None
+    async with async_session_factory() as s:
+        s.add(entry)
+        await s.commit()
+        await s.refresh(entry)
+        return entry
 
 
-async def count_all() -> int:
-    """Aggregate in SQL - never load rows to len() them (§3)."""
-    pool = get_pool()
-    async with pool.acquire() as conn:
-        return await conn.fetchval("SELECT COUNT(*) FROM waitlist") or 0
+async def email_exists(email: str, session: AsyncSession | None = None) -> bool:
+    """Check if an email exists in the waitlist."""
+    stmt = select(func.count()).select_from(Waitlist).where(Waitlist.email == email.lower().strip())
+
+    if session is not None:
+        count = await session.scalar(stmt)
+        return bool(count and count > 0)
+
+    async with async_session_factory() as s:
+        count = await s.scalar(stmt)
+        return bool(count and count > 0)
+
+
+async def count_all(session: AsyncSession | None = None) -> int:
+    """Aggregate waitlist count in SQL."""
+    stmt = select(func.count()).select_from(Waitlist)
+
+    if session is not None:
+        count = await session.scalar(stmt)
+        return count or 0
+
+    async with async_session_factory() as s:
+        count = await s.scalar(stmt)
+        return count or 0
