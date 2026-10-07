@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserRegisterRequest(BaseModel):
@@ -10,11 +10,25 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr = Field(..., example="founder@example.com")
     password: str = Field(..., min_length=8, max_length=128, example="SecurePassword123!")
 
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
+
 
 class UserLoginRequest(BaseModel):
     """Phase 1: Low-Friction Login."""
     email: EmailStr = Field(..., example="founder@example.com")
     password: str = Field(..., min_length=1, max_length=128)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
 
 
 class GoogleAuthRequest(BaseModel):

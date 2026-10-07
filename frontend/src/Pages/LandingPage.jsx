@@ -186,11 +186,30 @@ function CapabilitiesSection() {
 }
 
 function WaitlistFormSection() {
-  const { form, touched, status, serverError, canSubmit, setField, setRole, blur, submit, reset } = useWaitlist();
+  const {
+    form,
+    touched,
+    status,
+    serverError,
+    existingUser,
+    canSubmit,
+    setField,
+    setRole,
+    blur,
+    submit,
+    updateSubmit,
+    startEdit,
+    reset,
+  } = useWaitlist();
   const resultRef = useRef(null);
 
   const handleSubmit = async (e) => {
     await submit(e);
+    setTimeout(() => resultRef.current?.focus(), 80);
+  };
+
+  const handleUpdate = async (e) => {
+    await updateSubmit(e);
     setTimeout(() => resultRef.current?.focus(), 80);
   };
 
@@ -199,10 +218,26 @@ function WaitlistFormSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10 lg:mb-12">
           <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-white font-medium mb-2.5 sm:mb-4">
-            Join the ALIMERIQ Network
+            {status === "edit_mode" || status === "updating"
+              ? "Update Your Details"
+              : status === "conflict_prompt"
+              ? "Already on Waitlist"
+              : status === "already_registered"
+              ? "Already Registered"
+              : status === "updated"
+              ? "Details Updated"
+              : "Join the ALIMERIQ Network"}
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-white leading-relaxed">
-            Select your role to join the waitlist.
+            {status === "edit_mode" || status === "updating"
+              ? `Update your role or full name for ${form.email}.`
+              : status === "conflict_prompt"
+              ? "This email is already registered with different details."
+              : status === "already_registered"
+              ? "Your email is already secured on the waitlist."
+              : status === "updated"
+              ? "Your waitlist profile has been refreshed."
+              : "Select your role to join the waitlist."}
           </p>
         </div>
 
@@ -223,19 +258,211 @@ function WaitlistFormSection() {
                 <h3 className="font-serif text-2xl sm:text-4xl text-white font-medium mb-2.5 sm:mb-3">
                   You're on the list, {form.full_name.split(" ")[0]}! 🎉
                 </h3>
+                <p className="text-xs sm:text-sm text-white max-w-md mx-auto mb-6 leading-relaxed">
+                  We'll notify you at <span className="text-[#f2ca50] font-semibold">{form.email}</span> the moment access opens for <span className="text-white font-semibold">{form.role}</span>.
+                </p>
                 <button
                   type="button"
                   onClick={reset}
-                  className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-white hover:text-[#f2ca50]"
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-white hover:text-[#f2ca50] transition-colors"
                 >
                   Register another team member
                 </button>
               </div>
             )}
+
+            {status === "already_registered" && (
+              <div className="text-center py-8 sm:py-12 px-2 sm:px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <CheckCircle2 size={28} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 className="font-serif text-2xl sm:text-4xl text-white font-medium mb-2.5 sm:mb-3">
+                  You're already registered!
+                </h3>
+                <p className="text-xs sm:text-sm text-white max-w-md mx-auto mb-6 leading-relaxed">
+                  We already have you on the ALIMERIQ waitlist as a <span className="text-[#f2ca50] font-semibold">{existingUser?.role || form.role}</span> with <span className="text-[#f2ca50] font-semibold">{existingUser?.email || form.email}</span>. We will reach out the moment early access opens.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40] text-xs font-bold uppercase tracking-wider transition-colors"
+                  >
+                    Change My Details
+                  </button>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-white hover:text-[#f2ca50] transition-colors"
+                  >
+                    Register Another Email
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {status === "conflict_prompt" && (
+              <div className="text-center py-8 sm:py-12 px-2 sm:px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <User size={26} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-3">
+                  Change your details?
+                </h3>
+                <p className="text-xs sm:text-sm text-white max-w-lg mx-auto mb-4 leading-relaxed">
+                  The email <span className="text-[#f2ca50] font-semibold">{existingUser?.email || form.email}</span> is already registered on the waitlist as:
+                </p>
+                <div className="inline-block bg-[#13141a] px-4 py-2.5 rounded-xl border border-[#22242c] mb-6 text-xs text-white">
+                  <span className="text-[#f2ca50] font-semibold">{existingUser?.full_name}</span> &middot; <span className="font-medium text-white">{existingUser?.role}</span>
+                </div>
+                <p className="text-xs sm:text-sm text-white max-w-md mx-auto mb-8 leading-relaxed">
+                  Would you like to change your details to <span className="text-[#f2ca50] font-semibold">{form.full_name}</span> (<span className="text-white font-semibold">{form.role}</span>)?
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40] text-xs font-bold uppercase tracking-wider transition-colors"
+                  >
+                    Yes, Change Details
+                  </button>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="w-full sm:w-auto px-6 py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-white hover:text-[#f2ca50] transition-colors"
+                  >
+                    Keep Existing Details
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {status === "updated" && (
+              <div className="text-center py-8 sm:py-12 px-2 sm:px-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <CheckCircle2 size={28} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 className="font-serif text-2xl sm:text-4xl text-white font-medium mb-2.5 sm:mb-3">
+                  Details Updated! 🎉
+                </h3>
+                <p className="text-xs sm:text-sm text-white max-w-md mx-auto mb-6 leading-relaxed">
+                  Your waitlist profile has been successfully updated to <span className="text-[#f2ca50] font-semibold">{form.role}</span> for <span className="text-[#f2ca50] font-semibold">{form.email}</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="px-6 py-3 rounded-full bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40] text-xs font-bold uppercase tracking-wider transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
+
+          {(status === "edit_mode" || status === "updating") && (
+            <form onSubmit={handleUpdate} noValidate className="space-y-6 sm:space-y-8">
+              {serverError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-200">
+                  {serverError}
+                </div>
+              )}
+              <div>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <label className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-widest text-white">
+                    01 / SELECT YOUR UPDATED ROLE *
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5">
+                  {ROLES.map((r) => {
+                    const Icon = r.icon;
+                    const pressed = form.role === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className={`group p-3.5 sm:p-4 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                          pressed
+                            ? "bg-[#181a22] border-[#f2ca50]"
+                            : "bg-[#13141a] border-[#22242c] text-white hover:border-[#383a44]"
+                        }`}
+                        onClick={() => setRole(r.id)}
+                      >
+                        <div className="flex items-center justify-between w-full mb-2">
+                          <Icon size={17} color={pressed ? C.gold : undefined} />
+                          {pressed && <CheckCircle2 size={14} className="text-[#f2ca50]" />}
+                        </div>
+                        <span className="font-serif text-sm font-semibold block" style={{ color: pressed ? C.gold : "#ffffff" }}>
+                          {r.id}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-white block mb-1.5">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Grace Kiptum"
+                    value={form.full_name}
+                    onChange={setField("full_name")}
+                    onBlur={blur("full_name")}
+                    className="w-full bg-[#13141a] text-white px-4 py-3 rounded-xl border border-[#22242c] focus:border-[#f2ca50] outline-none text-xs sm:text-sm transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-white block">
+                      Email Address (Registered)
+                    </label>
+                    <Lock size={12} className="text-white/60" />
+                  </div>
+                  <input
+                    type="email"
+                    disabled
+                    value={form.email}
+                    className="w-full bg-[#13141a]/60 text-white/70 px-4 py-3 rounded-xl border border-[#22242c] cursor-not-allowed outline-none text-xs sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <button
+                  type="submit"
+                  disabled={!canSubmit || status === "updating"}
+                  className={`w-full sm:w-auto px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                    canSubmit && status !== "updating"
+                      ? "bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40]"
+                      : "bg-[#22242c] text-white/50"
+                  }`}
+                >
+                  {status === "updating" ? "Updating details..." : "Save Updated Details"}
+                </button>
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="w-full sm:w-auto px-5 py-3 rounded-full border border-[#282a33] text-xs font-semibold uppercase tracking-wider text-white hover:text-[#f2ca50] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
 
           {(status === "idle" || status === "loading" || status === "error") && (
             <form onSubmit={handleSubmit} noValidate className="space-y-6 sm:space-y-8">
+              {serverError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-200">
+                  {serverError}
+                </div>
+              )}
               <div>
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <label className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-widest text-white">
@@ -294,6 +521,9 @@ function WaitlistFormSection() {
                   <input
                     type="email"
                     required
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     placeholder="you@company.com"
                     value={form.email}
                     onChange={setField("email")}

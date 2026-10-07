@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import httpx
 from fastapi import HTTPException, status
-import asyncpg
+from sqlalchemy.exc import IntegrityError
 
 from core.config import GOOGLE_CLIENT_ID
 from core.security import hash_password, verify_password, create_access_token
@@ -29,7 +29,7 @@ async def register_user(email: str, password: str) -> tuple[dict, str]:
             hashed_password=hashed_pw,
         )
     except Exception as exc:
-        if "unique" in str(exc).lower() or isinstance(exc, asyncpg.UniqueViolationError):
+        if isinstance(exc, IntegrityError) or "unique" in str(exc).lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="An account with this email already exists",

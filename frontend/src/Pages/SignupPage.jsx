@@ -66,7 +66,8 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    const cleanEmail = email.trim().toLowerCase().replace(/\s+/g, "");
+    if (!cleanEmail || !password) {
       setError("Please provide both email and password.");
       return;
     }
@@ -75,7 +76,7 @@ export default function SignupPage() {
     setError("");
 
     try {
-      await register(email, password);
+      await register(cleanEmail, password);
       navigate("/");
     } catch (err) {
       setError(err.message || "Failed to create account.");
@@ -121,8 +122,11 @@ export default function SignupPage() {
                 <input
                   type="email"
                   required
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.toLowerCase().replace(/\s+/g, ""))}
                   placeholder="name@company.com"
                   className="alq-input"
                 />

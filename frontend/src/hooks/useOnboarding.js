@@ -17,48 +17,53 @@ export function useOnboarding(user, onComplete) {
 
   const nextStep1 = useCallback(async (e) => {
     e?.preventDefault();
-    if (!fullName.trim()) {
+    if (loading) return;
+    const cleanName = fullName.trim().replace(/\s+/g, " ");
+    if (!cleanName || cleanName.length < 2) {
       setError("Please enter your full legal name.");
       return;
     }
     setError("");
     setLoading(true);
     try {
-      await onboardingApi({ full_name: fullName, nationality });
+      await onboardingApi({ full_name: cleanName, nationality });
       setStep(2);
     } catch (err) {
       setError(err.message || "Failed to save personal details.");
     } finally {
       setLoading(false);
     }
-  }, [fullName, nationality]);
+  }, [fullName, nationality, loading]);
 
   const nextStep2 = useCallback(async (e) => {
     e?.preventDefault();
-    if (!idNumber.trim()) {
+    if (loading) return;
+    const cleanId = idNumber.trim();
+    if (!cleanId) {
       setError("Please enter your ID or Passport number for verification.");
       return;
     }
     setError("");
     setLoading(true);
     try {
-      await onboardingApi({ id_number: idNumber });
+      await onboardingApi({ id_number: cleanId });
       setStep(3);
     } catch (err) {
       setError(err.message || "Failed to save identity verification.");
     } finally {
       setLoading(false);
     }
-  }, [idNumber]);
+  }, [idNumber, loading]);
 
   const completeSetup = useCallback(async () => {
+    if (loading) return;
     setLoading(true);
     setError("");
     try {
       const res = await onboardingApi({
-        full_name: fullName,
+        full_name: fullName.trim().replace(/\s+/g, " "),
         nationality,
-        id_number: idNumber,
+        id_number: idNumber.trim(),
         role,
       });
       if (onComplete) {
@@ -69,7 +74,7 @@ export function useOnboarding(user, onComplete) {
     } finally {
       setLoading(false);
     }
-  }, [fullName, nationality, idNumber, role, onComplete]);
+  }, [fullName, nationality, idNumber, role, onComplete, loading]);
 
   return {
     step,

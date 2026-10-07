@@ -7,7 +7,7 @@ handle; the service schedules the email task and returns immediately.
 from __future__ import annotations
 import logging
 
-import asyncpg
+from sqlalchemy.exc import IntegrityError
 import resend
 from fastapi import BackgroundTasks, HTTPException
 
@@ -112,6 +112,20 @@ def _send_confirmation_email(full_name: str, email: str, role: str) -> None:
         logger.exception("Failed to send confirmation email to %s", email)
 
 
+def _send_update_email(full_name: str, email: str, role: str) -> None:
+    """Runs after details are updated."""
+    try:
+        resend.Emails.send({
+            "from": f"ALIMERIQ <waitlist@{DOMAIN}>",
+            "to": [email],
+            "subject": "Your ALIMERIQ waitlist details have been updated 🎉",
+            "html": _build_email_html(full_name, email, role),
+        })
+        logger.info("Update confirmation email sent to %s", email)
+    except Exception:
+        logger.exception("Failed to send update email to %s", email)
+
+
 # ── public service API ────────────────────────────────────────────────────────
 async def join_waitlist(
     full_name: str,
@@ -121,18 +135,103 @@ async def join_waitlist(
 ) -> dict:
     """
     §14 Canonical create flow:
-      1. Persist to DB
-      2. Schedule email in background (not blocking the 201)
-      3. Return immediately
+      1. Check existing record
+      2. If duplicate, distinguish same details vs different details
+      3. Persist to DB if new
+      4. Schedule email in background
+      5. Return immediately
     """
+    normalized_email = email.lower().strip()
+    clean_name = " ".join(full_name.strip().split())
+    clean_role = role.strip()
+
+    existing = await repo.get_by_email(normalized_email)
+    if existing:
+        is_same = (
+            existing.full_name.strip().lower() == clean_name.lower()
+            and existing.role.strip().lower() == clean_role.lower()
+        )
+        if is_same:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "ALREADY_REGISTERED_SAME",
+                    "message": "You are already registered on the waitlist.",
+                    "existing": {
+                        "full_name": existing.full_name,
+                        "email": existing.email,
+                        "role": existing.role,
+                    },
+                },
+            )
+        else:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "ALREADY_REGISTERED_DIFFERENT",
+                    "message": f"This email is already registered as {existing.role} ({existing.full_name}).",
+                    "existing": {
+                        "full_name": existing.full_name,
+                        "email": existing.email,
+                        "role": existing.role,
+                    },
+                },
+            )
+
     try:
-        await repo.create_entry(full_name, email, role)
+        await repo.create_entry(clean_name, normalized_email, clean_role)
     except Exception as exc:
-        if "unique" in str(exc).lower() or isinstance(exc, asyncpg.UniqueViolationError):
+        if isinstance(exc, IntegrityError) or "unique" in str(exc).lower():
+            existing = await repo.get_by_email(normalized_email)
+            if existing:
+                is_same = (
+                    existing.full_name.strip().lower() == clean_name.lower()
+                    and existing.role.strip().lower() == clean_role.lower()
+                )
+                code = "ALREADY_REGISTERED_SAME" if is_same else "ALREADY_REGISTERED_DIFFERENT"
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "code": code,
+                        "message": "You are already registered on the waitlist." if is_same else f"This email is already registered as {existing.role} ({existing.full_name}).",
+                        "existing": {
+                            "full_name": existing.full_name,
+                            "email": existing.email,
+                            "role": existing.role,
+                        },
+                    },
+                )
             raise HTTPException(status_code=409, detail="This email is already on the waitlist.")
         raise
 
     # §5: pass primitives, not ORM objects; task is idempotent, logs its own errors
-    background_tasks.add_task(_send_confirmation_email, full_name, email, role)
+    background_tasks.add_task(_send_confirmation_email, clean_name, normalized_email, clean_role)
 
     return {"message": "Successfully joined the waitlist!"}
+
+
+async def update_waitlist(
+    full_name: str,
+    email: str,
+    role: str,
+    background_tasks: BackgroundTasks,
+) -> dict:
+    """Update existing waitlist record details."""
+    normalized_email = email.lower().strip()
+    clean_name = " ".join(full_name.strip().split())
+    clean_role = role.strip()
+
+    existing = await repo.get_by_email(normalized_email)
+    if not existing:
+        raise HTTPException(status_code=404, detail="No waitlist entry found with this email.")
+
+    updated = await repo.update_entry(
+        email=normalized_email,
+        full_name=clean_name,
+        role=clean_role,
+    )
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to update waitlist entry.")
+
+    background_tasks.add_task(_send_update_email, clean_name, normalized_email, clean_role)
+    return {"message": "Waitlist details successfully updated!"}

@@ -24,11 +24,10 @@ class User(Base):
         nullable=False,
     )
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, include_sensitive: bool = False) -> dict:
+        data = {
             "id": self.id,
             "email": self.email,
-            "hashed_password": self.hashed_password,
             "full_name": self.full_name,
             "nationality": self.nationality,
             "id_number": self.id_number,
@@ -37,3 +36,6 @@ class User(Base):
             "google_id": self.google_id,
             "created_at": self.created_at,
         }
+        if include_sensitive:
+            data["hashed_password"] = self.hashed_password
+        return data

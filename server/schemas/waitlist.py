@@ -16,10 +16,17 @@ class WaitlistJoinRequest(BaseModel):
     email: EmailStr
     role: str
 
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
+
     @field_validator("full_name")
     @classmethod
     def name_not_empty(cls, v: str) -> str:
-        v = v.strip()
+        v = " ".join(v.strip().split())
         if len(v) < 2:
             raise ValueError("full_name must be at least 2 characters")
         return v
@@ -27,9 +34,10 @@ class WaitlistJoinRequest(BaseModel):
     @field_validator("role")
     @classmethod
     def role_allowed(cls, v: str) -> str:
-        if v not in VALID_ROLES:
+        cleaned = v.strip() if isinstance(v, str) else v
+        if cleaned not in VALID_ROLES:
             raise ValueError(f"role must be one of: {', '.join(sorted(VALID_ROLES))}")
-        return v
+        return cleaned
 
 
 class WaitlistJoinResponse(BaseModel):

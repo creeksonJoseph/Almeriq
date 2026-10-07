@@ -65,7 +65,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    const cleanEmail = email.trim().toLowerCase().replace(/\s+/g, "");
+    if (!cleanEmail || !password) {
       setError("Please provide both email and password.");
       return;
     }
@@ -74,7 +75,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const user = await login(email, password);
+      const user = await login(cleanEmail, password);
       navigate(user.onboarding_completed ? "/dashboard" : "/");
     } catch (err) {
       setError(err.message || "Invalid email or password.");
@@ -120,8 +121,11 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.toLowerCase().replace(/\s+/g, ""))}
                   placeholder="name@company.com"
                   className="alq-input"
                 />

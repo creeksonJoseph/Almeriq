@@ -64,12 +64,15 @@ app.add_middleware(GZipMiddleware, minimum_size=500)
 
 from core.config import ALLOWED_ORIGINS
 
-# CORS - dynamic allowed origins from environment (defaults to allow all or specified domains)
+is_wildcard = "*" in ALLOWED_ORIGINS or ALLOWED_ORIGINS == ["*"]
+
+# CORS - supports credentials safely even if wildcard origin is provided in config
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS if ALLOWED_ORIGINS != ["*"] else ["*"],
+    allow_origins=[] if is_wildcard else ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https?://.*" if is_wildcard else None,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

@@ -29,3 +29,25 @@ async def join_waitlist(
         role=body.role,
         background_tasks=background_tasks,
     )
+
+
+@router.put("", status_code=200, response_model=WaitlistJoinResponse)
+async def update_waitlist(
+    body: WaitlistJoinRequest,
+    background_tasks: BackgroundTasks,
+    response: Response,
+) -> dict:
+    """
+    PUT /waitlist
+    - 200: successfully updated
+    - 404: email not found
+    - 422: validation error (pydantic)
+    """
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.update_waitlist(
+        full_name=body.full_name,
+        email=body.email,
+        role=body.role,
+        background_tasks=background_tasks,
+    )
+

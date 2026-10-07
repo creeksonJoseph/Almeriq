@@ -23,6 +23,22 @@ const cache = new Map();      // key → { data, etag, ts }
 const inFlight = new Map();   // key → Promise (dedup)
 const TTL = 60_000;           // 60 s cache TTL
 
+// ── Error Message Parser ────────────────────────────────────────────────────
+function extractErrorMessage(error, defaultMsg = "An error occurred") {
+  const detail = error.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((d) => d.msg || d.message || JSON.stringify(d)).join(", ");
+  }
+  if (detail && typeof detail === "object") {
+    if (detail.message) return detail.message;
+    if (detail.error) return detail.error;
+    try { return JSON.stringify(detail); } catch { /* ignore */ }
+  }
+  if (error.response?.data?.message) return error.response.data.message;
+  return error.message || defaultMsg;
+}
+
 /**
  * Fetch helper using Axios with ETag / 304 support
  */
@@ -41,8 +57,9 @@ export async function apiFetch(url, { etag } = {}) {
     const newEtag = response.headers["etag"] || undefined;
     return { data: response.data, etag: newEtag };
   } catch (error) {
-    const err = new Error(error.response?.data?.detail || error.message || `HTTP Error`);
+    const err = new Error(extractErrorMessage(error, "HTTP Error"));
     err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }
@@ -78,9 +95,21 @@ export async function postWaitlist(payload) {
     const response = await apiClient.post("/waitlist", payload);
     return response.data;
   } catch (error) {
-    const detail = error.response?.data?.detail || error.message || "Failed to submit waitlist registration";
-    const err = new Error(detail);
+    const err = new Error(extractErrorMessage(error, "Failed to submit waitlist registration"));
     err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
+    throw err;
+  }
+}
+
+export async function putWaitlist(payload) {
+  try {
+    const response = await apiClient.put("/waitlist", payload);
+    return response.data;
+  } catch (error) {
+    const err = new Error(extractErrorMessage(error, "Failed to update waitlist details"));
+    err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }
@@ -95,9 +124,9 @@ export async function registerApi({ email, password }) {
     const response = await apiClient.post("/auth/register", { email, password });
     return response.data;
   } catch (error) {
-    const detail = error.response?.data?.detail || error.message || "Failed to register";
-    const err = new Error(detail);
+    const err = new Error(extractErrorMessage(error, "Failed to register"));
     err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }
@@ -110,9 +139,9 @@ export async function loginApi({ email, password }) {
     const response = await apiClient.post("/auth/login", { email, password });
     return response.data;
   } catch (error) {
-    const detail = error.response?.data?.detail || error.message || "Failed to log in";
-    const err = new Error(detail);
+    const err = new Error(extractErrorMessage(error, "Failed to log in"));
     err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }
@@ -125,9 +154,9 @@ export async function googleAuthApi(credential) {
     const response = await apiClient.post("/auth/google", { credential });
     return response.data;
   } catch (error) {
-    const detail = error.response?.data?.detail || error.message || "Google authentication failed";
-    const err = new Error(detail);
+    const err = new Error(extractErrorMessage(error, "Google authentication failed"));
     err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }
@@ -140,9 +169,9 @@ export async function onboardingApi(payload) {
     const response = await apiClient.post("/auth/onboarding", payload);
     return response.data;
   } catch (error) {
-    const detail = error.response?.data?.detail || error.message || "Failed to save onboarding data";
-    const err = new Error(detail);
+    const err = new Error(extractErrorMessage(error, "Failed to save onboarding data"));
     err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }

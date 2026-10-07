@@ -36,13 +36,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
-    const res = await loginApi({ email, password });
+    const cleanEmail = typeof email === "string" ? email.trim().toLowerCase().replace(/\s+/g, "") : email;
+    const res = await loginApi({ email: cleanEmail, password });
     setUser(res.user);
     return res.user;
   }, []);
 
   const register = useCallback(async (email, password) => {
-    const res = await registerApi({ email, password });
+    const cleanEmail = typeof email === "string" ? email.trim().toLowerCase().replace(/\s+/g, "") : email;
+    const res = await registerApi({ email: cleanEmail, password });
     setUser(res.user);
     return res.user;
   }, []);

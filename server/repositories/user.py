@@ -36,17 +36,21 @@ async def create_user(
         return user.to_dict()
 
 
-async def get_user_by_email(email: str, session: AsyncSession | None = None) -> dict | None:
-    """Fetch user record by email."""
-    stmt = select(User).where(User.email == email.lower().strip()).limit(1)
+async def get_user_by_email(
+    email: str,
+    include_sensitive: bool = True,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    """Fetch user record by email (case-insensitive)."""
+    stmt = select(User).where(func.lower(User.email) == email.lower().strip()).limit(1)
 
     if session is not None:
         user = await session.scalar(stmt)
-        return user.to_dict() if user else None
+        return user.to_dict(include_sensitive=include_sensitive) if user else None
 
     async with async_session_factory() as s:
         user = await s.scalar(stmt)
-        return user.to_dict() if user else None
+        return user.to_dict(include_sensitive=include_sensitive) if user else None
 
 
 async def get_user_by_google_id(google_id: str, session: AsyncSession | None = None) -> dict | None:
@@ -76,8 +80,8 @@ async def get_user_by_id(user_id: int, session: AsyncSession | None = None) -> d
 
 
 async def email_exists(email: str, session: AsyncSession | None = None) -> bool:
-    """Check if an email is already registered."""
-    stmt = select(func.count()).select_from(User).where(User.email == email.lower().strip())
+    """Check if an email is already registered (case-insensitive)."""
+    stmt = select(func.count()).select_from(User).where(func.lower(User.email) == email.lower().strip())
 
     if session is not None:
         count = await session.scalar(stmt)
