@@ -18,47 +18,13 @@ load_dotenv(dotenv_path=env_path)
 # access to the values within the .ini file in use.
 config = context.config
 
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+import re
 
-VALID_ASYNCPG_QUERY_PARAMS = {
-    "ssl",
-    "timeout",
-    "command_timeout",
-    "statement_cache_size",
-    "max_cached_statement_lifetime",
-    "max_cacheable_statement_size",
-    "server_settings",
-}
-
-# Dynamically read and adapt DATABASE_URL for asyncpg driver
+# Dynamically read and adapt DATABASE_URL for psycopg driver (Neon DB compatible)
 raw_url = os.environ.get("DATABASE_URL", "")
 if raw_url:
-    if raw_url.startswith("postgres://"):
-        raw_url = raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
-    elif raw_url.startswith("postgresql://") and not raw_url.startswith("postgresql+asyncpg://"):
-        raw_url = raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-
-    parsed = urlparse(raw_url)
-    if parsed.query:
-        qs = parse_qs(parsed.query)
-        filtered: dict[str, list[str]] = {}
-        if "sslmode" in qs and "ssl" not in qs:
-            mode = qs["sslmode"][0].lower()
-            if mode in ("disable", "allow"):
-                filtered["ssl"] = ["disable"]
-            else:
-                filtered["ssl"] = ["require"]
-        elif "ssl" in qs:
-            filtered["ssl"] = qs["ssl"]
-
-        for key, val in qs.items():
-            if key in VALID_ASYNCPG_QUERY_PARAMS and key not in filtered:
-                filtered[key] = val
-
-        new_query = urlencode(filtered, doseq=True)
-        raw_url = urlunparse(parsed._replace(query=new_query))
-
-    config.set_main_option("sqlalchemy.url", raw_url.replace("%", "%%"))
+    psycopg_url = re.sub(r"^(postgres|postgresql)(\+[^:]+)?:", "postgresql+psycopg:", raw_url)
+    config.set_main_option("sqlalchemy.url", psycopg_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
