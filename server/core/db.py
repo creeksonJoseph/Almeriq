@@ -54,3 +54,7 @@ async def init_pool() -> None:
 
 async def close_pool() -> None:
     await close_db()
+
+
+def get_pool():
+    return None

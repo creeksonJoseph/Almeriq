@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from fastapi import APIRouter, Response
-from core.db import get_pool
+from sqlalchemy import text
+from core.db import engine
 
 router = APIRouter(tags=["ops"])
 
@@ -12,9 +13,8 @@ async def _get_health_status() -> dict:
     timestamp = datetime.now(timezone.utc).isoformat()
     db_status = "unknown"
     try:
-        pool = get_pool()
-        async with pool.acquire() as conn:
-            await conn.fetchval("SELECT 1")
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception as err:
         db_status = f"unreachable: {str(err)}"
