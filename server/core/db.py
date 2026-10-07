@@ -1,6 +1,7 @@
 """core/db.py - SQLAlchemy 2.0 AsyncEngine & async_sessionmaker."""
 from __future__ import annotations
 from typing import AsyncGenerator
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -8,12 +9,31 @@ from sqlalchemy.ext.asyncio import (
 )
 from .config import DATABASE_URL
 
-# Normalize URL for asyncpg dialect
-_db_url = DATABASE_URL
-if _db_url.startswith("postgres://"):
-    _db_url = _db_url.replace("postgres://", "postgresql+asyncpg://", 1)
-elif _db_url.startswith("postgresql://") and not _db_url.startswith("postgresql+asyncpg://"):
-    _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+def _normalize_database_url(url: str) -> str:
+    """
+    Normalize DATABASE_URL for asyncpg:
+    1. Converts postgres:// or postgresql:// scheme to postgresql+asyncpg://
+    2. Converts sslmode parameter to ssl (asyncpg rejects sslmode).
+    """
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+    parsed = urlparse(url)
+    if parsed.query:
+        qs = parse_qs(parsed.query)
+        if "sslmode" in qs:
+            mode = qs.pop("sslmode")[0]
+            qs["ssl"] = [mode]
+        new_query = urlencode(qs, doseq=True)
+        url = urlunparse(parsed._replace(query=new_query))
+
+    return url
+
+
+_db_url = _normalize_database_url(DATABASE_URL)
 
 engine = create_async_engine(
     _db_url,
