@@ -20,6 +20,16 @@ config = context.config
 
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
+VALID_ASYNCPG_QUERY_PARAMS = {
+    "ssl",
+    "timeout",
+    "command_timeout",
+    "statement_cache_size",
+    "max_cached_statement_lifetime",
+    "max_cacheable_statement_size",
+    "server_settings",
+}
+
 # Dynamically read and adapt DATABASE_URL for asyncpg driver
 raw_url = os.environ.get("DATABASE_URL", "")
 if raw_url:
@@ -31,10 +41,21 @@ if raw_url:
     parsed = urlparse(raw_url)
     if parsed.query:
         qs = parse_qs(parsed.query)
-        if "sslmode" in qs:
-            mode = qs.pop("sslmode")[0]
-            qs["ssl"] = [mode]
-        new_query = urlencode(qs, doseq=True)
+        filtered: dict[str, list[str]] = {}
+        if "sslmode" in qs and "ssl" not in qs:
+            mode = qs["sslmode"][0].lower()
+            if mode in ("disable", "allow"):
+                filtered["ssl"] = ["disable"]
+            else:
+                filtered["ssl"] = ["require"]
+        elif "ssl" in qs:
+            filtered["ssl"] = qs["ssl"]
+
+        for key, val in qs.items():
+            if key in VALID_ASYNCPG_QUERY_PARAMS and key not in filtered:
+                filtered[key] = val
+
+        new_query = urlencode(filtered, doseq=True)
         raw_url = urlunparse(parsed._replace(query=new_query))
 
     config.set_main_option("sqlalchemy.url", raw_url.replace("%", "%%"))
