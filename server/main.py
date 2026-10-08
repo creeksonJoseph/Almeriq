@@ -40,6 +40,7 @@ async def _ensure_schema() -> None:
             ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT NULL;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+            ALTER TABLE users ALTER COLUMN hashed_password DROP NOT NULL;
         """))
 
 

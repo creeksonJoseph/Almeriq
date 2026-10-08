@@ -30,10 +30,11 @@ export default function LoginPage() {
 
         const btnDiv = document.getElementById("googleSignInBtnPage");
         if (btnDiv) {
+          const width = Math.max(240, Math.floor(btnDiv.getBoundingClientRect().width));
           window.google.accounts.id.renderButton(btnDiv, {
             theme: "outline",
             size: "large",
-            width: "100%",
+            width,
             shape: "pill",
             text: "signin_with",
           });

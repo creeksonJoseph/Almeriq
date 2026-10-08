@@ -114,17 +114,34 @@ async def authenticate_google_user(credential: str) -> tuple[dict, str]:
         # Note: log warning or enforce client_id match
         pass
 
-    # Check if user already exists by google_id or email
     user = await user_repo.get_user_by_google_id(google_sub)
     if not user:
         user = await user_repo.get_user_by_email(email)
-        if not user:
-            # Create user with Google info
-            user = await user_repo.create_user(
-                email=email,
-                full_name=name,
-                google_id=google_sub,
-            )
+        if user:
+            if not user.get("google_id"):
+                linked = await user_repo.link_google_id(
+                    user["id"], google_sub, full_name=name
+                )
+                user = linked or user
+        else:
+            try:
+                user = await user_repo.create_user(
+                    email=email,
+                    full_name=name,
+                    google_id=google_sub,
+                )
+            except IntegrityError:
+                user = await user_repo.get_user_by_email(email)
+                if not user:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Could not create account. Please try again.",
+                    )
+                if not user.get("google_id"):
+                    linked = await user_repo.link_google_id(
+                        user["id"], google_sub, full_name=name
+                    )
+                    user = linked or user
 
     token = create_access_token(data={"sub": str(user["id"]), "email": user["email"]})
     user_payload = {

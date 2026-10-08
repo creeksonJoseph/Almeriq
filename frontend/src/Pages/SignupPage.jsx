@@ -31,10 +31,11 @@ export default function SignupPage() {
 
         const btnDiv = document.getElementById("googleSignInBtnSignupPage");
         if (btnDiv) {
+          const width = Math.max(240, Math.floor(btnDiv.getBoundingClientRect().width));
           window.google.accounts.id.renderButton(btnDiv, {
             theme: "outline",
             size: "large",
-            width: "100%",
+            width,
             shape: "pill",
             text: "signup_with",
           });

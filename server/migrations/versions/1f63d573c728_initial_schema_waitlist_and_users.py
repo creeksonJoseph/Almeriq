@@ -58,6 +58,7 @@ def upgrade() -> None:
         ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT NULL;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+        ALTER TABLE users ALTER COLUMN hashed_password DROP NOT NULL;
 
         CREATE INDEX IF NOT EXISTS idx_users_email
             ON users (email);

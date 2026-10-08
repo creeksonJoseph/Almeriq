@@ -14,4 +14,4 @@ services:
       - key: DOMAIN
         value: alimeriq.app
       - key: ALLOWED_ORIGINS
-        value: "*"
+        value: https://alimeriq.app,https://www.alimeriq.app,http://localhost:5173,http://localhost:5174

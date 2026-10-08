@@ -53,6 +53,30 @@ async def get_user_by_email(
         return user.to_dict(include_sensitive=include_sensitive) if user else None
 
 
+async def link_google_id(
+    user_id: int,
+    google_id: str,
+    full_name: str | None = None,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    """Attach Google account to an existing email/password user."""
+    values: dict = {"google_id": google_id}
+    if full_name is not None:
+        values["full_name"] = full_name
+    stmt = update(User).where(User.id == user_id).values(**values).returning(User)
+
+    if session is not None:
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        return user.to_dict() if user else None
+
+    async with async_session_factory() as s:
+        res = await s.execute(stmt)
+        await s.commit()
+        user = res.scalar_one_or_none()
+        return user.to_dict() if user else None
+
+
 async def get_user_by_google_id(google_id: str, session: AsyncSession | None = None) -> dict | None:
     """Fetch user record by Google ID."""
     stmt = select(User).where(User.google_id == google_id).limit(1)
