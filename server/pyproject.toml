@@ -12,4 +12,5 @@ dependencies = [
     "pyjwt>=2.15.1",
     "python-dotenv>=1.2.4",
     "resend>=2.49.1",
+    "upstash-redis>=1.1.0",
 ]
