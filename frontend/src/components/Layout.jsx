@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const isAuthPage = ["/login", "/signup", "/register", "/forgot-password", "/reset-password"].includes(
+  const isAuthPage = ["/login", "/signup", "/register", "/forgot-password"].includes(
     location.pathname,
   );
 

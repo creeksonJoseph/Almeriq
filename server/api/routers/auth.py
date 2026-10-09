@@ -171,6 +171,6 @@ async def forgot_password(body: ForgotPasswordRequest, background_tasks: Backgro
 @router.post("/auth/reset-password", status_code=status.HTTP_200_OK)
 @router.post("/api/auth/reset-password", status_code=status.HTTP_200_OK)
 async def reset_password(body: ResetPasswordRequest) -> dict:
-    """Consume a reset token and update the password."""
-    await svc.confirm_password_reset(body.token, body.password)
+    """Verify OTP and update the password."""
+    await svc.confirm_password_reset(body.email, body.otp, body.new_password)
     return {"message": "Password updated successfully. You can now log in."}

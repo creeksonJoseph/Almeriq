@@ -247,9 +247,9 @@ export async function forgotPasswordApi(email) {
   }
 }
 
-export async function resetPasswordApi(token, password) {
+export async function resetPasswordApi(email, otp, newPassword) {
   try {
-    const response = await apiClient.post("/auth/reset-password", { token, password });
+    const response = await apiClient.post("/auth/reset-password", { email, otp, new_password: newPassword });
     return response.data;
   } catch (error) {
     const err = new Error(extractErrorMessage(error, "Failed to reset password"));

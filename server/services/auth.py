@@ -10,7 +10,7 @@ import resend
 from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
-from core.config import DOMAIN, GOOGLE_CLIENT_ID, RESEND_API_KEY
+from core.config import GOOGLE_CLIENT_ID, RESEND_API_KEY
 from core.redis_client import cache_delete, cache_get, cache_set
 from core.security import create_access_token, hash_password, verify_password
 from repositories import user as user_repo
@@ -272,37 +272,34 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
 
 async def request_password_reset(email: str, background_tasks: BackgroundTasks) -> None:
     """
-    Generate a reset token, store it in Redis, and schedule the email as a
-    background task (§5). Always returns without error to avoid leaking
-    whether the email exists.
+    Send a 6-digit OTP to the email for password reset.
+    Silently succeeds if account doesn't exist to avoid leaking info.
     """
     user = await user_repo.get_user_by_email(email)
     if not user or not user.get("hashed_password"):
-        return  # Silently succeed — don't reveal account existence
+        return
 
-    token = secrets.token_urlsafe(32)
-    cache_set(f"pwd_reset:{token}", str(user["id"]), ex=_RESET_TTL)
-    reset_link = f"https://{DOMAIN}/reset-password?token={token}"
-    background_tasks.add_task(_send_reset_email, email, reset_link)
+    otp = "{:06d}".format(secrets.randbelow(1_000_000))
+    cache_set(f"pwd_reset_otp:{email}", otp, ex=_RESET_TTL)
+    background_tasks.add_task(_send_reset_otp_email, email, otp)
 
 
-async def confirm_password_reset(token: str, new_password: str) -> None:
-    """Validate the reset token and update the user's password."""
-    user_id_str = cache_get(f"pwd_reset:{token}")
-    if not user_id_str:
+async def confirm_password_reset(email: str, otp: str, new_password: str) -> None:
+    """Verify the OTP and update the user's password."""
+    stored = cache_get(f"pwd_reset_otp:{email}")
+    if not stored or stored != otp.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Reset link is invalid or has expired.",
+            detail="Invalid or expired verification code.",
         )
 
+    user = await user_repo.get_user_by_email(email)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
     hashed = hash_password(new_password)
-    updated = await user_repo.update_user_password(int(user_id_str), hashed)
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found.",
-        )
-    cache_delete(f"pwd_reset:{token}")
+    await user_repo.update_user_password(user["id"], hashed)
+    cache_delete(f"pwd_reset_otp:{email}")
 
 
 # ── Background email tasks (§5: idempotent, catch own exceptions) ────────────────────
@@ -319,16 +316,16 @@ def _send_otp_email(email: str, otp: str) -> None:
         logger.exception("Failed to send OTP email to %s", email)
 
 
-def _send_reset_email(email: str, reset_link: str) -> None:
+def _send_reset_otp_email(email: str, otp: str) -> None:
     try:
         resend.Emails.send({
             "from": f"ALIMERIQ <noreply@{DOMAIN}>",
             "to": [email],
-            "subject": "Reset your ALIMERIQ password",
-            "html": _build_reset_email_html(reset_link),
+            "subject": "Your ALIMERIQ password reset code",
+            "html": _build_reset_otp_email_html(otp),
         })
     except Exception:
-        logger.exception("Failed to send reset email to %s", email)
+        logger.exception("Failed to send reset OTP email to %s", email)
 
 
 # ── Email HTML builders ─────────────────────────────────────────────────────────────────
@@ -366,7 +363,7 @@ def _build_otp_email_html(otp: str) -> str:
 </html>"""
 
 
-def _build_reset_email_html(reset_link: str) -> str:
+def _build_reset_otp_email_html(otp: str) -> str:
     year = datetime.now(timezone.utc).year
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -383,20 +380,11 @@ def _build_reset_email_html(reset_link: str) -> str:
       </svg>
       <p style="margin:10px 0 0;font-size:11px;letter-spacing:3px;color:#C9A15A;font-weight:700;">ALIMERIQ</p>
     </td></tr>
-    <tr><td style="padding:36px 40px;">
-      <h1 style="margin:0 0 16px;font-size:22px;color:#F3F1EC;font-weight:600;">Reset your password</h1>
-      <p style="margin:0 0 28px;font-size:14px;color:#9B9A94;line-height:1.7;">
-        Click the button below to set a new password. This link expires in <strong style="color:#F3F1EC;">15 minutes</strong>.
-      </p>
-      <table cellpadding="0" cellspacing="0"><tr><td>
-        <a href="{reset_link}"
-           style="display:inline-block;padding:14px 32px;background:#C9A15A;color:#161410;font-size:14px;font-weight:700;border-radius:100px;text-decoration:none;">
-          Reset Password
-        </a>
-      </td></tr></table>
-      <p style="margin:28px 0 0;font-size:12px;color:#5F5E5A;">
-        If you didn't request this, you can safely ignore this email.
-      </p>
+    <tr><td style="padding:36px 40px;text-align:center;">
+      <h1 style="margin:0 0 8px;font-size:22px;color:#F3F1EC;font-weight:600;">Reset your password</h1>
+      <p style="margin:0 0 28px;font-size:14px;color:#9B9A94;line-height:1.7;">Use the code below to reset your password. It expires in <strong style="color:#F3F1EC;">15 minutes</strong>.</p>
+      <div style="display:inline-block;padding:20px 40px;background:#1C1C21;border-radius:12px;letter-spacing:0.35em;font-size:32px;font-weight:700;color:#C9A15A;font-family:monospace;">{otp}</div>
+      <p style="margin:28px 0 0;font-size:12px;color:#5F5E5A;">If you didn't request this, you can safely ignore this email.</p>
     </td></tr>
     <tr><td style="padding:24px 40px;border-top:1px solid #2B2B31;text-align:center;">
       <p style="margin:0;font-size:11px;color:#5F5E5A;">&copy; {year} ALIMERIQ</p>
