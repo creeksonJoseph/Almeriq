@@ -1,7 +1,11 @@
-import React from "react";
 import { logoutApi } from "../lib/api";
+import RoleDashboard from "./RoleDashboard";
 
-export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
+export default function Dashboard(props) {
+  return <RoleDashboard {...props} />;
+}
+
+function LegacyDashboard({ user, onLogout, onRestartOnboarding }) {
   const handleLogout = async () => {
     await logoutApi();
     if (onLogout) onLogout();
@@ -157,3 +161,5 @@ export default function Dashboard({ user, onLogout, onRestartOnboarding }) {
     </div>
   );
 }
+
+export { LegacyDashboard };

@@ -410,11 +410,8 @@ def _build_otp_email_html(otp: str) -> str:
   <table width="560" cellpadding="0" cellspacing="0"
          style="background:#141417;border:1px solid #2B2B31;border-radius:16px;overflow:hidden;max-width:95%;">
     <tr><td style="padding:36px 40px 28px;border-bottom:1px solid #2B2B31;text-align:center;">
-      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke="#C9A15A" stroke-width="2"/>
-        <text x="20" y="26" text-anchor="middle" font-size="16" fill="#C9A15A" font-family="Georgia,serif">A</text>
-      </svg>
-      <p style="margin:10px 0 0;font-size:11px;letter-spacing:3px;color:#C9A15A;font-weight:700;">ALIMERIQ</p>
+            <div style="display:inline-block;color:#F2CA50;font-family:Georgia,serif;font-size:38px;font-weight:700;line-height:40px;opacity:1;">A</div>
+            <p style="margin:10px 0 0;font-size:11px;letter-spacing:3px;color:#F2CA50;font-weight:700;opacity:1;">ALIMERIQ</p>
     </td></tr>
     <tr><td style="padding:36px 40px;text-align:center;">
       <h1 style="margin:0 0 8px;font-size:22px;color:#F3F1EC;font-weight:600;">Verify your email</h1>
@@ -443,11 +440,8 @@ def _build_reset_otp_email_html(otp: str) -> str:
   <table width="560" cellpadding="0" cellspacing="0"
          style="background:#141417;border:1px solid #2B2B31;border-radius:16px;overflow:hidden;max-width:95%;">
     <tr><td style="padding:36px 40px 28px;border-bottom:1px solid #2B2B31;text-align:center;">
-      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke="#C9A15A" stroke-width="2"/>
-        <text x="20" y="26" text-anchor="middle" font-size="16" fill="#C9A15A" font-family="Georgia,serif">A</text>
-      </svg>
-      <p style="margin:10px 0 0;font-size:11px;letter-spacing:3px;color:#C9A15A;font-weight:700;">ALIMERIQ</p>
+            <div style="display:inline-block;color:#F2CA50;font-family:Georgia,serif;font-size:38px;font-weight:700;line-height:40px;opacity:1;">A</div>
+            <p style="margin:10px 0 0;font-size:11px;letter-spacing:3px;color:#F2CA50;font-weight:700;opacity:1;">ALIMERIQ</p>
     </td></tr>
     <tr><td style="padding:36px 40px;text-align:center;">
       <h1 style="margin:0 0 8px;font-size:22px;color:#F3F1EC;font-weight:600;">Reset your password</h1>

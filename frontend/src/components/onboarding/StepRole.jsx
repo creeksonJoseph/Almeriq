@@ -27,13 +27,7 @@ const ROLES = [
   },
 ];
 
-export default function StepRole({
-  role,
-  setRole,
-  loading,
-  onBack,
-  onSubmit,
-}) {
+export default function StepRole({ role, setRole, loading, onBack, onSubmit }) {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -61,12 +55,16 @@ export default function StepRole({
             >
               <div className="space-y-1 pr-4">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-white">{r.title}</span>
+                  <span className="font-semibold text-sm text-white">
+                    {r.title}
+                  </span>
                   <span className="px-2 py-0.5 text-[10px] rounded-full bg-white/5 text-white/70 font-mono">
                     {r.badge}
                   </span>
                 </div>
-                <p className="text-xs text-white/70 leading-relaxed">{r.desc}</p>
+                <p className="text-xs text-white/70 leading-relaxed">
+                  {r.desc}
+                </p>
               </div>
 
               <div
@@ -75,8 +73,18 @@ export default function StepRole({
                 }`}
               >
                 {isSelected && (
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="3"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </div>
@@ -97,7 +105,7 @@ export default function StepRole({
           type="button"
           onClick={onSubmit}
           disabled={loading}
-          className={`px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+          className={`min-w-0 flex-1 px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
             !loading
               ? "bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40]"
               : "bg-[#22242c] text-white/50 cursor-not-allowed"
