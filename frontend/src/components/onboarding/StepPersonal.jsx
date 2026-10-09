@@ -12,58 +12,53 @@ export default function StepPersonal({
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
+        <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
           Personal Details
         </h2>
-        <p className="text-sm text-white mt-1">
-          Let’s start by setting up your identity on Alimeriq.
+        <p className="text-sm text-white/80 mt-2">
+          Let&apos;s start by setting up your identity on Alimeriq.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-white mb-1.5">
-            Full Legal Name
-          </label>
+          <label className="alq-label">Full Legal Name</label>
           <input
             type="text"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="e.g. Eleanor Vance"
+            placeholder="e.g. Grace Kiptum"
             className="alq-input"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-white mb-1.5">
-            Nationality / Primary Country
-          </label>
+          <label className="alq-label">Nationality / Primary Country</label>
           <select
             value={nationality}
             onChange={(e) => setNationality(e.target.value)}
-            className="alq-input text-white cursor-pointer bg-[#1C1C21]"
+            className="alq-input text-white cursor-pointer"
           >
             {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.name} className="bg-[#1C1C21] text-white">
+              <option key={c.code} value={c.name} className="bg-[#13141a] text-white">
                 {c.name}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="pt-4">
+        <div className="pt-2">
           <button
             type="submit"
             disabled={loading}
-            className="alq-submit group w-full"
+            className={`px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+              !loading
+                ? "bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40]"
+                : "bg-[#22242c] text-white/50 cursor-not-allowed"
+            }`}
           >
-            <span>{loading ? "Saving..." : "Continue to Verification"}</span>
-            <span className="w-7 h-7 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </span>
+            {loading ? "Saving..." : "Continue to Verification"}
           </button>
         </div>
       </form>

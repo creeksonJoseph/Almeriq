@@ -10,6 +10,8 @@ from schemas.auth import (
     UserOnboardingRequest,
     UserResponse,
     AuthMessageResponse,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
 )
 from services import auth as svc
 from api.dependencies import get_current_user
@@ -132,3 +134,19 @@ async def get_me(
     """
     response.headers["Cache-Control"] = "no-store"
     return current_user
+
+
+@router.post("/auth/forgot-password", status_code=status.HTTP_200_OK)
+@router.post("/api/auth/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(body: ForgotPasswordRequest) -> dict:
+    """Request a password reset email."""
+    await svc.request_password_reset(body.email)
+    return {"message": "If an account with that email exists, a reset link has been sent."}
+
+
+@router.post("/auth/reset-password", status_code=status.HTTP_200_OK)
+@router.post("/api/auth/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(body: ResetPasswordRequest) -> dict:
+    """Consume a reset token and update the password."""
+    await svc.confirm_password_reset(body.token, body.password)
+    return {"message": "Password updated successfully. You can now log in."}

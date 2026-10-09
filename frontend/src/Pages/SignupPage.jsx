@@ -4,13 +4,18 @@
  */
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import BrandLogo from "../components/BrandLogo";
 
 export default function SignupPage() {
   const navigate = useNavigate();
   const { register, googleLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,14 +29,20 @@ export default function SignupPage() {
     script.async = true;
     script.onload = () => {
       if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleGoogleResponse,
-        });
+        if (window.__alimeriqGoogleInitialized !== "signup") {
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleResponse,
+          });
+          window.__alimeriqGoogleInitialized = "signup";
+        }
 
         const btnDiv = document.getElementById("googleSignInBtnSignupPage");
         if (btnDiv) {
-          const width = Math.max(240, Math.floor(btnDiv.getBoundingClientRect().width));
+          const width = Math.max(
+            240,
+            Math.floor(btnDiv.getBoundingClientRect().width),
+          );
           window.google.accounts.id.renderButton(btnDiv, {
             theme: "outline",
             size: "large",
@@ -68,8 +79,12 @@ export default function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase().replace(/\s+/g, "");
-    if (!cleanEmail || !password) {
-      setError("Please provide both email and password.");
+    if (!cleanEmail || !password || !confirmPassword) {
+      setError("Please provide your email and both password fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
@@ -87,39 +102,64 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="w-full flex-1 flex items-center justify-center min-h-[calc(100vh-5rem)] bg-[#0c0e13] px-4 py-12">
-      <div className="w-full max-w-md mx-auto animate-fade-in">
-        <div className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-2 backdrop-blur-2xl shadow-2xl">
-          <div className="bg-[#0D0D12] rounded-[calc(2rem-0.5rem)] border border-white/5 p-6 md:p-8 relative overflow-hidden">
-            
-            <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#C9A15A]/10 rounded-full blur-2xl pointer-events-none" />
+    <div className="fixed inset-0 overflow-hidden bg-[#0c0e13]">
+      <div
+        className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+        aria-hidden="true"
+      >
+        <span className="whitespace-nowrap text-[clamp(4rem,17vw,14rem)] font-serif font-semibold leading-none tracking-[0.08em] text-white/[0.035] select-none">
+          ALIMERIQ
+        </span>
+      </div>
+      <BrandLogo
+        size={52}
+        showName={false}
+        href="/"
+        className="absolute left-6 top-8 z-10 opacity-80 sm:left-10 sm:top-12"
+      />
+      <div className="relative z-10 h-full overflow-y-auto">
+        <div className="w-full max-w-md mx-auto animate-fade-in px-4 py-12 sm:py-16">
+          <div className="text-center mb-8">
+            <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+              Create an Account
+            </h2>
+            <p className="text-xs text-white/60 mt-2">
+              Join Alimeriq with your email.
+            </p>
+          </div>
 
-            <div className="mb-6 text-center">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A15A]/10 border border-[#C9A15A]/20 text-[11px] uppercase tracking-[0.2em] font-semibold text-[#C9A15A] mb-3">
-                Phase 1 • Low-Friction Gate
-              </span>
-              <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
-                Create an Account
-              </h2>
-              <p className="text-sm text-white mt-1">
-                Sign up with just your email and password to start
-              </p>
-            </div>
-
+          <div className="space-y-5">
             {error && (
-              <div className="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
-                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{error}</span>
+              <div className="p-3 rounded-xl bg-red-500/10 text-red-200 text-xs">
+                {error}
               </div>
             )}
 
+            <div className="space-y-3">
+              <div
+                id="googleSignInBtnSignupPage"
+                className="w-full flex justify-center min-h-[44px]"
+              />
+
+              {!googleClientId && (
+                <button
+                  type="button"
+                  className="w-full min-h-[44px] py-2.5 px-4 rounded-full bg-[#13141a] hover:bg-[#181a22] text-white font-medium text-xs flex items-center justify-center transition-colors"
+                >
+                  Continue with Google
+                </button>
+              )}
+
+              <div className="flex items-center justify-center pt-1">
+                <span className="bg-[#0c0e13] px-3 text-[11px] font-medium text-white/50 uppercase tracking-wider">
+                  Or
+                </span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-white mb-1.5">
-                  Email Address
-                </label>
+                <label className="alq-label">Email Address</label>
                 <input
                   type="email"
                   required
@@ -127,74 +167,109 @@ export default function SignupPage() {
                   autoCorrect="off"
                   spellCheck="false"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value.toLowerCase().replace(/\s+/g, ""))}
-                  placeholder="name@company.com"
-                  className="alq-input"
+                  onChange={(e) =>
+                    setEmail(e.target.value.toLowerCase().replace(/\s+/g, ""))
+                  }
+                  placeholder="you@company.com"
+                  className="alq-input bg-[#13141a] pr-12 text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white mb-1.5">
-                  Create Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="alq-input"
-                />
+                <label className="alq-label">Create Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="alq-input bg-[#13141a] pr-12 text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    title={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="alq-submit group relative w-full overflow-hidden mt-2"
-              >
-                <span>{loading ? "Creating account..." : "Continue to Setup"}</span>
-                <span className="w-7 h-7 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </span>
-              </button>
+              <div>
+                <label className="alq-label">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="alq-input bg-[#13141a] pr-12 text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((visible) => !visible)
+                    }
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                    title={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                    !loading
+                      ? "bg-[#13141a] text-white hover:bg-[#181a22]"
+                      : "bg-[#22242c] text-white/50 cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Signing Up..." : "Sign Up"}
+                </button>
+              </div>
             </form>
 
-            <div className="relative my-6 text-center">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
-              <span className="relative px-3 bg-[#0D0D12] text-[11px] font-medium text-white uppercase tracking-wider">
-                Or continue with
-              </span>
-            </div>
-
-            <div id="googleSignInBtnSignupPage" className="w-full flex justify-center min-h-[44px]"></div>
-
-            {!googleClientId && (
-              <button
-                type="button"
-                className="w-full mt-2 min-h-[44px] py-2.5 px-4 rounded-full bg-[#181820] hover:bg-[#20202B] border border-white/10 text-white font-medium text-xs flex items-center justify-center gap-3 transition-all"
-              >
-                <span>Continue with Google</span>
-              </button>
-            )}
-
-            <div className="mt-6 pt-5 border-t border-white/5 text-center">
-              <p className="text-xs text-white">
+            <div className="pt-4 text-center">
+              <p className="text-xs text-white/80">
                 Already have an account?{" "}
-                <Link to="/login" className="font-semibold text-[#C9A15A] hover:underline">
-                  Sign In →
+                <Link
+                  to="/login"
+                  className="font-semibold text-[#f2ca50] hover:underline"
+                >
+                  Sign In
                 </Link>
               </p>
+              <Link
+                to="/privacy"
+                className="mt-2 inline-block text-[11px] text-white/50 hover:text-[#f2ca50] transition-colors"
+              >
+                Privacy Policy
+              </Link>
             </div>
-
           </div>
         </div>
       </div>
     </div>
   );
 }
-

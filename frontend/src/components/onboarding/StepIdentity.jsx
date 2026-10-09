@@ -10,19 +10,17 @@ export default function StepIdentity({
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
+        <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
           Identity Verification
         </h2>
-        <p className="text-sm text-white mt-1">
+        <p className="text-sm text-white/80 mt-2">
           Required for legal company registration and compliance.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-white mb-1.5">
-            National ID Number / Passport Number
-          </label>
+          <label className="alq-label">National ID Number / Passport Number</label>
           <input
             type="text"
             required
@@ -33,9 +31,8 @@ export default function StepIdentity({
           />
         </div>
 
-        {/* UX Helper Box */}
-        <div className="p-4 rounded-2xl bg-[#16161F] border border-white/10 flex items-start gap-3">
-          <div className="w-7 h-7 rounded-full bg-[#C9A15A]/10 border border-[#C9A15A]/20 flex items-center justify-center shrink-0 text-[#C9A15A]">
+        <div className="p-4 rounded-xl bg-[#13141a] flex items-start gap-3">
+          <div className="w-7 h-7 rounded-full bg-[#f2ca50]/10 flex items-center justify-center shrink-0 text-[#f2ca50]">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
@@ -44,31 +41,30 @@ export default function StepIdentity({
             <h4 className="text-xs font-semibold text-white mb-0.5">
               Why we ask for identity numbers
             </h4>
-            <p className="text-xs text-white leading-relaxed">
+            <p className="text-xs text-white/70 leading-relaxed">
               Required for legal company registration, compliance, and regulatory verification when executing infrastructure or investment contracts.
             </p>
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-wrap gap-3 pt-2">
           <button
             type="button"
             onClick={onBack}
-            className="px-5 py-3 bg-[#1C1C24] hover:bg-[#252530] text-gray-300 text-xs font-semibold rounded-xl border border-white/5 transition-all"
+            className="px-5 py-3 bg-[#13141a] hover:bg-[#181a22] text-white/80 text-xs font-semibold rounded-full transition-colors"
           >
             ← Back
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="alq-submit group flex-1"
+            className={`px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+              !loading
+                ? "bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40]"
+                : "bg-[#22242c] text-white/50 cursor-not-allowed"
+            }`}
           >
-            <span>{loading ? "Verifying..." : "Proceed to Role Selection"}</span>
-            <span className="w-7 h-7 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </span>
+            {loading ? "Verifying..." : "Proceed to Role Selection"}
           </button>
         </div>
       </form>

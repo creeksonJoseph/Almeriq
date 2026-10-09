@@ -35,6 +35,8 @@ const LoginPage = lazyWithRetry(() => import("./Pages/LoginPage"));
 const SignupPage = lazyWithRetry(() => import("./Pages/SignupPage"));
 const DashboardPage = lazyWithRetry(() => import("./Pages/DashboardPage"));
 const NotFoundPage = lazyWithRetry(() => import("./Pages/NotFoundPage"));
+const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazyWithRetry(() => import("./Pages/ResetPasswordPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">
@@ -53,6 +55,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/register" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Protected Routes */}
             <Route

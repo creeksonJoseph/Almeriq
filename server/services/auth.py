@@ -1,13 +1,20 @@
 """services/auth.py - Business logic for low-friction Phase 1 auth, Google OAuth, and Phase 2 onboarding."""
 from __future__ import annotations
 
+import secrets
 import httpx
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
+import resend
 
-from core.config import GOOGLE_CLIENT_ID
+from core.config import GOOGLE_CLIENT_ID, RESEND_API_KEY, DOMAIN
 from core.security import hash_password, verify_password, create_access_token
+from core.redis_client import cache_set, cache_get, cache_delete
 from repositories import user as user_repo
+
+resend.api_key = RESEND_API_KEY
+
+_RESET_TTL = 60 * 15  # 15 minutes
 
 
 async def register_user(email: str, password: str) -> tuple[dict, str]:
@@ -193,3 +200,90 @@ async def get_user_profile(user_id: int) -> dict:
             detail="User not found",
         )
     return user
+
+
+async def request_password_reset(email: str) -> None:
+    """
+    Generate a reset token, store it in Redis (or fallback), and email the link.
+    Always returns without error to avoid leaking whether the email exists.
+    """
+    user = await user_repo.get_user_by_email(email)
+    if not user or not user.get("hashed_password"):
+        # Silently succeed - don't reveal account existence
+        return
+
+    token = secrets.token_urlsafe(32)
+    cache_set(f"pwd_reset:{token}", str(user["id"]), ex=_RESET_TTL)
+
+    reset_link = f"https://{DOMAIN}/reset-password?token={token}"
+    try:
+        resend.Emails.send({
+            "from": f"ALIMERIQ <noreply@{DOMAIN}>",
+            "to": [email],
+            "subject": "Reset your ALIMERIQ password",
+            "html": _build_reset_email_html(reset_link),
+        })
+    except Exception:
+        pass  # Don't surface email errors to the caller
+
+
+async def confirm_password_reset(token: str, new_password: str) -> None:
+    """Validate the reset token and update the user's password."""
+    user_id_str = cache_get(f"pwd_reset:{token}")
+    if not user_id_str:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reset link is invalid or has expired.",
+        )
+
+    hashed = hash_password(new_password)
+    updated = await user_repo.update_user_password(int(user_id_str), hashed)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+    cache_delete(f"pwd_reset:{token}")
+
+
+def _build_reset_email_html(reset_link: str) -> str:
+    from datetime import datetime, timezone
+    year = datetime.now(timezone.utc).year
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><title>Reset your password</title></head>
+<body style="margin:0;padding:0;background:#0A0A0B;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0B;padding:40px 0;">
+<tr><td align="center">
+  <table width="560" cellpadding="0" cellspacing="0"
+         style="background:#141417;border:1px solid #2B2B31;border-radius:16px;overflow:hidden;max-width:95%;">
+    <tr><td style="padding:36px 40px 28px;border-bottom:1px solid #2B2B31;text-align:center;">
+      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 37,20 20,38 3,20" fill="none" stroke="#C9A15A" stroke-width="2"/>
+        <text x="20" y="26" text-anchor="middle" font-size="16" fill="#C9A15A" font-family="Georgia,serif">A</text>
+      </svg>
+      <p style="margin:10px 0 0;font-size:11px;letter-spacing:3px;color:#C9A15A;font-weight:700;">ALIMERIQ</p>
+    </td></tr>
+    <tr><td style="padding:36px 40px;">
+      <h1 style="margin:0 0 16px;font-size:22px;color:#F3F1EC;font-weight:600;">Reset your password</h1>
+      <p style="margin:0 0 28px;font-size:14px;color:#9B9A94;line-height:1.7;">
+        Click the button below to set a new password. This link expires in <strong style="color:#F3F1EC;">15 minutes</strong>.
+      </p>
+      <table cellpadding="0" cellspacing="0"><tr><td>
+        <a href="{reset_link}"
+           style="display:inline-block;padding:14px 32px;background:#C9A15A;color:#161410;font-size:14px;font-weight:700;border-radius:100px;text-decoration:none;">
+          Reset Password
+        </a>
+      </td></tr></table>
+      <p style="margin:28px 0 0;font-size:12px;color:#5F5E5A;">
+        If you didn't request this, you can safely ignore this email.
+      </p>
+    </td></tr>
+    <tr><td style="padding:24px 40px;border-top:1px solid #2B2B31;text-align:center;">
+      <p style="margin:0;font-size:11px;color:#5F5E5A;">&copy; {year} ALIMERIQ</p>
+    </td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>"""

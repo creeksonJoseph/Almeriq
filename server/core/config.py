@@ -30,3 +30,7 @@ COOKIE_SAMESITE: str = os.environ["COOKIE_SAMESITE"]
 # Google OAuth Credentials (Empty string until user adds them to server/.env)
 GOOGLE_CLIENT_ID: str = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+
+# Upstash Redis (optional - falls back to in-memory if not set)
+UPSTASH_REDIS_URL: str = os.environ.get("UPSTASH_REDIS_URL", "")
+UPSTASH_REDIS_TOKEN: str = os.environ.get("UPSTASH_REDIS_TOKEN", "")

@@ -2,16 +2,22 @@
  * Pages/LoginPage.jsx - Canonical Sign In Page.
  */
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import BrandLogo from "../components/BrandLogo";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, googleLogin, updateUser } = useAuth();
+  const { login, googleLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [searchParams] = useSearchParams();
+  const resetSuccess = searchParams.get("reset") === "1";
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -23,14 +29,20 @@ export default function LoginPage() {
     script.async = true;
     script.onload = () => {
       if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleGoogleResponse,
-        });
+        if (window.__alimeriqGoogleInitialized !== "login") {
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleResponse,
+          });
+          window.__alimeriqGoogleInitialized = "login";
+        }
 
         const btnDiv = document.getElementById("googleSignInBtnPage");
         if (btnDiv) {
-          const width = Math.max(240, Math.floor(btnDiv.getBoundingClientRect().width));
+          const width = Math.max(
+            240,
+            Math.floor(btnDiv.getBoundingClientRect().width),
+          );
           window.google.accounts.id.renderButton(btnDiv, {
             theme: "outline",
             size: "large",
@@ -86,39 +98,69 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full flex-1 flex items-center justify-center min-h-[calc(100vh-5rem)] bg-[#0c0e13] px-4 py-12">
-      <div className="w-full max-w-md mx-auto animate-fade-in">
-        <div className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-2 backdrop-blur-2xl shadow-2xl">
-          <div className="bg-[#0D0D12] rounded-[calc(2rem-0.5rem)] border border-white/5 p-6 md:p-8 relative overflow-hidden">
-            
-            <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#C9A15A]/10 rounded-full blur-2xl pointer-events-none" />
+    <div className="fixed inset-0 overflow-hidden bg-[#0c0e13]">
+      <div
+        className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+        aria-hidden="true"
+      >
+        <span className="whitespace-nowrap text-[clamp(4rem,17vw,14rem)] font-serif font-semibold leading-none tracking-[0.08em] text-white/[0.035] select-none">
+          ALIMERIQ
+        </span>
+      </div>
+      <BrandLogo
+        size={52}
+        showName={false}
+        href="/"
+        className="absolute left-6 top-8 z-10 opacity-80 sm:left-10 sm:top-12"
+      />
+      <div className="relative z-10 h-full overflow-y-auto">
+        <div className="w-full max-w-md mx-auto animate-fade-in px-4 py-12 sm:py-16">
+          <div className="text-center mb-8">
+            <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+              Sign In to Alimeriq
+            </h2>
+            <p className="text-xs text-white/60 mt-2">
+              Welcome back to Alimeriq.
+            </p>
+          </div>
 
-            <div className="mb-6 text-center">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A15A]/10 border border-[#C9A15A]/20 text-[11px] uppercase tracking-[0.2em] font-semibold text-[#C9A15A] mb-3">
-                Phase 1 • Gate
-              </span>
-              <h2 className="text-2xl md:text-3xl font-display font-semibold text-white tracking-tight">
-                Sign In to Alimeriq
-              </h2>
-              <p className="text-sm text-white mt-1">
-                Enter your credentials to access your dashboard
-              </p>
+          <div className="space-y-5">
+            {resetSuccess && (
+            <div className="p-3 rounded-xl bg-white/5 text-white/80 text-xs">
+              Password updated successfully. You can now sign in.
             </div>
-
-            {error && (
-              <div className="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
-                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{error}</span>
+          )}
+          {error && (
+              <div className="p-3 rounded-xl bg-red-500/10 text-red-200 text-xs">
+                {error}
               </div>
             )}
 
+            <div className="space-y-3">
+              <div
+                id="googleSignInBtnPage"
+                className="w-full flex justify-center min-h-[44px]"
+              />
+
+              {!googleClientId && (
+                <button
+                  type="button"
+                  className="w-full min-h-[44px] py-2.5 px-4 rounded-full bg-[#13141a] hover:bg-[#181a22] text-white font-medium text-xs flex items-center justify-center transition-colors"
+                >
+                  Continue with Google
+                </button>
+              )}
+
+              <div className="flex items-center justify-center pt-1">
+                <span className="bg-[#0c0e13] px-3 text-[11px] font-medium text-white/50 uppercase tracking-wider">
+                  Or
+                </span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-white mb-1.5">
-                  Email Address
-                </label>
+                <label className="alq-label">Email Address</label>
                 <input
                   type="email"
                   required
@@ -126,73 +168,82 @@ export default function LoginPage() {
                   autoCorrect="off"
                   spellCheck="false"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value.toLowerCase().replace(/\s+/g, ""))}
-                  placeholder="name@company.com"
-                  className="alq-input"
+                  onChange={(e) =>
+                    setEmail(e.target.value.toLowerCase().replace(/\s+/g, ""))
+                  }
+                  placeholder="you@company.com"
+                  className="alq-input bg-[#13141a] pr-12 text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-white mb-1.5">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="alq-input"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="alq-label">Password</label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-[11px] font-medium text-white/60 hover:text-[#f2ca50] hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="alq-input bg-[#13141a] pr-12 text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    title={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="alq-submit group relative w-full overflow-hidden mt-2"
-              >
-                <span>{loading ? "Signing in..." : "Sign In to Dashboard"}</span>
-                <span className="w-7 h-7 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </span>
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                    !loading
+                      ? "bg-[#13141a] text-white hover:bg-[#181a22]"
+                      : "bg-[#22242c] text-white/50 cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Signing In..." : "Sign In"}
+                </button>
+              </div>
             </form>
 
-            <div className="relative my-6 text-center">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
-              <span className="relative px-3 bg-[#0D0D12] text-[11px] font-medium text-white uppercase tracking-wider">
-                Or continue with
-              </span>
-            </div>
-
-            <div id="googleSignInBtnPage" className="w-full flex justify-center min-h-[44px]"></div>
-
-            {!googleClientId && (
-              <button
-                type="button"
-                className="w-full mt-2 min-h-[44px] py-2.5 px-4 rounded-full bg-[#181820] hover:bg-[#20202B] border border-white/10 text-white font-medium text-xs flex items-center justify-center gap-3 transition-all"
-              >
-                <span>Continue with Google</span>
-              </button>
-            )}
-
-            <div className="mt-6 pt-5 border-t border-white/5 text-center">
-              <p className="text-xs text-white">
-                Don't have an account yet?{" "}
-                <Link to="/signup" className="font-semibold text-[#C9A15A] hover:underline">
-                  Create an Account →
+            <div className="pt-4 text-center">
+              <p className="text-xs text-white/80">
+                Don&apos;t have an account yet?{" "}
+                <Link
+                  to="/signup"
+                  className="font-semibold text-[#f2ca50] hover:underline"
+                >
+                  Sign Up
                 </Link>
               </p>
+              <Link
+                to="/privacy"
+                className="mt-2 inline-block text-[11px] text-white/50 hover:text-[#f2ca50] transition-colors"
+              >
+                Privacy Policy
+              </Link>
             </div>
-
           </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -1,11 +1,15 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import HeaderNavigation from "./HeaderNavigation";
 import OnboardingWizard from "./OnboardingWizard";
 import { useAuth } from "../context/AuthContext";
 
 export default function Layout() {
   const { user, logout, updateUser } = useAuth();
+  const location = useLocation();
+  const isAuthPage = ["/login", "/signup", "/register"].includes(
+    location.pathname,
+  );
 
   return (
     <div className="min-h-screen bg-[#0c0e13] text-white flex flex-col antialiased">
@@ -13,24 +17,20 @@ export default function Layout() {
         Skip to main content
       </a>
 
-      <HeaderNavigation currentUser={user} onLogout={logout} />
+      {!isAuthPage && <HeaderNavigation currentUser={user} onLogout={logout} />}
 
       <main
         id="main-content"
         tabIndex={-1}
-        className="pt-20 flex-1 w-full flex flex-col outline-none"
+        className={`${isAuthPage ? "pt-0" : "pt-20"} flex-1 w-full flex flex-col outline-none`}
       >
         <Outlet />
       </main>
 
       {/* Onboarding Wizard Modal if user is logged in but hasn't completed onboarding */}
       {user && !user.onboarding_completed && (
-        <OnboardingWizard
-          user={user}
-          onComplete={(u) => updateUser(u)}
-        />
+        <OnboardingWizard user={user} onComplete={(u) => updateUser(u)} />
       )}
     </div>
   );
 }
-

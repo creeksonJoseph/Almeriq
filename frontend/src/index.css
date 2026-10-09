@@ -1,8 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* ── Reset & base ─────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 html {
   scroll-behavior: smooth;
@@ -11,9 +17,9 @@ html {
 }
 
 body {
-  background: #0A0A0B;
-  color: #FFFFFF;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: #0a0a0b;
+  color: #ffffff;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   font-size: 1rem; /* >= 16px - prevents iOS zoom on focus */
   min-height: 100dvh;
   overflow-x: hidden;
@@ -25,9 +31,16 @@ body {
 }
 
 /* ── Scrollbar ────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #0A0A0B; }
-::-webkit-scrollbar-thumb { background: #2B2B31; border-radius: 4px; }
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0b;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2b31;
+  border-radius: 4px;
+}
 
 /* ── Skip link ────────────────────────────────────────── */
 .skip-link {
@@ -35,9 +48,9 @@ body {
   left: -9999px;
   top: 1rem;
   padding: 8px 16px;
-  background: #C9A15A;
+  background: #c9a15a;
   color: #161410;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14px;
   font-weight: 700;
   border-radius: 8px;
@@ -61,40 +74,67 @@ body {
   white-space: nowrap;
 }
 
-/* ── Inputs ──────────────────────────────────────────── */
+/* ── Inputs (waitlist-aligned: filled field on page bg, no border) ── */
 .alq-input {
   width: 100%;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1rem;       /* prevent iOS auto-zoom */
-  background: #1C1C21;
-  border: 1px solid #2B2B31;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1rem; /* prevent iOS auto-zoom */
+  background: #13141a;
+  border: none;
   border-radius: 12px;
-  padding: 13px 16px;
-  color: #FFFFFF;
+  padding: 12px 16px;
+  color: #ffffff;
   outline: none;
-  transition: border-color 0.2s;
-  min-height: 48px;      /* minimum tap target */
+  transition:
+    box-shadow 0.2s,
+    background-color 0.2s;
+  min-height: 48px;
+}
+.alq-input:autofill,
+.alq-input:-webkit-autofill,
+.alq-input:-webkit-autofill:hover,
+.alq-input:-webkit-autofill:focus {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #13141a !important;
+  background-clip: padding-box !important;
+  -webkit-background-clip: padding-box !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  outline: none !important;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0 0 0 1000px #13141a inset !important;
+  box-shadow: 0 0 0 1000px #13141a inset !important;
+  clip-path: inset(0 round 12px);
 }
 .alq-input:focus-visible {
-  border-color: #C9A15A;
-  outline: 2px solid rgba(201, 161, 90, 0.4);
-  outline-offset: 2px;
+  box-shadow: 0 0 0 1px #f2ca50;
 }
 .alq-input:user-invalid {
-  border-color: #B5573F;
+  box-shadow: 0 0 0 1px #b5573f;
 }
-.alq-input::placeholder { color: rgba(255, 255, 255, 0.7); }
+.alq-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.alq-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.375rem;
+}
 
 /* ── Role pill buttons ───────────────────────────────── */
 .role-btn {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 13px;
   font-weight: 600;
-  background: #1C1C21;
-  border: 1px solid #2B2B31;
+  background: #1c1c21;
+  border: 1px solid #2b2b31;
   border-radius: 12px;
   padding: 12px 14px;
-  color: #FFFFFF;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -103,7 +143,7 @@ body {
   transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .role-btn:focus-visible {
-  outline: 2px solid #C9A15A;
+  outline: 2px solid #c9a15a;
   outline-offset: 2px;
 }
 .role-btn[aria-pressed="true"] {
@@ -113,26 +153,28 @@ body {
 /* ── Submit button ───────────────────────────────────── */
 .alq-submit {
   width: 100%;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14.5px;
   font-weight: 700;
   border: none;
   border-radius: 12px;
   padding: 15px 20px;
-  min-height: 52px;    /* larger touch target */
+  min-height: 52px; /* larger touch target */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.2s, transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  transition:
+    opacity 0.2s,
+    transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .alq-submit:not([aria-disabled="true"]) {
-  background: #C9A15A;
+  background: #c9a15a;
   color: #161410;
 }
 .alq-submit[aria-disabled="true"] {
-  background: #2B2B31;
+  background: #2b2b31;
   color: rgba(255, 255, 255, 0.6);
   cursor: not-allowed;
 }
@@ -143,14 +185,18 @@ body {
   transform: scale(0.98);
 }
 .alq-submit:focus-visible {
-  outline: 2px solid #C9A15A;
+  outline: 2px solid #c9a15a;
   outline-offset: 3px;
 }
 
 /* ── Spinner ─────────────────────────────────────────── */
 @keyframes alq-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .alq-spinner {
   animation: alq-spin 0.8s linear infinite;
@@ -163,12 +209,18 @@ body {
 }
 
 /* ── Utility ──────────────────────────────────────────── */
-.font-display { font-family: 'Fraunces', Georgia, serif; }
-.font-body    { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+}
+.font-body {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
 
 /* ── Reduced motion: respect user preference ─────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

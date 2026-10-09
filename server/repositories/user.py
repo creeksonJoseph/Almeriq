@@ -116,6 +116,31 @@ async def email_exists(email: str, session: AsyncSession | None = None) -> bool:
         return bool(count and count > 0)
 
 
+async def update_user_password(
+    user_id: int,
+    hashed_password: str,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    """Update a user's hashed password."""
+    stmt = (
+        update(User)
+        .where(User.id == user_id)
+        .values(hashed_password=hashed_password)
+        .returning(User)
+    )
+
+    if session is not None:
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        return user.to_dict() if user else None
+
+    async with async_session_factory() as s:
+        res = await s.execute(stmt)
+        await s.commit()
+        user = res.scalar_one_or_none()
+        return user.to_dict() if user else None
+
+
 async def update_user_onboarding(
     user_id: int,
     full_name: str | None = None,

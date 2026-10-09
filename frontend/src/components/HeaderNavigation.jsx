@@ -1,11 +1,8 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
 
-export default function HeaderNavigation({
-  currentUser,
-  onLogout,
-}) {
+export default function HeaderNavigation({ currentUser, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -26,9 +23,7 @@ export default function HeaderNavigation({
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0c0e13]/90 backdrop-blur-xl border-b border-[#1e2025]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Brand Logo Link to Home */}
-        <Link to="/" className="flex items-center gap-6 cursor-pointer">
-          <BrandLogo size={24} />
-        </Link>
+        <BrandLogo size={24} href="/" className="cursor-pointer" />
 
         {/* Navigation Action Buttons */}
         <div className="flex items-center gap-3">
@@ -76,4 +71,3 @@ export default function HeaderNavigation({
     </header>
   );
 }
-
