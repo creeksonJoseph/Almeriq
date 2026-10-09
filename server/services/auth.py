@@ -10,7 +10,7 @@ import resend
 from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
-from core.config import GOOGLE_CLIENT_ID, RESEND_API_KEY
+from core.config import DOMAIN, GOOGLE_CLIENT_ID, RESEND_API_KEY
 from core.redis_client import cache_delete, cache_get, cache_set
 from core.security import create_access_token, hash_password, verify_password
 from repositories import user as user_repo
