@@ -114,12 +114,12 @@ export default function LoginPage() {
         className="absolute left-6 top-8 z-10 opacity-80 sm:left-10 sm:top-12"
       />
       <div className="relative z-10 h-full overflow-y-auto">
-        <div className="w-full max-w-md mx-auto animate-fade-in px-4 py-12 sm:py-16">
-          <div className="text-center mb-8">
-            <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+        <div className="w-full max-w-[420px] mx-auto animate-fade-in px-4 py-8">
+          <div className="text-center mb-6">
+            <h2 className="font-serif text-xl text-white font-medium tracking-tight">
               Sign In to Alimeriq
             </h2>
-            <p className="text-xs text-white/60 mt-2">
+            <p className="text-xs text-white/60 mt-1">
               Welcome back to Alimeriq.
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="alq-label">Email Address</label>
                 <input
@@ -209,11 +209,11 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                  className={`w-full px-4 py-2.5 rounded-full text-[13px] font-bold uppercase transition-colors ${
                     !loading
                       ? "bg-[#13141a] text-white hover:bg-[#181a22]"
                       : "bg-[#22242c] text-white/50 cursor-not-allowed"

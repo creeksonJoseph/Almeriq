@@ -37,7 +37,7 @@ export default function StepRole({
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+        <h2 className="font-serif text-xl text-white font-medium tracking-tight">
           What is your primary goal?
         </h2>
         <p className="text-sm text-white/80 mt-2">

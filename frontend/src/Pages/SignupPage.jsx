@@ -103,12 +103,12 @@ export default function SignupPage() {
       />
 
       <div className="relative z-10 h-full overflow-y-auto">
-        <div className="w-full max-w-md mx-auto animate-fade-in px-4 py-12 sm:py-16">
+        <div className="w-full max-w-[420px] mx-auto animate-fade-in px-4 py-8">
 
           <StepDots current={step} />
 
-          <div className="text-center mb-8">
-            <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+          <div className="text-center mb-6">
+            <h2 className="font-serif text-xl text-white font-medium tracking-tight">
               {meta.heading}
             </h2>
             <p className="text-xs text-white/60 mt-2">
@@ -121,15 +121,15 @@ export default function SignupPage() {
             )}
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 text-red-200 text-xs">{error}</div>
+              <div className="p-2.5 rounded-xl bg-red-500/10 text-red-200 text-xs">{error}</div>
             )}
 
             {/* ── Step 1: Email ── */}
             {step === 1 && (
               <div key="step-1" style={stepIn}>
-                <form onSubmit={handleSendOtp} className="space-y-4">
+                <form onSubmit={handleSendOtp} className="space-y-3">
                   <div>
                     <label className="alq-label">Email Address</label>
                     <input
@@ -144,12 +144,12 @@ export default function SignupPage() {
                       className="alq-input bg-[#13141a] text-white"
                     />
                   </div>
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <button
                       type="submit"
                       disabled={loading}
                       style={btnStyle}
-                      className={`${btnBase} ${!loading ? "bg-[#13141a] text-white hover:bg-[#181a22]" : "bg-[#22242c] text-white/50 cursor-not-allowed"}`}
+                      className={`${btnBase} py-2.5 text-[13px] ${!loading ? "bg-[#13141a] text-white hover:bg-[#181a22]" : "bg-[#22242c] text-white/50 cursor-not-allowed"}`}
                     >
                       {loading ? "Sending..." : "Continue with Email"}
                     </button>
@@ -176,7 +176,7 @@ export default function SignupPage() {
             {/* ── Step 2: OTP ── */}
             {step === 2 && (
               <div key="step-2" style={stepIn}>
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <form onSubmit={handleVerifyOtp} className="space-y-3">
                   <div>
                     <label className="alq-label">Verification Code</label>
                     <input
@@ -190,12 +190,12 @@ export default function SignupPage() {
                       className="alq-input bg-[#13141a] text-white text-center tracking-[0.5em]"
                     />
                   </div>
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <button
                       type="submit"
                       disabled={loading}
                       style={btnStyle}
-                      className={`${btnBase} ${!loading ? "bg-[#13141a] text-white hover:bg-[#181a22]" : "bg-[#22242c] text-white/50 cursor-not-allowed"}`}
+                      className={`${btnBase} py-2.5 text-[13px] ${!loading ? "bg-[#13141a] text-white hover:bg-[#181a22]" : "bg-[#22242c] text-white/50 cursor-not-allowed"}`}
                     >
                       {loading ? "Verifying..." : "Verify Email"}
                     </button>
@@ -232,7 +232,7 @@ export default function SignupPage() {
             {/* ── Step 3: Password ── */}
             {step === 3 && (
               <div key="step-3" style={stepIn}>
-                <form onSubmit={handleComplete} className="space-y-4">
+                <form onSubmit={handleComplete} className="space-y-3">
                   <div>
                     <label className="alq-label">Password</label>
                     <div className="relative">
@@ -288,12 +288,12 @@ export default function SignupPage() {
                       style={confirmPassword && password !== confirmPassword ? { boxShadow: "0 0 0 1px #b5573f" } : {}}
                     />
                   </div>
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <button
                       type="submit"
                       disabled={loading}
                       style={btnStyle}
-                      className={`${btnBase} ${!loading ? "bg-[#13141a] text-white hover:bg-[#181a22]" : "bg-[#22242c] text-white/50 cursor-not-allowed"}`}
+                      className={`${btnBase} py-2.5 text-[13px] ${!loading ? "bg-[#13141a] text-white hover:bg-[#181a22]" : "bg-[#22242c] text-white/50 cursor-not-allowed"}`}
                     >
                       {loading ? "Creating Account..." : "Create Account"}
                     </button>

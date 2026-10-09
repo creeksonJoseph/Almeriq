@@ -78,17 +78,17 @@ body {
 .alq-input {
   width: 100%;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1rem; /* prevent iOS auto-zoom */
+  font-size: 0.875rem; /* 14px — matches SetupSpot sizing, still prevents iOS zoom */
   background: #13141a;
   border: none;
-  border-radius: 12px;
-  padding: 12px 16px;
+  border-radius: 10px;
+  padding: 8px 12px;
   color: #ffffff;
   outline: none;
   transition:
     box-shadow 0.2s,
     background-color 0.2s;
-  min-height: 48px;
+  min-height: 38px;
 }
 .alq-input:autofill,
 .alq-input:-webkit-autofill,

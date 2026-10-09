@@ -1,13 +1,12 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import HeaderNavigation from "./HeaderNavigation";
-import OnboardingWizard from "./OnboardingWizard";
 import { useAuth } from "../context/AuthContext";
 
 export default function Layout() {
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const isAuthPage = ["/login", "/signup", "/register"].includes(
+  const isAuthPage = ["/login", "/signup", "/register", "/forgot-password", "/reset-password"].includes(
     location.pathname,
   );
 
@@ -26,11 +25,6 @@ export default function Layout() {
       >
         <Outlet />
       </main>
-
-      {/* Onboarding Wizard Modal if user is logged in but hasn't completed onboarding */}
-      {user && !user.onboarding_completed && (
-        <OnboardingWizard user={user} onComplete={(u) => updateUser(u)} />
-      )}
     </div>
   );
 }

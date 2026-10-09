@@ -24,8 +24,9 @@ export default function OnboardingWizard({ user, onComplete }) {
   } = useOnboarding(user, onComplete);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-[#0c0e13]/95 overflow-y-auto">
-      <div className="w-full max-w-xl mx-auto my-auto py-8 sm:py-12 space-y-8">
+    <div className="fixed inset-0 overflow-hidden">
+      <div className="overflow-y-auto h-full flex items-start justify-center px-4">
+      <div className="w-full max-w-[420px] mx-auto py-8 space-y-6">
         <div>
           <p className="text-xs text-white/70 font-mono mb-3">
             Step {step} of 3
