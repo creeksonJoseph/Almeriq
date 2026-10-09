@@ -215,15 +215,26 @@ async def signup_send_otp(email: str, background_tasks: BackgroundTasks) -> None
     Step 1: Check email isn't taken, generate a 6-digit OTP, store in Redis, send email.
     Email is dispatched as a background task (§5) — persist+return first.
     """
-    if await user_repo.email_exists(email):
+    logger.info(f"[SIGNUP-STEP1] Starting for email: {email}")
+    
+    email_taken = await user_repo.email_exists(email)
+    logger.info(f"[SIGNUP-STEP1] Email exists check: {email_taken}")
+    
+    if email_taken:
+        logger.warning(f"[SIGNUP-STEP1] Email already registered: {email}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="An account with this email already exists. Please log in.",
         )
 
     otp = "{:06d}".format(secrets.randbelow(1_000_000))
+    logger.info(f"[SIGNUP-STEP1] Generated OTP for {email}")
+    
     cache_set(f"signup_otp:{email}", otp, ex=_OTP_TTL)
+    logger.info(f"[SIGNUP-STEP1] Stored OTP in cache for {email}")
+    
     background_tasks.add_task(_send_otp_email, email, otp)
+    logger.info(f"[SIGNUP-STEP1] Queued email task for {email}")
 
 
 async def signup_verify_otp(email: str, otp: str) -> str:
@@ -231,20 +242,30 @@ async def signup_verify_otp(email: str, otp: str) -> str:
     Step 2: Validate OTP, delete it, issue a short-lived JWT signup_token.
     JWT is self-contained — no Redis lookup needed at step 3.
     """
+    logger.info(f"[SIGNUP-STEP2] Starting for email: {email}")
+    
     stored = cache_get(f"signup_otp:{email}")
+    logger.info(f"[SIGNUP-STEP2] OTP found in cache: {bool(stored)}")
+    
     if not stored or stored != otp.strip():
+        logger.warning(f"[SIGNUP-STEP2] OTP mismatch for {email}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired verification code.",
         )
+    
     cache_delete(f"signup_otp:{email}")
+    logger.info(f"[SIGNUP-STEP2] Deleted OTP from cache for {email}")
 
     payload = {
         "sub": email,
         "purpose": "signup",
         "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
     }
-    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    signup_token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    logger.info(f"[SIGNUP-STEP2] Generated JWT signup_token for {email}")
+    
+    return signup_token
 
 
 async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
@@ -252,29 +273,57 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
     Step 3: Decode JWT signup_token, create the user, return (user_dict, access_token).
     No Redis lookup — JWT is self-contained.
     """
+    logger.info("[SIGNUP-STEP3] Starting with signup token")
+    
     try:
         payload = jwt.decode(signup_token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        logger.info(f"[SIGNUP-STEP3] JWT decoded successfully. Payload: {payload}")
+        
         if payload.get("purpose") != "signup":
+            logger.error(f"[SIGNUP-STEP3] Invalid purpose in JWT: {payload.get('purpose')}")
             raise ValueError("wrong purpose")
+        
         email: str = payload["sub"]
-    except Exception:
+        logger.info(f"[SIGNUP-STEP3] Extracted email from JWT: {email}")
+    except Exception as e:
+        logger.error(f"[SIGNUP-STEP3] JWT decode failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Signup session expired. Please start again.",
         )
 
+    logger.info(f"[SIGNUP-STEP3] Hashing password for {email}")
     hashed_pw = hash_password(password)
+    
+    logger.info(f"[SIGNUP-STEP3] Attempting to create user: {email}")
     try:
         user = await user_repo.create_user(email=email, hashed_password=hashed_pw)
-    except Exception as exc:
-        if isinstance(exc, IntegrityError) or "unique" in str(exc).lower():
+        logger.info(f"[SIGNUP-STEP3] User created successfully. ID: {user['id']}, Email: {user['email']}")
+    except IntegrityError as exc:
+        constraint_name = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        logger.error(
+            "[SIGNUP-STEP3] User creation integrity error for %s: constraint=%s, error=%s",
+            email,
+            constraint_name or "unknown",
+            exc.orig,
+        )
+        if constraint_name and "email" in constraint_name.lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="An account with this email already exists.",
             )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create your account. Please try again later.",
+        ) from exc
+    except Exception:
+        logger.exception("[SIGNUP-STEP3] Unexpected user creation failure for %s", email)
         raise
 
+    logger.info(f"[SIGNUP-STEP3] Creating access token for user {user['id']}")
     token = create_access_token(data={"sub": str(user["id"]), "email": user["email"]})
+    logger.info(f"[SIGNUP-STEP3] Signup complete for {email}")
+    
     return user, token
 
 

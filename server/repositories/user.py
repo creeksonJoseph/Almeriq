@@ -1,9 +1,12 @@
 """repositories/user.py - SQLAlchemy 2.0 repository for User model."""
 from __future__ import annotations
+import logging
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.user import User
+
+logger = logging.getLogger(__name__)
 
 
 async def create_user(
@@ -15,6 +18,8 @@ async def create_user(
     session: AsyncSession | None = None,
 ) -> dict:
     """Phase 1: Create a new minimal user record."""
+    logger.info(f"[REPO-CREATE-USER] Starting for email: {email}")
+    
     user = User(
         email=email.lower().strip(),
         hashed_password=hashed_password,
@@ -23,16 +28,23 @@ async def create_user(
         role=role,
         onboarding_completed=False,
     )
+    logger.info(f"[REPO-CREATE-USER] User object created: {user.email}")
 
     if session is not None:
+        logger.info(f"[REPO-CREATE-USER] Using provided session")
         session.add(user)
         await session.flush()
+        logger.info(f"[REPO-CREATE-USER] User flushed to session. ID: {user.id}")
         return user.to_dict()
 
+    logger.info(f"[REPO-CREATE-USER] Creating new session")
     async with async_session_factory() as s:
         s.add(user)
+        logger.info(f"[REPO-CREATE-USER] User added to session")
         await s.commit()
+        logger.info(f"[REPO-CREATE-USER] Commit successful. User ID: {user.id}")
         await s.refresh(user)
+        logger.info(f"[REPO-CREATE-USER] User refreshed from DB")
         return user.to_dict()
 
 
@@ -105,15 +117,22 @@ async def get_user_by_id(user_id: int, session: AsyncSession | None = None) -> d
 
 async def email_exists(email: str, session: AsyncSession | None = None) -> bool:
     """Check if an email is already registered (case-insensitive)."""
+    logger.info(f"[REPO-EMAIL-EXISTS] Checking email: {email}")
     stmt = select(func.count()).select_from(User).where(func.lower(User.email) == email.lower().strip())
 
     if session is not None:
+        logger.info(f"[REPO-EMAIL-EXISTS] Using provided session")
         count = await session.scalar(stmt)
-        return bool(count and count > 0)
+        exists = bool(count and count > 0)
+        logger.info(f"[REPO-EMAIL-EXISTS] Result: {exists} (count: {count})")
+        return exists
 
+    logger.info(f"[REPO-EMAIL-EXISTS] Creating new session")
     async with async_session_factory() as s:
         count = await s.scalar(stmt)
-        return bool(count and count > 0)
+        exists = bool(count and count > 0)
+        logger.info(f"[REPO-EMAIL-EXISTS] Result: {exists} (count: {count})")
+        return exists
 
 
 async def update_user_password(
