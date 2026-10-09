@@ -25,6 +25,36 @@ body {
   overflow-x: hidden;
 }
 
+/* Auth content centers when it fits, but remains reachable when it is taller than the viewport. */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0c0e13;
+}
+
+.auth-scroll {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 5.5rem 1rem 2rem;
+}
+
+.auth-content {
+  width: 100%;
+  margin-block: auto;
+  margin-inline: auto;
+}
+
+@media (min-width: 640px) {
+  .auth-scroll {
+    padding: 4rem 1.5rem 2.5rem;
+  }
+}
+
 #root {
   width: 100%;
   min-height: 100dvh;

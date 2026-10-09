@@ -24,62 +24,67 @@ export default function OnboardingWizard({ user, onComplete }) {
   } = useOnboarding(user, onComplete);
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
-      <div className="overflow-y-auto h-full flex items-start justify-center px-4">
-      <div className="w-full max-w-[420px] mx-auto py-8 space-y-6">
-        <div>
-          <p className="text-xs text-white/70 font-mono mb-3">
-            Step {step} of 3
-            {" · "}
-            {step === 1 && "Personal Info"}
-            {step === 2 && "Identity Verification"}
-            {step === 3 && "Role & Intent"}
-          </p>
+    <div className="auth-screen">
+      <div className="auth-scroll">
+        <div className="auth-content max-w-[420px] space-y-6">
+          <div>
+            <p className="text-xs text-white/70 font-mono mb-3">
+              Step {step} of 3{" · "}
+              {step === 1 && "Personal Info"}
+              {step === 2 && "Identity Verification"}
+              {step === 3 && "Role & Intent"}
+            </p>
 
-          <div className="h-1.5 w-full bg-[#13141a] rounded-full overflow-hidden flex gap-1 p-0.5">
-            <div className={`h-full rounded-full transition-all duration-500 ${step >= 1 ? "bg-[#f2ca50] w-1/3" : "bg-transparent"}`} />
-            <div className={`h-full rounded-full transition-all duration-500 ${step >= 2 ? "bg-[#f2ca50] w-1/3" : "bg-transparent"}`} />
-            <div className={`h-full rounded-full transition-all duration-500 ${step >= 3 ? "bg-[#f2ca50] w-1/3" : "bg-transparent"}`} />
+            <div className="h-1.5 w-full bg-[#13141a] rounded-full overflow-hidden flex gap-1 p-0.5">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${step >= 1 ? "bg-[#f2ca50] w-1/3" : "bg-transparent"}`}
+              />
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${step >= 2 ? "bg-[#f2ca50] w-1/3" : "bg-transparent"}`}
+              />
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${step >= 3 ? "bg-[#f2ca50] w-1/3" : "bg-transparent"}`}
+              />
+            </div>
           </div>
+
+          {error && (
+            <div className="p-3 rounded-xl bg-red-500/10 text-red-200 text-xs">
+              {error}
+            </div>
+          )}
+
+          {step === 1 && (
+            <StepPersonal
+              fullName={fullName}
+              setFullName={setFullName}
+              nationality={nationality}
+              setNationality={setNationality}
+              loading={loading}
+              onSubmit={nextStep1}
+            />
+          )}
+
+          {step === 2 && (
+            <StepIdentity
+              idNumber={idNumber}
+              setIdNumber={setIdNumber}
+              loading={loading}
+              onBack={() => setStep(1)}
+              onSubmit={nextStep2}
+            />
+          )}
+
+          {step === 3 && (
+            <StepRole
+              role={role}
+              setRole={setRole}
+              loading={loading}
+              onBack={() => setStep(2)}
+              onSubmit={completeSetup}
+            />
+          )}
         </div>
-
-        {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 text-red-200 text-xs">
-            {error}
-          </div>
-        )}
-
-        {step === 1 && (
-          <StepPersonal
-            fullName={fullName}
-            setFullName={setFullName}
-            nationality={nationality}
-            setNationality={setNationality}
-            loading={loading}
-            onSubmit={nextStep1}
-          />
-        )}
-
-        {step === 2 && (
-          <StepIdentity
-            idNumber={idNumber}
-            setIdNumber={setIdNumber}
-            loading={loading}
-            onBack={() => setStep(1)}
-            onSubmit={nextStep2}
-          />
-        )}
-
-        {step === 3 && (
-          <StepRole
-            role={role}
-            setRole={setRole}
-            loading={loading}
-            onBack={() => setStep(2)}
-            onSubmit={completeSetup}
-          />
-        )}
-      </div>
       </div>
     </div>
   );
