@@ -2,12 +2,14 @@
 from __future__ import annotations
 import logging
 import time
+from threading import Lock
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # ── In-memory fallback store ──────────────────────────────────────────────────
 _fallback: dict[str, tuple[Any, float | None]] = {}  # key -> (value, expires_at)
+_fallback_lock = Lock()
 
 
 def _fb_set(key: str, value: str, ex: int | None = None) -> None:
@@ -28,6 +30,19 @@ def _fb_get(key: str) -> str | None:
 
 def _fb_delete(key: str) -> None:
     _fallback.pop(key, None)
+
+
+def _fb_set_if_absent(key: str, value: str, ex: int | None = None) -> bool:
+    with _fallback_lock:
+        entry = _fallback.get(key)
+        if entry is not None:
+            _, expires_at = entry
+            if expires_at and time.time() > expires_at:
+                del _fallback[key]
+            else:
+                return False
+        _fb_set(key, value, ex)
+        return True
 
 
 # ── Redis client wrapper ──────────────────────────────────────────────────────
@@ -76,3 +91,14 @@ def cache_delete(key: str) -> None:
         except Exception as exc:
             logger.warning("Redis delete failed, falling back: %s", exc)
     _fb_delete(key)
+
+
+def cache_set_if_absent(key: str, value: str, ex: int | None = None) -> bool:
+    """Atomically set a key only when it does not already exist."""
+    if _redis:
+        try:
+            result = _redis.set(key, value, ex=ex, nx=True)
+            return result is True or result == "OK"
+        except Exception as exc:
+            logger.warning("Redis set-if-absent failed, using in-memory fallback: %s", exc)
+    return _fb_set_if_absent(key, value, ex)

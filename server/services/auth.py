@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import secrets
+import hashlib
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -13,7 +14,7 @@ from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from core.config import DOMAIN, GOOGLE_CLIENT_ID, JWT_ALGORITHM, JWT_SECRET_KEY, RESEND_API_KEY
-from core.redis_client import cache_delete, cache_get, cache_set
+from core.redis_client import cache_delete, cache_get, cache_set, cache_set_if_absent
 from core.security import create_access_token, hash_password, verify_password
 from repositories import user as user_repo
 
@@ -260,6 +261,7 @@ async def signup_verify_otp(email: str, otp: str) -> str:
     payload = {
         "sub": email,
         "purpose": "signup",
+        "jti": secrets.token_urlsafe(24),
         "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
     }
     signup_token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
@@ -292,6 +294,14 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
             detail="Signup session expired. Please start again.",
         )
 
+    signup_claim = payload.get("jti") or hashlib.sha256(signup_token.encode()).hexdigest()
+    claim_key = f"signup_claim:{signup_claim}"
+    if not cache_set_if_absent(claim_key, email, ex=_RESET_TTL):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This signup has already been submitted or is currently being processed.",
+        )
+
     logger.info(f"[SIGNUP-STEP3] Hashing password for {email}")
     hashed_pw = hash_password(password)
     
@@ -300,6 +310,7 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
         user = await user_repo.create_user(email=email, hashed_password=hashed_pw)
         logger.info(f"[SIGNUP-STEP3] User created successfully. ID: {user['id']}, Email: {user['email']}")
     except IntegrityError as exc:
+        cache_delete(claim_key)
         constraint_name = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         logger.error(
             "[SIGNUP-STEP3] User creation integrity error for %s: constraint=%s, error=%s",
@@ -317,6 +328,7 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
             detail="Unable to create your account. Please try again later.",
         ) from exc
     except Exception:
+        cache_delete(claim_key)
         logger.exception("[SIGNUP-STEP3] Unexpected user creation failure for %s", email)
         raise
 
