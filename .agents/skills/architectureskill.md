@@ -382,6 +382,26 @@ Canonical request flow (read feed): `GET /resource?cursor&limit` → (server cac
 
 ---
 
+## 16. UX Feedback
+
+Every user action that mutates state must produce visible feedback. Silent success or silent failure is a bug.
+
+| Outcome | Mechanism |
+|---|---|
+| Async success (login, save, submit) | Toast — green, auto-dismiss 4 s |
+| Async error | Inline error banner **or** toast — red, persists until dismissed |
+| Destructive action (delete, logout) | Confirmation prompt before action |
+| Long operation in progress | Button disabled + loading label; never leave the user guessing |
+
+**Rules:**
+- A global `ToastContext` (`context/ToastContext.jsx`) exposes `toast.success(msg)`, `toast.error(msg)`, `toast.info(msg)`. Pages and hooks call it; they never render their own toast UI.
+- Inline error banners (red box inside the form) are for **field-level or form-level validation errors** that the user must fix before proceeding.
+- Toasts are for **transient outcomes** (success confirmations, background errors) that don't block the form.
+- After a successful action that navigates away, fire the toast **before** `navigate()` so it renders on the destination page.
+- Never swallow errors silently — always surface them via toast or inline banner.
+
+---
+
 ## 15. New-Project Checklist
 
 **Backend**

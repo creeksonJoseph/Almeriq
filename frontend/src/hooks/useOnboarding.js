@@ -5,8 +5,10 @@
  */
 import { useState, useCallback } from "react";
 import { onboardingApi } from "../lib/api";
+import { useToast } from "../context/ToastContext";
 
 export function useOnboarding(user, onComplete) {
+  const toast = useToast();
   const [step, setStep] = useState(1);
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [nationality, setNationality] = useState(user?.nationality || "United States");
@@ -66,6 +68,7 @@ export function useOnboarding(user, onComplete) {
         id_number: idNumber.trim(),
         role,
       });
+      toast.success("Setup complete! Welcome to Alimeriq.");
       if (onComplete) {
         onComplete(res.user);
       }

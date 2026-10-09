@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 export function useSignupFlow() {
   const { signupSendOtp, signupVerifyOtp, signupComplete, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -83,10 +85,12 @@ export function useSignupFlow() {
     setError("");
     try {
       const user = await signupComplete(signupToken, password);
-      navigate(user.onboarding_completed ? "/dashboard" : "/");
+      toast.success("Account created! Welcome to Alimeriq.");
+      navigate(user.onboarding_completed ? "/dashboard" : "/dashboard");
     } catch (err) {
       if (err.status === 409) {
-        navigate("/login", { state: { successMessage: "Account already created. Please sign in." } });
+        toast.info("Account already created. Please sign in.");
+        navigate("/login");
         return;
       }
       setError(err.message);
@@ -100,7 +104,8 @@ export function useSignupFlow() {
     setError("");
     try {
       const user = await googleLogin(credential);
-      navigate(user.onboarding_completed ? "/dashboard" : "/");
+      toast.success("Signed in with Google!");
+      navigate(user.onboarding_completed ? "/dashboard" : "/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {

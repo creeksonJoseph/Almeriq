@@ -6,11 +6,13 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import BrandLogo from "../components/BrandLogo";
 import { resetPasswordApi } from "../lib/api";
+import { useToast } from "../context/ToastContext";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
+  const toast = useToast();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,7 +44,8 @@ export default function ResetPasswordPage() {
     setError("");
     try {
       await resetPasswordApi(token, password);
-      navigate("/login?reset=1");
+      toast.success("Password updated. You can now sign in.");
+      navigate("/login");
     } catch (err) {
       setError(err.message);
     } finally {

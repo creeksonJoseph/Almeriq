@@ -2,22 +2,30 @@
  * Pages/LoginPage.jsx - Canonical Sign In Page.
  */
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import BrandLogo from "../components/BrandLogo";
+import { useToast } from "../context/ToastContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, googleLogin } = useAuth();
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [searchParams] = useSearchParams();
-  const resetSuccess = searchParams.get("reset") === "1";
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      toast.success(location.state.successMessage);
+    } else if (new URLSearchParams(location.search).get("reset") === "1") {
+      toast.success("Password updated successfully. You can now sign in.");
+    }
+  }, []);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -89,7 +97,8 @@ export default function LoginPage() {
 
     try {
       const user = await login(cleanEmail, password);
-      navigate(user.onboarding_completed ? "/dashboard" : "/");
+      toast.success("Welcome back!");
+      navigate(user.onboarding_completed ? "/dashboard" : "/dashboard");
     } catch (err) {
       setError(err.message || "Invalid email or password.");
     } finally {
@@ -125,12 +134,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-5">
-            {resetSuccess && (
-            <div className="p-3 rounded-xl bg-white/5 text-white/80 text-xs">
-              Password updated successfully. You can now sign in.
-            </div>
-          )}
-          {error && (
+            {error && (
               <div className="p-3 rounded-xl bg-red-500/10 text-red-200 text-xs">
                 {error}
               </div>
