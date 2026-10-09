@@ -254,13 +254,6 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
             detail="Signup session expired. Please start again.",
         )
 
-    if await user_repo.email_exists(email):
-        cache_delete(f"signup_token:{signup_token}")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists.",
-        )
-
     hashed_pw = hash_password(password)
     try:
         user = await user_repo.create_user(email=email, hashed_password=hashed_pw)

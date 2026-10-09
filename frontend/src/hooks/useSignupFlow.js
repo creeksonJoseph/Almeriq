@@ -85,6 +85,10 @@ export function useSignupFlow() {
       const user = await signupComplete(signupToken, password);
       navigate(user.onboarding_completed ? "/dashboard" : "/");
     } catch (err) {
+      if (err.status === 409) {
+        navigate("/login", { state: { successMessage: "Account already created. Please sign in." } });
+        return;
+      }
       setError(err.message);
     } finally {
       setLoading(false);

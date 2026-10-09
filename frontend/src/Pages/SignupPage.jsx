@@ -140,7 +140,7 @@ export default function SignupPage() {
                       spellCheck="false"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value.toLowerCase().replace(/\s+/g, "")); clearError(); }}
-                      placeholder="you@company.com"
+                      placeholder="name@example.com"
                       className="alq-input bg-[#13141a] text-white"
                     />
                   </div>
