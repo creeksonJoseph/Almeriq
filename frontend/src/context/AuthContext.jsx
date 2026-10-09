@@ -74,11 +74,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signupVerifyOtp = useCallback(async (email, otp) => {
-    return await signupVerifyOtpApi(email, otp);
+    await signupVerifyOtpApi(email, otp);
+    // cookie set by server
   }, []);
 
-  const signupComplete = useCallback(async (signup_token, password) => {
-    const res = await signupCompleteApi(signup_token, password);
+  const signupComplete = useCallback(async (password) => {
+    const res = await signupCompleteApi(password);
     setUser(res.user);
     return res.user;
   }, []);

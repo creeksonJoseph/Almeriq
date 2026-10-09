@@ -11,7 +11,6 @@ export function useSignupFlow() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [signupToken, setSignupToken] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -68,8 +67,7 @@ export function useSignupFlow() {
     setLoading(true);
     setError("");
     try {
-      const token = await signupVerifyOtp(email.trim().toLowerCase(), otp.trim());
-      setSignupToken(token);
+      await signupVerifyOtp(email.trim().toLowerCase(), otp.trim());
       setStep(3);
     } catch (err) {
       setError(err.message);
@@ -84,7 +82,7 @@ export function useSignupFlow() {
     setLoading(true);
     setError("");
     try {
-      const user = await signupComplete(signupToken, password);
+      const user = await signupComplete(password);
       toast.success("Account created! Welcome to Alimeriq.");
       navigate(user.onboarding_completed ? "/dashboard" : "/dashboard");
     } catch (err) {
@@ -97,7 +95,7 @@ export function useSignupFlow() {
     } finally {
       setLoading(false);
     }
-  }, [password, confirmPassword, signupToken, signupComplete, navigate]);
+  }, [password, confirmPassword, signupComplete, navigate]);
 
   const handleGoogleSuccess = useCallback(async (credential) => {
     setLoading(true);

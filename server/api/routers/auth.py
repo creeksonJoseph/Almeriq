@@ -1,7 +1,7 @@
 """api/routers/auth.py - Endpoints for 2-Phase Auth & Progressive Onboarding Wizard."""
 from __future__ import annotations
 
-from fastapi import APIRouter, BackgroundTasks, Response, Depends, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, Depends, status
 from core.config import COOKIE_NAME, COOKIE_SECURE, COOKIE_SAMESITE, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 from schemas.auth import (
     UserRegisterRequest,
@@ -15,12 +15,13 @@ from schemas.auth import (
     SignupSendOtpRequest,
     SignupVerifyOtpRequest,
     SignupCompleteRequest,
-    SignupTokenResponse,
 )
 from services import auth as svc
 from api.dependencies import get_current_user
 
 router = APIRouter(tags=["auth"])
+
+_SIGNUP_COOKIE = "alq_signup_token"
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
@@ -68,21 +69,39 @@ async def signup_send_otp(body: SignupSendOtpRequest, background_tasks: Backgrou
     return {"message": "Verification code sent."}
 
 
-@router.post("/auth/signup/verify-otp", status_code=status.HTTP_200_OK, response_model=SignupTokenResponse)
-@router.post("/api/auth/signup/verify-otp", status_code=status.HTTP_200_OK, response_model=SignupTokenResponse)
-async def signup_verify_otp(body: SignupVerifyOtpRequest) -> dict:
-    """Step 2: Verify OTP and receive a short-lived signup_token."""
+@router.post("/auth/signup/verify-otp", status_code=status.HTTP_200_OK)
+@router.post("/api/auth/signup/verify-otp", status_code=status.HTTP_200_OK)
+async def signup_verify_otp(body: SignupVerifyOtpRequest, response: Response) -> dict:
+    """Step 2: Verify OTP and set signup_token as HttpOnly cookie."""
     signup_token = await svc.signup_verify_otp(body.email, body.otp)
-    return {"signup_token": signup_token}
+    response.set_cookie(
+        key=_SIGNUP_COOKIE,
+        value=signup_token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=60 * 15,
+        path="/",
+    )
+    return {"message": "Email verified."}
 
 
 @router.post("/auth/signup/complete", status_code=status.HTTP_201_CREATED, response_model=AuthMessageResponse)
 @router.post("/api/auth/signup/complete", status_code=status.HTTP_201_CREATED, response_model=AuthMessageResponse)
-async def signup_complete(body: SignupCompleteRequest, response: Response) -> dict:
-    """Step 3: Set password, create account, set auth cookie."""
+async def signup_complete(body: SignupCompleteRequest, request: Request, response: Response) -> dict:
+    """Step 3: Read signup_token from HttpOnly cookie, create account, set auth cookie."""
+    signup_token = request.cookies.get(_SIGNUP_COOKIE)
+    if not signup_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Signup session expired. Please start again.",
+        )
     response.headers["Cache-Control"] = "no-store"
-    user, token = await svc.signup_complete(body.signup_token, body.password)
+    user, token = await svc.signup_complete(signup_token, body.password)
     _set_auth_cookie(response, token)
+    response.delete_cookie(
+        key=_SIGNUP_COOKIE, path="/", httponly=True, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE
+    )
     return {"message": "Account created. Please complete onboarding.", "user": user}
 
 

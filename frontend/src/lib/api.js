@@ -132,8 +132,8 @@ export async function signupSendOtpApi(email) {
 
 export async function signupVerifyOtpApi(email, otp) {
   try {
-    const response = await apiClient.post("/auth/signup/verify-otp", { email, otp });
-    return response.data.signup_token;
+    await apiClient.post("/auth/signup/verify-otp", { email, otp });
+    // signup_token is set as HttpOnly cookie by server — JS never sees it
   } catch (error) {
     const err = new Error(extractErrorMessage(error, "Invalid verification code"));
     err.status = error.response?.status;
@@ -141,9 +141,9 @@ export async function signupVerifyOtpApi(email, otp) {
   }
 }
 
-export async function signupCompleteApi(signup_token, password) {
+export async function signupCompleteApi(password) {
   try {
-    const response = await apiClient.post("/auth/signup/complete", { signup_token, password });
+    const response = await apiClient.post("/auth/signup/complete", { password });
     return response.data;
   } catch (error) {
     const err = new Error(extractErrorMessage(error, "Failed to create account"));

@@ -83,12 +83,7 @@ class SignupVerifyOtpRequest(BaseModel):
 
 
 class SignupCompleteRequest(BaseModel):
-    signup_token: str
     password: str = Field(..., min_length=8, max_length=128)
-
-
-class SignupTokenResponse(BaseModel):
-    signup_token: str
 
 
 class ForgotPasswordRequest(BaseModel):

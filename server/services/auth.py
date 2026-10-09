@@ -3,14 +3,16 @@ from __future__ import annotations
 
 import logging
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+import jwt
 
 import httpx
 import resend
 from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
-from core.config import DOMAIN, GOOGLE_CLIENT_ID, RESEND_API_KEY
+from core.config import DOMAIN, GOOGLE_CLIENT_ID, JWT_ALGORITHM, JWT_SECRET_KEY, RESEND_API_KEY
 from core.redis_client import cache_delete, cache_get, cache_set
 from core.security import create_access_token, hash_password, verify_password
 from repositories import user as user_repo
@@ -20,7 +22,6 @@ resend.api_key = RESEND_API_KEY
 
 _RESET_TTL = 60 * 15       # 15 minutes
 _OTP_TTL = 60 * 5          # 5 minutes
-_SIGNUP_TOKEN_TTL = 60 * 15  # 15 minutes
 
 
 async def register_user(email: str, password: str) -> tuple[dict, str]:
@@ -227,8 +228,8 @@ async def signup_send_otp(email: str, background_tasks: BackgroundTasks) -> None
 
 async def signup_verify_otp(email: str, otp: str) -> str:
     """
-    Step 2: Validate OTP, delete it, issue a short-lived signup_token.
-    Returns the signup_token string.
+    Step 2: Validate OTP, delete it, issue a short-lived JWT signup_token.
+    JWT is self-contained — no Redis lookup needed at step 3.
     """
     stored = cache_get(f"signup_otp:{email}")
     if not stored or stored != otp.strip():
@@ -238,17 +239,25 @@ async def signup_verify_otp(email: str, otp: str) -> str:
         )
     cache_delete(f"signup_otp:{email}")
 
-    signup_token = secrets.token_urlsafe(32)
-    cache_set(f"signup_token:{signup_token}", email, ex=_SIGNUP_TOKEN_TTL)
-    return signup_token
+    payload = {
+        "sub": email,
+        "purpose": "signup",
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
     """
-    Step 3: Consume signup_token, create the user, return (user_dict, access_token).
+    Step 3: Decode JWT signup_token, create the user, return (user_dict, access_token).
+    No Redis lookup — JWT is self-contained.
     """
-    email = cache_get(f"signup_token:{signup_token}")
-    if not email:
+    try:
+        payload = jwt.decode(signup_token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        if payload.get("purpose") != "signup":
+            raise ValueError("wrong purpose")
+        email: str = payload["sub"]
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Signup session expired. Please start again.",
@@ -265,7 +274,6 @@ async def signup_complete(signup_token: str, password: str) -> tuple[dict, str]:
             )
         raise
 
-    cache_delete(f"signup_token:{signup_token}")
     token = create_access_token(data={"sub": str(user["id"]), "email": user["email"]})
     return user, token
 
