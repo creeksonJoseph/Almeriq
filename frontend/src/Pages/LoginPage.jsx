@@ -123,7 +123,7 @@ export default function LoginPage() {
         className="absolute left-6 top-8 z-10 opacity-80 sm:left-10 sm:top-12"
       />
       <div className="auth-scroll">
-        <div className="auth-content max-w-[420px] animate-fade-in">
+        <div className="auth-content animate-fade-in">
           <div className="text-center mb-6">
             <h2 className="font-serif text-xl text-white font-medium tracking-tight">
               Sign In to Alimeriq

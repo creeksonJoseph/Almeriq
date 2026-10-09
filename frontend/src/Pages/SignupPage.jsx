@@ -136,7 +136,7 @@ export default function SignupPage() {
       />
 
       <div className="auth-scroll">
-        <div className="auth-content max-w-[420px] animate-fade-in">
+        <div className="auth-content animate-fade-in">
           <StepDots current={step} />
 
           <div className="text-center mb-6">

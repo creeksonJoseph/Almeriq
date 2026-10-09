@@ -45,6 +45,7 @@ body {
 
 .auth-content {
   width: 100%;
+  max-width: 360px;
   margin-block: auto;
   margin-inline: auto;
 }
@@ -57,6 +58,10 @@ body {
 @media (min-width: 640px) {
   .auth-scroll {
     padding: 4rem 1.5rem 2.5rem;
+  }
+
+  .auth-content {
+    max-width: 420px;
   }
 }
 
