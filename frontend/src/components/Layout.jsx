@@ -12,10 +12,6 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-[#0c0e13] text-white flex flex-col antialiased">
-      <a className="skip-link" href="#main-content">
-        Skip to main content
-      </a>
-
       {!isAuthPage && <HeaderNavigation currentUser={user} onLogout={logout} />}
 
       <main

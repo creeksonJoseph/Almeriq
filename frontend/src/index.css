@@ -87,25 +87,6 @@ body {
   border-radius: 4px;
 }
 
-/* ── Skip link ────────────────────────────────────────── */
-.skip-link {
-  position: absolute;
-  left: -9999px;
-  top: 1rem;
-  padding: 8px 16px;
-  background: #c9a15a;
-  color: #161410;
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  border-radius: 8px;
-  z-index: 9999;
-  text-decoration: none;
-}
-.skip-link:focus {
-  left: 1rem;
-}
-
 /* ── Visually hidden (accessible) ───────────────────── */
 .visually-hidden {
   position: absolute;
