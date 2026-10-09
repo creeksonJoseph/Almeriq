@@ -49,6 +49,11 @@ body {
   margin-inline: auto;
 }
 
+.auth-content button[type="submit"] {
+  min-height: 44px;
+  line-height: 1.25;
+}
+
 @media (min-width: 640px) {
   .auth-scroll {
     padding: 4rem 1.5rem 2.5rem;
