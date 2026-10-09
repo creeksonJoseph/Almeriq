@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import BrandLogo from "../components/BrandLogo";
+import { forgotPasswordApi } from "../lib/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -15,20 +16,10 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) return;
-
     setLoading(true);
     setError("");
-
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanEmail }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || "Something went wrong.");
-      }
+      await forgotPasswordApi(cleanEmail);
       setSent(true);
     } catch (err) {
       setError(err.message);
@@ -105,7 +96,7 @@ export default function ForgotPasswordPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                    className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-[background-color,transform] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] ${
                       !loading
                         ? "bg-[#13141a] text-white hover:bg-[#181a22]"
                         : "bg-[#22242c] text-white/50 cursor-not-allowed"
@@ -118,7 +109,8 @@ export default function ForgotPasswordPage() {
               <div className="pt-2 text-center">
                 <Link
                   to="/login"
-                  className="text-xs text-white/60 hover:text-[#f2ca50] transition-colors"
+                  className="text-xs text-white/60 hover:text-[#f2ca50]"
+                  style={{ transition: "color 400ms cubic-bezier(0.32,0.72,0,1)" }}
                 >
                   Back to Sign In
                 </Link>

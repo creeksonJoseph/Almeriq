@@ -216,6 +216,18 @@ body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
+/* ── Step entry animation ───────────────────────────────── */
+@keyframes alq-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ── Reduced motion: respect user preference ─────────── */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -117,6 +117,42 @@ export async function putWaitlist(payload) {
 // ── Authentication & Onboarding API Methods ─────────────────────────────────
 
 /**
+ * OTP Signup Flow
+ */
+export async function signupSendOtpApi(email) {
+  try {
+    const response = await apiClient.post("/auth/signup/send-otp", { email });
+    return response.data;
+  } catch (error) {
+    const err = new Error(extractErrorMessage(error, "Failed to send verification code"));
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+export async function signupVerifyOtpApi(email, otp) {
+  try {
+    const response = await apiClient.post("/auth/signup/verify-otp", { email, otp });
+    return response.data.signup_token;
+  } catch (error) {
+    const err = new Error(extractErrorMessage(error, "Invalid verification code"));
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+export async function signupCompleteApi(signup_token, password) {
+  try {
+    const response = await apiClient.post("/auth/signup/complete", { signup_token, password });
+    return response.data;
+  } catch (error) {
+    const err = new Error(extractErrorMessage(error, "Failed to create account"));
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+/**
  * Phase 1: Low-Friction Gate Sign Up
  */
 export async function registerApi({ email, password }) {
@@ -197,5 +233,27 @@ export async function logoutApi() {
     return response.data;
   } catch (error) {
     return null;
+  }
+}
+
+export async function forgotPasswordApi(email) {
+  try {
+    const response = await apiClient.post("/auth/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    const err = new Error(extractErrorMessage(error, "Failed to send reset link"));
+    err.status = error.response?.status;
+    throw err;
+  }
+}
+
+export async function resetPasswordApi(token, password) {
+  try {
+    const response = await apiClient.post("/auth/reset-password", { token, password });
+    return response.data;
+  } catch (error) {
+    const err = new Error(extractErrorMessage(error, "Failed to reset password"));
+    err.status = error.response?.status;
+    throw err;
   }
 }

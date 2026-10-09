@@ -1,7 +1,7 @@
 """api/routers/auth.py - Endpoints for 2-Phase Auth & Progressive Onboarding Wizard."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Response, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Response, Depends, status
 from core.config import COOKIE_NAME, COOKIE_SECURE, COOKIE_SAMESITE, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 from schemas.auth import (
     UserRegisterRequest,
@@ -12,6 +12,10 @@ from schemas.auth import (
     AuthMessageResponse,
     ForgotPasswordRequest,
     ResetPasswordRequest,
+    SignupSendOtpRequest,
+    SignupVerifyOtpRequest,
+    SignupCompleteRequest,
+    SignupTokenResponse,
 )
 from services import auth as svc
 from api.dependencies import get_current_user
@@ -48,13 +52,36 @@ def _clear_auth_cookie(response: Response) -> None:
 @router.post("/api/auth/register", status_code=status.HTTP_201_CREATED, response_model=AuthMessageResponse)
 async def register(body: UserRegisterRequest, response: Response) -> dict:
     """
-    Phase 1: Minimal Sign-Up (Email & Password only).
+    Legacy direct register (kept for backwards compat). Prefer the OTP flow.
     """
     response.headers["Cache-Control"] = "no-store"
-    user, token = await svc.register_user(
-        email=body.email,
-        password=body.password,
-    )
+    user, token = await svc.register_user(email=body.email, password=body.password)
+    _set_auth_cookie(response, token)
+    return {"message": "Account created. Please complete onboarding.", "user": user}
+
+
+@router.post("/auth/signup/send-otp", status_code=status.HTTP_200_OK)
+@router.post("/api/auth/signup/send-otp", status_code=status.HTTP_200_OK)
+async def signup_send_otp(body: SignupSendOtpRequest, background_tasks: BackgroundTasks) -> dict:
+    """Step 1: Send a 6-digit OTP to the provided email."""
+    await svc.signup_send_otp(body.email, background_tasks)
+    return {"message": "Verification code sent."}
+
+
+@router.post("/auth/signup/verify-otp", status_code=status.HTTP_200_OK, response_model=SignupTokenResponse)
+@router.post("/api/auth/signup/verify-otp", status_code=status.HTTP_200_OK, response_model=SignupTokenResponse)
+async def signup_verify_otp(body: SignupVerifyOtpRequest) -> dict:
+    """Step 2: Verify OTP and receive a short-lived signup_token."""
+    signup_token = await svc.signup_verify_otp(body.email, body.otp)
+    return {"signup_token": signup_token}
+
+
+@router.post("/auth/signup/complete", status_code=status.HTTP_201_CREATED, response_model=AuthMessageResponse)
+@router.post("/api/auth/signup/complete", status_code=status.HTTP_201_CREATED, response_model=AuthMessageResponse)
+async def signup_complete(body: SignupCompleteRequest, response: Response) -> dict:
+    """Step 3: Set password, create account, set auth cookie."""
+    response.headers["Cache-Control"] = "no-store"
+    user, token = await svc.signup_complete(body.signup_token, body.password)
     _set_auth_cookie(response, token)
     return {"message": "Account created. Please complete onboarding.", "user": user}
 
@@ -99,15 +126,12 @@ async def complete_onboarding(
     and marks onboarding completed when finished.
     """
     response.headers["Cache-Control"] = "no-store"
-    # Mark completed if role is provided or explicitly indicated
-    is_complete = bool(body.role or (body.full_name and body.id_number))
     updated_user = await svc.update_onboarding(
         user_id=current_user["id"],
         full_name=body.full_name,
         nationality=body.nationality,
         id_number=body.id_number,
         role=body.role,
-        is_complete=is_complete,
     )
     return {"message": "Onboarding step saved", "user": updated_user}
 
@@ -138,9 +162,9 @@ async def get_me(
 
 @router.post("/auth/forgot-password", status_code=status.HTTP_200_OK)
 @router.post("/api/auth/forgot-password", status_code=status.HTTP_200_OK)
-async def forgot_password(body: ForgotPasswordRequest) -> dict:
+async def forgot_password(body: ForgotPasswordRequest, background_tasks: BackgroundTasks) -> dict:
     """Request a password reset email."""
-    await svc.request_password_reset(body.email)
+    await svc.request_password_reset(body.email, background_tasks)
     return {"message": "If an account with that email exists, a reset link has been sent."}
 
 

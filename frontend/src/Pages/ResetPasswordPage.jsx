@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import BrandLogo from "../components/BrandLogo";
+import { resetPasswordApi } from "../lib/api";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -39,15 +40,8 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     setError("");
-
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.detail || "Something went wrong.");
+      await resetPasswordApi(token, password);
       navigate("/login?reset=1");
     } catch (err) {
       setError(err.message);
@@ -106,7 +100,7 @@ export default function ResetPasswordPage() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+                    className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-[color] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -130,7 +124,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                  className={`w-full px-6 py-3 rounded-full text-xs font-bold uppercase transition-[background-color,transform] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] ${
                     !loading
                       ? "bg-[#13141a] text-white hover:bg-[#181a22]"
                       : "bg-[#22242c] text-white/50 cursor-not-allowed"

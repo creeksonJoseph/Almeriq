@@ -12,6 +12,9 @@ import {
   googleAuthApi,
   logoutApi,
   onboardingApi,
+  signupSendOtpApi,
+  signupVerifyOtpApi,
+  signupCompleteApi,
 } from "../lib/api";
 
 const AuthContext = createContext(null);
@@ -66,6 +69,20 @@ export function AuthProvider({ children }) {
     return res.user;
   }, []);
 
+  const signupSendOtp = useCallback(async (email) => {
+    return await signupSendOtpApi(email);
+  }, []);
+
+  const signupVerifyOtp = useCallback(async (email, otp) => {
+    return await signupVerifyOtpApi(email, otp);
+  }, []);
+
+  const signupComplete = useCallback(async (signup_token, password) => {
+    const res = await signupCompleteApi(signup_token, password);
+    setUser(res.user);
+    return res.user;
+  }, []);
+
   const updateUser = useCallback((updatedUserData) => {
     setUser((prev) => ({ ...(prev || {}), ...updatedUserData }));
   }, []);
@@ -83,6 +100,9 @@ export function AuthProvider({ children }) {
         logout,
         completeOnboarding,
         updateUser,
+        signupSendOtp,
+        signupVerifyOtp,
+        signupComplete,
       }}
     >
       {children}

@@ -63,6 +63,34 @@ class AuthMessageResponse(BaseModel):
     user: UserResponse
 
 
+class SignupSendOtpRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        return v.strip().lower() if isinstance(v, str) else v
+
+
+class SignupVerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        return v.strip().lower() if isinstance(v, str) else v
+
+
+class SignupCompleteRequest(BaseModel):
+    signup_token: str
+    password: str = Field(..., min_length=8, max_length=128)
+
+
+class SignupTokenResponse(BaseModel):
+    signup_token: str
+
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

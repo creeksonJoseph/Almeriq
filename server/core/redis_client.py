@@ -31,15 +31,22 @@ def _fb_delete(key: str) -> None:
 
 
 # ── Redis client wrapper ──────────────────────────────────────────────────────
+# Separated into two try/except blocks so a missing package vs. missing/bad
+# credentials produce distinct log messages and don't mask each other.
 _redis = None
 
 try:
+    from upstash_redis import Redis as _UpstashRedis
     from core.config import UPSTASH_REDIS_URL, UPSTASH_REDIS_TOKEN
-    from upstash_redis import Redis
-    _redis = Redis(url=UPSTASH_REDIS_URL, token=UPSTASH_REDIS_TOKEN)
-    logger.info("Upstash Redis connected")
+    if UPSTASH_REDIS_URL and UPSTASH_REDIS_TOKEN:
+        _redis = _UpstashRedis(url=UPSTASH_REDIS_URL, token=UPSTASH_REDIS_TOKEN)
+        logger.info("Upstash Redis connected")
+    else:
+        logger.warning("UPSTASH_REDIS_URL/TOKEN not set — using in-memory fallback")
+except ImportError:
+    logger.warning("upstash_redis package not installed — using in-memory fallback")
 except Exception as exc:
-    logger.warning("Redis unavailable, using in-memory fallback: %s", exc)
+    logger.warning("Redis init failed, using in-memory fallback: %s", exc)
 
 
 def cache_set(key: str, value: str, ex: int | None = None) -> None:
