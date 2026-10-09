@@ -49,15 +49,15 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none">
+      <div className="fixed top-6 left-1/2 z-9999 flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 flex-col items-center gap-2 pointer-events-none sm:top-8">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs font-medium shadow-lg pointer-events-auto ${STYLES[t.type]}`}
+            className={`flex w-full max-w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-xs font-medium shadow-lg pointer-events-auto ${STYLES[t.type]}`}
             style={{ animation: "alq-step-in 300ms cubic-bezier(0.32,0.72,0,1) both" }}
           >
             {ICONS[t.type]}
-            <span>{t.message}</span>
+            <span className="min-w-0 flex-1 wrap-break-word">{t.message}</span>
             <button
               onClick={() => dismiss(t.id)}
               className="ml-1 opacity-50 hover:opacity-100"
