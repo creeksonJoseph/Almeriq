@@ -39,7 +39,7 @@ export default function StepRole({ role, setRole, loading, onBack, onSubmit }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
         {ROLES.map((r) => {
           const isSelected = role === r.id;
           return (

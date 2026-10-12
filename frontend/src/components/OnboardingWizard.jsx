@@ -26,7 +26,11 @@ export default function OnboardingWizard({ user, onComplete }) {
   return (
     <div className="auth-screen">
       <div className="auth-scroll onboarding-scroll">
-        <div className="auth-content space-y-6">
+        <div
+          className={`auth-content space-y-6 ${
+            step === 3 ? "sm:max-w-2xl" : ""
+          }`}
+        >
           <div>
             <p className="text-xs text-white/70 font-mono mb-3">
               Step {step} of 3{" · "}

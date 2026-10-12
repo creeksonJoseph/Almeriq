@@ -37,6 +37,7 @@ body {
   position: relative;
   z-index: 10;
   display: flex;
+  height: 100%;
   min-height: 100%;
   flex-direction: column;
   overflow-y: auto;
@@ -63,6 +64,11 @@ body {
 @media (min-width: 640px) {
   .auth-scroll {
     padding: 4rem 1.5rem 2.5rem;
+  }
+
+  .onboarding-scroll {
+    padding-top: 2rem;
+    padding-bottom: 2.5rem;
   }
 
   .auth-content {
