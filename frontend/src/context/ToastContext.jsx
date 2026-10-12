@@ -84,7 +84,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed top-6 left-1/2 z-9999 flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 flex-col items-center gap-2 pointer-events-none sm:top-8">
+      <div className="fixed right-3 top-3 z-[9999] flex w-[min(92vw,24rem)] flex-col items-stretch gap-2 pointer-events-none sm:right-5 sm:top-5">
         {toasts.map((t) => (
           <div
             key={t.id}
@@ -94,7 +94,7 @@ export function ToastProvider({ children }) {
             }}
           >
             {ICONS[t.type]}
-            <span className="min-w-0 flex-1 wrap-break-word">{t.message}</span>
+            <span className="min-w-0 flex-1 break-words">{t.message}</span>
             <button
               onClick={() => dismiss(t.id)}
               className="ml-1 opacity-50 hover:opacity-100"

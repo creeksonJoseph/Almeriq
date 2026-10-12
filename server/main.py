@@ -17,6 +17,7 @@ from core.db import close_db
 from api.routers.waitlist import router as waitlist_router
 from api.routers.health import router as health_router
 from api.routers.auth import router as auth_router
+from api.routers.founder import router as founder_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
 
@@ -57,5 +58,5 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(waitlist_router)
 app.include_router(auth_router)
-
+app.include_router(founder_router)
 

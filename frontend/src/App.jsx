@@ -37,6 +37,9 @@ const SignupPage = lazyWithRetry(() => import("./Pages/SignupPage"));
 const DashboardPage = lazyWithRetry(() => import("./Pages/DashboardPage"));
 const NotFoundPage = lazyWithRetry(() => import("./Pages/NotFoundPage"));
 const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/ForgotPasswordPage"));
+const FounderIntakePage = lazyWithRetry(() => import("./Pages/FounderIntakePage"));
+const FounderAnalysisPage = lazyWithRetry(() => import("./Pages/FounderAnalysisPage"));
+const FounderRoadmapPage = lazyWithRetry(() => import("./Pages/FounderRoadmapPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">
@@ -64,6 +67,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/intake"
+              element={
+                <ProtectedRoute>
+                  <FounderIntakePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/analysis"
+              element={
+                <ProtectedRoute>
+                  <FounderAnalysisPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/roadmap"
+              element={
+                <ProtectedRoute>
+                  <FounderRoadmapPage />
                 </ProtectedRoute>
               }
             />

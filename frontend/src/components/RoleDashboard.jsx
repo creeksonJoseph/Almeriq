@@ -16,6 +16,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ROLE_DATA = {
   founder: {
@@ -186,6 +187,32 @@ function WorkspacePanel({ data }) {
   );
 }
 
+function FounderStudioEntry() {
+  return (
+    <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-7">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
+        Founder studio
+      </p>
+      <h2 className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl">
+        Build your venture plan step by step.
+      </h2>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/60">
+        Complete your venture brief, receive AI analysis, and follow a focused
+        execution roadmap in a dedicated workflow.
+      </p>
+      <div className="mt-6">
+        <Link
+          to="/founder/intake"
+          className="inline-flex items-center gap-2 rounded-full bg-[#c9a15a] px-5 py-3 text-xs font-semibold text-[#161410] hover:brightness-105"
+        >
+          Open founder studio
+          <ArrowUpRight size={15} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function Dashboard({ user, onLogout, onRestartOnboarding }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("overview");
@@ -295,6 +322,9 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
         </div>
 
         {activeNav === "overview" && (
+          user?.role === "founder" ? (
+            <FounderStudioEntry />
+          ) : (
           <>
             <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {role.stats.map((stat) => (
@@ -326,6 +356,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
               </div>
             </div>
           </>
+          )
         )}
 
         {activeNav === "discover" && (

@@ -219,7 +219,7 @@ export async function getMeApi() {
   try {
     const response = await apiClient.get("/auth/me");
     return response.data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -231,7 +231,7 @@ export async function logoutApi() {
   try {
     const response = await apiClient.post("/auth/logout");
     return response.data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -254,6 +254,20 @@ export async function resetPasswordApi(email, otp, newPassword) {
   } catch (error) {
     const err = new Error(extractErrorMessage(error, "Failed to reset password"));
     err.status = error.response?.status;
+    throw err;
+  }
+}
+
+export async function analyzeFounderIdeaApi(payload) {
+  try {
+    const response = await apiClient.post("/founder/analyze", payload);
+    return response.data;
+  } catch (error) {
+    const err = new Error(
+      extractErrorMessage(error, "Unable to analyze your founder idea"),
+    );
+    err.status = error.response?.status;
+    err.detail = error.response?.data?.detail;
     throw err;
   }
 }
