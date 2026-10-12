@@ -6,9 +6,12 @@ import { useAuth } from "../context/AuthContext";
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const isAuthPage = ["/login", "/signup", "/register", "/forgot-password"].includes(
-    location.pathname,
-  );
+  const isAuthPage = [
+    "/login",
+    "/signup",
+    "/register",
+    "/forgot-password",
+  ].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-[#0c0e13] text-white flex flex-col antialiased">
