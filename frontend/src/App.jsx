@@ -40,6 +40,13 @@ const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/ForgotPasswordPag
 const FounderIntakePage = lazyWithRetry(() => import("./Pages/FounderIntakePage"));
 const FounderAnalysisPage = lazyWithRetry(() => import("./Pages/FounderAnalysisPage"));
 const FounderRoadmapPage = lazyWithRetry(() => import("./Pages/FounderRoadmapPage"));
+const VenturesPage = lazyWithRetry(() => import("./Pages/VenturesPage"));
+const FounderHubPage = lazyWithRetry(() => import("./Pages/FounderHubPage"));
+const FounderValidationPage = lazyWithRetry(() => import("./Pages/FounderValidationPage"));
+const FounderAiToolsPage = lazyWithRetry(() => import("./Pages/FounderAiToolsPage"));
+const FounderProductPage = lazyWithRetry(() => import("./Pages/FounderProductPage"));
+const FounderLegalPage = lazyWithRetry(() => import("./Pages/FounderLegalPage"));
+const FounderOutreachPage = lazyWithRetry(() => import("./Pages/FounderOutreachPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">
@@ -71,6 +78,14 @@ function App() {
               }
             />
             <Route
+              path="/founder"
+              element={
+                <ProtectedRoute>
+                  <FounderHubPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/founder/intake"
               element={
                 <ProtectedRoute>
@@ -91,6 +106,54 @@ function App() {
               element={
                 <ProtectedRoute>
                   <FounderRoadmapPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/ventures"
+              element={
+                <ProtectedRoute>
+                  <VenturesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/validation"
+              element={
+                <ProtectedRoute>
+                  <FounderValidationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/ai-tools"
+              element={
+                <ProtectedRoute>
+                  <FounderAiToolsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/product"
+              element={
+                <ProtectedRoute>
+                  <FounderProductPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/legal"
+              element={
+                <ProtectedRoute>
+                  <FounderLegalPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/founder/outreach"
+              element={
+                <ProtectedRoute>
+                  <FounderOutreachPage />
                 </ProtectedRoute>
               }
             />

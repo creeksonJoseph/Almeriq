@@ -2,21 +2,28 @@ import { useState } from "react";
 import {
   ArrowUpRight,
   Bell,
+  BookOpen,
   BriefcaseBusiness,
   Building2,
   CheckCircle2,
   ChevronRight,
   Clock3,
+  Compass,
+  Cpu,
+  Boxes,
   Home,
+  Lightbulb,
   Menu,
+  Scale,
   Search,
+  Send,
   Settings,
   Target,
   TrendingUp,
   UserRound,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const ROLE_DATA = {
   founder: {
@@ -191,22 +198,27 @@ function FounderStudioEntry() {
   return (
     <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-7">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
-        Founder studio
+        Founder studio suite
       </p>
       <h2 className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl">
-        Build your venture plan step by step.
+        Build, validate & scale your venture.
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/60">
-        Complete your venture brief, receive AI analysis, and follow a focused
-        execution roadmap in a dedicated workflow.
+        Access your dedicated command hub with idea validation, AI business generation (Lean Canvas, Pitch Deck, Projections), entity & IP filings, and investor updates.
       </p>
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          to="/founder/intake"
+          to="/founder"
           className="inline-flex items-center gap-2 rounded-full bg-[#c9a15a] px-5 py-3 text-xs font-semibold text-[#161410] hover:brightness-105"
         >
-          Open founder studio
+          Open founder studio hub
           <ArrowUpRight size={15} />
+        </Link>
+        <Link
+          to="/founder/intake"
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-xs font-semibold text-white hover:bg-white/10"
+        >
+          New venture brief
         </Link>
       </div>
     </div>
@@ -214,6 +226,7 @@ function FounderStudioEntry() {
 }
 
 function Dashboard({ user, onLogout, onRestartOnboarding }) {
+  const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("overview");
   const role = ROLE_DATA[user?.role] || ROLE_DATA.founder;
@@ -229,7 +242,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
   return (
     <div className="mx-auto flex w-full max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:px-8">
       <aside
-        className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-40 w-72 flex-col border-r border-white/10 bg-[#0c0e13] p-5 shadow-2xl lg:static lg:flex lg:h-[calc(100vh-6rem)] lg:w-56 lg:shrink-0 lg:border lg:border-white/10 lg:rounded-2xl lg:shadow-none`}
+        className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-40 w-72 flex-col border-r border-white/10 bg-[#0c0e13] p-5 shadow-2xl lg:static lg:flex lg:h-[calc(100vh-6rem)] lg:w-56 lg:shrink-0 lg:border lg:border-white/10 lg:rounded-2xl lg:shadow-none overflow-y-auto`}
       >
         <div className="mb-8 flex items-center justify-between lg:block">
           <div>
@@ -261,6 +274,80 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
               <span>{label}</span>
             </button>
           ))}
+          {/* Founder Studio Navigation Links */}
+          {user?.role === "founder" && (
+            <div className="pt-3 border-t border-white/10 mt-3">
+              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f2ca50]/70">
+                Founder Studio
+              </p>
+              <div className="space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <Compass size={15} className="text-[#f2ca50]" />
+                  <span>Studio Hub</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/intake"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <Lightbulb size={15} />
+                  <span>Venture Brief</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/ventures"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <BookOpen size={15} />
+                  <span>Explored Ventures</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/validation"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <CheckCircle2 size={15} />
+                  <span>Idea Validation</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/ai-tools"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <Cpu size={15} />
+                  <span>AI Business Builder</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/product"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <Boxes size={15} />
+                  <span>Product Dev</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/legal"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <Scale size={15} />
+                  <span>Legal & Filings</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMobileNavOpen(false); navigate("/founder/outreach"); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                >
+                  <Send size={15} />
+                  <span>Outreach & Hiring</span>
+                </button>
+              </div>
+            </div>
+          )}
         </nav>
         <div className="mt-auto space-y-1 border-t border-white/10 pt-4">
           <button

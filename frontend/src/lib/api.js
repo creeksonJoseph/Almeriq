@@ -33,4 +33,15 @@ export {
 
 export { postWaitlist, putWaitlist } from "./api/waitlist";
 
-export { analyzeFounderIdeaApi } from "./api/founder";
+export {
+  analyzeFounderIdeaApi,
+  listVenturesApi,
+  getVentureApi,
+  deleteVentureApi,
+  getValidationApi,
+  updateValidationApi,
+  listLegalFilingsApi,
+  createLegalFilingApi,
+  executeAiToolApi,
+} from "./api/founder";
+
