@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Menu } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
-export default function HeaderNavigation({ currentUser, onLogout }) {
+export default function HeaderNavigation({ currentUser, onLogout, onOpenSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -21,39 +22,67 @@ export default function HeaderNavigation({ currentUser, onLogout }) {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0c0e13]/90 backdrop-blur-xl border-b border-[#1e2025]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Brand Logo Link to Home */}
-        <BrandLogo size={24} href="/" className="cursor-pointer" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {currentUser && onOpenSidebar && (
+            <button
+              type="button"
+              onClick={onOpenSidebar}
+              className="lg:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+              aria-label="Open navigation menu"
+            >
+              <Menu size={20} />
+            </button>
+          )}
+          {/* Brand Logo Link to Home */}
+          <BrandLogo size={24} href="/" className="cursor-pointer" />
+        </div>
 
         {/* Navigation Action Buttons */}
         <div className="flex items-center gap-3">
           {currentUser ? (
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(path === "/dashboard" ? "/" : "/dashboard")
-                }
-                className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all"
-              >
-                {path === "/dashboard" ? "View Platform" : "Go to Dashboard"}
-              </button>
-
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] border border-white/10 text-xs text-white">
-                <span className="w-2 h-2 rounded-full bg-[#C9A15A]" />
-                <span className="font-semibold text-white truncate max-w-[120px]">
-                  {currentUser.full_name || currentUser.email.split("@")[0]}
-                </span>
+            onOpenSidebar ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onOpenSidebar}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] border border-white/10 text-xs text-white hover:border-[#C9A15A]/40 transition-colors"
+                  aria-label="Open workspace menu"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#C9A15A]" />
+                  <span className="font-semibold text-white truncate max-w-[90px] sm:max-w-[140px]">
+                    {currentUser.full_name?.split(" ")[0] || currentUser.email.split("@")[0]}
+                  </span>
+                </button>
               </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(path === "/dashboard" ? "/" : "/dashboard")
+                  }
+                  className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all"
+                >
+                  {path === "/dashboard" ? "View Platform" : "Go to Dashboard"}
+                </button>
 
-              <button
-                type="button"
-                onClick={onLogout}
-                className="px-3 py-2 rounded-full text-xs text-white hover:text-white/80 transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] border border-white/10 text-xs text-white">
+                  <span className="w-2 h-2 rounded-full bg-[#C9A15A]" />
+                  <span className="font-semibold text-white truncate max-w-[120px]">
+                    {currentUser.full_name || currentUser.email.split("@")[0]}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="px-3 py-2 rounded-full text-xs text-white hover:text-white/80 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )
           ) : (
             <div className="flex items-center gap-3">
               {/* Join Waitlist CTA Button */}

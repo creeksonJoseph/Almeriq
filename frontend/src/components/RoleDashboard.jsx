@@ -23,7 +23,8 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useSidebar } from "../context/SidebarContext";
 
 const ROLE_DATA = {
   founder: {
@@ -227,191 +228,51 @@ function FounderStudioEntry() {
 
 function Dashboard({ user, onLogout, onRestartOnboarding }) {
   const navigate = useNavigate();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState("overview");
+  const [searchParams] = useSearchParams();
+  const activeNav = searchParams.get("tab") || "overview";
+  const { openMobile } = useSidebar();
   const role = ROLE_DATA[user?.role] || ROLE_DATA.founder;
   const RoleIcon = role.icon;
   const firstName =
     user?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
-  const selectNav = (key) => {
-    setActiveNav(key);
-    setMobileNavOpen(false);
-  };
-
   return (
-    <div className="mx-auto flex w-full max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:px-8">
-      <aside
-        className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-40 w-72 flex-col border-r border-white/10 bg-[#0c0e13] p-5 shadow-2xl lg:static lg:flex lg:h-[calc(100vh-6rem)] lg:w-56 lg:shrink-0 lg:border lg:border-white/10 lg:rounded-2xl lg:shadow-none overflow-y-auto`}
-      >
-        <div className="mb-8 flex items-center justify-between lg:block">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f2ca50]">
-              ALIMERIQ
-            </p>
-            <p className="mt-2 text-sm font-semibold text-white">
-              {role.label}
-            </p>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16">
+      {/* Top Header Bar */}
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <button
+            type="button"
+            onClick={openMobile}
+            className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/55 lg:hidden"
+          >
+            <Menu size={16} /> Open Workspace Menu
+          </button>
+          <div className="flex items-center gap-2 text-xs text-white/45">
+            <RoleIcon size={14} className="text-[#f2ca50]" /> {role.label}
           </div>
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen(false)}
-            className="text-white/60 lg:hidden"
-            aria-label="Close navigation"
-          >
-            <X size={20} />
-          </button>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            {role.title}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
+            Good to see you, {firstName}. {role.subtitle}
+          </p>
         </div>
-        <nav className="space-y-1">
-          {NAV_ITEMS.map(([key, label, Icon]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => selectNav(key)}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${activeNav === key ? "bg-[#f2ca50]/10 text-[#f2ca50]" : "text-white/55 hover:bg-white/5 hover:text-white"}`}
-            >
-              <Icon size={17} />
-              <span>{label}</span>
-            </button>
-          ))}
-          {/* Founder Studio Navigation Links */}
-          {user?.role === "founder" && (
-            <div className="pt-3 border-t border-white/10 mt-3">
-              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f2ca50]/70">
-                Founder Studio
-              </p>
-              <div className="space-y-0.5">
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Compass size={15} className="text-[#f2ca50]" />
-                  <span>Studio Hub</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/intake"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Lightbulb size={15} />
-                  <span>Venture Brief</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/ventures"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <BookOpen size={15} />
-                  <span>Explored Ventures</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/validation"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <CheckCircle2 size={15} />
-                  <span>Idea Validation</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/ai-tools"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Cpu size={15} />
-                  <span>AI Business Builder</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/product"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Boxes size={15} />
-                  <span>Product Dev</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/legal"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Scale size={15} />
-                  <span>Legal & Filings</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMobileNavOpen(false); navigate("/founder/outreach"); }}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Send size={15} />
-                  <span>Outreach & Hiring</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </nav>
-        <div className="mt-auto space-y-1 border-t border-white/10 pt-4">
-          <button
-            type="button"
-            onClick={onRestartOnboarding}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-white/55 hover:bg-white/5 hover:text-white"
-          >
-            <Settings size={17} />
-            <span>Edit profile</span>
-          </button>
-          <button
-            type="button"
-            onClick={onLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-red-300/80 hover:bg-red-400/10"
-          >
-            <X size={17} />
-            <span>Sign out</span>
-          </button>
-        </div>
-      </aside>
-
-      {mobileNavOpen && (
         <button
           type="button"
-          aria-label="Close navigation"
-          onClick={() => setMobileNavOpen(false)}
-          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
-        />
-      )}
+          className="relative mt-1 hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-white/60 hover:text-white sm:flex"
+          aria-label="Notifications"
+        >
+          <Bell size={17} />
+          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />
+        </button>
+      </div>
 
-      <section className="min-w-0 flex-1">
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(true)}
-              className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/45 lg:hidden"
-            >
-              <Menu size={16} /> Menu
-            </button>
-            <div className="flex items-center gap-2 text-xs text-white/45">
-              <RoleIcon size={14} className="text-[#f2ca50]" /> {role.label}
-            </div>
-            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              {role.title}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
-              Good to see you, {firstName}. {role.subtitle}
-            </p>
-          </div>
-          <button
-            type="button"
-            className="relative mt-1 hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-white/60 hover:text-white sm:flex"
-            aria-label="Notifications"
-          >
-            <Bell size={17} />
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />
-          </button>
-        </div>
-
-        {activeNav === "overview" && (
-          user?.role === "founder" ? (
-            <FounderStudioEntry />
-          ) : (
+      {/* OVERVIEW TAB */}
+      {activeNav === "overview" && (
+        user?.role === "founder" ? (
+          <FounderStudioEntry />
+        ) : (
           <>
             <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {role.stats.map((stat) => (
@@ -443,31 +304,79 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
               </div>
             </div>
           </>
-          )
-        )}
+        )
+      )}
 
-        {activeNav === "discover" && (
-          <EmptyState
-            icon={Search}
-            title={`Discover for ${role.label.toLowerCase()}`}
-            copy="Your personalized recommendations will appear here as the platform connects you with the right opportunities."
-          />
-        )}
-        {activeNav === "activity" && (
-          <EmptyState
-            icon={Clock3}
-            title="Recent activity"
-            copy="Updates, messages, and important next steps will collect here."
-          />
-        )}
-        {activeNav === "profile" && (
-          <ProfileSummary
-            user={user}
-            role={role}
-            onEdit={onRestartOnboarding}
-          />
-        )}
-      </section>
+      {/* TASKS TAB */}
+      {activeNav === "tasks" && (
+        <div className="grid grid-cols-1 gap-5">
+          <WorkspacePanel data={role} />
+        </div>
+      )}
+
+      {/* CAPITAL READINESS TAB */}
+      {activeNav === "capital" && (
+        <div className="max-w-3xl rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-6 sm:p-8">
+          <Target size={26} className="text-[#f2ca50]" />
+          <h2 className="mt-3 font-display text-2xl font-semibold text-white">
+            {role.secondaryTitle}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-white/60">
+            {role.secondaryCopy}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              to="/founder/ai-tools"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B]"
+            >
+              Generate Pitch Deck & Projections
+              <ArrowUpRight size={15} />
+            </Link>
+            <Link
+              to="/founder/validation"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10"
+            >
+              Check Validation Score
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* TEAM TAB */}
+      {activeNav === "team" && (
+        <EmptyState
+          icon={UserRound}
+          title="Team & Operating Capacity"
+          copy="Connect co-founders, advisors, and technical talent directly to your venture."
+        />
+      )}
+
+      {/* PROFILE TAB */}
+      {activeNav === "profile" && (
+        <ProfileSummary
+          user={user}
+          role={role}
+          onEdit={onRestartOnboarding}
+        />
+      )}
+
+      {/* DISCOVER TAB */}
+      {activeNav === "discover" && (
+        <EmptyState
+          icon={Search}
+          title={`Discover for ${role.label.toLowerCase()}`}
+          copy="Your personalized recommendations will appear here as the platform connects you with the right opportunities."
+        />
+      )}
+
+      {/* ACTIVITY TAB */}
+      {activeNav === "activity" && (
+        <EmptyState
+          icon={Clock3}
+          title="Recent activity"
+          copy="Updates, messages, and important next steps will collect here."
+        />
+      )}
     </div>
   );
 }

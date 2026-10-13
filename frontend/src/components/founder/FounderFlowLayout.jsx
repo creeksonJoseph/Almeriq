@@ -29,7 +29,7 @@ export default function FounderFlowLayout({ children }) {
 
   return (
     <FounderFlowGuard>
-      <main className="mx-auto w-full max-w-5xl px-4 pb-14 pt-5 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl px-4 pb-14 pt-5 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white">
             <ArrowLeft size={15} /> Dashboard
@@ -50,7 +50,7 @@ export default function FounderFlowLayout({ children }) {
           })}
         </nav>
         {children}
-      </main>
+      </div>
     </FounderFlowGuard>
   );
 }

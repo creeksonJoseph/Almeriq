@@ -20,54 +20,83 @@ import {
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem("almeriq_user");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(!user);
+
+  const saveUser = useCallback((nextUser) => {
+    setUser(nextUser);
+    try {
+      if (nextUser) {
+        localStorage.setItem("almeriq_user", JSON.stringify(nextUser));
+      } else {
+        localStorage.removeItem("almeriq_user");
+      }
+    } catch {
+      // Ignore storage errors in private browsing modes
+    }
+  }, []);
 
   // Sync user session on mount
   useEffect(() => {
     async function initSession() {
       try {
         const currentUser = await getMeApi();
-        if (currentUser) setUser(currentUser);
+        if (currentUser) {
+          saveUser(currentUser);
+        } else {
+          saveUser(null);
+        }
       } catch (err) {
-        setUser(null);
+        if (err?.status === 401 || err?.response?.status === 401) {
+          saveUser(null);
+        }
       } finally {
         setLoading(false);
       }
     }
     initSession();
-  }, []);
+  }, [saveUser]);
 
   const login = useCallback(async (email, password) => {
     const cleanEmail = typeof email === "string" ? email.trim().toLowerCase().replace(/\s+/g, "") : email;
     const res = await loginApi({ email: cleanEmail, password });
-    setUser(res.user);
+    saveUser(res.user);
     return res.user;
-  }, []);
+  }, [saveUser]);
 
   const register = useCallback(async (email, password) => {
     const cleanEmail = typeof email === "string" ? email.trim().toLowerCase().replace(/\s+/g, "") : email;
     const res = await registerApi({ email: cleanEmail, password });
-    setUser(res.user);
+    saveUser(res.user);
     return res.user;
-  }, []);
+  }, [saveUser]);
 
   const googleLogin = useCallback(async (credential) => {
     const res = await googleAuthApi(credential);
-    setUser(res.user);
+    saveUser(res.user);
     return res.user;
-  }, []);
+  }, [saveUser]);
 
   const logout = useCallback(async () => {
-    await logoutApi();
-    setUser(null);
-  }, []);
+    try {
+      await logoutApi();
+    } finally {
+      saveUser(null);
+    }
+  }, [saveUser]);
 
   const completeOnboarding = useCallback(async (payload) => {
     const res = await onboardingApi(payload);
-    setUser(res.user);
+    saveUser(res.user);
     return res.user;
-  }, []);
+  }, [saveUser]);
 
   const signupSendOtp = useCallback(async (email) => {
     return await signupSendOtpApi(email);
@@ -80,12 +109,18 @@ export function AuthProvider({ children }) {
 
   const signupComplete = useCallback(async (password) => {
     const res = await signupCompleteApi(password);
-    setUser(res.user);
+    saveUser(res.user);
     return res.user;
-  }, []);
+  }, [saveUser]);
 
   const updateUser = useCallback((updatedUserData) => {
-    setUser((prev) => ({ ...(prev || {}), ...updatedUserData }));
+    setUser((prev) => {
+      const merged = { ...(prev || {}), ...updatedUserData };
+      try {
+        localStorage.setItem("almeriq_user", JSON.stringify(merged));
+      } catch {}
+      return merged;
+    });
   }, []);
 
   return (
