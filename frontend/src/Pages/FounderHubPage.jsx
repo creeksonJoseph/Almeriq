@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Compass,
   Lightbulb,
   CheckCircle2,
   Cpu,
@@ -9,36 +8,14 @@ import {
   Scale,
   Send,
   ArrowRight,
-  TrendingUp,
   Sparkles,
-  Zap,
-  ShieldCheck,
-  Building,
-  Target,
-  BarChart3,
-  Layers,
-  FileText,
 } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { listVenturesApi, getValidationApi, listLegalFilingsApi } from "../lib/api";
 
-const INDUSTRIES = [
-  { id: "fintech", name: "Fintech & Payments", icon: BarChart3, desc: "Banking, lending, remittances, mobile money" },
-  { id: "healthtech", name: "Healthcare & Life Sciences", icon: ShieldCheck, desc: "Telemedicine, diagnostics, clinics, supply chain" },
-  { id: "agritech", name: "AgriTech & Food Systems", icon: Layers, desc: "Yield optimization, farm logistics, cold chain" },
-  { id: "logistics", name: "Supply Chain & Mobility", icon: Target, desc: "Freight, last-mile delivery, fleet telemetry" },
-  { id: "energy", name: "Clean Energy & Climate", icon: Zap, desc: "Mini-grids, solar leasing, carbon intelligence" },
-  { id: "saas", name: "B2B SaaS & Enterprise", icon: Boxes, desc: "Workflow automation, business OS, compliance" },
-  { id: "edtech", name: "EdTech & Upskilling", icon: FileText, desc: "Technical academies, workforce readiness" },
-  { id: "infrastructure", name: "Physical Infrastructure", icon: Building, desc: "Heavy assets, telecom, power, hardware" },
-];
-
 export default function FounderHubPage() {
   const navigate = useNavigate();
-  const [selectedIndustry, setSelectedIndustry] = useState(() => {
-    return localStorage.getItem("almeriq_founder_industry") || "fintech";
-  });
   const [validationScore, setValidationScore] = useState(0);
   const [venturesCount, setVenturesCount] = useState(0);
   const [latestVenture, setLatestVenture] = useState(null);
@@ -71,11 +48,6 @@ export default function FounderHubPage() {
     }
     loadStats();
   }, []);
-
-  const handleSelectIndustry = (id) => {
-    setSelectedIndustry(id);
-    localStorage.setItem("almeriq_founder_industry", id);
-  };
 
   // Determine current founder stage and recommended next move
   let nextMove = {
@@ -203,61 +175,6 @@ export default function FounderHubPage() {
               <span>{nextMove.actionText}</span>
               <ArrowRight size={15} />
             </Link>
-          </div>
-        </div>
-
-        {/* Industry Sector Focus Selector */}
-        <div className="mb-10 rounded-2xl border border-[#2B2B31] bg-[#141417] p-6">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="font-display text-lg font-semibold text-[#F3F1EC]">
-                Industry & Sector Focus
-              </h3>
-              <p className="text-xs text-[#9B9A94]">
-                Calibrates market benchmarks, regulatory alerts, and AI prompts to your vertical.
-              </p>
-            </div>
-            <span className="rounded-md border border-[#2B2B31] bg-[#1C1C21] px-2.5 py-1 text-xs text-[#E8D6A8]">
-              Active: {INDUSTRIES.find((i) => i.id === selectedIndustry)?.name}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {INDUSTRIES.map((ind) => {
-              const Icon = ind.icon;
-              const isSelected = selectedIndustry === ind.id;
-              return (
-                <button
-                  key={ind.id}
-                  type="button"
-                  onClick={() => handleSelectIndustry(ind.id)}
-                  className={`flex flex-col rounded-xl border p-3.5 text-left transition-all ${
-                    isSelected
-                      ? "border-[#C9A15A] bg-[#C9A15A]/10 shadow-sm"
-                      : "border-[#2B2B31] bg-[#1C1C21]/60 hover:border-white/20 hover:bg-[#1C1C21]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <Icon
-                      size={18}
-                      className={isSelected ? "text-[#C9A15A]" : "text-[#9B9A94]"}
-                    />
-                    {isSelected && (
-                      <span className="h-2 w-2 rounded-full bg-[#C9A15A]" />
-                    )}
-                  </div>
-                  <span
-                    className={`mt-2.5 text-xs font-semibold ${
-                      isSelected ? "text-[#F3F1EC]" : "text-[#9B9A94]"
-                    }`}
-                  >
-                    {ind.name}
-                  </span>
-                  <span className="mt-1 line-clamp-1 text-[11px] text-[#5F5E5A]">
-                    {ind.desc}
-                  </span>
-                </button>
-              );
-            })}
           </div>
         </div>
 

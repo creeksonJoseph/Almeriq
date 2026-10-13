@@ -7,10 +7,10 @@ from pydantic import BaseModel, Field
 
 
 class FounderAnalysisRequest(BaseModel):
-    idea: str = Field(..., min_length=10, max_length=2000)
-    problem: str = Field(..., min_length=10, max_length=2000)
-    solution: str = Field(..., min_length=10, max_length=2000)
-    customer: str = Field(..., min_length=2, max_length=500)
+    idea: str = Field(..., min_length=10, max_length=500)
+    problem: str = Field(..., min_length=10, max_length=500)
+    solution: str = Field(..., min_length=10, max_length=500)
+    customer: str = Field(..., min_length=2, max_length=200)
     location: str = Field(..., min_length=2, max_length=200)
 
 
@@ -98,11 +98,11 @@ class FounderLegalOut(BaseModel):
 
 class FounderToolRequest(BaseModel):
     tool_key: str
-    idea: str = Field(..., min_length=5, max_length=2000)
-    customer: Optional[str] = ""
-    location: Optional[str] = ""
-    problem: Optional[str] = ""
-    solution: Optional[str] = ""
+    idea: str = Field(..., min_length=5, max_length=500)
+    customer: Optional[str] = Field(default="", max_length=200)
+    location: Optional[str] = Field(default="", max_length=200)
+    problem: Optional[str] = Field(default="", max_length=500)
+    solution: Optional[str] = Field(default="", max_length=500)
     extra_params: Optional[dict] = None
 
 

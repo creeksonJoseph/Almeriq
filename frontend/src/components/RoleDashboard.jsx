@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowUpRight,
   Bell,
@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
+import { listVenturesApi } from "../lib/api";
 
 const ROLE_DATA = {
   founder: {
@@ -196,6 +197,25 @@ function WorkspacePanel({ data }) {
 }
 
 function FounderStudioEntry() {
+  const [ventures, setVentures] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadVentures() {
+      try {
+        const data = await listVenturesApi();
+        if (Array.isArray(data)) {
+          setVentures(data.slice(0, 3));
+        }
+      } catch (err) {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadVentures();
+  }, []);
+
   return (
     <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-7">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
@@ -222,6 +242,32 @@ function FounderStudioEntry() {
           New venture brief
         </Link>
       </div>
+
+      {!loading && ventures.length > 0 && (
+        <div className="mt-6 border-t border-[#f2ca50]/20 pt-6">
+          <p className="text-xs font-semibold text-white/70 mb-3">Recent ventures</p>
+          <div className="space-y-2">
+            {ventures.map((v) => (
+              <Link
+                key={v.id}
+                to={`/founder/ventures/${v.id}`}
+                className="flex items-center justify-between rounded-lg bg-white/5 p-3 hover:bg-white/10 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-white truncate">{v.idea.slice(0, 50)}</p>
+                  <p className="text-[10px] text-white/50 mt-0.5">ALQ-VNT-{String(v.id).padStart(6, "0")}</p>
+                </div>
+                <ChevronRight size={14} className="text-white/35 shrink-0" />
+              </Link>
+            ))}
+          </div>
+          {ventures.length > 0 && (
+            <Link to="/founder/ventures" className="mt-3 block text-xs font-semibold text-[#f2ca50] hover:text-white">
+              View all ventures →
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }

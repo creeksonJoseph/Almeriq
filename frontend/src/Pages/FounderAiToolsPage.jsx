@@ -181,9 +181,21 @@ export default function FounderAiToolsPage() {
           {/* Quick Idea Edit / Preview */}
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-[11px] font-medium text-[#9B9A94]">Venture Idea</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-medium text-[#9B9A94]">Venture Idea</label>
+                <span className={`text-[10px] font-medium ${
+                  briefInput.idea.length > 450
+                    ? "text-red-400"
+                    : briefInput.idea.length > 400
+                      ? "text-yellow-400"
+                      : "text-white/45"
+                }`}>
+                  {briefInput.idea.length}/500
+                </span>
+              </div>
               <input
                 type="text"
+                maxLength={500}
                 value={briefInput.idea}
                 onChange={(e) => setBriefInput({ ...briefInput, idea: e.target.value })}
                 placeholder="e.g. B2B payments orchestrator for East African cross-border logistics"
@@ -191,9 +203,21 @@ export default function FounderAiToolsPage() {
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[#9B9A94]">Target Customer & Region</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-medium text-[#9B9A94]">Target Customer & Region</label>
+                <span className={`text-[10px] font-medium ${
+                  briefInput.customer.length > 180
+                    ? "text-red-400"
+                    : briefInput.customer.length > 150
+                      ? "text-yellow-400"
+                      : "text-white/45"
+                }`}>
+                  {briefInput.customer.length}/200
+                </span>
+              </div>
               <input
                 type="text"
+                maxLength={200}
                 value={`${briefInput.customer || ""} ${briefInput.location ? `in ${briefInput.location}` : ""}`.trim()}
                 onChange={(e) => setBriefInput({ ...briefInput, customer: e.target.value })}
                 placeholder="e.g. Freight forwarders in Nairobi & Mombasa"

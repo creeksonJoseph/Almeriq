@@ -300,10 +300,22 @@ export default function FounderLegalPage() {
 
             <form onSubmit={handleCreateCompanyFiling} className="mt-6 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-[#F3F1EC]">Proposed Legal Company Name</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-[#F3F1EC]">Proposed Legal Company Name</label>
+                  <span className={`text-xs font-medium ${
+                    companyForm.company_name.length > 100
+                      ? "text-red-400"
+                      : companyForm.company_name.length > 80
+                        ? "text-yellow-400"
+                        : "text-white/45"
+                  }`}>
+                    {companyForm.company_name.length}/150
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
+                  maxLength={150}
                   value={companyForm.company_name}
                   onChange={(e) => setCompanyForm({ ...companyForm, company_name: e.target.value })}
                   placeholder="e.g. Alimeriq Logistics Technologies Ltd"
@@ -328,10 +340,22 @@ export default function FounderLegalPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#F3F1EC]">Primary Operating Jurisdiction</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-[#F3F1EC]">Primary Operating Jurisdiction</label>
+                  <span className={`text-xs font-medium ${
+                    companyForm.jurisdiction.length > 60
+                      ? "text-red-400"
+                      : companyForm.jurisdiction.length > 50
+                        ? "text-yellow-400"
+                        : "text-white/45"
+                  }`}>
+                    {companyForm.jurisdiction.length}/100
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
+                  maxLength={100}
                   value={companyForm.jurisdiction}
                   onChange={(e) => setCompanyForm({ ...companyForm, jurisdiction: e.target.value })}
                   placeholder="e.g. Kenya, Delaware, Nigeria, United Kingdom"
@@ -370,10 +394,22 @@ export default function FounderLegalPage() {
 
             <form onSubmit={handleCreateIpFiling} className="mt-6 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-[#F3F1EC]">Asset / Innovation Title</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-[#F3F1EC]">Asset / Innovation Title</label>
+                  <span className={`text-xs font-medium ${
+                    ipForm.ip_title.length > 100
+                      ? "text-red-400"
+                      : ipForm.ip_title.length > 80
+                        ? "text-yellow-400"
+                        : "text-white/45"
+                  }`}>
+                    {ipForm.ip_title.length}/150
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
+                  maxLength={150}
                   value={ipForm.ip_title}
                   onChange={(e) => setIpForm({ ...ipForm, ip_title: e.target.value })}
                   placeholder="e.g. Alimeriq Autonomous Freight Dispatch Engine v1.0"
@@ -397,9 +433,21 @@ export default function FounderLegalPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#F3F1EC]">Technical Description & Claim</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-[#F3F1EC]">Technical Description & Claim</label>
+                  <span className={`text-xs font-medium ${
+                    ipForm.ip_description.length > 450
+                      ? "text-red-400"
+                      : ipForm.ip_description.length > 400
+                        ? "text-yellow-400"
+                        : "text-white/45"
+                  }`}>
+                    {ipForm.ip_description.length}/500
+                  </span>
+                </div>
                 <textarea
                   rows={3}
+                  maxLength={500}
                   value={ipForm.ip_description}
                   onChange={(e) => setIpForm({ ...ipForm, ip_description: e.target.value })}
                   placeholder="Briefly describe what makes this invention novel and its key components..."
