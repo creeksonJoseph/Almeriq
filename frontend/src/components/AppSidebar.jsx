@@ -59,9 +59,9 @@ export default function AppSidebar({
     try {
       const saved = localStorage.getItem("almeriq_sidebar_studio_open");
       if (saved !== null) return saved === "true";
-      return false; // Collapsed by default since all tabs are visible at top of pages
+      return true; // Default open so links are readily accessible, collapsible at will
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -230,26 +230,15 @@ export default function AppSidebar({
                         : "text-white/70 hover:bg-white/5 hover:text-white"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Compass
-                        size={16}
-                        className={`shrink-0 ${isFounderActive ? "text-[#C9A15A]" : "text-[#C9A15A]/80"}`}
-                      />
-                      <span className="truncate font-semibold tracking-wide">
-                        Founder Studio
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#C9A15A]/15 text-[#C9A15A]">
-                        {FOUNDER_STUDIO_NAV.length}
-                      </span>
-                      <ChevronDown
-                        size={14}
-                        className={`text-white/40 transition-transform duration-200 ${
-                          studioOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </div>
+                    <span className="truncate font-semibold tracking-wide">
+                      Founder Studio
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-white/40 transition-transform duration-200 ${
+                        studioOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
 
                   {/* Collapsible Dropdown Sub-links */}
