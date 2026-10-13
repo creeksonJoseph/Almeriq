@@ -17,33 +17,44 @@ def _fallback_analysis(payload: FounderAnalysisRequest) -> FounderAnalysisRespon
     return FounderAnalysisResponse(
         source="local",
         summary=(
-            f"{payload.idea.strip()} has a clear starting point for {payload.customer.strip()} "
-            f"in {payload.location.strip()}. Validate the customer problem before expanding scope."
+            f"{payload.idea.strip()} targets {payload.customer.strip()} by solving {payload.problem.strip()[:50]}. "
+            f"The solution approach is {payload.solution.strip()[:50]}. Key validation needed: customer willingness to pay and problem urgency in {payload.location.strip()}."
         ),
         market=(
-            f"Start with interviews and a small pilot among {payload.customer.strip()} in "
-            f"{payload.location.strip()}. Measure willingness to pay, repeat usage, and the "
-            "cost of reaching each customer."
+            f"Start with 15-20 customer interviews among {payload.customer.strip()} in {payload.location.strip()}. "
+            f"Measure: (1) Problem frequency and cost impact, (2) Current workarounds and switching costs, (3) Willingness to pay for your solution. "
+            f"Run a small pilot with 3-5 customers to validate the core workflow before scaling acquisition."
         ),
         risks=[
-            "The problem may be inconvenient rather than urgent for the target customer.",
-            "The first solution scope may be too broad to validate quickly.",
-            "Acquisition costs and operational constraints are not yet proven.",
+            "The stated problem may be a symptom of a deeper issue that your solution doesn't address.",
+            "Customer acquisition costs may exceed the lifetime value at your proposed pricing.",
+            "Competitive incumbents or free alternatives may already partially solve this problem.",
+            "The target customer segment may lack budget or decision-making authority to buy.",
+            "Regulatory or operational constraints in the launch location may limit market size.",
         ],
         mvp=[
-            "One focused workflow that delivers the core outcome.",
-            "A lightweight onboarding and feedback loop.",
-            "A small pilot with measurable success criteria.",
+            "Core workflow that delivers the primary outcome in under 5 minutes of user time.",
+            "Ability to save and retrieve customer data with basic reporting.",
+            "Integration or import capability for the customer's existing data sources.",
+            "Feedback loop: in-app survey or email to measure customer satisfaction and next priorities.",
+            "Shareable output (PDF, link, or export) that the customer can use immediately.",
         ],
         roadmap=[
-            "Week 1-2: interview target customers and document repeated pain points.",
-            "Week 3-6: build the smallest testable version of the solution.",
-            "Week 7-8: run a pilot, measure outcomes, and decide what to improve.",
+            "Week 1-2: Conduct 15 customer discovery interviews; document pain points and current solutions.",
+            "Week 3-4: Build and test the MVP core workflow with 3 pilot customers.",
+            "Week 5-6: Iterate based on pilot feedback; measure time-to-value and NPS.",
+            "Week 7-8: Expand pilot to 10 customers; track retention and feature requests.",
+            "Month 3: Analyze unit economics (CAC, LTV, payback period); decide on pricing and positioning.",
+            "Month 4+: Scale customer acquisition through the highest-ROI channel identified in pilots.",
         ],
         next_steps=[
-            "Schedule 10 customer discovery conversations.",
-            "Write a one-page pilot offer with a measurable outcome.",
-            "Choose one metric that proves the problem is worth solving.",
+            "Schedule 15 customer discovery calls this week; focus on understanding their current workflow and pain.",
+            "Document the top 3 objections or concerns you hear; these are your biggest risks.",
+            "Build a simple landing page with a value proposition and email waitlist.",
+            "Create a 1-page pitch that explains the problem, solution, and why now.",
+            "Identify 3 potential distribution channels (communities, partnerships, content) for your customer segment.",
+            "Set a clear success metric for the MVP (e.g., 5 paying customers or $500 MRR in 90 days).",
+            "Find 1-2 co-founders or advisors with domain expertise in your customer segment.",
         ],
     )
 
@@ -55,28 +66,42 @@ def _parse_model_response(text: str) -> FounderAnalysisResponse:
     data = json.loads(cleaned)
     return FounderAnalysisResponse(
         source="gemini",
-        summary=str(data["summary"]),
-        market=str(data["market"]),
-        risks=[str(item) for item in data["risks"]][:5],
-        mvp=[str(item) for item in data["mvp"]][:5],
-        roadmap=[str(item) for item in data["roadmap"]][:5],
-        next_steps=[str(item) for item in data["next_steps"]][:5],
+        summary=str(data.get("summary", "")),
+        market=str(data.get("market", "")),
+        risks=[str(item) for item in data.get("risks", [])][:7],
+        mvp=[str(item) for item in data.get("mvp", [])][:7],
+        roadmap=[str(item) for item in data.get("roadmap", [])][:8],
+        next_steps=[str(item) for item in data.get("next_steps", [])][:8],
     )
 
 
 def _request_gemini(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
-    prompt = f"""
-You are Alimeriq's startup strategy analyst. Analyze this founder idea and return only valid JSON.
-Use exactly these keys: summary (string), market (string), risks (array of 3 strings),
-mvp (array of 3 strings), roadmap (array of 3 strings), next_steps (array of 3 strings).
-Be specific, practical, concise, and do not invent market statistics.
+    prompt = f"""You are Alimeriq's startup strategy analyst. Provide a detailed, actionable analysis.
+Return ONLY valid JSON with these keys:
+- summary: 3-4 sentences analyzing the core opportunity, customer fit, differentiation, and key validation needed
+- market: 4-5 sentences on market validation approach, TAM context, go-to-market signals, and customer acquisition strategy
+- risks: array of 6-7 specific, ranked risks (most critical first) with brief context
+- mvp: array of 6-7 concrete MVP features/workflows that prove core value
+- roadmap: array of 8 specific milestones with timeframes (Week X, Month Y, specific deliverables)
+- next_steps: array of 8 prioritized actions the founder should take immediately
+
+Be specific, practical, and grounded in the customer context. Do not invent statistics.
 
 Idea: {payload.idea}
 Problem: {payload.problem}
 Proposed solution: {payload.solution}
 Target customer: {payload.customer}
 Launch location: {payload.location}
-""".strip()
+
+Analyze deeply:
+1. How does this solution uniquely address the stated problem for this specific customer?
+2. What are the top 3 risks that could kill this venture? Why?
+3. What is the minimum viable proof point needed to validate the core assumption?
+4. What should the founder validate first, second, and third?
+5. What are realistic unit economics (CAC, LTV, payback) for this customer segment?
+6. What are 2-3 distribution channels that could work for this customer?
+7. What are the key metrics to track in the first 90 days?"""
+
     body = json.dumps(
         {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -114,7 +139,7 @@ async def analyze_founder_idea(payload: FounderAnalysisRequest) -> FounderAnalys
 
 # ── Individual AI Tools ────────────────────────────────────────────────────────
 
-def _fallback_tool_result(payload: FounderToolRequest) -> dict:
+def _fallback_tool_result(payload) -> dict:
     key = payload.tool_key
     idea = payload.idea
     customer = payload.customer or "target customers"
@@ -335,9 +360,8 @@ def _fallback_tool_result(payload: FounderToolRequest) -> dict:
     return {"status": "success", "content": f"Deliverable generated for {key} based on: {idea}"}
 
 
-def _request_gemini_tool(payload: FounderToolRequest) -> dict:
-    prompt = f"""
-You are Alimeriq's startup advisor and strategist. Generate a structured JSON deliverable for the tool: "{payload.tool_key}".
+def _request_gemini_tool(payload) -> dict:
+    prompt = f"""You are Alimeriq's startup advisor and strategist. Generate a structured JSON deliverable for the tool: "{payload.tool_key}".
 Startup idea: {payload.idea}
 Target customer: {payload.customer}
 Location: {payload.location}
@@ -358,8 +382,8 @@ Follow these JSON key conventions based on tool_key:
 - If tool_key == "investor_update": subject (string), highlights (array), lowlights (array), kpis (array), asks (array), full_email (string).
 - If tool_key == "job_post": title (string), role_summary (string), responsibilities (array), requirements (array), why_join_us (string).
 
-Return ONLY valid JSON matching these specifications. No markdown code blocks.
-""".strip()
+Return ONLY valid JSON matching these specifications. No markdown code blocks."""
+
     body = json.dumps(
         {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -381,7 +405,7 @@ Return ONLY valid JSON matching these specifications. No markdown code blocks.
     return json.loads(text)
 
 
-async def generate_tool_deliverable(payload: FounderToolRequest) -> tuple[dict, str]:
+async def generate_tool_deliverable(payload) -> tuple[dict, str]:
     if not GEMINI_API_KEY:
         return _fallback_tool_result(payload), "local"
     try:
@@ -390,4 +414,3 @@ async def generate_tool_deliverable(payload: FounderToolRequest) -> tuple[dict, 
     except Exception as exc:
         logger.warning("Gemini tool execution failed for %s: %s; falling back to local", payload.tool_key, exc)
         return _fallback_tool_result(payload), "local"
-
