@@ -23,3 +23,17 @@ export async function putWaitlist(payload) {
     return data;
   } catch (e) { throw apiErr(e, "Failed to update waitlist details"); }
 }
+
+export async function requestOTP(email) {
+  try {
+    const { data } = await apiClient.post("/waitlist/otp/request", { email });
+    return data;
+  } catch (e) { throw apiErr(e, "Failed to send OTP"); }
+}
+
+export async function verifyOTP(email, otp_code) {
+  try {
+    const { data } = await apiClient.post("/waitlist/otp/verify", { email, otp_code });
+    return data;
+  } catch (e) { throw apiErr(e, "Failed to verify OTP"); }
+}

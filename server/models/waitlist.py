@@ -18,6 +18,8 @@ class Waitlist(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+    otp_code: Mapped[str | None] = mapped_column(Text, nullable=True)
+    otp_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index("idx_waitlist_joined_at", joined_at.desc()),

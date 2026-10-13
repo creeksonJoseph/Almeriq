@@ -31,7 +31,7 @@ export {
   resetPasswordApi,
 } from "./api/auth";
 
-export { postWaitlist, putWaitlist } from "./api/waitlist";
+export { postWaitlist, putWaitlist, requestOTP, verifyOTP } from "./api/waitlist";
 
 export {
   analyzeFounderIdeaApi,

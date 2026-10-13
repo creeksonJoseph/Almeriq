@@ -116,3 +116,72 @@ async def count_all(session: AsyncSession | None = None) -> int:
     async with async_session_factory() as s:
         count = await s.scalar(stmt)
         return count or 0
+
+
+async def set_otp(
+    email: str,
+    otp_code: str,
+    expires_at,
+    session: AsyncSession | None = None,
+) -> Waitlist | None:
+    """Set OTP code and expiration for an email."""
+    normalized_email = email.lower().strip()
+    stmt = (
+        select(Waitlist)
+        .where(func.lower(Waitlist.email) == normalized_email)
+        .order_by(Waitlist.id.desc())
+        .limit(1)
+    )
+
+    if session is not None:
+        entry = await session.scalar(stmt)
+        if entry is not None:
+            entry.otp_code = otp_code
+            entry.otp_expires_at = expires_at
+            await session.flush()
+        return entry
+
+    async with async_session_factory() as s:
+        entry = await s.scalar(stmt)
+        if entry is not None:
+            entry.otp_code = otp_code
+            entry.otp_expires_at = expires_at
+            await s.commit()
+            await s.refresh(entry)
+        return entry
+
+
+async def verify_otp(
+    email: str,
+    otp_code: str,
+    session: AsyncSession | None = None,
+) -> bool:
+    """Verify OTP code for an email and clear it if valid."""
+    from datetime import datetime, timezone
+    normalized_email = email.lower().strip()
+    stmt = (
+        select(Waitlist)
+        .where(func.lower(Waitlist.email) == normalized_email)
+        .order_by(Waitlist.id.desc())
+        .limit(1)
+    )
+
+    if session is not None:
+        entry = await session.scalar(stmt)
+        if entry and entry.otp_code == otp_code and entry.otp_expires_at:
+            if entry.otp_expires_at > datetime.now(timezone.utc):
+                entry.otp_code = None
+                entry.otp_expires_at = None
+                await session.flush()
+                return True
+        return False
+
+    async with async_session_factory() as s:
+        entry = await s.scalar(stmt)
+        if entry and entry.otp_code == otp_code and entry.otp_expires_at:
+            if entry.otp_expires_at > datetime.now(timezone.utc):
+                entry.otp_code = None
+                entry.otp_expires_at = None
+                await s.commit()
+                return True
+        return False

@@ -14,6 +14,7 @@ import {
   Lock,
   User,
   Mail,
+  ShieldCheck,
 } from "lucide-react";
 import { useWaitlist } from "../hooks/useWaitlist";
 import BrandLogo from "../components/BrandLogo";
@@ -198,6 +199,13 @@ function WaitlistFormSection() {
     blur,
     submit,
     updateSubmit,
+    verifyOtpCode,
+    resendOtp,
+    otp,
+    setOtp,
+    otpError,
+    otpResendCountdown,
+    targetAction,
     startEdit,
     reset,
   } = useWaitlist();
@@ -213,6 +221,11 @@ function WaitlistFormSection() {
     setTimeout(() => resultRef.current?.focus(), 80);
   };
 
+  const handleVerifyOtp = async (e) => {
+    await verifyOtpCode(e);
+    setTimeout(() => resultRef.current?.focus(), 80);
+  };
+
   return (
     <section id="access-console" className="w-full bg-[#0c0e13] py-12 sm:py-20 lg:py-28 relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -220,6 +233,8 @@ function WaitlistFormSection() {
           <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-white font-medium mb-2.5 sm:mb-4">
             {status === "edit_mode" || status === "updating"
               ? "Update Your Details"
+              : status === "otp_pending" || status === "otp_sending" || status === "otp_verifying"
+              ? "Verify Your Email"
               : status === "conflict_prompt"
               ? "Already on Waitlist"
               : status === "already_registered"
@@ -231,6 +246,8 @@ function WaitlistFormSection() {
           <p className="text-sm sm:text-base lg:text-lg text-white leading-relaxed">
             {status === "edit_mode" || status === "updating"
               ? `Update your role or full name for ${form.email}.`
+              : status === "otp_pending" || status === "otp_sending" || status === "otp_verifying"
+              ? `We sent a 6-digit verification code to ${form.email} to confirm your ownership.`
               : status === "conflict_prompt"
               ? "This email is already registered with different details."
               : status === "already_registered"
@@ -285,7 +302,7 @@ function WaitlistFormSection() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <button
                     type="button"
-                    onClick={startEdit}
+                    onClick={() => startEdit("edit")}
                     className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40] text-xs font-bold uppercase tracking-wider transition-colors"
                   >
                     Change My Details
@@ -321,7 +338,7 @@ function WaitlistFormSection() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <button
                     type="button"
-                    onClick={startEdit}
+                    onClick={() => startEdit("conflict_apply")}
                     className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40] text-xs font-bold uppercase tracking-wider transition-colors"
                   >
                     Yes, Change Details
@@ -334,6 +351,107 @@ function WaitlistFormSection() {
                     Keep Existing Details
                   </button>
                 </div>
+              </div>
+            )}
+
+            {(status === "otp_pending" || status === "otp_sending" || status === "otp_verifying") && (
+              <div className="text-center py-6 sm:py-10 px-2 sm:px-4 max-w-lg mx-auto">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#f2ca50]/10 border border-[#f2ca50]/30 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <ShieldCheck size={28} color={C.gold} strokeWidth={1.5} />
+                </div>
+                <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium mb-2.5">
+                  Verify It's You
+                </h3>
+                <p className="text-xs sm:text-sm text-white/80 max-w-md mx-auto mb-6 leading-relaxed">
+                  To protect your waitlist spot, we sent a 6-digit code to <span className="text-[#f2ca50] font-semibold">{form.email}</span>.
+                </p>
+
+                {serverError && (
+                  <div className="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-200">
+                    {serverError}
+                  </div>
+                )}
+
+                {otpError && (
+                  <div className="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-200">
+                    {otpError}
+                  </div>
+                )}
+
+                {status === "otp_sending" ? (
+                  <div className="flex flex-col items-center justify-center py-6 text-sm text-[#f2ca50] gap-3">
+                    <Loader2 className="animate-spin" size={24} />
+                    <span>Sending verification code to your email...</span>
+                  </div>
+                ) : (
+                  <form onSubmit={handleVerifyOtp} className="space-y-5">
+                    <div>
+                      <label className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-widest text-white/70 block mb-2">
+                        6-DIGIT VERIFICATION CODE
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        autoFocus
+                        placeholder="••••••"
+                        value={otp}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                          setOtp(val);
+                        }}
+                        className="w-full text-center tracking-[0.5em] text-2xl font-mono bg-[#13141a] text-white px-4 py-3.5 rounded-xl border border-[#22242c] focus:border-[#f2ca50] outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                      <button
+                        type="submit"
+                        disabled={otp.trim().length !== 6 || status === "otp_verifying"}
+                        className={`w-full sm:w-auto px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 ${
+                          otp.trim().length === 6 && status !== "otp_verifying"
+                            ? "bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40]"
+                            : "bg-[#22242c] text-white/50 cursor-not-allowed"
+                        }`}
+                      >
+                        {status === "otp_verifying" ? (
+                          <>
+                            <Loader2 className="animate-spin" size={14} />
+                            <span>Verifying...</span>
+                          </>
+                        ) : targetAction === "conflict_apply" ? (
+                          "Verify & Update Details"
+                        ) : (
+                          "Verify & Continue"
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={resendOtp}
+                        disabled={otpResendCountdown > 0}
+                        className={`w-full sm:w-auto px-5 py-3 rounded-full border text-xs font-semibold uppercase tracking-wider transition-colors ${
+                          otpResendCountdown > 0
+                            ? "border-[#282a33] text-white/40 cursor-not-allowed"
+                            : "border-[#282a33] text-white hover:text-[#f2ca50] hover:border-[#f2ca50]/40"
+                        }`}
+                      >
+                        {otpResendCountdown > 0 ? `Resend in ${otpResendCountdown}s` : "Resend code"}
+                      </button>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={reset}
+                        className="text-xs text-white/60 hover:text-white transition-colors"
+                      >
+                        Cancel and return to waitlist
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
 
@@ -420,15 +538,17 @@ function WaitlistFormSection() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-semibold text-white block">
-                      Email Address (Registered)
+                      Email Address (Verified)
                     </label>
-                    <Lock size={12} className="text-white/60" />
+                    <span className="text-[10px] text-[#f2ca50] flex items-center gap-1 font-mono">
+                      <CheckCircle2 size={12} /> Verified
+                    </span>
                   </div>
                   <input
                     type="email"
                     disabled
                     value={form.email}
-                    className="w-full bg-[#13141a]/60 text-white/70 px-4 py-3 rounded-xl border border-[#22242c] cursor-not-allowed outline-none text-xs sm:text-sm"
+                    className="w-full bg-[#13141a]/60 text-white/80 px-4 py-3 rounded-xl border border-[#22242c] cursor-not-allowed outline-none text-xs sm:text-sm"
                   />
                 </div>
               </div>
@@ -437,13 +557,20 @@ function WaitlistFormSection() {
                 <button
                   type="submit"
                   disabled={!canSubmit || status === "updating"}
-                  className={`w-full sm:w-auto px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors ${
+                  className={`w-full sm:w-auto px-6 py-3 rounded-full text-xs font-bold uppercase transition-colors flex items-center justify-center gap-2 ${
                     canSubmit && status !== "updating"
                       ? "bg-[#f2ca50] text-[#111318] hover:bg-[#e2ba40]"
                       : "bg-[#22242c] text-white/50"
                   }`}
                 >
-                  {status === "updating" ? "Updating details..." : "Save Updated Details"}
+                  {status === "updating" ? (
+                    <>
+                      <Loader2 className="animate-spin" size={14} />
+                      <span>Updating details...</span>
+                    </>
+                  ) : (
+                    "Save Updated Details"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -455,6 +582,7 @@ function WaitlistFormSection() {
               </div>
             </form>
           )}
+
 
           {(status === "idle" || status === "loading" || status === "error") && (
             <form onSubmit={handleSubmit} noValidate className="space-y-6 sm:space-y-8">
