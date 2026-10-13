@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   X,
   Sparkles,
 } from "lucide-react";
@@ -52,6 +53,28 @@ export default function AppSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const role = user?.role || "founder";
+  const isFounderActive = location.pathname.startsWith("/founder");
+
+  const [studioOpen, setStudioOpen] = useState(() => {
+    try {
+      const saved = localStorage.getItem("almeriq_sidebar_studio_open");
+      if (saved !== null) return saved === "true";
+      return false; // Collapsed by default since all tabs are visible at top of pages
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleStudioOpen = (e) => {
+    if (e) e.stopPropagation();
+    setStudioOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("almeriq_sidebar_studio_open", String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const isCurrentActive = (itemPath) => {
     if (itemPath.includes("?tab=")) {
@@ -175,45 +198,89 @@ export default function AppSidebar({
             })}
           </div>
 
-          {/* Founder Studio Group */}
+          {/* Founder Studio Collapsible Group */}
           {role === "founder" && (
-            <div className="space-y-1 pt-2 border-t border-[#232328]">
-              {!isCollapsed ? (
-                <div className="flex items-center justify-between px-3 pb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C9A15A]">
-                    Founder Studio
-                  </p>
-                  <Sparkles size={11} className="text-[#C9A15A]" />
-                </div>
+            <div className="pt-2 border-t border-[#232328]">
+              {isCollapsed ? (
+                /* Compact Rail Mode: single icon navigating directly to Founder Studio Hub */
+                <button
+                  type="button"
+                  onClick={() => handleNavClick("/founder")}
+                  title={`Founder Studio (${FOUNDER_STUDIO_NAV.length} tools)`}
+                  className={`flex w-full items-center justify-center rounded-xl p-2.5 transition-all ${
+                    isFounderActive
+                      ? "bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/30 shadow-sm"
+                      : "text-white/60 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <Compass
+                    size={18}
+                    className={isFounderActive ? "text-[#C9A15A]" : "text-white/50"}
+                  />
+                </button>
               ) : (
-                <div className="my-2 border-t border-[#232328]" />
-              )}
-
-              {FOUNDER_STUDIO_NAV.map((tool) => {
-                const Icon = tool.icon;
-                const active = isCurrentActive(tool.path);
-                return (
+                /* Expanded Mode: Collapsible Dropdown Accordion */
+                <div className="space-y-1">
                   <button
-                    key={tool.path}
                     type="button"
-                    onClick={() => handleNavClick(tool.path)}
-                    title={isCollapsed ? tool.label : undefined}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition-all ${
-                      isCollapsed ? "justify-center px-0" : ""
-                    } ${
-                      active
-                        ? "bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/30 font-semibold"
-                        : "text-white/60 hover:bg-white/5 hover:text-white"
+                    onClick={toggleStudioOpen}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-medium transition-all ${
+                      isFounderActive
+                        ? "bg-[#C9A15A]/10 text-[#E8D6A8] border border-[#C9A15A]/25"
+                        : "text-white/70 hover:bg-white/5 hover:text-white"
                     }`}
                   >
-                    <Icon
-                      size={16}
-                      className={`shrink-0 ${active ? "text-[#C9A15A]" : "text-white/45"}`}
-                    />
-                    {!isCollapsed && <span className="truncate">{tool.label}</span>}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Compass
+                        size={16}
+                        className={`shrink-0 ${isFounderActive ? "text-[#C9A15A]" : "text-[#C9A15A]/80"}`}
+                      />
+                      <span className="truncate font-semibold tracking-wide">
+                        Founder Studio
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#C9A15A]/15 text-[#C9A15A]">
+                        {FOUNDER_STUDIO_NAV.length}
+                      </span>
+                      <ChevronDown
+                        size={14}
+                        className={`text-white/40 transition-transform duration-200 ${
+                          studioOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </div>
                   </button>
-                );
-              })}
+
+                  {/* Collapsible Dropdown Sub-links */}
+                  {studioOpen && (
+                    <div className="mt-1 ml-3 pl-2.5 border-l border-[#232328] space-y-0.5">
+                      {FOUNDER_STUDIO_NAV.map((tool) => {
+                        const Icon = tool.icon;
+                        const active = isCurrentActive(tool.path);
+                        return (
+                          <button
+                            key={tool.path}
+                            type="button"
+                            onClick={() => handleNavClick(tool.path)}
+                            className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[11px] transition-all ${
+                              active
+                                ? "bg-[#C9A15A]/15 text-[#E8D6A8] font-semibold"
+                                : "text-white/60 hover:bg-white/5 hover:text-white"
+                            }`}
+                          >
+                            <Icon
+                              size={14}
+                              className={`shrink-0 ${active ? "text-[#C9A15A]" : "text-white/45"}`}
+                            />
+                            <span className="truncate">{tool.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
