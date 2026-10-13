@@ -1,6 +1,9 @@
 """api/routers/founder.py - Authenticated founder workspace endpoints."""
 from __future__ import annotations
 
+import logging
+import time
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from api.dependencies import get_current_user
@@ -30,12 +33,17 @@ from schemas.founder import (
 )
 from services.founder import analyze_founder_idea, generate_tool_deliverable
 
+logger = logging.getLogger(__name__)
 router = APIRouter(tags=["founder"])
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def _require_founder(current_user: dict) -> int:
     if current_user.get("role") != "founder":
+        logger.warning(
+            f"Non-founder user attempted founder workspace access",
+            extra={"user_id": current_user.get("id"), "role": current_user.get("role")}
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Founder workspace access requires the founder role.",
@@ -52,7 +60,56 @@ async def analyze(
     current_user: dict = Depends(get_current_user),
 ) -> FounderAnalysisResponse:
     user_id = _require_founder(current_user)
-    result = await analyze_founder_idea(body)
+    start_time = time.time()
+    
+    logger.info(
+        "POST /founder/analyze",
+        extra={
+            "user_id": user_id,
+            "idea_length": len(body.idea),
+            "customer": body.customer,
+            "location": body.location,
+        }
+    )
+    
+    try:
+        result = await analyze_founder_idea(body)
+        logger.info(
+            "Analysis completed successfully",
+            extra={
+                "user_id": user_id,
+                "elapsed_seconds": round(time.time() - start_time, 2),
+                "source": result.source,
+            }
+        )
+    except ValueError as e:
+        logger.error(
+            f"Analysis failed with cleaned error: {str(e)}",
+            extra={
+                "user_id": user_id,
+                "elapsed_seconds": round(time.time() - start_time, 2),
+            }
+        )
+        # Cleaned error from service
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        )
+    except Exception as e:
+        logger.error(
+            f"Unexpected error in analysis: {str(e)}",
+            extra={
+                "user_id": user_id,
+                "error_type": type(e).__name__,
+                "elapsed_seconds": round(time.time() - start_time, 2),
+            },
+            exc_info=True
+        )
+        # Unexpected error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to complete analysis. Please try again.",
+        )
 
     # Persist automatically — fire and forget errors don't break the response
     try:
@@ -62,7 +119,21 @@ async def analyze(
             analysis=result.model_dump(),
         )
         result.venture_id = saved["id"]
-    except Exception:
+        logger.info(
+            "Venture saved to database",
+            extra={
+                "user_id": user_id,
+                "venture_id": saved["id"],
+            }
+        )
+    except Exception as e:
+        logger.warning(
+            f"Failed to save venture to database: {str(e)}",
+            extra={
+                "user_id": user_id,
+                "error_type": type(e).__name__,
+            }
+        )
         pass  # Analysis still returned even if DB write fails
 
     return result
@@ -76,6 +147,7 @@ async def ventures_list(
     current_user: dict = Depends(get_current_user),
 ) -> list[dict]:
     user_id = _require_founder(current_user)
+    logger.info("GET /founder/ventures", extra={"user_id": user_id})
     return await list_ventures(user_id)
 
 
@@ -86,8 +158,16 @@ async def venture_get(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     user_id = _require_founder(current_user)
+    logger.info(
+        "GET /founder/ventures/{venture_id}",
+        extra={"user_id": user_id, "venture_id": venture_id}
+    )
     venture = await get_venture(venture_id, user_id)
     if not venture:
+        logger.warning(
+            "Venture not found",
+            extra={"user_id": user_id, "venture_id": venture_id}
+        )
         raise HTTPException(status_code=404, detail="Venture not found.")
     return venture
 
@@ -99,9 +179,21 @@ async def venture_delete(
     current_user: dict = Depends(get_current_user),
 ) -> None:
     user_id = _require_founder(current_user)
+    logger.info(
+        "DELETE /founder/ventures/{venture_id}",
+        extra={"user_id": user_id, "venture_id": venture_id}
+    )
     deleted = await delete_venture(venture_id, user_id)
     if not deleted:
+        logger.warning(
+            "Venture not found for deletion",
+            extra={"user_id": user_id, "venture_id": venture_id}
+        )
         raise HTTPException(status_code=404, detail="Venture not found.")
+    logger.info(
+        "Venture deleted successfully",
+        extra={"user_id": user_id, "venture_id": venture_id}
+    )
 
 
 # ── Idea Validation ───────────────────────────────────────────────────────────
@@ -112,6 +204,7 @@ async def validation_get(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     user_id = _require_founder(current_user)
+    logger.info("GET /founder/validation", extra={"user_id": user_id})
     return await get_validation(user_id)
 
 
@@ -124,6 +217,13 @@ async def validation_update(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     user_id = _require_founder(current_user)
+    logger.info(
+        "POST/PUT /founder/validation",
+        extra={
+            "user_id": user_id,
+            "dimensions_updated": len([v for v in body.model_dump().values() if v is not None]),
+        }
+    )
     dims = {k: v for k, v in body.model_dump().items() if v is not None}
     return await upsert_validation(user_id, dims)
 
@@ -136,6 +236,7 @@ async def legal_list(
     current_user: dict = Depends(get_current_user),
 ) -> list[dict]:
     user_id = _require_founder(current_user)
+    logger.info("GET /founder/legal", extra={"user_id": user_id})
     return await list_filings(user_id)
 
 
@@ -146,6 +247,13 @@ async def legal_create(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     user_id = _require_founder(current_user)
+    logger.info(
+        "POST /founder/legal",
+        extra={
+            "user_id": user_id,
+            "filing_type": body.filing_type,
+        }
+    )
     return await create_filing(user_id, body.model_dump())
 
 
@@ -158,6 +266,17 @@ async def execute_tool(
     current_user: dict = Depends(get_current_user),
 ) -> FounderToolResponse:
     user_id = _require_founder(current_user)
+    start_time = time.time()
+    
+    logger.info(
+        "POST /founder/ai-tools",
+        extra={
+            "user_id": user_id,
+            "tool_key": body.tool_key,
+            "idea_length": len(body.idea),
+        }
+    )
+    
     chash = compute_content_hash({
         "tool_key": body.tool_key,
         "idea": body.idea,
@@ -172,16 +291,77 @@ async def execute_tool(
     if not force_refresh:
         cached = await get_cached_tool_result(user_id, body.tool_key, chash)
         if cached:
+            logger.info(
+                f"Tool result served from cache: {body.tool_key}",
+                extra={
+                    "user_id": user_id,
+                    "tool_key": body.tool_key,
+                    "elapsed_seconds": round(time.time() - start_time, 2),
+                }
+            )
             return FounderToolResponse(
                 tool_key=body.tool_key,
                 source="cache",
                 result=cached,
             )
 
-    result_data, source = await generate_tool_deliverable(body)
+    try:
+        result_data, source = await generate_tool_deliverable(body)
+        logger.info(
+            f"Tool deliverable generated: {body.tool_key}",
+            extra={
+                "user_id": user_id,
+                "tool_key": body.tool_key,
+                "source": source,
+                "elapsed_seconds": round(time.time() - start_time, 2),
+            }
+        )
+    except ValueError as e:
+        logger.error(
+            f"Tool generation failed with cleaned error: {str(e)}",
+            extra={
+                "user_id": user_id,
+                "tool_key": body.tool_key,
+                "elapsed_seconds": round(time.time() - start_time, 2),
+            }
+        )
+        # Cleaned error from service
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        )
+    except Exception as e:
+        logger.error(
+            f"Unexpected error in tool generation: {str(e)}",
+            extra={
+                "user_id": user_id,
+                "tool_key": body.tool_key,
+                "error_type": type(e).__name__,
+                "elapsed_seconds": round(time.time() - start_time, 2),
+            },
+            exc_info=True
+        )
+        # Unexpected error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to generate deliverable. Please try again.",
+        )
+
     try:
         await save_cached_tool_result(user_id, body.tool_key, chash, result_data, source=source)
-    except Exception:
+        logger.debug(
+            f"Tool result cached: {body.tool_key}",
+            extra={"user_id": user_id, "tool_key": body.tool_key}
+        )
+    except Exception as e:
+        logger.warning(
+            f"Failed to cache tool result: {str(e)}",
+            extra={
+                "user_id": user_id,
+                "tool_key": body.tool_key,
+                "error_type": type(e).__name__,
+            }
+        )
         pass
 
     return FounderToolResponse(
@@ -189,4 +369,3 @@ async def execute_tool(
         source=source,
         result=result_data,
     )
-

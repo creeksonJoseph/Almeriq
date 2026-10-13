@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Bot, Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FounderFlowLayout, { FlowNextLink } from "../components/founder/FounderFlowLayout";
 import { useFounderFlow } from "../hooks/useFounderFlow";
@@ -30,9 +30,13 @@ export default function FounderIntakePage() {
     try {
       await analyze();
       navigate("/founder/analysis");
-    } catch {
-      // The hook exposes the user-facing error.
+    } catch (err) {
+      // Error already set in hook
     }
+  };
+
+  const dismissError = () => {
+    setSaveSuccess(false);
   };
 
   return (
@@ -44,12 +48,21 @@ export default function FounderIntakePage() {
       </div>
 
       {saveSuccess && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl bg-green-500/10 border border-green-500/30 p-4">
-          <CheckCircle2 size={18} className="text-green-400 shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-green-300">Venture saved successfully</p>
-            <p className="text-xs text-green-200/70">Ref: ALQ-VNT-{String(ventureId).padStart(6, "0")}</p>
+        <div className="mb-5 flex items-center justify-between rounded-xl bg-green-500/10 border border-green-500/30 p-4">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 size={18} className="text-green-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-green-300">Venture saved successfully</p>
+              <p className="text-xs text-green-200/70">Ref: ALQ-VNT-{String(ventureId).padStart(6, "0")}</p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={dismissError}
+            className="text-green-400 hover:text-green-300"
+          >
+            <X size={18} />
+          </button>
         </div>
       )}
 
@@ -112,7 +125,24 @@ export default function FounderIntakePage() {
             </label>
           ))}
         </div>
-        {(error || validationError) && <p className="mt-5 rounded-xl bg-red-500/10 p-3 text-sm text-red-200">{error || validationError}</p>}
+        
+        {error && (
+          <div className="mt-5 flex items-start gap-3 rounded-xl bg-red-500/10 border border-red-500/30 p-4">
+            <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-red-300">Analysis failed</p>
+              <p className="text-xs text-red-200/70 mt-1">{error}</p>
+              <p className="text-xs text-red-200/50 mt-2">Try again or contact support if the problem persists.</p>
+            </div>
+          </div>
+        )}
+        
+        {validationError && (
+          <div className="mt-5 rounded-xl bg-red-500/10 border border-red-500/30 p-3">
+            <p className="text-sm text-red-200">{validationError}</p>
+          </div>
+        )}
+        
         <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
           <p className="text-xs text-white/35">Your brief is automatically saved to your account.</p>
           <button type="submit" disabled={loading} className="alq-submit sm:w-auto sm:px-8" aria-disabled={loading}>
