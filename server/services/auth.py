@@ -87,6 +87,7 @@ async def authenticate_user(email: str, password: str) -> tuple[dict, str]:
         "id_number": user["id_number"],
         "role": user["role"],
         "onboarding_completed": user["onboarding_completed"],
+        "is_admin": user.get("is_admin", False),
         "created_at": user["created_at"],
     }
     return user_payload, token
@@ -167,6 +168,7 @@ async def authenticate_google_user(credential: str) -> tuple[dict, str]:
         "id_number": user["id_number"],
         "role": user["role"],
         "onboarding_completed": user.get("onboarding_completed", False),
+        "is_admin": user.get("is_admin", False),
         "created_at": user["created_at"],
     }
     return user_payload, token

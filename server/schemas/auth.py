@@ -52,6 +52,7 @@ class UserResponse(BaseModel):
     id_number: str | None = None
     role: str = "user"
     onboarding_completed: bool = False
+    is_admin: bool = False
     created_at: datetime
 
     class Config:

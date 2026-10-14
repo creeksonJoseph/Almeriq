@@ -44,7 +44,7 @@ function formatDate(iso) {
 }
 
 export default function AdminWaitlistPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState({ total: 0, items: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -69,6 +69,15 @@ export default function AdminWaitlistPage() {
       fetchWaitlist();
     }
   }, [user?.is_admin]);
+
+  // Wait for auth initialization before evaluating access
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] w-full">
+        <div className="w-8 h-8 border-2 border-[#C9A15A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // Guard: Admin only
   if (!user?.is_admin) {
