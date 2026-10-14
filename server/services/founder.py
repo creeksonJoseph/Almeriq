@@ -57,8 +57,17 @@ def _parse_model_response(text: str) -> FounderAnalysisResponse:
     )
 
 
+def _get_candidate_models() -> list[str]:
+    """Return ordered list of models to try, prioritizing configured model and falling back to fast alternatives."""
+    models = [GEMINI_MODEL] if GEMINI_MODEL else []
+    for fallback in ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-flash-latest"]:
+        if fallback not in models:
+            models.append(fallback)
+    return models
+
+
 def _request_gemini(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
-    """Request analysis from Gemini API."""
+    """Request analysis from Gemini API with automatic fallback if a model is unavailable or times out."""
     start_time = time.time()
     logger.info(
         "Starting Gemini analysis request",
@@ -86,77 +95,69 @@ Location: {payload.location}"""
             "generationConfig": {"responseMimeType": "application/json"},
         }
     ).encode("utf-8")
-    
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_MODEL}:generateContent"
-    )
-    
-    logger.debug(f"Gemini API URL: {url}")
-    logger.debug(f"Request payload size: {len(body)} bytes")
-    
-    request = urllib.request.Request(
-        url,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "X-goog-api-key": GEMINI_API_KEY,
-        },
-        method="POST",
-    )
-    
-    try:
-        with urllib.request.urlopen(request, timeout=25) as response:
-            result = json.loads(response.read().decode("utf-8"))
+
+    models = _get_candidate_models()
+    last_exception = None
+
+    for idx, model_name in enumerate(models):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        logger.debug(f"Attempting Gemini request with {model_name}: {url}")
         
-        elapsed = time.time() - start_time
-        logger.info(
-            "Gemini analysis completed successfully",
-            extra={"elapsed_seconds": round(elapsed, 2)}
+        request = urllib.request.Request(
+            url,
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-goog-api-key": GEMINI_API_KEY,
+            },
+            method="POST",
         )
         
-        text = result["candidates"][0]["content"]["parts"][0]["text"]
-        return _parse_model_response(text)
-    
-    except urllib.error.HTTPError as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            f"Gemini HTTP error: {e.code} {e.reason}",
-            extra={
-                "status_code": e.code,
-                "reason": e.reason,
-                "elapsed_seconds": round(elapsed, 2),
-            }
-        )
-        error_msg = f"HTTP {e.code}: {e.reason}"
-        raise ValueError(clean_gemini_error(error_msg)) from e
-    
-    except urllib.error.URLError as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            f"Gemini connection error: {str(e)}",
-            extra={"elapsed_seconds": round(elapsed, 2)}
-        )
-        raise ValueError(clean_gemini_error(str(e))) from e
-    
-    except TimeoutError as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            "Gemini request timeout",
-            extra={"elapsed_seconds": round(elapsed, 2)}
-        )
-        raise ValueError(clean_gemini_error("Request timeout")) from e
-    
-    except (json.JSONDecodeError, KeyError, IndexError) as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            f"Gemini response parsing error: {str(e)}",
-            extra={
-                "error_type": type(e).__name__,
-                "elapsed_seconds": round(elapsed, 2),
-            }
-        )
-        raise ValueError(clean_gemini_error(f"Invalid response format: {str(e)}")) from e
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                result = json.loads(response.read().decode("utf-8"))
+            
+            elapsed = time.time() - start_time
+            logger.info(
+                f"Gemini analysis completed successfully using {model_name}",
+                extra={"elapsed_seconds": round(elapsed, 2), "model": model_name}
+            )
+            
+            text = result["candidates"][0]["content"]["parts"][0]["text"]
+            return _parse_model_response(text)
+        
+        except urllib.error.HTTPError as e:
+            elapsed = time.time() - start_time
+            logger.warning(
+                f"Gemini HTTP error with {model_name}: {e.code} {e.reason}",
+                extra={
+                    "model": model_name,
+                    "status_code": e.code,
+                    "reason": e.reason,
+                    "elapsed_seconds": round(elapsed, 2),
+                }
+            )
+            last_exception = e
+            # Retry on 503 (high demand), 429 (rate/quota), 500, 502, 504 if another model is available
+            if e.code in (503, 429, 500, 502, 504) and idx < len(models) - 1:
+                logger.info(f"Retrying analysis with fallback model: {models[idx + 1]}")
+                continue
+            error_msg = f"HTTP {e.code}: {e.reason}"
+            raise ValueError(clean_gemini_error(error_msg)) from e
+        
+        except (urllib.error.URLError, TimeoutError, Exception) as e:
+            elapsed = time.time() - start_time
+            logger.warning(
+                f"Gemini request failed with {model_name}: {str(e)}",
+                extra={"model": model_name, "elapsed_seconds": round(elapsed, 2)}
+            )
+            last_exception = e
+            if idx < len(models) - 1:
+                logger.info(f"Retrying analysis with fallback model: {models[idx + 1]}")
+                continue
+            raise ValueError(clean_gemini_error(str(e))) from e
+
+    raise ValueError(clean_gemini_error(str(last_exception) if last_exception else "Service unavailable"))
 
 
 async def analyze_founder_idea(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
@@ -246,81 +247,73 @@ def _request_gemini_tool(payload) -> dict:
         }
     ).encode("utf-8")
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
-    request = urllib.request.Request(
-        url,
-        data=body,
-        headers={"Content-Type": "application/json", "X-goog-api-key": GEMINI_API_KEY},
-        method="POST",
-    )
-    
-    logger.debug(f"Tool request payload size: {len(body)} bytes")
-    
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            result = json.loads(response.read().decode("utf-8"))
-        
-        elapsed = time.time() - start_time
-        logger.info(
-            f"Gemini tool request completed: {payload.tool_key}",
-            extra={
-                "tool_key": payload.tool_key,
-                "elapsed_seconds": round(elapsed, 2),
-            }
+    models = _get_candidate_models()
+    last_exception = None
+
+    for idx, model_name in enumerate(models):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        request = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json", "X-goog-api-key": GEMINI_API_KEY},
+            method="POST",
         )
         
-        text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-        return json.loads(text)
-    
-    except urllib.error.HTTPError as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            f"Gemini tool HTTP error: {e.code} {e.reason}",
-            extra={
-                "tool_key": payload.tool_key,
-                "status_code": e.code,
-                "reason": e.reason,
-                "elapsed_seconds": round(elapsed, 2),
-            }
-        )
-        error_msg = f"HTTP {e.code}: {e.reason}"
-        raise ValueError(clean_gemini_error(error_msg)) from e
-    
-    except urllib.error.URLError as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            f"Gemini tool connection error: {str(e)}",
-            extra={
-                "tool_key": payload.tool_key,
-                "elapsed_seconds": round(elapsed, 2),
-            }
-        )
-        raise ValueError(clean_gemini_error(str(e))) from e
-    
-    except TimeoutError as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            "Gemini tool request timeout",
-            extra={
-                "tool_key": payload.tool_key,
-                "elapsed_seconds": round(elapsed, 2),
-            }
-        )
-        raise ValueError(clean_gemini_error("Request timeout")) from e
-    
-    except (json.JSONDecodeError, KeyError, IndexError) as e:
-        elapsed = time.time() - start_time
-        logger.error(
-            f"Gemini tool response parsing error: {str(e)}",
-            extra={
-                "tool_key": payload.tool_key,
-                "error_type": type(e).__name__,
-                "elapsed_seconds": round(elapsed, 2),
-            }
-        )
-        raise ValueError(clean_gemini_error(f"Invalid response format: {str(e)}")) from e
+        try:
+            with urllib.request.urlopen(request, timeout=25) as response:
+                result = json.loads(response.read().decode("utf-8"))
+            
+            elapsed = time.time() - start_time
+            logger.info(
+                f"Gemini tool request completed: {payload.tool_key} using {model_name}",
+                extra={
+                    "tool_key": payload.tool_key,
+                    "model": model_name,
+                    "elapsed_seconds": round(elapsed, 2),
+                }
+            )
+            
+            text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+            return json.loads(text)
+        
+        except urllib.error.HTTPError as e:
+            elapsed = time.time() - start_time
+            logger.warning(
+                f"Gemini tool HTTP error with {model_name}: {e.code} {e.reason}",
+                extra={
+                    "tool_key": payload.tool_key,
+                    "model": model_name,
+                    "status_code": e.code,
+                    "reason": e.reason,
+                    "elapsed_seconds": round(elapsed, 2),
+                }
+            )
+            last_exception = e
+            if e.code in (503, 429, 500, 502, 504) and idx < len(models) - 1:
+                logger.info(f"Retrying tool request with fallback model: {models[idx + 1]}")
+                continue
+            error_msg = f"HTTP {e.code}: {e.reason}"
+            raise ValueError(clean_gemini_error(error_msg)) from e
+        
+        except (urllib.error.URLError, TimeoutError, Exception) as e:
+            elapsed = time.time() - start_time
+            logger.warning(
+                f"Gemini tool connection/timeout error with {model_name}: {str(e)}",
+                extra={
+                    "tool_key": payload.tool_key,
+                    "model": model_name,
+                    "elapsed_seconds": round(elapsed, 2),
+                }
+            )
+            last_exception = e
+            if idx < len(models) - 1:
+                logger.info(f"Retrying tool request with fallback model: {models[idx + 1]}")
+                continue
+            raise ValueError(clean_gemini_error(str(e))) from e
+
+    raise ValueError(clean_gemini_error(str(last_exception) if last_exception else "Service unavailable"))
 
 
 async def generate_tool_deliverable(payload) -> tuple[dict, str]:

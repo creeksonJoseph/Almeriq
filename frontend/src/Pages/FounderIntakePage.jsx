@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Bot, Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import FounderFlowLayout, { FlowNextLink } from "../components/founder/FounderFlowLayout";
+import FounderFlowLayout from "../components/founder/FounderFlowLayout";
 import { useFounderFlow } from "../hooks/useFounderFlow";
 
 const FIELDS = [
@@ -150,7 +150,6 @@ export default function FounderIntakePage() {
           </button>
         </div>
       </form>
-      <div className="mt-5 text-right"><FlowNextLink to="/founder/analysis">View analysis</FlowNextLink></div>
     </FounderFlowLayout>
   );
 }

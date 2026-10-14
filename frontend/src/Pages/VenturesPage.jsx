@@ -20,7 +20,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import FounderFlowLayout from "../components/founder/FounderFlowLayout";
+import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { useVentures } from "../hooks/useVentures";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -222,8 +222,9 @@ export default function VenturesPage() {
   const { ventures, loading, error, refresh, remove } = useVentures();
 
   return (
-    <FounderFlowLayout>
-      {/* Page header */}
+    <FounderFlowGuard>
+      <div className="mx-auto w-full max-w-5xl px-4 pb-14 pt-6 sm:px-6 lg:px-8">
+        {/* Page header */}
       <div className="mb-8">
         <Link
           to="/dashboard"
@@ -296,6 +297,7 @@ export default function VenturesPage() {
           </div>
         )
       ) : null}
-    </FounderFlowLayout>
+      </div>
+    </FounderFlowGuard>
   );
 }

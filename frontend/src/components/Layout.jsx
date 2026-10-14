@@ -17,10 +17,13 @@ export default function Layout() {
     "/forgot-password",
   ].includes(location.pathname);
 
+  const isLandingPage = location.pathname === "/";
+
   // User is logged in and past onboarding in the application workspace
-  // The sidebar remains intact across all pages once the user is onboarded
+  // The sidebar remains intact across all workspace pages once the user is onboarded,
+  // but should never be shown on the public landing page or auth pages.
   const isPostOnboarding = Boolean(user && user.onboarding_completed);
-  const isWorkspace = isPostOnboarding && !isAuthPage;
+  const isWorkspace = isPostOnboarding && !isAuthPage && !isLandingPage;
 
   return (
     <div className="min-h-screen bg-[#0c0e13] text-white flex flex-col antialiased">

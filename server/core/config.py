@@ -37,4 +37,4 @@ UPSTASH_REDIS_TOKEN: str = os.environ.get("UPSTASH_REDIS_TOKEN", "")
 
 # Founder AI analysis. Keep this key server-side; never expose it to the browser.
 GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
