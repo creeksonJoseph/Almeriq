@@ -13,7 +13,6 @@ import {
   Boxes,
   Home,
   Lightbulb,
-  Menu,
   Scale,
   Search,
   Send,
@@ -24,7 +23,6 @@ import {
   X,
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useSidebar } from "../context/SidebarContext";
 import { listVenturesApi } from "../lib/api";
 
 const ROLE_DATA = {
@@ -276,7 +274,6 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const activeNav = searchParams.get("tab") || "overview";
-  const { openMobile } = useSidebar();
   const role = ROLE_DATA[user?.role] || ROLE_DATA.founder;
   const RoleIcon = role.icon;
   const firstName =
@@ -287,13 +284,6 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
       {/* Top Header Bar */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <button
-            type="button"
-            onClick={openMobile}
-            className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/55 lg:hidden"
-          >
-            <Menu size={16} /> Open Workspace Menu
-          </button>
           <div className="flex items-center gap-2 text-xs text-white/45">
             <RoleIcon size={14} className="text-[#f2ca50]" /> {role.label}
           </div>

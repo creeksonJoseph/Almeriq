@@ -18,6 +18,7 @@ class User(Base):
     id_number: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     role: Mapped[str] = mapped_column(Text, nullable=False, default="user")
     onboarding_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     google_id: Mapped[Optional[str]] = mapped_column(Text, unique=True, nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -34,6 +35,7 @@ class User(Base):
             "id_number": self.id_number,
             "role": self.role,
             "onboarding_completed": self.onboarding_completed,
+            "is_admin": self.is_admin,
             "google_id": self.google_id,
             "created_at": self.created_at,
         }

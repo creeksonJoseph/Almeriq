@@ -48,6 +48,7 @@ const FounderAiToolsPage = lazyWithRetry(() => import("./Pages/FounderAiToolsPag
 const FounderProductPage = lazyWithRetry(() => import("./Pages/FounderProductPage"));
 const FounderLegalPage = lazyWithRetry(() => import("./Pages/FounderLegalPage"));
 const FounderOutreachPage = lazyWithRetry(() => import("./Pages/FounderOutreachPage"));
+const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/AdminWaitlistPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">
@@ -156,6 +157,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <FounderOutreachPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/waitlist"
+              element={
+                <ProtectedRoute>
+                  <AdminWaitlistPage />
                 </ProtectedRoute>
               }
             />

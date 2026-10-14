@@ -15,6 +15,7 @@ async def create_user(
     full_name: str | None = None,
     google_id: str | None = None,
     role: str = "user",
+    is_admin: bool = False,
     session: AsyncSession | None = None,
 ) -> dict:
     """Phase 1: Create a new minimal user record."""
@@ -26,6 +27,7 @@ async def create_user(
         full_name=full_name,
         google_id=google_id,
         role=role,
+        is_admin=is_admin,
         onboarding_completed=False,
     )
     logger.info(f"[REPO-CREATE-USER] User object created: {user.email}")

@@ -49,3 +49,13 @@ async def get_current_user(request: Request) -> dict:
         )
 
     return await auth_service.get_user_profile(user_id)
+
+
+async def get_current_admin_user(current_user: dict = Depends(get_current_user)) -> dict:
+    """FastAPI dependency to verify that the current user has admin privileges."""
+    if not current_user.get("is_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required to access this resource",
+        )
+    return current_user

@@ -20,6 +20,7 @@ import {
   ChevronDown,
   X,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
@@ -107,31 +108,24 @@ export default function AppSidebar({
                 type="button"
                 onClick={() => handleNavClick("/dashboard")}
                 title="ALIMERIQ Home"
-                className="p-1 rounded-lg hover:bg-white/5 transition-colors"
+                className="p-1 rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center cursor-pointer"
               >
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#C9A15A] to-[#E8D6A8] flex items-center justify-center font-bold text-[#0A0A0B] text-sm shadow-md">
-                  A
-                </div>
+                <BrandLogo size={24} showName={false} href="/dashboard" />
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => handleNavClick("/dashboard")}
-                className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-90 transition-opacity"
-                title="ALIMERIQ Workspace Overview"
-              >
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#C9A15A] to-[#E8D6A8] flex items-center justify-center font-bold text-[#0A0A0B] text-sm shadow-md shrink-0">
-                  A
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold tracking-[0.2em] text-[#C9A15A] truncate uppercase">
-                    ALIMERIQ
-                  </p>
-                  <p className="text-[10px] text-white/45 truncate capitalize">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => handleNavClick("/dashboard")}
+                  className="flex flex-col min-w-0 text-left hover:opacity-90 transition-opacity cursor-pointer"
+                  title="ALIMERIQ Workspace Overview"
+                >
+                  <BrandLogo size={24} showName={true} href="/dashboard" />
+                  <span className="text-[10px] text-white/45 truncate capitalize pl-8 -mt-1">
                     {role.replace("_", " ")} workspace
-                  </p>
-                </div>
-              </button>
+                  </span>
+                </button>
+              </div>
             )}
 
             {/* Desktop Collapse Toggle Button */}
@@ -268,6 +262,52 @@ export default function AppSidebar({
                       })}
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Admin Waitlist Section (Admin Only - below Founder Studio) */}
+          {Boolean(user?.is_admin) && (
+            <div className="pt-2 border-t border-[#232328]">
+              {isCollapsed ? (
+                <button
+                  type="button"
+                  onClick={() => handleNavClick("/admin/waitlist")}
+                  title="Admin Waitlist Console"
+                  className={`flex w-full items-center justify-center rounded-xl p-2.5 transition-all ${
+                    location.pathname.startsWith("/admin")
+                      ? "bg-[#f2ca50]/15 text-[#f2ca50] border border-[#f2ca50]/30 shadow-sm"
+                      : "text-white/60 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <ShieldCheck
+                    size={18}
+                    className={location.pathname.startsWith("/admin") ? "text-[#f2ca50]" : "text-white/50"}
+                  />
+                </button>
+              ) : (
+                <div className="space-y-1">
+                  <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[#f2ca50]/70">
+                    Administration
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick("/admin/waitlist")}
+                    className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-medium transition-all ${
+                      location.pathname.startsWith("/admin")
+                        ? "bg-[#f2ca50]/15 text-[#f2ca50] border border-[#f2ca50]/30 font-semibold shadow-sm"
+                        : "text-white/70 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <ShieldCheck
+                      size={16}
+                      className={`shrink-0 ${
+                        location.pathname.startsWith("/admin") ? "text-[#f2ca50]" : "text-white/50"
+                      }`}
+                    />
+                    <span className="truncate">Waitlist Console</span>
+                  </button>
                 </div>
               )}
             </div>

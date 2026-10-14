@@ -45,3 +45,6 @@ export {
   executeAiToolApi,
 } from "./api/founder";
 
+export { getAdminWaitlistApi } from "./api/admin";
+
+
