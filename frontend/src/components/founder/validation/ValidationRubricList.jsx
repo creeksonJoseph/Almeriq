@@ -7,7 +7,7 @@ export default function ValidationRubricList({ rubricList }) {
   return (
     <div className="space-y-12">
       {rubricList.map(({ key, title, data }, sectionIndex) => (
-        <section key={key} className="border-b border-white/10 pb-10">
+        <section key={key} className="border-b border-[#232328] pb-10">
           <div className="flex items-center justify-between gap-4 mb-4">
             <h3 className="font-display text-base sm:text-lg font-semibold text-white">
               {sectionIndex + 1}. {title}

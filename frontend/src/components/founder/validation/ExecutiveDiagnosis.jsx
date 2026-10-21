@@ -10,7 +10,7 @@ export default function ExecutiveDiagnosis({
   if (!evaluation) return null;
 
   return (
-    <section className="pb-8 border-b border-white/10">
+    <section className="pb-8 border-b border-[#232328]">
       <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-4">
         <div className="flex items-baseline gap-3">
           <span className="font-display text-4xl sm:text-5xl font-bold text-white tracking-tight">

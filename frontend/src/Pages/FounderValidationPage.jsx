@@ -207,7 +207,7 @@ export default function FounderValidationPage() {
         />
 
         {/* ── Active Target Idea Context (Clean Editorial) ── */}
-        <div className="mb-8 border-b border-white/10 pb-6">
+        <div className="mb-8 border-b border-[#232328] pb-6">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -237,7 +237,7 @@ export default function FounderValidationPage() {
             {/* Inline Controls: Switch Idea + Edit Inputs */}
             <div className="flex items-center gap-3 shrink-0 pt-2 sm:pt-0">
               <ActiveIdeaDropdown variant="switcher" />
-              <span className="text-white/20">|</span>
+              <span className="text-white/15">|</span>
               <button
                 type="button"
                 onClick={() => setShowInputDrawer((prev) => !prev)}
@@ -251,7 +251,7 @@ export default function FounderValidationPage() {
 
           {/* Spacious Input Editor Drawer */}
           {showInputDrawer && (
-            <div className="mt-5 pt-5 border-t border-white/8">
+            <div className="mt-5 pt-5 border-t border-[#232328]">
               <ValidationInputDrawer
                 ideaInput={ideaInput}
                 setIdeaInput={setIdeaInput}
@@ -301,8 +301,8 @@ export default function FounderValidationPage() {
               </span>
             </div>
 
-            {/* Clean borderless list with subtle dividers */}
-            <div className="divide-y divide-white/8 border-y border-white/8">
+            {/* Clean borderless list with subtle grey dividers */}
+            <div className="divide-y divide-[#232328] border-y border-[#232328]">
               {[
                 {
                   num: "01",

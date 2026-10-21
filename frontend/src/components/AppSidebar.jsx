@@ -89,7 +89,7 @@ export default function AppSidebar({
           <div
             className={`flex items-center ${
               isCollapsed ? "justify-center" : "justify-between"
-            } pb-3 border-b border-white/[0.08]`}
+            } pb-3 border-b border-[#232328]`}
           >
             {isCollapsed ? (
               <button
@@ -274,7 +274,7 @@ export default function AppSidebar({
         </div>
 
         {/* ── FOOTER TIER: User Identity & Quick Settings ── */}
-        <div className="px-3 pt-3 border-t border-white/[0.08]">
+        <div className="px-3 pt-3 border-t border-[#232328]">
           {isCollapsed ? (
             <div className="flex flex-col items-center gap-2.5">
               <button
