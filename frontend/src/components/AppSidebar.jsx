@@ -274,14 +274,14 @@ export default function AppSidebar({
         </div>
 
         {/* ── FOOTER TIER: User Identity & Quick Settings ── */}
-        <div className="px-2.5 pt-2.5 border-t border-white/[0.08]">
+        <div className="px-3 pt-3 border-t border-white/[0.08]">
           {isCollapsed ? (
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => handleNavClick("/settings")}
                 title={`Settings (${userName})`}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-[#E8D6A8] hover:bg-white/10 transition-colors cursor-pointer text-xs font-bold"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#C9A15A]/30 to-[#C9A15A]/10 border border-[#C9A15A]/25 text-[#E8D6A8] hover:opacity-90 transition-opacity cursor-pointer text-xs font-bold"
               >
                 {userInitials}
               </button>
@@ -298,7 +298,7 @@ export default function AppSidebar({
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="flex items-center justify-between gap-2 px-1 py-0.5">
               {/* User Avatar + Info */}
               <button
                 type="button"
@@ -306,7 +306,7 @@ export default function AppSidebar({
                 className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-90 transition-opacity cursor-pointer flex-1"
                 title="Account Settings"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#C9A15A]/30 to-[#C9A15A]/10 border border-[#C9A15A]/25 text-[#E8D6A8] font-bold text-xs">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C9A15A]/30 to-[#C9A15A]/10 border border-[#C9A15A]/25 text-[#E8D6A8] font-bold text-xs">
                   {userInitials}
                 </div>
                 <div className="min-w-0 flex-1">

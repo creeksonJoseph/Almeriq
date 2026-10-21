@@ -107,57 +107,40 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
             onClick={() => setOpen((prev) => !prev)}
             className={`group flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer border ${
               open
-                ? "bg-[#C9A15A]/20 border-[#C9A15A]/40 text-[#E8D6A8]"
-                : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-white/20"
+                ? "bg-white/[0.08] border-white/20 text-white"
+                : "bg-white/[0.02] border-white/[0.08] text-white/70 hover:bg-white/[0.05] hover:border-white/15"
             }`}
             aria-expanded={open}
             aria-haspopup="true"
             title={`Active Venture: ${activeVenture?.idea || "Select venture"}`}
           >
             {activeVenture?.idea ? (
-              <span className="font-bold text-xs uppercase text-[#E8D6A8]">
-                {activeVenture.idea.charAt(0)}
+              <span className="font-semibold text-xs text-white/90">
+                {activeVenture.idea.charAt(0).toUpperCase()}
               </span>
             ) : (
-              <Lightbulb size={14} className="text-[#C9A15A]" />
+              <ChevronDown size={14} className="text-white/40" />
             )}
           </button>
         ) : (
-          /* High-Hierarchy Apex Project Context Card for Sidebar */
+          /* Subtle Border Idea Selector for Sidebar (No avatar, no green dot) */
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
-            className={`group flex w-full items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 text-left transition-all border cursor-pointer ${
+            className={`group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left transition-all border cursor-pointer ${
               open
-                ? "bg-white/10 border-white/20 text-white shadow-sm"
-                : "bg-[#141418] border-white/8 hover:bg-[#1a1a20] hover:border-white/15 text-white/90"
+                ? "bg-white/[0.06] border-white/20 text-white shadow-sm"
+                : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:border-white/15 text-white/90"
             }`}
             aria-expanded={open}
             aria-haspopup="true"
             title={`Active Venture: ${activeVenture?.idea || "Select venture"}`}
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#C9A15A]/25 to-[#C9A15A]/5 border border-[#C9A15A]/30 text-[#E8D6A8] font-bold text-xs">
-                {activeVenture?.idea ? (
-                  activeVenture.idea.charAt(0).toUpperCase()
-                ) : (
-                  <Lightbulb size={13} />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 leading-none mb-1">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/40">
-                    Venture
-                  </span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                </div>
-                <p className="truncate text-xs font-semibold text-white">
-                  {activeVenture?.idea
-                    ? activeVenture.idea.slice(0, 20) + (activeVenture.idea.length > 20 ? "..." : "")
-                    : "Choose a venture"}
-                </p>
-              </div>
-            </div>
+            <span className="truncate text-xs font-medium text-white/85 group-hover:text-white">
+              {activeVenture?.idea
+                ? activeVenture.idea.slice(0, 24) + (activeVenture.idea.length > 24 ? "..." : "")
+                : "Choose a venture"}
+            </span>
             <ChevronDown
               size={13}
               className={`shrink-0 text-white/40 transition-transform duration-200 group-hover:text-white ${
