@@ -5,7 +5,7 @@
  * or icon bloat. Features an inline dropdown to switch between saved ideas instantly.
  */
 import React, { useState, useEffect, useMemo } from "react";
-import { Loader2, ChevronDown, ChevronUp, ArrowUpRight } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import ActiveIdeaDropdown from "../components/ActiveIdeaDropdown";
@@ -206,62 +206,52 @@ export default function FounderValidationPage() {
           }
         />
 
-        {/* ── Active Target Idea Context Card ── */}
-        <div className="mb-8 rounded-2xl border border-white/[0.08] bg-[#121217] p-5 sm:p-6 shadow-sm">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* ── Active Target Idea Context (Clean Editorial) ── */}
+        <div className="mb-8 border-b border-white/10 pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              {/* Meta Tags: Location & Target Segment */}
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="rounded-md bg-[#C9A15A]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#E8D6A8] border border-[#C9A15A]/25">
-                  Target Idea
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#C9A15A]">
+                  Target Venture
                 </span>
                 {locationInput && (
-                  <span className="rounded-md bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-white/60 border border-white/[0.06]">
-                    📍 {locationInput}
-                  </span>
-                )}
-                {customerInput && (
-                  <span
-                    className="rounded-md bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-white/60 border border-white/[0.06] max-w-sm sm:max-w-md truncate"
-                    title={customerInput}
-                  >
-                    👥 {customerInput}
+                  <span className="text-xs text-white/40">
+                    · {locationInput}
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h2 className="text-base sm:text-lg font-semibold text-white leading-snug">
+              <h2 className="font-display text-xl sm:text-2xl font-semibold text-white tracking-tight leading-snug">
                 {ideaInput || activeVenture?.idea || "No idea selected yet"}
               </h2>
 
-              {/* Problem / Solution preview if available */}
-              {(problemInput || solutionInput) && (
-                <p className="mt-1.5 text-xs text-white/50 line-clamp-2 max-w-3xl leading-relaxed">
-                  {problemInput || solutionInput}
+              {/* Target Customer / Context */}
+              {customerInput && (
+                <p className="mt-2 text-xs leading-relaxed text-white/50 max-w-3xl">
+                  <span className="font-medium text-white/60">Target:</span> {customerInput}
                 </p>
               )}
             </div>
 
-            {/* Actions: Switch Idea + Edit Inputs */}
-            <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/[0.06]">
-              <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 hover:bg-white/[0.05] transition-colors">
-                <ActiveIdeaDropdown variant="switcher" />
-              </div>
+            {/* Inline Controls: Switch Idea + Edit Inputs */}
+            <div className="flex items-center gap-3 shrink-0 pt-2 sm:pt-0">
+              <ActiveIdeaDropdown variant="switcher" />
+              <span className="text-white/20">|</span>
               <button
                 type="button"
                 onClick={() => setShowInputDrawer((prev) => !prev)}
-                className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs font-medium text-white/70 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                className="text-xs text-white/50 hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1"
               >
                 <span>{showInputDrawer ? "Hide Inputs" : "Edit Inputs"}</span>
-                {showInputDrawer ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                {showInputDrawer ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               </button>
             </div>
           </div>
 
           {/* Spacious Input Editor Drawer */}
           {showInputDrawer && (
-            <div className="mt-5 pt-5 border-t border-white/[0.08]">
+            <div className="mt-5 pt-5 border-t border-white/8">
               <ValidationInputDrawer
                 ideaInput={ideaInput}
                 setIdeaInput={setIdeaInput}
@@ -283,121 +273,90 @@ export default function FounderValidationPage() {
 
         {/* ── Loading State ── */}
         {evaluating && (
-          <div className="py-20 text-center rounded-2xl border border-white/[0.08] bg-[#121217] p-8">
-            <Loader2 size={26} className="animate-spin mx-auto text-[#c9a15a]" />
-            <p className="mt-4 text-base font-semibold text-white">
-              Evaluating Validation Rubric with AI…
+          <div className="py-20 text-center">
+            <Loader2 size={24} className="animate-spin mx-auto text-[#c9a15a]" />
+            <p className="mt-4 text-sm font-semibold text-white">
+              Evaluating Validation Rubric…
             </p>
-            <p className="mt-1.5 text-xs text-white/50 max-w-md mx-auto leading-relaxed">
-              Evaluating problem-solution fit, calculating TAM/SAM/SOM sizing, checking competition, scoring feasibility, and auditing unit economics.
+            <p className="mt-1 text-xs text-white/50 max-w-sm mx-auto">
+              Analyzing problem-solution fit, TAM/SAM/SOM sizing, market competitors, feasibility, and unit economics.
             </p>
           </div>
         )}
 
-        {/* ── Visual Hierarchy Empty / Blueprint State ── */}
+        {/* ── Editorial Blueprint State (No card soup, no duplicate button) ── */}
         {!evaluating && !evaluation && (
-          <div className="space-y-6">
-            {/* Primary Action Hero */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#16161d] via-[#121217] to-[#0d0d12] p-6 sm:p-8 shadow-xl">
-              <div className="relative z-10 max-w-2xl">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="flex h-2 w-2 rounded-full bg-[#C9A15A] animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#C9A15A]">
-                    Institutional Rubric
-                  </span>
-                </div>
-                <h3 className="font-display text-2xl font-semibold text-white sm:text-3xl tracking-tight">
-                  Validate &ldquo;{ideaInput ? ideaInput.slice(0, 36) + (ideaInput.length > 36 ? "…" : "") : "Your Idea"}&rdquo;
+          <div className="py-2">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+              <div>
+                <h3 className="font-display text-base sm:text-lg font-semibold text-white">
+                  Evaluation Framework
                 </h3>
-                <p className="mt-2.5 text-xs sm:text-sm text-white/60 leading-relaxed">
-                  Evaluate customer urgency, calculate addressable market size, discover hidden competitors, and audit technical feasibility before writing code.
+                <p className="mt-1 text-xs text-white/50">
+                  Run validation using the button at the top to benchmark this idea across the 6 venture pillars.
                 </p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={(e) => handleRunValidation(e, false)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#141416] hover:opacity-95 transition-all shadow-md cursor-pointer"
-                  >
-                    <span>Run Validation Report</span>
-                    <ArrowUpRight size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowInputDrawer(true)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors cursor-pointer"
-                  >
-                    <span>Edit Idea Inputs</span>
-                  </button>
-                </div>
               </div>
-
-              {/* Subtle ambient decorative gradient */}
-              <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#C9A15A]/5 blur-3xl" />
+              <span className="text-[11px] font-mono uppercase tracking-wider text-white/30">
+                Institutional Rubric
+              </span>
             </div>
 
-            {/* 6-Dimension Architectural Preview Grid */}
-            <div>
-              <div className="mb-3.5 flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">
-                  6-Dimension Evaluation Framework
-                </h4>
-                <span className="text-[11px] text-white/35">Pending evaluation</span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  {
-                    title: "Problem & Solution",
-                    desc: "Severity of customer pain point, urgency to solve, and defensibility of the proposed fix.",
-                    badge: "Dimension 01",
-                  },
-                  {
-                    title: "Market Size (TAM/SAM/SOM)",
-                    desc: "Total Addressable Market, Serviceable Available Market, and Obtainable Service Volume calculations.",
-                    badge: "Dimension 02",
-                  },
-                  {
-                    title: "Customer Demand & Pull",
-                    desc: "Willingness to pay, adoption friction, and organic conversion signals.",
-                    badge: "Dimension 03",
-                  },
-                  {
-                    title: "Competition & Moats",
-                    desc: "Active competitors, legacy alternatives, switching cost barriers, and proprietary advantages.",
-                    badge: "Dimension 04",
-                  },
-                  {
-                    title: "Feasibility Analysis",
-                    desc: "Technical architecture complexity, regulatory & licensing barriers, and operational prerequisites.",
-                    badge: "Dimension 05",
-                  },
-                  {
-                    title: "Business Model & Margins",
-                    desc: "Monetization model, unit economics, gross margins, and scalability runway.",
-                    badge: "Dimension 06",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.badge}
-                    className="rounded-xl border border-white/[0.06] bg-[#121217] p-4.5 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#C9A15A]/70">
-                          {item.badge}
-                        </span>
-                        <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
-                      </div>
-                      <h5 className="font-semibold text-xs sm:text-sm text-white">
-                        {item.title}
-                      </h5>
-                      <p className="mt-1.5 text-[11px] leading-relaxed text-white/45">
-                        {item.desc}
-                      </p>
+            {/* Clean borderless list with subtle dividers */}
+            <div className="divide-y divide-white/8 border-y border-white/8">
+              {[
+                {
+                  num: "01",
+                  name: "Problem & Solution",
+                  desc: "Severity of customer pain point, urgency to solve, and defensibility of the proposed fix.",
+                },
+                {
+                  num: "02",
+                  name: "Market Size (TAM, SAM, SOM)",
+                  desc: "Total Addressable Market, Serviceable Available Market, and Obtainable Volume calculations.",
+                },
+                {
+                  num: "03",
+                  name: "Demand & User Pull",
+                  desc: "Willingness to pay, adoption friction, and organic conversion velocity.",
+                },
+                {
+                  num: "04",
+                  name: "Competition & Defensibility",
+                  desc: "Active competitors, legacy alternatives, switching barriers, and proprietary moats.",
+                },
+                {
+                  num: "05",
+                  name: "Feasibility Analysis",
+                  desc: "Technical architecture complexity, regulatory compliance, and resource prerequisites.",
+                },
+                {
+                  num: "06",
+                  name: "Business Model & Monetization",
+                  desc: "Revenue streams, unit economics, gross margins, and pricing scalability.",
+                },
+              ].map((pillar) => (
+                <div
+                  key={pillar.num}
+                  className="py-3.5 flex items-start sm:items-center justify-between gap-4"
+                >
+                  <div className="flex items-start sm:items-center gap-3 min-w-0">
+                    <span className="text-xs font-mono text-[#C9A15A]/70 font-semibold shrink-0">
+                      {pillar.num}
+                    </span>
+                    <div className="min-w-0">
+                      <span className="text-xs sm:text-sm font-medium text-white block sm:inline sm:mr-2">
+                        {pillar.name}
+                      </span>
+                      <span className="text-xs text-white/40 hidden md:inline">
+                        — {pillar.desc}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-white/30 shrink-0">
+                    Pending
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
