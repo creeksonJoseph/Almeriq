@@ -191,7 +191,7 @@ export default function FounderValidationPage() {
 
   return (
     <FounderFlowGuard>
-      <div className="mx-auto w-full max-w-4xl px-4 pb-20 pt-6 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
           title="Idea Validation"
           subtitle="Comprehensive evaluation across problem/solution, TAM/SAM/SOM, demand, competition, feasibility, and business model."
@@ -437,7 +437,7 @@ export default function FounderValidationPage() {
               </div>
 
               {evaluation.executive_summary && (
-                <p className="text-sm leading-relaxed text-white/80 max-w-3xl">
+                <p className="text-sm leading-relaxed text-white/80 max-w-5xl">
                   {evaluation.executive_summary}
                 </p>
               )}
