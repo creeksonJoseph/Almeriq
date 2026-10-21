@@ -14,6 +14,21 @@ class FounderAnalysisRequest(BaseModel):
     location: str = Field(..., min_length=2, max_length=200)
 
 
+class FounderBriefSaveRequest(BaseModel):
+    """Save venture brief without triggering AI — used by the new analysis-hub flow."""
+    idea: str = Field(..., min_length=10, max_length=500)
+    problem: str = Field(..., min_length=10, max_length=500)
+    solution: str = Field(..., min_length=10, max_length=500)
+    customer: str = Field(..., min_length=2, max_length=200)
+    location: str = Field(..., min_length=2, max_length=200)
+
+
+class FounderBriefSaveResponse(BaseModel):
+    venture_id: int
+    message: str
+
+
+
 class FounderAnalysisResponse(BaseModel):
     source: str
     summary: str
@@ -42,6 +57,10 @@ class VentureOut(BaseModel):
     roadmap: list[str]
     next_steps: list[str]
     created_at: datetime
+    # Which ai-tool analyses have been run for this venture's brief
+    analyses_run: list[str] = []
+    # Content hash of the brief inputs (used by frontend for cache lookup)
+    content_hash: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -104,10 +123,13 @@ class FounderToolRequest(BaseModel):
     problem: Optional[str] = Field(default="", max_length=500)
     solution: Optional[str] = Field(default="", max_length=500)
     extra_params: Optional[dict] = None
+    # Optional: link this tool run to an existing pending venture so it gets updated
+    venture_id: Optional[int] = None
 
 
 class FounderToolResponse(BaseModel):
     tool_key: str
     source: str
     result: dict
+    venture_id: Optional[int] = None
 

@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  Scale,
   Building2,
   ShieldCheck,
-  FileText,
-  Plus,
   Copy,
   Check,
-  ExternalLink,
   Loader2,
-  Clock,
-  ArrowRight,
 } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
@@ -155,8 +149,8 @@ export default function FounderLegalPage() {
     <FounderFlowGuard>
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
-          title="Legal & Compliance Vault"
-          subtitle="Register your corporate entity, protect intellectual property, and access standard legal contracts."
+          title="Legal & Setup"
+          subtitle="Register your business name, protect your idea, and access starter contracts."
         />
 
         {/* Action Bar */}
@@ -171,7 +165,7 @@ export default function FounderLegalPage() {
                   : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
               }`}
             >
-              Active Filings ({filings.length})
+              Saved Records ({filings.length})
             </button>
             <button
               type="button"
@@ -182,7 +176,7 @@ export default function FounderLegalPage() {
                   : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
               }`}
             >
-              + File Company Entity
+              Register Business Name
             </button>
             <button
               type="button"
@@ -193,7 +187,7 @@ export default function FounderLegalPage() {
                   : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
               }`}
             >
-              + File IP / Trademark
+              Protect Idea / Trademark
             </button>
             <button
               type="button"
@@ -204,7 +198,7 @@ export default function FounderLegalPage() {
                   : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
               }`}
             >
-              Legal Templates
+              Starter Contracts
             </button>
           </div>
         </div>
@@ -219,7 +213,7 @@ export default function FounderLegalPage() {
             )}
 
             {!loading && filings.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-[#2B2B31] bg-[#141417]/50 p-12 text-center">
+              <div className="rounded-2xl border border-dashed border-[#2B2B31] p-12 text-center">
                 <Scale size={32} className="mx-auto text-[#5F5E5A]" />
                 <h4 className="mt-3 font-display text-base font-semibold text-[#F3F1EC]">
                   No active filings on record
@@ -240,26 +234,26 @@ export default function FounderLegalPage() {
             )}
 
             {!loading && filings.length > 0 && (
-              <div className="space-y-3">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
                 {filings.map((filing) => (
                   <div
                     key={filing.id}
-                    className="flex flex-col justify-between gap-4 rounded-xl border border-[#2B2B31] bg-[#141417] p-5 sm:flex-row sm:items-center"
+                    className="flex flex-col justify-between gap-4 p-5 transition-colors hover:bg-white/[0.02] sm:flex-row sm:items-center"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#2B2B31] bg-[#1C1C21] text-[#C9A15A]">
-                        {filing.filing_type === "company" ? <Building2 size={20} /> : <ShieldCheck size={20} />}
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.02] text-[#f2ca50]">
+                        {filing.filing_type === "company" ? <Building2 size={18} /> : <ShieldCheck size={18} />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-display text-sm font-bold text-[#F3F1EC]">
+                          <h4 className="font-display text-sm font-bold text-white">
                             {filing.filing_type === "company" ? filing.company_name : filing.ip_title}
                           </h4>
-                          <span className="rounded bg-[#1C1C21] px-2 py-0.5 text-[10px] font-mono font-medium text-[#C9A15A]">
+                          <span className="rounded bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-mono font-medium text-[#f2ca50]">
                             {filing.ref_number}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-[#9B9A94]">
+                        <p className="mt-1 text-xs text-white/50">
                           {filing.filing_type === "company"
                             ? `${filing.entity_type} · Jurisdiction: ${filing.jurisdiction}`
                             : `${filing.ip_type} · ${filing.ip_description || "Protected codebase"}`}
@@ -268,11 +262,11 @@ export default function FounderLegalPage() {
                     </div>
 
                     <div className="flex items-center gap-4 sm:flex-col sm:items-end">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#3E8368]/30 bg-[#3E8368]/15 px-2.5 py-0.5 text-[11px] font-semibold text-[#52b788]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#52b788]" />
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                         {filing.status}
                       </span>
-                      <span className="text-[11px] text-[#5F5E5A]">
+                      <span className="text-[11px] text-white/40">
                         Filed {new Date(filing.filed_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -363,13 +357,13 @@ export default function FounderLegalPage() {
                 />
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 flex justify-end">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] py-3 text-xs font-bold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
                 >
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                  {submitting && <Loader2 size={16} className="animate-spin" />}
                   <span>{submitting ? "Submitting Filing..." : "Generate Filing & Reference Number"}</span>
                 </button>
               </div>
@@ -455,13 +449,13 @@ export default function FounderLegalPage() {
                 />
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 flex justify-end">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] py-3 text-xs font-bold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
                 >
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                  {submitting && <Loader2 size={16} className="animate-spin" />}
                   <span>{submitting ? "Registering IP..." : "Register IP & Issue Docket"}</span>
                 </button>
               </div>
@@ -472,7 +466,8 @@ export default function FounderLegalPage() {
         {/* TAB 4: LEGAL TEMPLATES */}
         {activeTab === "templates" && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="space-y-2 md:col-span-1">
+            {/* Template Selector Rail */}
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5 md:col-span-1">
               {LEGAL_TEMPLATES.map((tmpl) => {
                 const active = selectedTemplate.id === tmpl.id;
                 return (
@@ -480,38 +475,42 @@ export default function FounderLegalPage() {
                     key={tmpl.id}
                     type="button"
                     onClick={() => setSelectedTemplate(tmpl)}
-                    className={`w-full rounded-xl border p-4 text-left transition-all ${
+                    className={`w-full p-4 text-left transition-colors ${
                       active
-                        ? "border-[#C9A15A] bg-[#C9A15A]/10 text-white"
-                        : "border-[#2B2B31] bg-[#141417] text-[#9B9A94] hover:border-white/20 hover:text-white"
+                        ? "bg-[#f2ca50]/10 text-white font-semibold"
+                        : "text-white/60 hover:bg-white/[0.02] hover:text-white"
                     }`}
                   >
-                    <h5 className="text-xs font-bold text-[#F3F1EC]">{tmpl.title}</h5>
-                    <p className="mt-1 text-[11px] text-[#9B9A94] line-clamp-2">{tmpl.desc}</p>
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs font-bold text-white">{tmpl.title}</h5>
+                      {active && <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />}
+                    </div>
+                    <p className="mt-1 text-[11px] text-white/45 line-clamp-2 leading-relaxed">{tmpl.desc}</p>
                   </button>
                 );
               })}
             </div>
 
-            <div className="rounded-2xl border border-[#2B2B31] bg-[#141417] p-6 md:col-span-2">
-              <div className="flex items-center justify-between border-b border-[#2B2B31] pb-4">
+            {/* Template Preview Stage */}
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 md:col-span-2">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
-                  <h4 className="font-display text-base font-bold text-[#F3F1EC]">
+                  <h4 className="font-display text-base font-bold text-white">
                     {selectedTemplate.title}
                   </h4>
-                  <p className="text-xs text-[#9B9A94]">{selectedTemplate.desc}</p>
+                  <p className="text-xs text-white/50">{selectedTemplate.desc}</p>
                 </div>
                 <button
                   type="button"
                   onClick={copyTemplateContent}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B2B31] bg-[#1C1C21] px-3 py-1.5 text-xs font-semibold text-[#E8D6A8] hover:bg-white/5"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#f2ca50]/30 bg-[#f2ca50]/10 px-3 py-1.5 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 transition-colors"
                 >
-                  {copiedTemplate ? <Check size={14} className="text-[#3E8368]" /> : <Copy size={14} />}
+                  {copiedTemplate ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                   <span>{copiedTemplate ? "Copied" : "Copy Template"}</span>
                 </button>
               </div>
 
-              <pre className="mt-5 max-h-96 overflow-y-auto rounded-xl border border-[#2B2B31] bg-[#0A0A0B] p-4 text-xs font-mono leading-relaxed text-[#9B9A94] whitespace-pre-wrap">
+              <pre className="mt-4 max-h-96 overflow-y-auto rounded-lg border border-white/8 bg-[#0A0A0B] p-4 text-xs font-mono leading-relaxed text-white/70 whitespace-pre-wrap">
                 {selectedTemplate.content}
               </pre>
             </div>

@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  Send,
-  Mail,
-  Briefcase,
   Copy,
   Check,
   RefreshCw,
   Loader2,
-  Sparkles,
-  ArrowRight,
-  TrendingUp,
 } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
@@ -85,35 +79,33 @@ export default function FounderOutreachPage() {
     <FounderFlowGuard>
       <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
-          title="Outreach & Team Communications"
-          subtitle="Generate investor updates and founding team job descriptions tailored to your current milestone."
+          title="Updates & Team"
+          subtitle="Write quick monthly progress updates or create a post to find teammates."
         />
 
-        {/* Tab Controls */}
-        <div className="mb-8 grid grid-cols-2 gap-3 max-w-md">
+        {/* Tab Controls - Clean Text Tabs */}
+        <div className="mb-8 flex gap-2 border-b border-white/10 pb-4">
           <button
             type="button"
             onClick={() => setActiveTab("investor_update")}
-            className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
+            className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
               activeTab === "investor_update"
-                ? "border-[#C9A15A] bg-[#C9A15A]/15 text-[#E8D6A8] shadow-sm"
-                : "border-[#2B2B31] bg-[#141417] text-[#9B9A94] hover:text-white"
+                ? "bg-[#f2ca50]/15 text-[#f2ca50] border border-[#f2ca50]/30"
+                : "text-white/60 hover:bg-white/5 hover:text-white"
             }`}
           >
-            <Mail size={16} />
-            <span>Monthly Investor Update</span>
+            Monthly Progress Update
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("job_post")}
-            className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
+            className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
               activeTab === "job_post"
-                ? "border-[#C9A15A] bg-[#C9A15A]/15 text-[#E8D6A8] shadow-sm"
-                : "border-[#2B2B31] bg-[#141417] text-[#9B9A94] hover:text-white"
+                ? "bg-[#f2ca50]/15 text-[#f2ca50] border border-[#f2ca50]/30"
+                : "text-white/60 hover:bg-white/5 hover:text-white"
             }`}
           >
-            <Briefcase size={16} />
-            <span>Founding Job Posting</span>
+            Find a Teammate / Job Post
           </button>
         </div>
 
@@ -122,12 +114,12 @@ export default function FounderOutreachPage() {
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#2B2B31] pb-4">
             <div>
               <h3 className="font-display text-lg font-bold text-[#F3F1EC]">
-                {activeTab === "investor_update" ? "Investor Newsletter & KPI Memo" : "Founding Engineer Job Description"}
+                {activeTab === "investor_update" ? "Monthly Progress Update" : "Teammate Role Description"}
               </h3>
               <p className="text-xs text-[#9B9A94]">
                 {activeTab === "investor_update"
-                  ? "Standard monthly template with highlights, lowlights, key metrics, and specific asks."
-                  : "Compelling talent pitch highlighting equity, mission, and technical ownership."}
+                  ? "A simple update to share your milestones, numbers, and what help you need."
+                  : "A clear post explaining your project's mission and what skills you are looking for."}
               </p>
             </div>
 
@@ -155,62 +147,82 @@ export default function FounderOutreachPage() {
 
           {!loading && current && activeTab === "investor_update" && (
             <div className="space-y-6">
-              <div className="rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-4">
-                <span className="text-[10px] uppercase tracking-wider text-[#5F5E5A]">Email Subject</span>
-                <p className="mt-1 font-mono text-xs font-semibold text-[#F3F1EC]">{current.subject}</p>
+              {/* Subject Strip & Copy Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.02]">
+                <div className="min-w-0 flex-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block">Email Subject</span>
+                  <p className="mt-1 font-mono text-xs sm:text-sm font-semibold text-white truncate">{current.subject}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText(current.full_email)}
+                  className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-[#f2ca50]/30 bg-[#f2ca50]/10 px-3.5 py-1.5 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 transition-colors"
+                >
+                  {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  <span>{copied ? "Copied Full Email" : "Copy Ready Email"}</span>
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
-                  <span className="text-xs font-semibold uppercase text-emerald-400">Highlights</span>
-                  <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-[#F3F1EC]">
+              {/* Highlights & Lowlights - 2-Column Document Flow */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                <div className="border-l-2 border-[#f2ca50] pl-4 py-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">Highlights & Wins</span>
+                  <ul className="space-y-1.5 text-xs text-white/80">
                     {current.highlights?.map((h, i) => (
-                      <li key={i}>{h}</li>
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-[#f2ca50] font-bold">·</span>
+                        <span>{h}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
-                  <span className="text-xs font-semibold uppercase text-rose-400">Lowlights & Learnings</span>
-                  <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-[#F3F1EC]">
+
+                <div className="border-l-2 border-white/20 pl-4 py-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/60 block mb-2">Lowlights & Learnings</span>
+                  <ul className="space-y-1.5 text-xs text-white/70">
                     {current.lowlights?.map((l, i) => (
-                      <li key={i}>{l}</li>
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-white/40 font-bold">·</span>
+                        <span>{l}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-4">
-                  <span className="text-xs font-semibold uppercase text-[#C9A15A]">Key Metrics</span>
-                  <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-[#F3F1EC]">
+              {/* Metrics & The Ask */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-white/8">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/50 block mb-2">Key Metric Pulse</span>
+                  <ul className="space-y-1.5 text-xs text-white/80">
                     {current.kpis?.map((k, i) => (
-                      <li key={i}>{k}</li>
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-[#f2ca50] font-bold">·</span>
+                        <span>{k}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-4">
-                  <span className="text-xs font-semibold uppercase text-blue-400">Asks from Backers</span>
-                  <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-[#F3F1EC]">
+
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">Asks from Backers</span>
+                  <ul className="space-y-1.5 text-xs text-white/80">
                     {current.asks?.map((a, i) => (
-                      <li key={i}>{a}</li>
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-[#f2ca50] font-bold">·</span>
+                        <span>{a}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#2B2B31] bg-[#0A0A0B] p-5">
-                <div className="flex items-center justify-between border-b border-[#2B2B31] pb-3">
-                  <span className="text-xs font-semibold text-[#E8D6A8]">Complete Ready-to-Send Email</span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopyText(current.full_email)}
-                    className="inline-flex items-center gap-1.5 text-xs text-[#C9A15A] hover:underline"
-                  >
-                    {copied ? <Check size={14} className="text-[#3E8368]" /> : <Copy size={14} />}
-                    <span>{copied ? "Copied" : "Copy Full Body"}</span>
-                  </button>
-                </div>
-                <pre className="mt-4 max-h-64 overflow-y-auto font-mono text-xs leading-relaxed text-[#9B9A94] whitespace-pre-wrap">
+              {/* Full Email Editor / Preview Box */}
+              <div className="pt-4 border-t border-white/8">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-2">
+                  Complete Ready-to-Send Text
+                </span>
+                <pre className="p-5 rounded-xl border border-white/10 bg-white/[0.01] font-mono text-xs leading-relaxed text-white/80 whitespace-pre-wrap max-h-80 overflow-y-auto">
                   {current.full_email}
                 </pre>
               </div>
@@ -219,10 +231,11 @@ export default function FounderOutreachPage() {
 
           {!loading && current && activeTab === "job_post" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-5">
+              {/* Header Title & Copy */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl border border-white/10 bg-white/[0.02]">
                 <div>
-                  <span className="text-[10px] uppercase text-[#C9A15A]">Position Title</span>
-                  <h4 className="mt-1 font-display text-lg font-bold text-[#F3F1EC]">{current.title}</h4>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Role Opening</span>
+                  <h4 className="mt-1 font-display text-xl font-bold text-white">{current.title}</h4>
                 </div>
                 <button
                   type="button"
@@ -231,41 +244,55 @@ export default function FounderOutreachPage() {
                       `${current.title}\n\n${current.role_summary}\n\nResponsibilities:\n${current.responsibilities?.join("\n")}\n\nRequirements:\n${current.requirements?.join("\n")}\n\nWhy Join Us:\n${current.why_join_us}`
                     )
                   }
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B2B31] bg-[#141417] px-3 py-1.5 text-xs font-semibold text-[#E8D6A8] hover:bg-white/5"
+                  className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-[#f2ca50]/30 bg-[#f2ca50]/10 px-3.5 py-1.5 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 transition-colors"
                 >
-                  {copied ? <Check size={14} className="text-[#3E8368]" /> : <Copy size={14} />}
-                  <span>{copied ? "Copied Job Post" : "Copy All"}</span>
+                  {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  <span>{copied ? "Copied Job Post" : "Copy Job Post"}</span>
                 </button>
               </div>
 
-              <div className="rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-5">
-                <span className="text-xs font-semibold text-[#C9A15A]">Role Summary</span>
-                <p className="mt-2 text-xs leading-relaxed text-[#F3F1EC]">{current.role_summary}</p>
+              {/* Role Summary */}
+              <div className="py-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1">Role Summary</span>
+                <p className="text-sm leading-relaxed text-white/80">{current.role_summary}</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div className="rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-5">
-                  <span className="text-xs font-semibold text-[#F3F1EC]">Core Responsibilities</span>
-                  <ul className="mt-2 list-inside list-disc space-y-1.5 text-xs text-[#9B9A94]">
+              {/* Responsibilities & Requirements Side-by-Side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-white/8">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/60 block mb-2">Core Responsibilities</span>
+                  <ul className="space-y-1.5 text-xs text-white/80">
                     {current.responsibilities?.map((r, i) => (
-                      <li key={i}>{r}</li>
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-[#f2ca50] font-bold">·</span>
+                        <span>{r}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-[#2B2B31] bg-[#1C1C21]/60 p-5">
-                  <span className="text-xs font-semibold text-[#F3F1EC]">Required Experience</span>
-                  <ul className="mt-2 list-inside list-disc space-y-1.5 text-xs text-[#9B9A94]">
+
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/60 block mb-2">Required Skills & Experience</span>
+                  <ul className="space-y-1.5 text-xs text-white/80">
                     {current.requirements?.map((req, i) => (
-                      <li key={i}>{req}</li>
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-[#f2ca50] font-bold">·</span>
+                        <span>{req}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#C9A15A]/30 bg-[#C9A15A]/10 p-5">
-                <span className="text-xs font-semibold text-[#E8D6A8]">Why Join Us (The Pitch)</span>
-                <p className="mt-2 text-xs leading-relaxed text-[#F3F1EC]">{current.why_join_us}</p>
-              </div>
+              {/* The Pitch */}
+              {current.why_join_us && (
+                <div className="border-l-2 border-[#f2ca50] pl-4 py-2 bg-gradient-to-r from-[#f2ca50]/5 to-transparent">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Why Join Us (The Pitch)</span>
+                  <p className="mt-1 text-xs sm:text-sm leading-relaxed text-white/80 italic">
+                    "{current.why_join_us}"
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

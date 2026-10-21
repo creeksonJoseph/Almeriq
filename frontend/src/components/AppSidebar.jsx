@@ -2,9 +2,6 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
-  Clock3,
-  BriefcaseBusiness,
-  UserRound,
   Compass,
   Lightbulb,
   BookOpen,
@@ -19,27 +16,23 @@ import {
   ChevronRight,
   ChevronDown,
   X,
-  Sparkles,
   ShieldCheck,
 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
 export const PRIMARY_NAV = [
   { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
-  { key: "tasks", label: "Build Tasks", path: "/dashboard?tab=tasks", icon: Clock3 },
-  { key: "capital", label: "Capital Readiness", path: "/dashboard?tab=capital", icon: BriefcaseBusiness },
-  { key: "team", label: "Team & Roles", path: "/dashboard?tab=team", icon: UserRound },
 ];
 
 export const FOUNDER_STUDIO_NAV = [
   { label: "Studio Hub", path: "/founder", icon: Compass },
-  { label: "Venture Brief", path: "/founder/intake", icon: Lightbulb },
-  { label: "Explored Ventures", path: "/founder/ventures", icon: BookOpen },
-  { label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
-  { label: "AI Business Builder", path: "/founder/ai-tools", icon: Cpu },
-  { label: "Product Dev", path: "/founder/product", icon: Boxes },
-  { label: "Legal & Filings", path: "/founder/legal", icon: Scale },
-  { label: "Outreach & Hiring", path: "/founder/outreach", icon: Send },
+  { label: "Share an Idea", path: "/founder/intake", icon: Lightbulb },
+  { label: "Saved Ideas", path: "/founder/ventures", icon: BookOpen },
+  { label: "Idea Checklist", path: "/founder/validation", icon: CheckCircle2 },
+  { label: "AI Startup Tools", path: "/founder/ai-tools", icon: Cpu },
+  { label: "Product & Tech", path: "/founder/product", icon: Boxes },
+  { label: "Legal & Setup", path: "/founder/legal", icon: Scale },
+  { label: "Updates & Team", path: "/founder/outreach", icon: Send },
 ];
 
 export default function AppSidebar({

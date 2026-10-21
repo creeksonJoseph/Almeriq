@@ -1,6 +1,6 @@
 import { useCallback, useState, useRef } from "react";
 import { z } from "zod";
-import { analyzeFounderIdeaApi } from "../lib/api";
+import { analyzeFounderIdeaApi, saveBriefApi } from "../lib/api";
 
 const FORM_KEY = "alimeriq_founder_form";
 const ANALYSIS_KEY = "alimeriq_founder_analysis";

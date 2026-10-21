@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getAdminWaitlistApi } from "../lib/api";
+import { StatStrip } from "../components/ui/BorderlessPrimitives";
 
 const ROLE_BADGES = {
   Founder: { bg: "bg-[#f2ca50]/15 text-[#f2ca50] border-[#f2ca50]/30", icon: Building2 },
@@ -29,7 +30,7 @@ const ROLE_BADGES = {
 };
 
 function formatDate(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleDateString("en-US", {
       year: "numeric",
@@ -135,22 +136,25 @@ export default function AdminWaitlistPage() {
         </div>
       </div>
 
-      {/* Metrics Bar */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <div className="rounded-2xl border border-white/10 bg-[#12121a] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Total Signups</p>
-          <p className="mt-1 font-display text-2xl font-bold text-white">{data.total || data.items.length}</p>
-        </div>
-        {["Founder", "Investor", "Job Seeker", "Infrastructure Provider"].map((r) => {
-          const count = (data.items || []).filter((i) => i.role?.toLowerCase() === r.toLowerCase()).length;
-          return (
-            <div key={r} className="rounded-2xl border border-white/10 bg-[#12121a] p-4">
-              <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-white/40">{r}s</p>
-              <p className="mt-1 font-display text-2xl font-bold text-[#f2ca50]">{count}</p>
-            </div>
-          );
-        })}
-      </div>
+      {/* Unified Metrics Ribbon */}
+      <StatStrip
+        items={[
+          {
+            label: "Total Signups",
+            value: data.total || data.items.length,
+            subtext: "All registered users",
+          },
+          ...["Founder", "Investor", "Job Seeker", "Infrastructure Provider"].map((r) => {
+            const count = (data.items || []).filter((i) => i.role?.toLowerCase() === r.toLowerCase()).length;
+            return {
+              label: `${r}s`,
+              value: count,
+              valueColor: "text-[#f2ca50]",
+            };
+          }),
+        ]}
+        className="mb-6"
+      />
 
       {/* Filter & Search Toolbar */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -234,7 +238,7 @@ export default function AdminWaitlistPage() {
                           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 text-[11px] font-bold text-white/70">
                             {item.full_name?.charAt(0)?.toUpperCase() || "U"}
                           </span>
-                          <span className="truncate max-w-[180px]">{item.full_name || "—"}</span>
+                          <span className="truncate max-w-[180px]">{item.full_name || "-"}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono text-white/60">

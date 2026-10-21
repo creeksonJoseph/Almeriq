@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Bot, Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FounderFlowLayout from "../components/founder/FounderFlowLayout";
 import { useFounderFlow } from "../hooks/useFounderFlow";
+import { saveBriefApi } from "../lib/api";
 
 const FIELDS = [
   ["idea", "What are you building?", "Describe the idea in one or two sentences.", 500],
@@ -14,139 +15,148 @@ const FIELDS = [
 
 export default function FounderIntakePage() {
   const navigate = useNavigate();
-  const { form, setForm, analyze, loading, error, ventureId, saveSuccess, setSaveSuccess } = useFounderFlow();
-  const [validationError, setValidationError] = useState("");
-  const [showEditWarning, setShowEditWarning] = useState(false);
+  const { form, setForm, ventureId, setVentureId } = useFounderFlow();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Track the form snapshot that was used for the last save so we can detect changes
+  const [savedFormSnapshot, setSavedFormSnapshot] = useState(() => {
+    // If a ventureId already exists, treat the current sessionStorage form as already-saved
+    try {
+      const existing = window.localStorage.getItem("alimeriq_venture_id");
+      if (existing) return JSON.parse(window.sessionStorage.getItem("alimeriq_founder_form") || "null");
+    } catch { /* ignore */ }
+    return null;
+  });
+
+  const formHasChanged = savedFormSnapshot
+    ? FIELDS.some(([key]) => form[key] !== savedFormSnapshot[key])
+    : true;
 
   const submit = async (event) => {
     event.preventDefault();
-    setValidationError("");
-    
-    if (ventureId && !showEditWarning) {
-      setShowEditWarning(true);
+    setError("");
+
+    // If the venture was already saved with the exact same form data, skip re-saving
+    if (ventureId && !formHasChanged) {
+      setSaveSuccess(true);
+      setTimeout(() => navigate("/founder/analysis"), 400);
       return;
     }
 
+    setLoading(true);
     try {
-      await analyze();
-      navigate("/founder/analysis");
+      const result = await saveBriefApi(form);
+      setVentureId(result.venture_id);
+      setSavedFormSnapshot({ ...form });
+      setSaveSuccess(true);
+      // Small delay so the user sees the success flash before navigating
+      setTimeout(() => navigate("/founder/analysis"), 600);
     } catch (err) {
-      // Error already set in hook
+      setError(err.message || "Failed to save your brief. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const dismissError = () => {
-    setSaveSuccess(false);
   };
 
   return (
     <FounderFlowLayout>
       <div className="mb-7 max-w-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">Step 1 · Venture brief</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Start with the context you have.</h1>
-        <p className="mt-3 text-sm leading-relaxed text-white/55">Answer five focused questions. You can return and refine this brief as your company becomes clearer.</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">Step 1 · Share your idea</p>
+        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          Tell us about your startup idea.
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-white/55">
+          Answer 5 simple questions. We'll save your idea, then you can choose what kind of help you want.
+        </p>
       </div>
 
       {saveSuccess && (
-        <div className="mb-5 flex items-center justify-between rounded-xl bg-green-500/10 border border-green-500/30 p-4">
+        <div className="mb-5 flex items-center justify-between rounded-xl bg-[#f2ca50]/10 border border-[#f2ca50]/30 p-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 size={18} className="text-green-400 shrink-0" />
+            <CheckCircle2 size={18} className="text-[#f2ca50] shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-green-300">Venture saved successfully</p>
-              <p className="text-xs text-green-200/70">Ref: ALQ-VNT-{String(ventureId).padStart(6, "0")}</p>
+              <p className="text-sm font-semibold text-[#f2ca50]">Idea saved - opening AI choices...</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={dismissError}
-            className="text-green-400 hover:text-green-300"
-          >
+          <button type="button" onClick={() => setSaveSuccess(false)} className="text-[#f2ca50] hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
       )}
 
-      {showEditWarning && (
-        <div className="mb-5 rounded-xl bg-amber-500/10 border border-amber-500/30 p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={18} className="text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-amber-300">Update this venture?</p>
-              <p className="text-xs text-amber-200/70 mt-1">You already have an analysis for this brief. Submitting again will create a new analysis and replace the previous one.</p>
-              <div className="flex gap-2 mt-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditWarning(false);
-                    submit({ preventDefault: () => {} });
-                  }}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
-                >
-                  Yes, update analysis
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEditWarning(false)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 text-white/70 hover:bg-white/20"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+      <form onSubmit={submit} className="rounded-2xl border border-white/10 p-5 sm:p-8">
+        <div className="mb-7 flex items-center gap-3">
+          <div>
+            <h2 className="font-display text-xl font-semibold text-white">Your startup idea</h2>
+            <p className="mt-1 text-xs text-white/45">Be clear and direct. The AI uses this to give you real advice.</p>
           </div>
         </div>
-      )}
 
-      <form onSubmit={submit} className="rounded-2xl border border-white/10 bg-[#12121a] p-5 sm:p-8">
-        <div className="mb-7 flex items-center gap-3">
-          <Bot size={18} className="text-[#f2ca50]" />
-          <div><h2 className="font-display text-xl font-semibold text-white">Your venture brief</h2><p className="mt-1 text-xs text-white/45">Be specific. We will use this to create your first build plan.</p></div>
-        </div>
         <div className="grid gap-5 md:grid-cols-2">
           {FIELDS.map(([key, label, placeholder, maxLength]) => (
             <label key={key} className={key === "idea" || key === "problem" || key === "solution" ? "md:col-span-2" : ""}>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold text-white/75">{label}</span>
-                <span className={`text-xs font-medium ${
-                  form[key].length > maxLength * 0.9
-                    ? "text-red-400"
-                    : form[key].length > maxLength * 0.75
-                      ? "text-yellow-400"
-                      : "text-white/45"
-                }`}>
+                <span
+                  className={`text-xs font-medium ${form[key].length > maxLength * 0.9
+                      ? "text-red-400"
+                      : form[key].length > maxLength * 0.75
+                        ? "text-yellow-400"
+                        : "text-white/45"
+                    }`}
+                >
                   {form[key].length}/{maxLength}
                 </span>
               </div>
               {key === "idea" || key === "problem" || key === "solution" ? (
-                <textarea required minLength={10} maxLength={maxLength} rows={3} value={form[key]} onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))} placeholder={placeholder} className="alq-input min-h-24 resize-y" />
+                <textarea
+                  required
+                  minLength={10}
+                  maxLength={maxLength}
+                  rows={3}
+                  value={form[key]}
+                  onChange={(e) => setForm((cur) => ({ ...cur, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                  className="alq-input min-h-24 resize-y"
+                />
               ) : (
-                <input required minLength={2} maxLength={maxLength} value={form[key]} onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))} placeholder={placeholder} className="alq-input" />
+                <input
+                  required
+                  minLength={2}
+                  maxLength={maxLength}
+                  value={form[key]}
+                  onChange={(e) => setForm((cur) => ({ ...cur, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                  className="alq-input"
+                />
               )}
             </label>
           ))}
         </div>
-        
+
         {error && (
           <div className="mt-5 flex items-start gap-3 rounded-xl bg-red-500/10 border border-red-500/30 p-4">
             <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-red-300">Analysis failed</p>
+              <p className="text-sm font-semibold text-red-300">Could not save idea</p>
               <p className="text-xs text-red-200/70 mt-1">{error}</p>
-              <p className="text-xs text-red-200/50 mt-2">Try again or contact support if the problem persists.</p>
             </div>
           </div>
         )}
-        
-        {validationError && (
-          <div className="mt-5 rounded-xl bg-red-500/10 border border-red-500/30 p-3">
-            <p className="text-sm text-red-200">{validationError}</p>
-          </div>
-        )}
-        
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-xs text-white/35">Your brief is automatically saved to your account.</p>
-          <button type="submit" disabled={loading} className="alq-submit sm:w-auto sm:px-8" aria-disabled={loading}>
-            {loading ? <><Loader2 size={17} className="alq-spinner" /> Preparing analysis...</> : <>Analyze my venture <span aria-hidden="true">→</span></>}
+
+        <div className="mt-7 flex justify-end">
+          <button type="submit" disabled={loading} className="alq-submit" aria-disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 size={16} className="alq-spinner" /> Saving...
+              </>
+            ) : ventureId && !formHasChanged ? (
+              "Continue"
+            ) : (
+              "Save & Continue"
+            )}
           </button>
         </div>
       </form>

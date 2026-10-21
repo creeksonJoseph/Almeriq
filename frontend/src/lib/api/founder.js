@@ -14,12 +14,21 @@ function apiErr(error, defaultMsg) {
   return err;
 }
 
+export async function saveBriefApi(payload) {
+  try {
+    const { data } = await apiClient.post("/founder/save-brief", payload);
+    return data; // { venture_id, message }
+  } catch (e) {
+    throw apiErr(e, "Unable to save your idea");
+  }
+}
+
 export async function analyzeFounderIdeaApi(payload) {
   try {
     const { data } = await apiClient.post("/founder/analyze", payload);
     return data;
   } catch (e) {
-    throw apiErr(e, "Unable to analyze your founder idea");
+    throw apiErr(e, "Unable to analyze your idea");
   }
 }
 
@@ -28,7 +37,7 @@ export async function listVenturesApi() {
     const { data } = await apiClient.get("/founder/ventures");
     return data;
   } catch (e) {
-    throw apiErr(e, "Unable to load venture history");
+    throw apiErr(e, "Unable to load saved ideas");
   }
 }
 

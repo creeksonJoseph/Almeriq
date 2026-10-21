@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  CheckCircle2,
-  AlertTriangle,
-  Save,
-  HelpCircle,
-  Sparkles,
-  ArrowRight,
-  TrendingUp,
-  Shield,
-  Lightbulb,
-  Loader2,
-} from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { getValidationApi, updateValidationApi } from "../lib/api";
@@ -19,66 +8,66 @@ import { useToast } from "../context/ToastContext";
 const DIMENSIONS = [
   {
     key: "dim_problem",
-    title: "1. Urgent & Painful Problem",
-    subtitle: "Customers are actively losing time, money, or opportunity without a solution.",
-    tip: "Validate via 10 customer interviews where 8+ confirm this pain is in their top 3 daily bottlenecks.",
-    category: "Customer Discovery",
+    title: "1. Real Problem (Do people actually care?)",
+    subtitle: "People lose time, money, or get frustrated because this problem isn't solved.",
+    tip: "Talk to at least 5-10 people experiencing this and see if it's a top headache for them.",
+    category: "User Need",
   },
   {
     key: "dim_solution",
-    title: "2. Focused Minimal Solution",
-    subtitle: "Solves the core pain point in a simple, measurable workflow without bloated scope.",
-    tip: "Can you describe the core user outcome in one sentence and test it with a manual concierge prototype?",
-    category: "Product Scope",
+    title: "2. Simple Solution (Does it fix it?)",
+    subtitle: "Solves the main problem in a simple, clear way without complicated extra stuff.",
+    tip: "Can you explain how it works in one sentence and test it simply before coding?",
+    category: "Solution",
   },
   {
     key: "dim_demand",
-    title: "3. Verified Willingness to Pay",
-    subtitle: "Prospective customers have signed Letters of Intent, joined paid pilots, or placed pre-orders.",
-    tip: "Do not accept 'Sounds great!' as validation. Ask for an LOI, deposit, or scheduled pilot start date.",
-    category: "Commercial Signal",
+    title: "3. Will People Pay or Use It?",
+    subtitle: "People have promised to use it, pre-ordered, or confirmed they want to pay.",
+    tip: "Don't just take 'Cool idea!' as proof. Ask: 'Would you pay $5 or sign up today?'",
+    category: "Demand",
   },
   {
     key: "dim_market_size",
-    title: "4. Sizable or Fast-Growing Market",
-    subtitle: "A credible bottom-up path to $10M+ annual revenue exists in your beachhead and expansion sectors.",
-    tip: "Calculate bottom-up: (Number of accessible target customers) × (Annual pricing).",
-    category: "Market Opportunity",
+    title: "4. Good Audience Size",
+    subtitle: "There are enough potential users or customers to make building this worthwhile.",
+    tip: "Count: about how many people in your school, town, or online community need this?",
+    category: "Audience",
   },
   {
     key: "dim_competition",
-    title: "5. Defensible Differentiation (Moat)",
-    subtitle: "Clear unfair advantage over legacy incumbents and potential fast-followers.",
-    tip: "Moats include proprietary distribution networks, localized regulatory data, speed, or network effects.",
-    category: "Strategy",
+    title: "5. Why You? (Competitors)",
+    subtitle: "You know what other apps or tools exist and why yours will be better or unique.",
+    tip: "What makes yours different: is it faster, simpler, cheaper, or built for your community?",
+    category: "Uniqueness",
   },
   {
     key: "dim_feasibility",
-    title: "6. Technical & Operational Feasibility",
-    subtitle: "The product can be reliably built, maintained, and delivered with currently available talent and tools.",
-    tip: "Identify third-party API dependencies, hardware lead times, and regulatory licenses early.",
-    category: "Execution",
+    title: "6. Can You Actually Build It?",
+    subtitle: "The app or project can be built with tools, skills, and resources you have or can learn.",
+    tip: "Pick tools and libraries you know or can pick up easily. Keep the first version small.",
+    category: "Feasibility",
   },
   {
     key: "dim_business_model",
-    title: "7. Viable Unit Economics",
-    subtitle: "Estimated Lifetime Value (LTV) exceeds Customer Acquisition Cost (CAC) by 3x or more.",
-    tip: "Ensure your gross margin can absorb payment fees, server compute, and customer support costs.",
-    category: "Economics",
+    title: "7. Money & Costs (Unit Economics)",
+    subtitle: "You make more money from each user than it costs you to host or deliver the product.",
+    tip: "Think about monthly server costs or payment fees versus what you charge.",
+    category: "Money",
   },
   {
     key: "dim_legal",
-    title: "8. Regulatory & Compliance Clearance",
-    subtitle: "Data privacy, licensing, taxes, and IP protection have no prohibitive legal barriers.",
-    tip: "Check data protection laws in your operating countries (e.g., GDPR, local Data Protection Acts).",
-    category: "Governance",
+    title: "8. Safety, Rules & Legal",
+    subtitle: "No major rules, copyright issues, or privacy laws are being broken.",
+    tip: "Check basic rules: don't copy logos, respect user privacy, and be transparent.",
+    category: "Safety",
   },
   {
     key: "dim_risk",
-    title: "9. Downside Risk Mitigation",
-    subtitle: "Major operational, supplier, and capital risks have been mapped with concrete contingency plans.",
-    tip: "Ask: 'If our key acquisition channel shut down tomorrow, how would we survive?'",
-    category: "Resilience",
+    title: "9. Backup Plan (What if things go wrong?)",
+    subtitle: "You have thought about what could break or go wrong, and how to handle it.",
+    tip: "Ask yourself: 'If our main tool or social channel stops working, what do we do?'",
+    category: "Backup Plan",
   },
 ];
 
@@ -139,34 +128,34 @@ export default function FounderValidationPage() {
     try {
       const res = await updateValidationApi(dims);
       setLastSaved(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      showToast("Validation rubric successfully saved to your venture record", "success");
+      showToast("Checklist saved successfully!", "success");
     } catch (err) {
-      showToast(err.message || "Failed to save validation rubric", "error");
+      showToast(err.message || "Failed to save checklist", "error");
     } finally {
       setSaving(false);
     }
   };
 
   let readinessLevel = {
-    label: "Early Concept Hypothesis",
+    label: "Getting Started",
     color: "text-amber-400",
     bg: "bg-amber-400/10 border-amber-400/20",
-    summary: "Your idea has initial shape. Focus immediately on customer discovery and confirming commercial demand before building complex features.",
+    summary: "Talk to real people to make sure they actually want this before writing code.",
   };
 
   if (currentScore >= 7) {
     readinessLevel = {
-      label: "Institutional & Scale Ready",
+      label: "Ready to Build!",
       color: "text-[#52b788]",
       bg: "bg-[#52b788]/15 border-[#52b788]/30",
-      summary: "Exceptional validation foundation. You have strong market signals, de-risked operations, and are well-positioned for pilot launch and capital raising.",
+      summary: "Awesome job. You have checked the major boxes and are ready to start building.",
     };
   } else if (currentScore >= 4) {
     readinessLevel = {
-      label: "Promising Commercial Signal",
+      label: "Looking Good!",
       color: "text-[#C9A15A]",
       bg: "bg-[#C9A15A]/15 border-[#C9A15A]/30",
-      summary: "Good momentum. Solidify your unit economics, legal structure, and competitor moats to move toward full pilot deployment.",
+      summary: "Good momentum. Solidify pricing and check competitors as you move forward.",
     };
   }
 
@@ -174,8 +163,8 @@ export default function FounderValidationPage() {
     <FounderFlowGuard>
       <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
-          title="Idea Validation Rubric"
-          subtitle="De-risk your venture across 9 proven startup dimensions before committing capital and engineering."
+          title="Idea Checklist"
+          subtitle="Check 9 key steps to see if your idea is ready to build and launch."
           action={
             <button
               type="button"
@@ -183,94 +172,82 @@ export default function FounderValidationPage() {
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
             >
-              {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-              <span>{saving ? "Saving..." : "Save Rubric"}</span>
+              {saving && <Loader2 size={14} className="animate-spin" />}
+              <span>{saving ? "Saving..." : "Save Checklist"}</span>
             </button>
           }
         />
 
-        {/* Scorecard Hero */}
-        <div className="mb-8 rounded-2xl border border-[#2B2B31] bg-[#141417] p-6 sm:p-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-5">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-[#C9A15A]/40 bg-[#1C1C21] shadow-inner">
-                <span className="font-display text-4xl font-bold text-[#F3F1EC]">
-                  {currentScore}
-                </span>
-                <span className="text-sm font-semibold text-[#5F5E5A]">/9</span>
-              </div>
-              <div>
-                <span className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold ${readinessLevel.bg} ${readinessLevel.color}`}>
-                  {readinessLevel.label}
-                </span>
-                <p className="mt-2 text-xs leading-relaxed text-[#9B9A94] max-w-xl">
-                  {readinessLevel.summary}
-                </p>
-              </div>
-            </div>
+        {/* Clean Progress Strip */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-5 py-3.5">
+          <div className="flex items-center gap-3">
+            <span className="font-display text-xl font-bold text-white">
+              {currentScore}<span className="text-xs font-semibold text-white/40">/9</span>
+            </span>
+            <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${readinessLevel.bg} ${readinessLevel.color}`}>
+              {readinessLevel.label}
+            </span>
+            <span className="hidden text-xs text-white/50 sm:inline">
+              {readinessLevel.summary}
+            </span>
+          </div>
 
-            <div className="flex flex-col gap-2 shrink-0 md:text-right">
-              <div className="text-xs text-[#5F5E5A]">
-                {lastSaved ? `Last saved at ${lastSaved}` : "Unsaved changes"}
-              </div>
-              <div className="w-full md:w-48 h-2 rounded-full bg-[#1C1C21] overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#C9A15A] to-[#52b788] transition-all duration-300"
-                  style={{ width: `${(currentScore / 9) * 100}%` }}
-                />
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-28 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full bg-gradient-to-r from-[#C9A15A] to-[#52b788] transition-all duration-300"
+                style={{ width: `${(currentScore / 9) * 100}%` }}
+              />
             </div>
+            {lastSaved && (
+              <span className="text-[11px] text-white/40">Saved {lastSaved}</span>
+            )}
           </div>
         </div>
 
-        {/* 9 Dimensions Checklist */}
-        <div className="space-y-4">
+        {/* 9 Dimensions Unified Diagnostic Table */}
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
           {DIMENSIONS.map((dim) => {
             const isChecked = Boolean(dims[dim.key]);
             return (
               <div
                 key={dim.key}
                 onClick={() => toggleDim(dim.key)}
-                className={`cursor-pointer rounded-xl border p-5 transition-all ${
-                  isChecked
-                    ? "border-[#52b788]/40 bg-[#141417] shadow-sm"
-                    : "border-[#2B2B31] bg-[#141417]/60 hover:border-white/20 hover:bg-[#141417]"
+                className={`group p-4 sm:p-5 flex items-start gap-4 transition-colors cursor-pointer hover:bg-white/[0.02] ${
+                  isChecked ? "bg-emerald-500/[0.02]" : ""
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  <button
-                    type="button"
-                    aria-label={`Toggle ${dim.title}`}
-                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border transition-all ${
-                      isChecked
-                        ? "border-[#52b788] bg-[#52b788] text-[#0A0A0B]"
-                        : "border-[#5F5E5A] bg-[#1C1C21] text-transparent hover:border-white/50"
-                    }`}
-                  >
-                    <CheckCircle2 size={16} strokeWidth={2.5} />
-                  </button>
+                <button
+                  type="button"
+                  aria-label={`Toggle ${dim.title}`}
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
+                    isChecked
+                      ? "border-emerald-500 bg-emerald-500 text-[#0A0A0B]"
+                      : "border-white/20 bg-white/5 text-transparent group-hover:border-white/40"
+                  }`}
+                >
+                  <CheckCircle2 size={14} strokeWidth={2.5} />
+                </button>
 
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h4
-                        className={`text-sm font-semibold transition-colors ${
-                          isChecked ? "text-[#F3F1EC]" : "text-[#9B9A94]"
-                        }`}
-                      >
-                        {dim.title}
-                      </h4>
-                      <span className="rounded bg-[#1C1C21] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#5F5E5A]">
-                        {dim.category}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-[#9B9A94]">
-                      {dim.subtitle}
-                    </p>
-                    <div className="mt-2.5 flex items-center gap-1.5 rounded-lg border border-[#2B2B31] bg-[#0A0A0B]/50 px-3 py-1.5 text-[11px] text-[#C9A15A]">
-                      <Lightbulb size={13} className="shrink-0" />
-                      <span>{dim.tip}</span>
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4
+                      className={`text-sm font-semibold transition-colors ${
+                        isChecked ? "text-white" : "text-white/80 group-hover:text-white"
+                      }`}
+                    >
+                      {dim.title}
+                    </h4>
+                    <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white/40">
+                      {dim.category}
+                    </span>
                   </div>
+                  <p className="mt-1 text-xs text-white/50 leading-relaxed">
+                    {dim.subtitle}
+                  </p>
+                  <p className="mt-2 text-[11px] leading-snug text-[#f2ca50]/80">
+                    <span className="font-semibold text-[#f2ca50]">Guidance:</span> {dim.tip}
+                  </p>
                 </div>
               </div>
             );

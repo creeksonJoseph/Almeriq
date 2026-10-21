@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { listVenturesApi } from "../lib/api";
+import { StatStrip } from "./ui/BorderlessPrimitives";
 
 const ROLE_DATA = {
   founder: {
@@ -217,33 +218,33 @@ function FounderStudioEntry() {
   return (
     <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-7">
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
-        Founder studio suite
+        Founder Studio
       </p>
       <h2 className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl">
-        Build, validate & scale your venture.
+        Turn your idea into a real project.
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/60">
-        Access your dedicated command hub with idea validation, AI business generation (Lean Canvas, Pitch Deck, Projections), entity & IP filings, and investor updates.
+        Check if your idea is ready, generate plans with AI, and get step-by-step guidance to build your startup.
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
           to="/founder"
           className="inline-flex items-center gap-2 rounded-full bg-[#c9a15a] px-5 py-3 text-xs font-semibold text-[#161410] hover:brightness-105"
         >
-          Open founder studio hub
+          Open Founder Studio
           <ArrowUpRight size={15} />
         </Link>
         <Link
           to="/founder/intake"
           className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-xs font-semibold text-white hover:bg-white/10"
         >
-          New venture brief
+          Share New Idea
         </Link>
       </div>
 
       {!loading && ventures.length > 0 && (
         <div className="mt-6 border-t border-[#f2ca50]/20 pt-6">
-          <p className="text-xs font-semibold text-white/70 mb-3">Recent ventures</p>
+          <p className="text-xs font-semibold text-white/70 mb-3">Recent Ideas</p>
           <div className="space-y-2">
             {ventures.map((v) => (
               <Link
@@ -253,7 +254,6 @@ function FounderStudioEntry() {
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-white truncate">{v.idea.slice(0, 50)}</p>
-                  <p className="text-[10px] text-white/50 mt-0.5">ALQ-VNT-{String(v.id).padStart(6, "0")}</p>
                 </div>
                 <ChevronRight size={14} className="text-white/35 shrink-0" />
               </Link>
@@ -261,7 +261,7 @@ function FounderStudioEntry() {
           </div>
           {ventures.length > 0 && (
             <Link to="/founder/ventures" className="mt-3 block text-xs font-semibold text-[#f2ca50] hover:text-white">
-              View all ventures →
+              View all saved ideas →
             </Link>
           )}
         </div>
@@ -310,11 +310,15 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
           <FounderStudioEntry />
         ) : (
           <>
-            <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {role.stats.map((stat) => (
-                <StatCard key={stat[0]} stat={stat} />
-              ))}
-            </div>
+            <StatStrip
+              items={role.stats.map(([label, value, note, tone]) => ({
+                label,
+                value,
+                subtext: note,
+                valueColor: tone === "gold" ? "text-[#f2ca50]" : "text-emerald-400",
+              }))}
+              className="mb-6"
+            />
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
               <WorkspacePanel data={role} />
               <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-6">
@@ -332,10 +336,9 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
                 </p>
                 <button
                   type="button"
-                  className="mt-6 flex items-center gap-2 text-xs font-semibold text-[#f2ca50] hover:text-white"
+                  className="mt-6 text-xs font-semibold text-[#f2ca50] hover:text-white"
                 >
                   {role.secondaryAction}
-                  <ArrowUpRight size={15} />
                 </button>
               </div>
             </div>
@@ -363,10 +366,9 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               to="/founder/ai-tools"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B]"
+              className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B]"
             >
               Generate Pitch Deck & Projections
-              <ArrowUpRight size={15} />
             </Link>
             <Link
               to="/founder/validation"

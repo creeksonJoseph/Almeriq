@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { ConfirmProvider } from "./context/ConfirmContext";
 import { SidebarProvider } from "./context/SidebarContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
@@ -60,7 +61,8 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <SidebarProvider>
+        <ConfirmProvider>
+          <SidebarProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
           {/* Main Layout Wrapper - Navbar & Background are rendered via Layout */}
@@ -174,7 +176,8 @@ function App() {
           </Route>
         </Routes>
       </Suspense>
-      </SidebarProvider>
+          </SidebarProvider>
+        </ConfirmProvider>
       </ToastProvider>
     </AuthProvider>
   );

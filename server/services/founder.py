@@ -225,6 +225,73 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
     if tool_key == "job_post":
         return f"Job posting for {idea}. Return JSON with: title, role_summary, responsibilities, requirements, why_join_us."
 
+    if tool_key == "market_analysis":
+        return (
+            f"You are a senior market research analyst. Produce a comprehensive market analysis for this startup.\n"
+            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"Return JSON with these keys:\n"
+            f"  market_overview (string, 2-3 sentences on the market landscape),\n"
+            f"  market_size (object: tam string, sam string, som string, each with a numeric estimate and explanation),\n"
+            f"  target_segments (array of objects: segment string, size_estimate string, pain_level string 1-10, willingness_to_pay string),\n"
+            f"  competitive_landscape (array of objects: competitor string, strengths array, weaknesses array, market_share_estimate string),\n"
+            f"  market_trends (array of 4-6 strings describing current and emerging trends),\n"
+            f"  entry_barriers (array of 3-5 strings),\n"
+            f"  go_to_market_channels (array of objects: channel string, rationale string, estimated_cost_to_acquire string),\n"
+            f"  differentiation_opportunity (string, 2-3 sentences),\n"
+            f"  key_risks (array of 3-5 strings),\n"
+            f"  verdict (string: one of 'Strong Opportunity', 'Moderate Opportunity', 'Niche Opportunity', 'Challenging Market'),\n"
+            f"  verdict_rationale (string, 1-2 sentences)."
+        )
+
+    if tool_key == "feasibility_analysis":
+        return (
+            f"You are a startup feasibility expert. Produce a thorough feasibility analysis for this startup idea.\n"
+            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"Return JSON with these keys:\n"
+            f"  overall_feasibility_score (integer 1-10),\n"
+            f"  overall_feasibility_verdict (string: one of 'Highly Feasible', 'Feasible with Effort', 'Feasible with Pivots', 'Low Feasibility'),\n"
+            f"  executive_summary (string, 2-3 sentences),\n"
+            f"  dimensions (array of objects: dimension string, score integer 1-10, assessment string, risks array of strings, recommendations array of strings) — cover: Technical Feasibility, Market Feasibility, Financial Feasibility, Operational Feasibility, Legal & Regulatory Feasibility,\n"
+            f"  critical_success_factors (array of 4-6 strings),\n"
+            f"  critical_failure_risks (array of 4-6 strings),\n"
+            f"  resource_requirements (object: team array of strings, technology array of strings, capital_estimate string, timeline_to_mvp string),\n"
+            f"  recommended_next_steps (array of 4-6 strings ordered by priority),\n"
+            f"  pivot_options (array of 2-3 objects: pivot string, rationale string)."
+        )
+
+    if tool_key == "business_plan":
+        return (
+            f"You are a seasoned business strategy consultant. Write a production-grade business plan for this startup.\n"
+            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"Return JSON with these keys:\n"
+            f"  executive_summary (string),\n"
+            f"  problem_statement (string),\n"
+            f"  solution_description (string),\n"
+            f"  value_proposition (string, one clear sentence),\n"
+            f"  target_market (object: primary_segment string, secondary_segment string, market_size_estimate string),\n"
+            f"  business_model (object: revenue_streams array of objects with stream and description, pricing_strategy string, unit_economics object with cac_estimate and ltv_estimate),\n"
+            f"  product_service_overview (object: core_features array of strings, mvp_scope string, roadmap_phases array of objects with phase and deliverables array),\n"
+            f"  marketing_strategy (object: positioning string, channels array of strings, acquisition_strategy string, retention_strategy string),\n"
+            f"  operations_plan (object: team_structure array of strings, key_processes array of strings, technology_stack string, partnerships array of strings),\n"
+            f"  financial_projections (object: assumptions array of strings, year1_revenue_estimate string, year2_revenue_estimate string, year3_revenue_estimate string, break_even_timeline string, funding_required string),\n"
+            f"  risk_mitigation (array of objects: risk string, mitigation string),\n"
+            f"  milestones (array of objects: milestone string, target_date string, success_metric string)."
+        )
+
+    if tool_key == "execution_roadmap":
+        return (
+            f"You are a product and operations expert. Create a detailed execution roadmap for this startup.\n"
+            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"Return JSON with these keys:\n"
+            f"  summary (string, 1-2 sentences),\n"
+            f"  phases (array of exactly 4 objects representing: Foundation (0-30 days), Build (30-90 days), Launch (90-180 days), Scale (180-365 days) — each object has: phase string, duration string, objective string, key_activities array of 4-6 strings, deliverables array of 3-5 strings, success_metrics array of 3-4 strings, resources_needed array of strings, risks array of strings),\n"
+            f"  critical_path (array of 5-8 strings — the must-do items in order),\n"
+            f"  team_hiring_plan (array of objects: role string, when_to_hire string, priority string one of High/Medium/Low),\n"
+            f"  budget_allocation (array of objects: category string, percentage integer, notes string) — must sum to 100,\n"
+            f"  kpis (array of objects: metric string, target string, measurement_frequency string),\n"
+            f"  quick_wins (array of 3-5 strings — things achievable in first 2 weeks)."
+        )
+
     return f"Generate {tool_key} for {idea}."
 
 

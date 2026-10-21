@@ -1,11 +1,11 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, Map, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const STEPS = [
-  { path: "/founder/intake", label: "Venture brief", icon: Lightbulb },
-  { path: "/founder/analysis", label: "AI analysis", icon: Sparkles },
-  { path: "/founder/roadmap", label: "Build plan", icon: Map },
+  { path: "/founder/intake", number: "01", label: "Your Idea" },
+  { path: "/founder/analysis", number: "02", label: "AI Feedback" },
+  { path: "/founder/roadmap", number: "03", label: "Action Plan" },
 ];
 
 export function FounderFlowGuard({ children }) {
@@ -32,19 +32,38 @@ export default function FounderFlowLayout({ children }) {
       <div className="mx-auto w-full max-w-5xl px-4 pb-14 pt-5 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white">
-            <ArrowLeft size={15} /> Dashboard
+            <ArrowLeft size={14} /> Dashboard
           </Link>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f2ca50]">Founder studio · {firstName}</p>
         </div>
         <nav aria-label="Founder studio progress" className="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
           {STEPS.map((step, index) => {
-            const Icon = step.icon;
             const active = index === currentIndex;
             const complete = index < currentIndex;
             return (
-              <Link key={step.path} to={step.path} className={`flex items-center gap-2 rounded-xl border p-3 text-left transition-colors sm:p-4 ${active ? "border-[#f2ca50]/50 bg-[#f2ca50]/10" : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"}`}>
-                {complete ? <CheckCircle2 size={16} className="shrink-0 text-[#52b788]" /> : <Icon size={16} className={active ? "text-[#f2ca50]" : "text-white/35"} />}
-                <span className={`text-[11px] font-semibold sm:text-xs ${active ? "text-white" : "text-white/45"}`}>{step.label}</span>
+              <Link
+                key={step.path}
+                to={step.path}
+                className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors sm:p-4 ${
+                  active
+                    ? "border-[#f2ca50]/50 bg-[#f2ca50]/10"
+                    : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                }`}
+              >
+                {complete ? (
+                  <CheckCircle2 size={15} className="shrink-0 text-emerald-400" />
+                ) : (
+                  <span
+                    className={`font-mono text-xs font-bold ${
+                      active ? "text-[#f2ca50]" : "text-white/30"
+                    }`}
+                  >
+                    {step.number}
+                  </span>
+                )}
+                <span className={`text-[11px] font-semibold sm:text-xs ${active ? "text-white" : "text-white/45"}`}>
+                  {step.label}
+                </span>
               </Link>
             );
           })}
@@ -56,5 +75,5 @@ export default function FounderFlowLayout({ children }) {
 }
 
 export function FlowNextLink({ to, children }) {
-  return <Link to={to} className="alq-submit sm:w-auto sm:px-8">{children}<ArrowRight size={17} /></Link>;
+  return <Link to={to} className="alq-submit sm:w-auto sm:px-8">{children}</Link>;
 }
