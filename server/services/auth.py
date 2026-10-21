@@ -373,6 +373,35 @@ async def confirm_password_reset(email: str, otp: str, new_password: str) -> Non
     cache_delete(f"pwd_reset_otp:{email}")
 
 
+async def send_change_password_otp(user: dict, background_tasks: BackgroundTasks) -> None:
+    """Send an OTP code to authenticated user's email to authorize a password change."""
+    email = user["email"]
+    otp = "{:06d}".format(secrets.randbelow(1_000_000))
+    cache_set(f"change_pwd_otp:{user['id']}", otp, ex=_RESET_TTL)
+    background_tasks.add_task(_send_reset_otp_email, email, otp)
+
+
+async def change_password(user: dict, otp: str, new_password: str) -> None:
+    """Validate OTP and update user's password."""
+    clean_otp = otp.strip() if otp else ""
+    if not clean_otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code.",
+        )
+
+    stored = cache_get(f"change_pwd_otp:{user['id']}")
+    if not stored or stored != clean_otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code.",
+        )
+
+    hashed = hash_password(new_password)
+    await user_repo.update_user_password(user["id"], hashed)
+    cache_delete(f"change_pwd_otp:{user['id']}")
+
+
 # ── Background email tasks (§5: idempotent, catch own exceptions) ────────────────────
 
 def _send_otp_email(email: str, otp: str) -> None:

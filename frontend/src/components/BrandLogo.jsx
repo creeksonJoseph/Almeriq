@@ -54,8 +54,8 @@ export default function BrandLogo({ size = 28, showName = true, href = "#", clas
       {/* ── Wordmark ───────────────────────────────────────────────── */}
       {showName && (
         <span
-          className="font-serif tracking-tight text-white font-semibold group-hover:text-[#f2ca50] transition-colors duration-200"
-          style={{ fontSize: "clamp(0.95rem, 2vw, 1.2rem)", letterSpacing: "-0.01em" }}
+          className="font-serif tracking-tight text-white font-semibold group-hover:text-[#f2ca50] transition-colors duration-200 whitespace-nowrap select-none"
+          style={{ fontSize: "clamp(0.85rem, 3.5vw, 1.15rem)", letterSpacing: "-0.01em" }}
         >
           ALIMERIQ
         </span>

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Loader2, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { Loader2, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FounderFlowLayout from "../components/founder/FounderFlowLayout";
 import { useFounderFlow } from "../hooks/useFounderFlow";
+import { useToast } from "../context/ToastContext";
 import { saveBriefApi } from "../lib/api";
 
 const FIELDS = [
@@ -16,8 +17,8 @@ const FIELDS = [
 export default function FounderIntakePage() {
   const navigate = useNavigate();
   const { form, setForm, ventureId, setVentureId } = useFounderFlow();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Track the form snapshot that was used for the last save so we can detect changes
@@ -36,7 +37,6 @@ export default function FounderIntakePage() {
 
   const submit = async (event) => {
     event.preventDefault();
-    setError("");
 
     // If the venture was already saved with the exact same form data, skip re-saving
     if (ventureId && !formHasChanged) {
@@ -54,7 +54,7 @@ export default function FounderIntakePage() {
       // Small delay so the user sees the success flash before navigating
       setTimeout(() => navigate("/founder/analysis"), 600);
     } catch (err) {
-      setError(err.message || "Failed to save your brief. Please try again.");
+      showToast(err.message || "Failed to save your brief. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function FounderIntakePage() {
           <div className="flex items-center gap-3">
             <CheckCircle2 size={18} className="text-[#f2ca50] shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-[#f2ca50]">Idea saved - opening AI choices...</p>
+              <p className="text-sm font-semibold text-[#f2ca50]">Idea saved - opening analysis...</p>
             </div>
           </div>
           <button type="button" onClick={() => setSaveSuccess(false)} className="text-[#f2ca50] hover:text-white transition-colors">
@@ -90,7 +90,7 @@ export default function FounderIntakePage() {
         <div className="mb-7 flex items-center gap-3">
           <div>
             <h2 className="font-display text-xl font-semibold text-white">Your startup idea</h2>
-            <p className="mt-1 text-xs text-white/45">Be clear and direct. The AI uses this to give you real advice.</p>
+            <p className="mt-1 text-xs text-white/45">Be clear and direct. This is used to evaluate and build your plan.</p>
           </div>
         </div>
 
@@ -135,16 +135,6 @@ export default function FounderIntakePage() {
             </label>
           ))}
         </div>
-
-        {error && (
-          <div className="mt-5 flex items-start gap-3 rounded-xl bg-red-500/10 border border-red-500/30 p-4">
-            <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-red-300">Could not save idea</p>
-              <p className="text-xs text-red-200/70 mt-1">{error}</p>
-            </div>
-          </div>
-        )}
 
         <div className="mt-7 flex justify-end">
           <button type="submit" disabled={loading} className="alq-submit" aria-disabled={loading}>

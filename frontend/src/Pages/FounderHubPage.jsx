@@ -46,7 +46,7 @@ export default function FounderHubPage() {
   const TOOLS = [
     {
       title: "Startup Idea & Feedback",
-      desc: "Answer 5 quick questions about your idea to get instant AI analysis and advice.",
+      desc: "Answer 5 quick questions about your idea to get instant analysis and advice.",
       link: "/founder/intake",
       badge: venturesCount > 0 ? `${venturesCount} saved` : "Ready",
       badgeColor: "text-[#C9A15A] bg-[#C9A15A]/10 border-[#C9A15A]/20",
@@ -61,10 +61,10 @@ export default function FounderHubPage() {
       icon: CheckCircle2,
     },
     {
-      title: "AI Startup Tools",
+      title: "Startup Workspace Tools",
       desc: "Create simple 1-page plans, pitch slide notes, money estimates, and pros & cons.",
       link: "/founder/ai-tools",
-      badge: "5 AI Generators",
+      badge: "5 Document Tools",
       badgeColor: "text-[#C9A15A] bg-[#C9A15A]/10 border-[#C9A15A]/20",
       icon: Cpu,
     },

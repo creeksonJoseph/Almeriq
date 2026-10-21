@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useMemo,
   useRef,
 } from "react";
 
@@ -75,14 +76,21 @@ export function ToastProvider({ children }) {
     [dismiss],
   );
 
-  const toast = {
-    success: (msg) => show(msg, "success"),
-    error: (msg) => show(msg, "error"),
-    info: (msg) => show(msg, "info"),
-  };
+  const toastApi = useMemo(() => {
+    const fn = (message, type = "info", duration = 4000) => {
+      show(message, type, duration);
+    };
+    fn.show = (message, type = "info", duration = 4000) => show(message, type, duration);
+    fn.showToast = (message, type = "info", duration = 4000) => show(message, type, duration);
+    fn.success = (msg, duration) => show(msg, "success", duration);
+    fn.error = (msg, duration) => show(msg, "error", duration);
+    fn.info = (msg, duration) => show(msg, "info", duration);
+    fn.toast = fn;
+    return fn;
+  }, [show]);
 
   return (
-    <ToastContext.Provider value={toast}>
+    <ToastContext.Provider value={toastApi}>
       {children}
       <div className="fixed right-3 top-3 z-[9999] flex w-[min(92vw,24rem)] flex-col items-stretch gap-2 pointer-events-none sm:right-5 sm:top-5">
         {toasts.map((t) => (

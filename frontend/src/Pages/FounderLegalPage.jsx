@@ -10,6 +10,7 @@ import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { listLegalFilingsApi, createLegalFilingApi } from "../lib/api";
 import { useToast } from "../context/ToastContext";
+import { useActiveIdea } from "../context/IdeaContext";
 
 const LEGAL_TEMPLATES = [
   {
@@ -49,6 +50,7 @@ const LEGAL_TEMPLATES = [
 
 export default function FounderLegalPage() {
   const { showToast } = useToast();
+  const { activeVenture } = useActiveIdea();
   const [filings, setFilings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("filings"); // "filings" | "new_company" | "new_ip" | "templates"
@@ -225,7 +227,7 @@ export default function FounderLegalPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("new_company")}
-                    className="rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-4 py-2 text-xs font-semibold text-[#0A0A0B]"
+                    className="rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-4 py-2 text-xs font-semibold text-white"
                   >
                     File Company Registration
                   </button>
@@ -291,6 +293,14 @@ export default function FounderLegalPage() {
                 </p>
               </div>
             </div>
+
+            {activeVenture?.idea && (
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#C9A15A]/30 bg-[#C9A15A]/10 px-3.5 py-2 text-xs text-[#E8D6A8]">
+                <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-[#C9A15A]" />
+                <span className="font-semibold text-white/90">Active Idea Context:</span>
+                <span className="truncate text-white/70">{activeVenture.idea}</span>
+              </div>
+            )}
 
             <form onSubmit={handleCreateCompanyFiling} className="mt-6 space-y-4">
               <div>
@@ -361,7 +371,7 @@ export default function FounderLegalPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
                 >
                   {submitting && <Loader2 size={16} className="animate-spin" />}
                   <span>{submitting ? "Submitting Filing..." : "Generate Filing & Reference Number"}</span>
@@ -453,7 +463,7 @@ export default function FounderLegalPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
                 >
                   {submitting && <Loader2 size={16} className="animate-spin" />}
                   <span>{submitting ? "Registering IP..." : "Register IP & Issue Docket"}</span>

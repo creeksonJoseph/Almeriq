@@ -3,7 +3,7 @@
  * Analysis hub: shows 4 analysis type cards, a preview/plan panel on selection,
  * then runs the AI and renders the rich structured result.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   BarChart3,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import FounderFlowLayout from "../components/founder/FounderFlowLayout";
 import { useFounderFlow } from "../hooks/useFounderFlow";
+import { useToast } from "../context/ToastContext";
 import { executeAiToolApi } from "../lib/api";
 import {
   StatStrip,
@@ -387,26 +388,32 @@ function FeasibilityResult({ result }) {
         <EditorialSection title="Feasibility Dimensions & Breakdown" badge="5 Core Pillars">
           <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
             {result.dimensions.map((dim, i) => {
-              const pct = (dim.score / 10) * 100;
-              const barColor = pct >= 70 ? "bg-[#f2ca50]" : pct >= 50 ? "bg-white/70" : "bg-rose-400";
+              const scoreTone =
+                dim.score >= 8
+                  ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                  : dim.score >= 6
+                  ? "text-[#f2ca50] bg-[#f2ca50]/10 border-[#f2ca50]/20"
+                  : "text-rose-400 bg-rose-500/10 border-rose-500/20";
               return (
                 <div key={i} className="p-4 sm:p-5 hover:bg-white/[0.02] transition-colors">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between gap-3 mb-2">
                     <span className="text-sm font-semibold text-white">{dim.dimension}</span>
-                    <span className="font-mono text-xs font-bold text-white/80">{dim.score}/10</span>
+                    <span className={`font-mono text-xs font-bold rounded-md border px-2.5 py-0.5 ${scoreTone}`}>
+                      {dim.score}/10
+                    </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-white/10 mb-3 overflow-hidden">
-                    <div className={`h-full rounded-full ${barColor} transition-all duration-500`} style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="text-xs text-white/60 mb-2 leading-relaxed">{dim.assessment}</p>
+                  <p className="text-xs sm:text-sm text-white/70 leading-relaxed">{dim.assessment}</p>
                   {dim.recommendations?.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-white/5 text-xs text-white/50">
-                      <span className="text-[10px] font-semibold uppercase text-[#f2ca50]">Advice:</span>
-                      {dim.recommendations.map((r, j) => (
-                        <span key={j} className="rounded bg-white/5 px-2 py-0.5 text-white/70">
-                          {r}
-                        </span>
-                      ))}
+                    <div className="mt-3 pt-3 border-t border-white/5">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#f2ca50] mb-1.5">Advice:</p>
+                      <ul className="space-y-1">
+                        {dim.recommendations.map((r, j) => (
+                          <li key={j} className="text-xs text-white/60 flex items-start gap-2">
+                            <span className="text-[#f2ca50] font-bold">·</span>
+                            <span>{r}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </div>
@@ -753,21 +760,25 @@ export default function FounderAnalysisPage() {
 
   // Support auto-selecting a tool when navigated from Saved Ideas
   const autoSelectKey = location.state?.autoSelectTool || null;
+  const autoRun = Boolean(location.state?.autoRun);
 
-  // If we arrived with an autoSelectTool, jump straight to preview for that type
+  // If we arrived with an autoSelectTool, find that type
   const autoType = autoSelectKey ? ANALYSIS_TYPES.find((t) => t.key === autoSelectKey) : null;
 
   const [selected, setSelected] = useState(() => autoType || null);
-  const [stage, setStage] = useState(() => (autoType ? "preview" : "hub"));
+  const [stage, setStage] = useState(() => {
+    if (autoType && autoRun) return "generating";
+    if (autoType) return "preview";
+    return "hub";
+  });
+  const { showToast } = useToast();
   const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
 
   const hasForm = form && form.idea && form.idea.length >= 10;
 
   const handleSelect = (type) => {
     setSelected(type);
     setResult(null);
-    setError("");
     setStage("preview");
   };
 
@@ -776,38 +787,50 @@ export default function FounderAnalysisPage() {
       setStage("hub");
       setSelected(null);
       setResult(null);
-      setError("");
     }
   };
 
-  const handleGenerate = useCallback(async () => {
-    if (!selected || !hasForm) return;
+  const runAnalysis = useCallback(async (toolType, forceRefresh = false) => {
+    const targetTool = toolType || selected;
+    if (!targetTool || !hasForm) return;
+    setSelected(targetTool);
     setStage("generating");
-    setError("");
     try {
       const payload = {
-        tool_key: selected.key,
+        tool_key: targetTool.key,
         idea: form.idea,
         problem: form.problem,
         solution: form.solution,
         customer: form.customer,
         location: form.location,
-        // Pass venture_id so the backend can update a pending venture with real analysis data
+        // Pass venture_id so the backend can link and update venture analysis
         ...(ventureId ? { venture_id: ventureId } : {}),
+        ...(forceRefresh ? { extra_params: { refresh: true } } : {}),
       };
       const data = await executeAiToolApi(payload);
       setResult(data.result);
       setStage("result");
     } catch (err) {
-      setError(err.message || "Analysis failed. Please try again.");
+      showToast(err.message || "Analysis failed. Please try again.", "error");
       setStage("preview");
     }
-  }, [selected, form, hasForm, ventureId]);
+  }, [selected, form, hasForm, ventureId, showToast]);
+
+  // If navigated from Saved Ideas with autoRun requested, immediately fetch from cache or run
+  const autoRunExecuted = useRef(false);
+  useEffect(() => {
+    if (autoType && autoRun && hasForm && !autoRunExecuted.current) {
+      autoRunExecuted.current = true;
+      runAnalysis(autoType);
+    }
+  }, [autoType, autoRun, hasForm, runAnalysis]);
+
+  const handleGenerate = () => {
+    runAnalysis(selected);
+  };
 
   const handleRunAgain = () => {
-    setResult(null);
-    setError("");
-    setStage("preview");
+    runAnalysis(selected, true);
   };
 
   // ── No idea saved yet ─────────────────────────────────────────────────────
@@ -817,7 +840,7 @@ export default function FounderAnalysisPage() {
         <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center">
           <h1 className="font-display text-2xl font-semibold text-white">Your analysis is waiting</h1>
           <p className="mt-2 text-sm text-white/50">
-            Share your startup idea first so we can give you helpful AI advice.
+            Share your startup idea first so we can generate your report and advice.
           </p>
           <Link to="/founder/intake" className="alq-submit mt-6 sm:mx-auto sm:w-auto sm:px-8 inline-flex">
             Share your idea
@@ -832,12 +855,12 @@ export default function FounderAnalysisPage() {
     return (
       <FounderFlowLayout>
         <div className="mb-8">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">Step 2 · AI Feedback Hub</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">Analysis & Strategy Modules</p>
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            What do you want help with?
+            What do you want to explore?
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-white/50">
-            Pick the guide that fits what you want to figure out right now.
+            Select an area to evaluate for this project.
           </p>
         </div>
 
@@ -861,17 +884,16 @@ export default function FounderAnalysisPage() {
           ))}
         </div>
 
-        <div className="mt-8 flex items-center justify-between">
-          <Link to="/founder/intake" className="text-xs text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
-            <ArrowLeft size={14} /> Edit idea
+        <div className="mt-8 flex items-center justify-between border-t border-white/8 pt-6">
+          <Link to="/founder/ventures" className="text-xs text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
+            <ArrowLeft size={14} /> Back to Saved Ideas
           </Link>
-          <button
-            type="button"
-            onClick={() => { resetFlow(); navigate("/founder/intake"); }}
+          <Link
+            to="/founder/intake"
             className="text-xs text-white/40 hover:text-[#f2ca50] transition-colors"
           >
-            + New idea
-          </button>
+            Edit project brief
+          </Link>
         </div>
       </FounderFlowLayout>
     );
@@ -887,7 +909,7 @@ export default function FounderAnalysisPage() {
           onClick={handleBack}
           className="mb-6 flex items-center gap-2 text-xs text-white/40 hover:text-white transition-colors"
         >
-          <ArrowLeft size={14} /> Back to AI guides
+          <ArrowLeft size={14} /> Back to overview
         </button>
 
         <div className="mb-6">
@@ -904,7 +926,7 @@ export default function FounderAnalysisPage() {
             </div>
             <div>
               <p className="text-base font-semibold text-white">{selected.label}</p>
-              <p className="text-xs text-white/50">Powered by Gemini AI</p>
+              <p className="text-xs text-white/50">Structured strategic review</p>
             </div>
           </div>
           <p className="text-sm text-white/70 leading-relaxed mb-6">{selected.plan.description}</p>
@@ -940,19 +962,6 @@ export default function FounderAnalysisPage() {
           </div>
         </div>
 
-        {error && (
-          <div className="mb-5 flex items-start gap-3 rounded-xl bg-red-500/10 border border-red-500/30 p-4">
-            <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-red-300">Analysis failed</p>
-              <p className="text-xs text-red-200/70 mt-1">{error}</p>
-            </div>
-            <button onClick={() => setError("")} className="text-red-400 hover:text-red-300 shrink-0">
-              <X size={16} />
-            </button>
-          </div>
-        )}
-
         <div className="flex flex-wrap items-center justify-end gap-3">
           <button
             type="button"
@@ -984,10 +993,10 @@ export default function FounderAnalysisPage() {
           </div>
           <div className="flex items-center gap-2 mb-3">
             <Loader2 size={18} className="text-[#f2ca50] animate-spin" />
-            <p className="text-base font-semibold text-white">Generating your {selected.label}...</p>
+            <p className="text-base font-semibold text-white">Analyzing your {selected.label}...</p>
           </div>
           <p className="text-sm text-white/45 max-w-xs leading-relaxed">
-            Gemini AI is analyzing your startup idea. Please wait a moment while we assemble your plan.
+            Analyzing your startup idea. Please wait a moment while we assemble your report.
           </p>
           <div className="mt-6 flex gap-1">
             {[0, 1, 2].map((i) => (
@@ -1017,7 +1026,7 @@ export default function FounderAnalysisPage() {
                 onClick={handleBack}
                 className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white transition-colors"
               >
-                <ArrowLeft size={14} /> Hub
+                <ArrowLeft size={14} /> All Modules
               </button>
               <span className="text-white/20">/</span>
               <span className="text-xs text-white/60">{selected.label}</span>
@@ -1028,7 +1037,7 @@ export default function FounderAnalysisPage() {
               </div>
               <div>
                 <h1 className="font-display text-2xl font-semibold text-white">{selected.label}</h1>
-                <p className="text-xs text-white/45 mt-0.5">Powered by Gemini AI · Based on your startup idea</p>
+                <p className="text-xs text-white/45 mt-0.5">Based on your startup idea</p>
               </div>
             </div>
           </div>
@@ -1055,15 +1064,15 @@ export default function FounderAnalysisPage() {
 
         {/* Footer */}
         <div className="mt-8 flex items-center justify-between border-t border-white/8 pt-6">
-          <Link to="/founder/intake" className="text-xs text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
-            <ArrowLeft size={14} /> Edit idea
+          <Link to="/founder/ventures" className="text-xs text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
+            <ArrowLeft size={14} /> Back to Saved Ideas
           </Link>
           <button
             type="button"
             onClick={handleBack}
             className="text-xs font-semibold text-[#f2ca50] hover:text-white transition-colors"
           >
-            ← Back to AI guides
+            ← Back to all modules
           </button>
         </div>
       </FounderFlowLayout>

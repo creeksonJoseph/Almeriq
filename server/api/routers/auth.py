@@ -13,6 +13,7 @@ from schemas.auth import (
     AuthMessageResponse,
     ForgotPasswordRequest,
     ResetPasswordRequest,
+    ChangePasswordRequest,
     SignupSendOtpRequest,
     SignupVerifyOtpRequest,
     SignupCompleteRequest,
@@ -213,3 +214,28 @@ async def reset_password(body: ResetPasswordRequest) -> dict:
     """Verify OTP and update the password."""
     await svc.confirm_password_reset(body.email, body.otp, body.new_password)
     return {"message": "Password updated successfully. You can now log in."}
+
+
+@router.post("/auth/send-change-otp", status_code=status.HTTP_200_OK)
+@router.post("/api/auth/send-change-otp", status_code=status.HTTP_200_OK)
+async def send_change_otp(
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    """Send an OTP code to authenticated user's email to authorize a password change."""
+    await svc.send_change_password_otp(current_user, background_tasks)
+    return {"message": "Verification code sent to your email. Check your spam folder."}
+
+
+@router.post("/auth/change-password", status_code=status.HTTP_200_OK)
+@router.post("/api/auth/change-password", status_code=status.HTTP_200_OK)
+@router.patch("/users/me/password", status_code=status.HTTP_200_OK)
+@router.patch("/api/users/me/password", status_code=status.HTTP_200_OK)
+async def change_password_route(
+    body: ChangePasswordRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    """Validate OTP then update user password."""
+    await svc.change_password(current_user, body.otp, body.new_password)
+    return {"message": "Password changed successfully"}
+

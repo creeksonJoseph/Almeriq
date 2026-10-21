@@ -26,7 +26,7 @@ export default function Layout() {
   const isWorkspace = isPostOnboarding && !isAuthPage && !isLandingPage;
 
   return (
-    <div className="min-h-screen bg-[#0c0e13] text-white flex flex-col antialiased">
+    <div className="min-h-screen bg-[#0c0e13] text-white flex flex-col antialiased w-full max-w-full overflow-x-hidden">
       {/* 
         Header navigation:
         - Once logged in & past onboarding in workspace: HIDDEN on desktop, visible ONLY on mobile phones.
@@ -66,8 +66,8 @@ export default function Layout() {
 
       {/* 
         Main content container:
-        - When in workspace: adjusts left padding to match sidebar width on desktop, flush with screen top.
-        - On mobile: standard padding for mobile header.
+        - When in workspace: on PC there is no header, flush with top (lg:pt-0).
+        - On mobile: standard padding for mobile header (pt-16 sm:pt-20).
       */}
       <main
         id="main-content"
@@ -76,8 +76,8 @@ export default function Layout() {
           isAuthPage
             ? "pt-0 pl-0"
             : isWorkspace
-            ? `pt-16 sm:pt-20 lg:pt-0 ${collapsed ? "lg:pl-[68px]" : "lg:pl-64"}`
-            : "pt-20 pl-0"
+            ? `pt-14 sm:pt-16 lg:pt-0 ${collapsed ? "lg:pl-[68px]" : "lg:pl-64"}`
+            : "pt-16 sm:pt-20 pl-0"
         }`}
       >
         <Outlet />

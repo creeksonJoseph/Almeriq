@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getAdminWaitlistApi } from "../lib/api";
 import { StatStrip } from "../components/ui/BorderlessPrimitives";
 
@@ -46,20 +47,19 @@ function formatDate(iso) {
 
 export default function AdminWaitlistPage() {
   const { user, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const [data, setData] = useState({ total: 0, items: [] });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
 
   const fetchWaitlist = async () => {
     setLoading(true);
-    setError("");
     try {
       const res = await getAdminWaitlistApi();
       setData(res || { total: 0, items: [] });
     } catch (err) {
-      setError(err.message || "Failed to load waitlist records.");
+      showToast(err.message || "Failed to load waitlist records.", "error");
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ export default function AdminWaitlistPage() {
               onClick={() => setSelectedRole(roleKey)}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-all ${
                 selectedRole === roleKey
-                  ? "bg-[#f2ca50] text-[#0A0A0B] shadow-sm"
+                  ? "bg-[#f2ca50] text-[#111318] shadow-sm"
                   : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
               }`}
             >
@@ -186,14 +186,6 @@ export default function AdminWaitlistPage() {
         </div>
       </div>
 
-      {/* Error state */}
-      {error && (
-        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
-          {error}
-        </div>
-      )}
-
-      {/* Participants Table / List */}
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#12121a]">
         {loading ? (
           <div className="flex min-h-64 items-center justify-center">

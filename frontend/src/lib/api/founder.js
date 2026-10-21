@@ -4,6 +4,15 @@
 import { apiClient, extractErrorMessage } from "../client";
 
 function apiErr(error, defaultMsg) {
+  if (
+    error?.code === "ECONNABORTED" ||
+    error?.code === "ETIMEDOUT" ||
+    (typeof error?.message === "string" && error.message.toLowerCase().includes("timeout"))
+  ) {
+    const err = new Error("Request timed out. Please try again.");
+    err.status = 408;
+    return err;
+  }
   // Extract backend error message if available (already cleaned by backend)
   const backendMsg = error.response?.data?.detail;
   const msg = backendMsg || extractErrorMessage(error, defaultMsg);
@@ -25,7 +34,9 @@ export async function saveBriefApi(payload) {
 
 export async function analyzeFounderIdeaApi(payload) {
   try {
-    const { data } = await apiClient.post("/founder/analyze", payload);
+    const { data } = await apiClient.post("/founder/analyze", payload, {
+      timeout: 60000,
+    });
     return data;
   } catch (e) {
     throw apiErr(e, "Unable to analyze your idea");
@@ -96,9 +107,11 @@ export async function createLegalFilingApi(payload) {
 
 export async function executeAiToolApi(payload) {
   try {
-    const { data } = await apiClient.post("/founder/ai-tools", payload);
+    const { data } = await apiClient.post("/founder/ai-tools", payload, {
+      timeout: 60000,
+    });
     return data;
   } catch (e) {
-    throw apiErr(e, "Unable to run AI tool");
+    throw apiErr(e, "Unable to run analysis");
   }
 }

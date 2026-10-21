@@ -9,6 +9,7 @@ import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { listVenturesApi, executeAiToolApi } from "../lib/api";
 import { useToast } from "../context/ToastContext";
+import { useActiveIdea } from "../context/IdeaContext";
 
 const PRODUCT_TOOLS = [
   { id: "user_personas", label: "User Profiles", desc: "Who your users are & what they need" },
@@ -19,6 +20,7 @@ const PRODUCT_TOOLS = [
 
 export default function FounderProductPage() {
   const { showToast } = useToast();
+  const { activeVenture } = useActiveIdea();
   const [activeTab, setActiveTab] = useState("user_personas");
   const [brief, setBrief] = useState({
     idea: "",
@@ -30,22 +32,15 @@ export default function FounderProductPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    async function init() {
-      try {
-        const list = await listVenturesApi();
-        if (Array.isArray(list) && list.length > 0) {
-          setBrief({
-            idea: list[0].idea || "",
-            customer: list[0].customer || "",
-            location: list[0].location || "",
-          });
-        }
-      } catch (err) {
-        // default
-      }
+    if (activeVenture) {
+      setBrief({
+        idea: activeVenture.idea || "",
+        customer: activeVenture.customer || "",
+        location: activeVenture.location || "",
+      });
+      setToolResults({});
     }
-    init();
-  }, []);
+  }, [activeVenture?.id]);
 
   const fetchTool = async (refresh = false) => {
     const ideaText = brief.idea || "Modern SaaS platform";

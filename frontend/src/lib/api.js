@@ -29,6 +29,8 @@ export {
   onboardingApi,
   forgotPasswordApi,
   resetPasswordApi,
+  sendChangeOtpApi,
+  changePasswordApi,
 } from "./api/auth";
 
 export { postWaitlist, putWaitlist, requestOTP, verifyOTP } from "./api/waitlist";

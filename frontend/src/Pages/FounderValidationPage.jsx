@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CheckCircle2, Loader2, Lightbulb } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { getValidationApi, updateValidationApi } from "../lib/api";
 import { useToast } from "../context/ToastContext";
+import { useActiveIdea } from "../context/IdeaContext";
 
 const DIMENSIONS = [
   {
@@ -73,6 +75,7 @@ const DIMENSIONS = [
 
 export default function FounderValidationPage() {
   const { showToast } = useToast();
+  const { activeVenture } = useActiveIdea();
   const [dims, setDims] = useState({
     dim_problem: false,
     dim_solution: false,
@@ -170,13 +173,36 @@ export default function FounderValidationPage() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B] shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
             >
               {saving && <Loader2 size={14} className="animate-spin" />}
               <span>{saving ? "Saving..." : "Save Checklist"}</span>
             </button>
           }
         />
+
+        {/* Active Idea Context Banner */}
+        {activeVenture?.idea && (
+          <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-[#C9A15A]/30 bg-[#C9A15A]/10 px-4 py-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-2 w-2 shrink-0 rounded-full bg-[#C9A15A] shadow-[0_0_8px_rgba(201,161,90,0.8)]" />
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8D6A8]">
+                  Checking Readiness For:
+                </span>
+                <p className="font-semibold text-white truncate text-xs sm:text-sm">
+                  {activeVenture.idea}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/founder/ventures"
+              className="shrink-0 text-[11px] font-semibold text-[#E8D6A8] hover:text-white underline underline-offset-2"
+            >
+              Switch idea
+            </Link>
+          </div>
+        )}
 
         {/* Clean Progress Strip */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-5 py-3.5">
@@ -222,7 +248,7 @@ export default function FounderValidationPage() {
                   aria-label={`Toggle ${dim.title}`}
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
                     isChecked
-                      ? "border-emerald-500 bg-emerald-500 text-[#0A0A0B]"
+                      ? "border-emerald-500 bg-emerald-500 text-white"
                       : "border-white/20 bg-white/5 text-transparent group-hover:border-white/40"
                   }`}
                 >

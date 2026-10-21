@@ -36,7 +36,7 @@ const C = {
 };
 
 const ROLES = [
-  { id: "Founder", icon: Building2, color: C.gold, desc: "AI startup co-pilot, investor exposure, hiring & infrastructure" },
+  { id: "Founder", icon: Building2, color: C.gold, desc: "Startup co-pilot, investor exposure, hiring & infrastructure" },
   { id: "Investor", icon: TrendingUp, color: C.gold, desc: "Vetted deal flow, live founder metrics & investment tracking" },
   { id: "Job Seeker", icon: Briefcase, color: C.gold, desc: "Direct founder hiring, startup roles & transparent equity" },
   { id: "Infrastructure Provider", icon: Truck, color: C.gold, desc: "Monetize compute, cold storage, servers & logistics assets" },
@@ -46,8 +46,8 @@ const CAPABILITIES = [
   {
     num: "01",
     color: C.gold,
-    title: "AI-Guided Venture Builder",
-    desc: "Founders get a step-by-step AI co-pilot - from idea validation and market sizing to business plans, MVP scoping, and company registration."
+    title: "Guided Venture Builder",
+    desc: "Founders get a step-by-step studio - from idea validation and market sizing to business plans, MVP scoping, and company registration."
   },
   {
     num: "02",
@@ -126,7 +126,7 @@ function EcosystemSection() {
             <div>
               <h3 className="font-serif text-xl sm:text-2xl text-white font-medium mb-2.5 sm:mb-3">Founders</h3>
               <p className="text-xs text-white leading-relaxed">
-                Venture building accelerated by an AI co-pilot. From idea validation and business plans to investor exposure, hiring, and renting infrastructure.
+                Venture building accelerated with structured tools. From idea validation and business plans to investor exposure, hiring, and renting infrastructure.
               </p>
             </div>
           </div>

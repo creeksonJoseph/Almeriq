@@ -93,3 +93,22 @@ export async function resetPasswordApi(email, otp, newPassword) {
     return data;
   } catch (e) { throw apiErr(e, "Failed to reset password"); }
 }
+
+// ── Authenticated Password Change (Settings) ──────────────────────────────────
+export async function sendChangeOtpApi() {
+  try {
+    const { data } = await apiClient.post("/auth/send-change-otp");
+    return data;
+  } catch (e) { throw apiErr(e, "Failed to send verification code"); }
+}
+
+export async function changePasswordApi({ otp, new_password }) {
+  try {
+    const { data } = await apiClient.post("/auth/change-password", {
+      otp,
+      new_password,
+    });
+    return data;
+  } catch (e) { throw apiErr(e, "Failed to change password"); }
+}
+

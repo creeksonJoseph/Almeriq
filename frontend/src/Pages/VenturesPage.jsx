@@ -5,10 +5,11 @@
  * Each card surfaces the brief + any analysis already run, plus
  * "Run analysis" buttons for analysis types not yet completed.
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  Check,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -21,6 +22,8 @@ import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { useVentures } from "../hooks/useVentures";
 import { useFounderFlow } from "../hooks/useFounderFlow";
 import { useConfirm } from "../context/ConfirmContext";
+import { useActiveIdea } from "../context/IdeaContext";
+import { useToast } from "../context/ToastContext";
 
 // ── Analysis type metadata (mirrors FounderAnalysisPage) ─────────────────────
 
@@ -92,16 +95,24 @@ function ListSection({ title, items, accentClass }) {
 function AnalysisTypePill({ type, isRun, onRun }) {
   if (isRun) {
     return (
-      <span className="inline-flex items-center rounded-lg bg-[#f2ca50]/10 border border-[#f2ca50]/25 px-3 py-1 text-xs font-semibold text-[#f2ca50]">
-        ✓ {type.label}
-      </span>
+      <button
+        type="button"
+        onClick={onRun}
+        title={`View analyzed ${type.label}`}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-[#f2ca50]/10 border border-[#f2ca50]/30 px-3 py-1 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 hover:border-[#f2ca50]/50 transition-all cursor-pointer group"
+      >
+        <Check size={12} className="stroke-[2.5]" />
+        <span>{type.label}</span>
+        <span className="text-[10px] opacity-60 group-hover:opacity-100 transition-opacity">· View</span>
+      </button>
     );
   }
   return (
     <button
       type="button"
       onClick={onRun}
-      className="inline-flex items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1 text-xs font-semibold text-white/45 hover:border-[#f2ca50]/40 hover:bg-[#f2ca50]/8 hover:text-[#f2ca50] transition-all"
+      title={`Run ${type.label}`}
+      className="inline-flex items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1 text-xs font-semibold text-white/50 hover:border-[#f2ca50]/40 hover:bg-[#f2ca50]/8 hover:text-[#f2ca50] transition-all cursor-pointer"
     >
       Run {type.label}
     </button>
@@ -110,14 +121,16 @@ function AnalysisTypePill({ type, isRun, onRun }) {
 
 // ── Single venture card ────────────────────────────────────────────────────
 
-function VentureCard({ venture, onDelete, onRunAnalysis }) {
+function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }) {
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const confirm = useConfirm();
 
   const analysesRun = venture.analyses_run || [];
-  const isPending = venture.source === "pending";
-  const hasAnyAnalysis = !isPending && (venture.summary || venture.market || venture.risks?.length);
+  const isPending = venture.source === "pending" && analysesRun.length === 0;
+  const hasCompletedAnalyses = analysesRun.length > 0;
+  const summaryText = venture.summary?.trim() || "";
+  const hasAnyAnalysis = Boolean(summaryText || venture.market || venture.risks?.length || hasCompletedAnalyses);
 
   const handleDelete = async (e) => {
     e.stopPropagation();
@@ -139,27 +152,39 @@ function VentureCard({ venture, onDelete, onRunAnalysis }) {
   };
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#12121a] transition-colors hover:border-white/15">
+    <article
+      className={`transition-all py-6 sm:py-0 sm:rounded-2xl sm:border ${
+        isActive
+          ? "sm:border-[#f2ca50]/50 sm:bg-[#14141d] sm:shadow-[0_0_20px_rgba(242,202,80,0.06)] sm:ring-1 sm:ring-[#f2ca50]/30"
+          : "sm:border-white/10 sm:bg-[#12121a] sm:hover:border-white/15"
+      }`}
+    >
       {/* ── Header row — always visible ── */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full p-5 sm:p-6 text-left"
+        className="w-full text-left p-0 pb-2 sm:p-6"
         aria-expanded={expanded}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2">
+              {isActive && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-[#f2ca50]/20 text-[#f2ca50] border border-[#f2ca50]/40 shadow-[0_0_8px_rgba(242,202,80,0.3)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />
+                  Active Idea
+                </span>
+              )}
               <Badge
-                label={venture.source === "gemini" ? "Gemini assisted" : "Starter analysis"}
-                gold={venture.source === "gemini"}
+                label={hasCompletedAnalyses ? "Analyzed" : "Starter brief"}
+                gold={hasCompletedAnalyses}
                 pending={isPending}
               />
               <span className="flex items-center gap-1 text-[10px] text-white/35">
                 <Clock size={10} />
                 {formatDate(venture.created_at)}
               </span>
-              {analysesRun.length > 0 && (
+              {hasCompletedAnalyses && (
                 <span className="text-[10px] text-white/30">
                   {analysesRun.length}/4 analyses run
                 </span>
@@ -168,13 +193,17 @@ function VentureCard({ venture, onDelete, onRunAnalysis }) {
             <h2 className="font-display text-base font-semibold leading-snug text-white sm:text-lg line-clamp-2">
               {venture.idea}
             </h2>
-            {hasAnyAnalysis ? (
+            {summaryText ? (
               <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/55">
-                {venture.summary}
+                {summaryText}
+              </p>
+            ) : hasCompletedAnalyses ? (
+              <p className="mt-2 text-sm text-[#f2ca50]/75">
+                {analysesRun.length} of 4 analysis module{analysesRun.length !== 1 ? "s" : ""} completed · Click to view results or run additional modules.
               </p>
             ) : (
               <p className="mt-2 text-sm text-white/35 italic">
-                No AI analysis run yet — expand to choose an analysis type.
+                No analysis run yet — expand to choose an analysis type.
               </p>
             )}
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
@@ -187,6 +216,18 @@ function VentureCard({ venture, onDelete, onRunAnalysis }) {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {!isActive && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetActive();
+                }}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-white/70 hover:border-[#f2ca50]/40 hover:bg-[#f2ca50]/10 hover:text-[#f2ca50] transition-all cursor-pointer"
+              >
+                Set as Active
+              </button>
+            )}
             <button
               type="button"
               onClick={handleDelete}
@@ -205,12 +246,12 @@ function VentureCard({ venture, onDelete, onRunAnalysis }) {
 
       {/* ── Expanded section ── */}
       {expanded && (
-        <div className="border-t border-white/8 px-5 pb-6 pt-5 sm:px-6">
+        <div className="pt-4 sm:pt-5 px-0 sm:px-6 sm:border-t sm:border-white/8 pb-4 sm:pb-6">
 
           {/* Analysis type pills — shows what's been run + buttons for what hasn't */}
           <div className="mb-6">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">
-              AI Analyses
+            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">
+              Available Analyses
             </p>
             <div className="flex flex-wrap gap-2">
               {ANALYSIS_TYPES.map((type) => (
@@ -224,23 +265,34 @@ function VentureCard({ venture, onDelete, onRunAnalysis }) {
             </div>
           </div>
 
-          {/* Saved brief */}
-          <details className="mb-6 group">
-            <summary className="mb-3 flex cursor-pointer select-none items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/40 hover:text-white/60">
-              Startup brief
-              <ChevronDown size={12} className="ml-auto transition-transform group-open:rotate-180" />
-            </summary>
-            <div className="overflow-hidden rounded-xl border border-white/8 bg-white/[0.02] grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/8">
-              <div className="p-4">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">Problem</p>
-                <p className="text-sm leading-relaxed text-white/70">{venture.problem}</p>
+          {/* Startup brief specification — clean unboxed presentation */}
+          <div className="mb-6">
+            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">
+              Startup Brief
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+              <div className="space-y-3">
+                <div>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">The Problem</p>
+                  <p className="text-sm leading-relaxed text-white/75">{venture.problem || "No problem statement recorded."}</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">Target Customer</p>
+                  <p className="text-sm leading-relaxed text-white/75">{venture.customer || "General market / Not specified"}</p>
+                </div>
               </div>
-              <div className="p-4">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Solution</p>
-                <p className="text-sm leading-relaxed text-white/70">{venture.solution}</p>
+              <div className="space-y-3">
+                <div>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Proposed Solution</p>
+                  <p className="text-sm leading-relaxed text-white/75">{venture.solution || "No solution details recorded."}</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Launch Market</p>
+                  <p className="text-sm leading-relaxed text-white/75 capitalize">{venture.location || "Not specified"}</p>
+                </div>
               </div>
             </div>
-          </details>
+          </div>
 
           {/* Saved analysis data — only shown if venture has real analysis */}
           {hasAnyAnalysis && (
@@ -280,7 +332,7 @@ function EmptyVentures() {
         No ideas saved yet
       </h2>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-white/50">
-        Share a startup idea and get AI analysis. Every idea you explore is automatically saved here so you can check it anytime.
+        Share a startup idea and get full analysis. Every idea you explore is automatically saved here so you can check it anytime.
       </p>
       <Link
         to="/founder/intake"
@@ -297,10 +349,20 @@ function EmptyVentures() {
 export default function VenturesPage() {
   const { ventures, loading, error, refresh, remove } = useVentures();
   const { setForm, setVentureId } = useFounderFlow();
+  const { activeVentureId, setActiveVentureId } = useActiveIdea();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
-  // Load a saved venture back into the flow and navigate to analysis with a specific type pre-selected
+  // Show disappearing toast on load/refresh error rather than stuck inline banner
+  useEffect(() => {
+    if (error) {
+      showToast(error, "error");
+    }
+  }, [error, showToast]);
+
+  // Load a saved venture back into the flow and navigate to analysis with autoRun
   const handleRunAnalysis = (venture, toolKey) => {
+    setActiveVentureId(venture.id);
     setForm({
       idea: venture.idea,
       problem: venture.problem,
@@ -309,13 +371,18 @@ export default function VenturesPage() {
       location: venture.location,
     });
     setVentureId(venture.id);
-    // Pass the desired tool key via state so FounderAnalysisPage can auto-select it
-    navigate("/founder/analysis", { state: { autoSelectTool: toolKey } });
+    // Pass autoSelectTool and autoRun so FounderAnalysisPage immediately displays the cached result or runs it
+    navigate("/founder/analysis", {
+      state: {
+        autoSelectTool: toolKey,
+        autoRun: true,
+      },
+    });
   };
 
   return (
     <FounderFlowGuard>
-      <div className="mx-auto w-full max-w-5xl px-4 pb-14 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl px-3 sm:px-6 lg:px-8 pb-14 pt-4 sm:pt-6">
         {/* Page header */}
         <div className="mb-8">
           <Link
@@ -334,7 +401,7 @@ export default function VenturesPage() {
               </h1>
               <p className="mt-2 text-sm text-white/50">
                 {ventures.length === 0
-                  ? "Every AI analysis you run is saved here automatically."
+                  ? "Every analysis you run is saved here automatically."
                   : `${ventures.length} idea${ventures.length !== 1 ? "s" : ""} saved`}
               </p>
             </div>
@@ -358,13 +425,6 @@ export default function VenturesPage() {
           </div>
         </div>
 
-        {/* Error banner */}
-        {error && (
-          <div className="mb-6 rounded-xl bg-red-500/10 p-4 text-sm text-red-200">
-            {error}
-          </div>
-        )}
-
         {/* Loading skeleton */}
         {loading && ventures.length === 0 && (
           <div className="space-y-4">
@@ -379,11 +439,13 @@ export default function VenturesPage() {
           ventures.length === 0 ? (
             <EmptyVentures />
           ) : (
-            <div className="space-y-4">
+            <div className="divide-y divide-white/10 sm:divide-y-0 sm:space-y-4">
               {ventures.map((v) => (
                 <VentureCard
                   key={v.id}
                   venture={v}
+                  isActive={activeVentureId === v.id}
+                  onSetActive={() => setActiveVentureId(v.id)}
                   onDelete={remove}
                   onRunAnalysis={handleRunAnalysis}
                 />

@@ -11,6 +11,7 @@ import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
 import { listVenturesApi, executeAiToolApi } from "../lib/api";
 import { useToast } from "../context/ToastContext";
 import { StatStrip } from "../components/ui/BorderlessPrimitives";
+import { useActiveIdea } from "../context/IdeaContext";
 
 const AI_TOOLS = [
   { id: "lean_canvas", label: "Lean Canvas (1-Page)", desc: "Quick 1-page business blueprint" },
@@ -22,10 +23,13 @@ const AI_TOOLS = [
 
 export default function FounderAiToolsPage() {
   const { showToast } = useToast();
+  const {
+    ventures,
+    activeVenture,
+    activeVentureId,
+    setActiveVentureId,
+  } = useActiveIdea();
   const [activeTab, setActiveTab] = useState("lean_canvas");
-  const [ventures, setVentures] = useState([]);
-  const [selectedVentureId, setSelectedVentureId] = useState("");
-  const [loadingVentures, setLoadingVentures] = useState(true);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
   // Active brief inputs
@@ -42,25 +46,8 @@ export default function FounderAiToolsPage() {
   const [toolLoading, setToolLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    async function loadVentures() {
-      try {
-        const data = await listVenturesApi();
-        if (Array.isArray(data) && data.length > 0) {
-          setVentures(data);
-          setSelectedVentureId(String(data[0].id));
-          applyVentureBrief(data[0]);
-        }
-      } catch (err) {
-        // no saved ventures yet
-      } finally {
-        setLoadingVentures(false);
-      }
-    }
-    loadVentures();
-  }, []);
-
   const applyVentureBrief = (v) => {
+    if (!v) return;
     setBriefInput({
       idea: v.idea || "",
       customer: v.customer || "",
@@ -70,9 +57,17 @@ export default function FounderAiToolsPage() {
     });
   };
 
+  // Sync brief when global active venture changes
+  useEffect(() => {
+    if (activeVenture) {
+      applyVentureBrief(activeVenture);
+      setToolResults({});
+    }
+  }, [activeVenture?.id]);
+
   const handleSelectVenture = (e) => {
     const id = e.target.value;
-    setSelectedVentureId(id);
+    setActiveVentureId(id);
     const found = ventures.find((v) => String(v.id) === String(id));
     if (found) {
       applyVentureBrief(found);
@@ -82,7 +77,7 @@ export default function FounderAiToolsPage() {
 
   const fetchToolResult = async (refresh = false) => {
     if (!briefInput.idea || briefInput.idea.length < 5) {
-      showToast("Please provide at least a brief venture idea before running AI tools.", "error");
+      showToast("Please provide at least a brief venture idea before running tools.", "error");
       return;
     }
 
@@ -107,7 +102,7 @@ export default function FounderAiToolsPage() {
       }));
 
       if (refresh) {
-        showToast(`Regenerated ${AI_TOOLS.find((t) => t.id === activeTab)?.label} with Gemini`, "success");
+        showToast(`Regenerated ${AI_TOOLS.find((t) => t.id === activeTab)?.label}`, "success");
       }
     } catch (err) {
       showToast(err.message || "Failed to generate deliverable", "error");
@@ -138,7 +133,7 @@ export default function FounderAiToolsPage() {
     <FounderFlowGuard>
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
-          title="AI Startup Tools"
+          title="Startup Tools"
           subtitle="Generate 1-page plans, pitch slide notes, and money estimates for your idea."
         />
 
@@ -150,14 +145,14 @@ export default function FounderAiToolsPage() {
                 Your Startup Idea
               </span>
               <p className="mt-1 text-xs text-[#9B9A94]">
-                The AI tools use this idea to generate each document below.
+                These tools use this idea to generate each document below.
               </p>
             </div>
             {ventures.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-[#5F5E5A]">Saved Idea:</span>
                 <select
-                  value={selectedVentureId}
+                  value={activeVentureId ? String(activeVentureId) : ""}
                   onChange={handleSelectVenture}
                   className="rounded-lg border border-[#2B2B31] bg-[#1C1C21] px-3 py-1.5 text-xs text-[#F3F1EC] focus:border-[#C9A15A] focus:outline-none"
                 >
@@ -251,7 +246,7 @@ export default function FounderAiToolsPage() {
                 </h3>
                 {currentSource && (
                   <span className="rounded bg-[#1C1C21] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#C9A15A]">
-                    {currentSource === "gemini" ? "Gemini AI Live" : currentSource === "cache" ? "Fast Cached" : "Offline Model"}
+                    {currentSource === "cache" ? "Saved Document" : "Generated"}
                   </span>
                 )}
               </div>
@@ -298,7 +293,7 @@ export default function FounderAiToolsPage() {
               <button
                 type="button"
                 onClick={() => fetchToolResult(false)}
-                className="mt-4 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B]"
+                className="mt-4 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-white"
               >
                 Generate Deliverable Now
               </button>

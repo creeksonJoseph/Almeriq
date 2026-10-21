@@ -224,7 +224,7 @@ function FounderStudioEntry() {
         Turn your idea into a real project.
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/60">
-        Check if your idea is ready, generate plans with AI, and get step-by-step guidance to build your startup.
+        Check if your idea is ready, generate strategic plans, and get step-by-step guidance to build your startup.
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Link

@@ -1,9 +1,10 @@
 import React, { lazy, Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
 import { SidebarProvider } from "./context/SidebarContext";
+import { IdeaProvider } from "./context/IdeaContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 
@@ -41,7 +42,6 @@ const NotFoundPage = lazyWithRetry(() => import("./Pages/NotFoundPage"));
 const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/ForgotPasswordPage"));
 const FounderIntakePage = lazyWithRetry(() => import("./Pages/FounderIntakePage"));
 const FounderAnalysisPage = lazyWithRetry(() => import("./Pages/FounderAnalysisPage"));
-const FounderRoadmapPage = lazyWithRetry(() => import("./Pages/FounderRoadmapPage"));
 const VenturesPage = lazyWithRetry(() => import("./Pages/VenturesPage"));
 const FounderHubPage = lazyWithRetry(() => import("./Pages/FounderHubPage"));
 const FounderValidationPage = lazyWithRetry(() => import("./Pages/FounderValidationPage"));
@@ -50,6 +50,7 @@ const FounderProductPage = lazyWithRetry(() => import("./Pages/FounderProductPag
 const FounderLegalPage = lazyWithRetry(() => import("./Pages/FounderLegalPage"));
 const FounderOutreachPage = lazyWithRetry(() => import("./Pages/FounderOutreachPage"));
 const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/AdminWaitlistPage"));
+const SettingsPage = lazyWithRetry(() => import("./Pages/SettingsPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">
@@ -63,7 +64,8 @@ function App() {
       <ToastProvider>
         <ConfirmProvider>
           <SidebarProvider>
-          <Suspense fallback={<PageLoader />}>
+            <IdeaProvider>
+              <Suspense fallback={<PageLoader />}>
             <Routes>
           {/* Main Layout Wrapper - Navbar & Background are rendered via Layout */}
           <Route element={<Layout />}>
@@ -110,7 +112,7 @@ function App() {
               path="/founder/roadmap"
               element={
                 <ProtectedRoute>
-                  <FounderRoadmapPage />
+                  <Navigate to="/founder/analysis" state={{ autoSelectTool: "execution_roadmap" }} replace />
                 </ProtectedRoute>
               }
             />
@@ -170,12 +172,21 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </Suspense>
+            </IdeaProvider>
           </SidebarProvider>
         </ConfirmProvider>
       </ToastProvider>

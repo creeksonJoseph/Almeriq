@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { z } from "zod";
 import { analyzeFounderIdeaApi, saveBriefApi } from "../lib/api";
 
@@ -91,6 +91,27 @@ export function useFounderFlow() {
   const [error, setError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Sync state whenever global active idea is changed
+  useEffect(() => {
+    const handleActiveIdeaChanged = (e) => {
+      const detail = e.detail;
+      if (detail?.brief) {
+        setFormState(detail.brief);
+      } else {
+        const freshForm = readSession(FORM_KEY, INITIAL_FOUNDER_FORM);
+        setFormState(freshForm);
+      }
+      if (detail?.ventureId !== undefined) {
+        setVentureIdState(detail.ventureId);
+      }
+    };
+
+    window.addEventListener("almeriq:active-idea-changed", handleActiveIdeaChanged);
+    return () => {
+      window.removeEventListener("almeriq:active-idea-changed", handleActiveIdeaChanged);
+    };
+  }, []);
+
   // Debounce timer refs
   const analyzeTimeoutRef = useRef(null);
   const formSyncTimeoutRef = useRef(null);
@@ -157,6 +178,7 @@ export function useFounderFlow() {
         });
 
         setLoading(true);
+        setError("");
         try {
           const result = await analyzeFounderIdeaApi(form);
           const elapsed = performance.now() - startTime;

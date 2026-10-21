@@ -286,54 +286,55 @@ async def legal_create(
 def _extract_analysis_fields(tool_key: str, result: dict, source: str) -> dict:
     """Extract flat summary/market/risks/mvp/roadmap/next_steps from a structured tool result.
     This allows a pending venture to be updated with real analysis data."""
-    fields = {"source": source}
+    fields = {"source": "analyzed"}
 
     if tool_key == "market_analysis":
-        # result has: market_overview, target_segments, competitors, advantages, channels, trends, verdict
-        overview = result.get("market_overview", {})
-        fields["summary"] = overview.get("summary", "")
-        fields["market"] = overview.get("market_size_estimate", fields["summary"])
-        risks = [c.get("weakness", "") for c in result.get("competitors", []) if c.get("weakness")]
-        fields["risks"] = risks[:6] if risks else ["Competitive market", "Customer acquisition cost", "Market timing"]
-        channels = result.get("channels", [])
-        fields["mvp"] = [ch.get("channel") or ch if isinstance(ch, str) else "" for ch in channels[:5]]
-        trends = result.get("trends", [])
-        fields["roadmap"] = [t.get("trend") or t if isinstance(t, str) else "" for t in trends[:5]]
-        segs = result.get("target_segments", [])
-        fields["next_steps"] = [s.get("segment") or s if isinstance(s, str) else "" for s in segs[:5]]
+        overview = result.get("market_overview", "")
+        fields["summary"] = overview if isinstance(overview, str) else overview.get("summary", "")
+        if not fields["summary"]:
+            fields["summary"] = result.get("verdict_rationale", "")
+            
+        tam = (result.get("market_size") or {}).get("tam", "") if isinstance(result.get("market_size"), dict) else ""
+        fields["market"] = result.get("differentiation_opportunity") or tam or fields["summary"]
+        fields["risks"] = result.get("key_risks") or result.get("entry_barriers") or []
+        channels = result.get("go_to_market_channels") or result.get("channels") or []
+        fields["mvp"] = [ch.get("channel") if isinstance(ch, dict) else str(ch) for ch in channels[:5]]
+        trends = result.get("market_trends") or result.get("trends") or []
+        fields["roadmap"] = [t if isinstance(t, str) else str(t) for t in trends[:5]]
+        segs = result.get("target_segments") or []
+        fields["next_steps"] = [s.get("segment") if isinstance(s, dict) else str(s) for s in segs[:5]]
 
     elif tool_key == "feasibility_analysis":
-        fields["summary"] = result.get("overall_verdict", {}).get("summary", "")
-        fields["market"] = result.get("overall_verdict", {}).get("recommendation", fields["summary"])
-        tech = result.get("tech_feasibility", {})
-        fields["risks"] = tech.get("challenges", [])[:6]
-        fields["mvp"] = result.get("recommended_stack", [])[:5]
-        timeline = result.get("timeline", {})
-        phase_list = [f"{p.get('phase')}: {p.get('deliverables','')}" for p in result.get("phases", [])]
-        fields["roadmap"] = phase_list[:5] or [timeline.get("total_estimate", "")]
-        fields["next_steps"] = result.get("tips", [])[:5]
+        fields["summary"] = (
+            result.get("executive_summary")
+            or f"{result.get('overall_feasibility_verdict', 'Feasible')} (Score: {result.get('overall_feasibility_score', 8)}/10)"
+        )
+        fields["market"] = result.get("overall_feasibility_verdict", "") or fields["summary"]
+        fields["risks"] = result.get("critical_failure_risks") or []
+        fields["mvp"] = result.get("critical_success_factors") or []
+        dims = result.get("dimensions") or []
+        fields["roadmap"] = [f"{d.get('dimension')}: {d.get('score')}/10" for d in dims if isinstance(d, dict)]
+        fields["next_steps"] = result.get("recommended_next_steps") or []
 
     elif tool_key == "business_plan":
-        fields["summary"] = result.get("pitch", {}).get("one_sentence", "")
-        revenue = result.get("revenue_model", {})
-        fields["market"] = revenue.get("primary_model", fields["summary"])
-        fields["risks"] = []  # business plan doesn't have risks list
-        pricing = result.get("pricing", [])
-        fields["mvp"] = [p.get("tier", "") for p in pricing[:5]]
-        growth_stages = result.get("growth_stages", [])
-        fields["roadmap"] = [g.get("stage", "") for g in growth_stages[:5]]
-        fields["next_steps"] = result.get("team_roles", [g.get("role", "") for g in result.get("team_roles", [])])[:5]
+        fields["summary"] = result.get("executive_summary") or result.get("value_proposition") or ""
+        fields["market"] = result.get("value_proposition") or fields["summary"]
+        fields["risks"] = [r.get("risk") for r in result.get("risk_mitigation", []) if isinstance(r, dict)]
+        milestones = result.get("milestones") or []
+        fields["mvp"] = [m.get("milestone") for m in milestones if isinstance(m, dict)][:5]
+        fields["roadmap"] = [f"{m.get('milestone')} ({m.get('target_date', '')})" for m in milestones if isinstance(m, dict)][:5]
+        fields["next_steps"] = [m.get("milestone") for m in milestones if isinstance(m, dict)][:5]
 
     elif tool_key == "execution_roadmap":
-        phases = result.get("phases", [])
-        fields["summary"] = phases[0].get("goal", "") if phases else ""
-        fields["market"] = result.get("success_metric", fields["summary"])
-        fields["risks"] = result.get("risks", [result.get("risk", "")])[:6]
-        fields["mvp"] = result.get("mvp_features", [])[:5]
-        fields["roadmap"] = [f"{p.get('phase')}: {p.get('goal','')}" for p in phases[:5]]
-        fields["next_steps"] = result.get("week_one_tasks", [])[:5]
+        fields["summary"] = result.get("executive_summary") or ""
+        fields["market"] = fields["summary"]
+        fields["risks"] = result.get("critical_path") or []
+        phases = result.get("phases") or []
+        fields["mvp"] = [p.get("goal") for p in phases if isinstance(p, dict)][:5]
+        fields["roadmap"] = [f"{p.get('phase')}: {p.get('goal','')}" for p in phases if isinstance(p, dict)][:5]
+        fields["next_steps"] = result.get("critical_path") or []
 
-    # Remove empty values
+    # Clean empty values
     for k in ("risks", "mvp", "roadmap", "next_steps"):
         fields[k] = [v for v in fields.get(k, []) if v]
 
@@ -384,7 +385,7 @@ async def execute_tool(
             if body.venture_id:
                 try:
                     venture = await get_venture(body.venture_id, user_id)
-                    if venture and venture.get("source") == "pending":
+                    if venture and (venture.get("source") == "pending" or not venture.get("summary")):
                         analysis_update = _extract_analysis_fields(body.tool_key, cached, "cache")
                         await update_venture_analysis(body.venture_id, user_id, analysis_update)
                 except Exception:
@@ -460,12 +461,12 @@ async def execute_tool(
     if body.venture_id:
         try:
             venture = await get_venture(body.venture_id, user_id)
-            if venture and venture.get("source") == "pending":
+            if venture and (venture.get("source") == "pending" or not venture.get("summary")):
                 # Extract flat summary/market/risks etc from the structured result
                 analysis_update = _extract_analysis_fields(body.tool_key, result_data, source)
                 await update_venture_analysis(body.venture_id, user_id, analysis_update)
                 logger.info(
-                    f"Updated pending venture {body.venture_id} with {body.tool_key} analysis",
+                    f"Updated venture {body.venture_id} with {body.tool_key} analysis",
                     extra={"user_id": user_id, "venture_id": body.venture_id},
                 )
         except Exception as e:

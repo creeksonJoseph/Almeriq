@@ -11,11 +11,18 @@ export const apiClient = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
-  timeout: 15000,
+  timeout: 30000,
 });
 
 // ── Error Message Parser ──────────────────────────────────────────────────────
 export function extractErrorMessage(error, defaultMsg = "An error occurred") {
+  if (
+    error?.code === "ECONNABORTED" ||
+    error?.code === "ETIMEDOUT" ||
+    (typeof error?.message === "string" && error.message.toLowerCase().includes("timeout"))
+  ) {
+    return "Request timed out. Please try again.";
+  }
   const detail = error.response?.data?.detail;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail)) {

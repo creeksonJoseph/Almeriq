@@ -19,6 +19,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
+import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
 
 export const PRIMARY_NAV = [
   { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
@@ -29,7 +30,7 @@ export const FOUNDER_STUDIO_NAV = [
   { label: "Share an Idea", path: "/founder/intake", icon: Lightbulb },
   { label: "Saved Ideas", path: "/founder/ventures", icon: BookOpen },
   { label: "Idea Checklist", path: "/founder/validation", icon: CheckCircle2 },
-  { label: "AI Startup Tools", path: "/founder/ai-tools", icon: Cpu },
+  { label: "Startup Tools", path: "/founder/ai-tools", icon: Cpu },
   { label: "Product & Tech", path: "/founder/product", icon: Boxes },
   { label: "Legal & Setup", path: "/founder/legal", icon: Scale },
   { label: "Updates & Team", path: "/founder/outreach", icon: Send },
@@ -150,7 +151,12 @@ export default function AppSidebar({
         </div>
 
         {/* Scrollable Navigation Body */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-4 space-y-6 no-scrollbar">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-4 no-scrollbar">
+          {/* Minimal Idea Switcher */}
+          <div className={isCollapsed ? "flex justify-center pb-2 border-b border-white/5" : "px-1 pb-2 border-b border-white/5"}>
+            <ActiveIdeaDropdown variant="sidebar" collapsed={isCollapsed} />
+          </div>
+
           {/* Main workspace items */}
           <div className="space-y-1">
             {!isCollapsed && (
@@ -309,22 +315,19 @@ export default function AppSidebar({
 
         {/* Footer actions */}
         <div className="px-2 pt-3 border-t border-[#232328] space-y-1">
-          {onRestartOnboarding && (
-            <button
-              type="button"
-              onClick={() => {
-                onCloseMobile();
-                onRestartOnboarding();
-              }}
-              title={isCollapsed ? "Edit Onboarding Profile" : undefined}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs text-white/50 hover:bg-white/5 hover:text-white transition-colors ${
-                isCollapsed ? "justify-center px-0" : ""
-              }`}
-            >
-              <Settings size={16} className="shrink-0" />
-              {!isCollapsed && <span className="truncate">Edit Profile</span>}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => handleNavClick("/settings")}
+            title={isCollapsed ? "Account Settings" : undefined}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+              location.pathname === "/settings"
+                ? "bg-white/10 text-white font-medium"
+                : "text-white/50 hover:bg-white/5 hover:text-white"
+            } ${isCollapsed ? "justify-center px-0" : ""}`}
+          >
+            <Settings size={16} className="shrink-0" />
+            {!isCollapsed && <span className="truncate">Settings</span>}
+          </button>
 
           <button
             type="button"
