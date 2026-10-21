@@ -152,6 +152,25 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
             />
           </button>
         )
+      ) : variant === "switcher" ? (
+        /* Switcher Trigger with explicit label */
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors cursor-pointer ${
+            open ? "text-[#c9a15a]" : "text-white/60 hover:text-white"
+          }`}
+          aria-expanded={open}
+          aria-haspopup="true"
+        >
+          <span>Switch idea</span>
+          <ChevronDown
+            size={12}
+            className={`shrink-0 text-white/40 transition-transform duration-200 ${
+              open ? "rotate-180 text-[#c9a15a]" : ""
+            }`}
+          />
+        </button>
       ) : (
         /* Header / Top Right Trigger - Clean borderless text and inverted 'v' chevron */
         <button

@@ -29,7 +29,7 @@ export const FOUNDER_STUDIO_NAV = [
   { label: "Studio Hub", path: "/founder", icon: Compass },
   { label: "Share an Idea", path: "/founder/intake", icon: Lightbulb },
   { label: "Saved Ideas", path: "/founder/ventures", icon: BookOpen },
-  { label: "Idea Checklist", path: "/founder/validation", icon: CheckCircle2 },
+  { label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
   { label: "Startup Tools", path: "/founder/ai-tools", icon: Cpu },
   { label: "Product & Tech", path: "/founder/product", icon: Boxes },
   { label: "Legal & Setup", path: "/founder/legal", icon: Scale },

@@ -334,6 +334,14 @@ def _extract_analysis_fields(tool_key: str, result: dict, source: str) -> dict:
         fields["roadmap"] = [f"{p.get('phase')}: {p.get('goal','')}" for p in phases if isinstance(p, dict)][:5]
         fields["next_steps"] = result.get("critical_path") or []
 
+    elif tool_key in ("idea_validation", "validation_analysis"):
+        fields["summary"] = result.get("executive_summary") or ""
+        market_rubric = (result.get("rubric") or {}).get("market_size") or {}
+        fields["market"] = market_rubric.get("sizing_rationale") or result.get("executive_summary", "")
+        fields["risks"] = result.get("critical_red_flags") or []
+        fields["mvp"] = result.get("top_strengths") or []
+        fields["next_steps"] = result.get("immediate_action_plan") or []
+
     # Clean empty values
     for k in ("risks", "mvp", "roadmap", "next_steps"):
         fields[k] = [v for v in fields.get(k, []) if v]

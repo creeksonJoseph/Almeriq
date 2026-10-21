@@ -292,6 +292,114 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
             f"  quick_wins (array of 3-5 strings — things achievable in first 2 weeks)."
         )
 
+    if tool_key in ("idea_validation", "validation_analysis"):
+        extra_ctx = ""
+        if payload.extra_params and isinstance(payload.extra_params, dict):
+            for k in ("summary", "market", "risks", "mvp", "problem", "solution"):
+                v = payload.extra_params.get(k)
+                if v:
+                    extra_ctx += f"\n- {k.title()}: {v if isinstance(v, str) else json.dumps(v)}"
+
+        return (
+            f"You are a top-tier venture evaluator and startup analyst. Perform a comprehensive, rigorous Idea Validation Rubric analysis for this startup idea.\n"
+            f"Startup Idea: {idea}\n"
+            f"Problem Statement: {problem or 'Infer and synthesize from idea'}\n"
+            f"Proposed Solution: {solution or 'Infer and synthesize from idea'}\n"
+            f"Target Customer: {customer}\n"
+            f"Target Market/Location: {location}\n"
+            f"{f'Additional Verified Context from Previous Modules:{extra_ctx}' if extra_ctx else ''}\n\n"
+            f"Evaluate this idea thoroughly across 6 key rubric criteria. For each criterion, assign a rating of STRICTLY one of: 'Strong', 'Vague', or 'Weak'.\n"
+            f"Criteria details:\n"
+            f"1. Problem and Solution: Problem urgency, acute user pain vs mild inconvenience, solution clarity, differentiation, problem-solution fit.\n"
+            f"2. Market Size (TAM, SAM, SOM): Total Addressable Market (TAM), Serviceable Available Market (SAM), and Serviceable Obtainable Market (SOM) with numeric/dollar estimates and sizing rationale.\n"
+            f"3. Demand & User Pull: Evidence of real user demand, frequency of need, willingness to pay, validation experiments to prove traction.\n"
+            f"4. Competition: Realistic landscape check — identify actual real-world existing companies, products, or startups in this space by name. Detail their strengths, weaknesses, and defensibility moats.\n"
+            f"5. All Feasibilities: Comprehensive breakdown covering: Technical Feasibility (can it be built with current tech?), Operational & Regulatory Feasibility (legal, compliance, logistics), and Economic Feasibility (capital, unit economics, runway to MVP).\n"
+            f"6. Business Model: Monetization streams, pricing model, unit economics viability (CAC vs LTV dynamics, gross margins).\n\n"
+            f"Return a clean JSON object with this exact structure:\n"
+            f"{{\n"
+            f'  "overall_score": 82,\n'
+            f'  "overall_rating": "Strong",\n'
+            f'  "ratings_summary": {{"strong_count": 4, "vague_count": 2, "weak_count": 0}},\n'
+            f'  "executive_summary": "Concise 3-4 sentence diagnosis summarizing core strength, primary blindspot, and potential.",\n'
+            f'  "top_strengths": ["Strength 1", "Strength 2", "Strength 3"],\n'
+            f'  "critical_red_flags": ["Red flag 1", "Red flag 2", "Red flag 3"],\n'
+            f'  "immediate_action_plan": ["Step 1", "Step 2", "Step 3", "Step 4"],\n'
+            f'  "rubric": {{\n'
+            f'    "problem_and_solution": {{\n'
+            f'      "rating": "Strong",\n'
+            f'      "assessment": "Detailed assessment of the problem-solution fit...",\n'
+            f'      "problem_clarity": "Analysis of the pain point clarity and urgency...",\n'
+            f'      "solution_fit": "Analysis of how directly the solution solves the core problem...",\n'
+            f'      "strengths": ["...", "..."],\n'
+            f'      "gaps_and_risks": ["...", "..."],\n'
+            f'      "recommendations": ["...", "..."]\n'
+            f'    }},\n'
+            f'    "market_size": {{\n'
+            f'      "rating": "Strong",\n'
+            f'      "assessment": "Detailed assessment of total and serviceable market...",\n'
+            f'      "tam": {{"value": "$12.5B", "description": "Global market definition and methodology..."}},\n'
+            f'      "sam": {{"value": "$1.4B", "description": "Serviceable addressable segment for target customers..."}},\n'
+            f'      "som": {{"value": "$85M", "description": "Realistic 18-36 month serviceable obtainable capture..."}},\n'
+            f'      "sizing_rationale": "Clear sizing methodology and assumptions...",\n'
+            f'      "strengths": ["...", "..."],\n'
+            f'      "gaps_and_risks": ["...", "..."],\n'
+            f'      "recommendations": ["...", "..."]\n'
+            f'    }},\n'
+            f'    "demand": {{\n'
+            f'      "rating": "Vague",\n'
+            f'      "assessment": "Analysis of customer pull and purchasing urgency...",\n'
+            f'      "urgency_level": "High",\n'
+            f'      "willingness_to_pay": "Medium",\n'
+            f'      "demand_signals": "Signals indicating organic adoption vs push...",\n'
+            f'      "validation_experiments": ["Experiment 1: landing page pre-order test...", "Experiment 2: customer interview protocol...", "Experiment 3: concierge MVP..."],\n'
+            f'      "strengths": ["...", "..."],\n'
+            f'      "gaps_and_risks": ["...", "..."]\n'
+            f'    }},\n'
+            f'    "competition": {{\n'
+            f'      "rating": "Strong",\n'
+            f'      "assessment": "Thorough analysis of competitive density and positioning...",\n'
+            f'      "landscape_summary": "Summary of current incumbents and substitutes...",\n'
+            f'      "identified_competitors": [\n'
+            f'        {{\n'
+            f'          "name": "Actual Real Competitor or Incumbent Name",\n'
+            f'          "type": "Direct",\n'
+            f'          "strengths": "Established market presence, existing distribution",\n'
+            f'          "weaknesses": "High price, dated interface, missing core feature",\n'
+            f'          "differentiation_angle": "How this startup beats them"\n'
+            f'        }}\n'
+            f'      ],\n'
+            f'      "moat_assessment": "Defensibility analysis (network effects, switching costs, proprietary data)...",\n'
+            f'      "strengths": ["...", "..."],\n'
+            f'      "gaps_and_risks": ["...", "..."],\n'
+            f'      "recommendations": ["...", "..."]\n'
+            f'    }},\n'
+            f'    "feasibility": {{\n'
+            f'      "rating": "Strong",\n'
+            f'      "assessment": "Overall feasibility assessment across tech, ops, and economics...",\n'
+            f'      "technical": {{"rating": "Strong", "assessment": "Tech stack requirements and architectural difficulty...", "key_challenges": ["...", "..."]}},\n'
+            f'      "operational_regulatory": {{"rating": "Strong", "assessment": "Compliance, legal framework, licensing and operations...", "key_challenges": ["...", "..."]}},\n'
+            f'      "economic": {{"rating": "Vague", "assessment": "Capital required to reach MVP, runway needs and cash burn...", "key_challenges": ["...", "..."]}},\n'
+            f'      "strengths": ["...", "..."],\n'
+            f'      "gaps_and_risks": ["...", "..."],\n'
+            f'      "recommendations": ["...", "..."]\n'
+            f'    }},\n'
+            f'    "business_model": {{\n'
+            f'      "rating": "Strong",\n'
+            f'      "assessment": "Monetization and margin sustainability assessment...",\n'
+            f'      "revenue_streams": [\n'
+            f'        {{"stream": "SaaS Subscription / Usage Fee", "pricing_model": "Tiered monthly / annual", "rationale": "High recurring revenue potential"}}\n'
+            f'      ],\n'
+            f'      "pricing_strategy": "Pricing model logic and entry pricing...",\n'
+            f'      "unit_economics": {{"cac_outlook": "$50-$120 via organic + content", "ltv_outlook": "$900+ based on 18mo retention", "margin_potential": "75-82% gross margins"}},\n'
+            f'      "strengths": ["...", "..."],\n'
+            f'      "gaps_and_risks": ["...", "..."],\n'
+            f'      "recommendations": ["...", "..."]\n'
+            f'    }}\n'
+            f'  }}\n'
+            f'}}\n'
+        )
+
     return f"Generate {tool_key} for {idea}."
 
 

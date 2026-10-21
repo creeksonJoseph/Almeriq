@@ -1,284 +1,788 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { CheckCircle2, Loader2, Lightbulb } from "lucide-react";
+/**
+ * Pages/FounderValidationPage.jsx - Clean Editorial AI Idea Validation Studio.
+ *
+ * Minimalist, production-grade layout without nested card soup, rainbow colors,
+ * or icon bloat. Features an inline dropdown to switch between saved ideas instantly.
+ */
+import React, { useState, useEffect, useMemo } from "react";
+import { Loader2, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
-import { getValidationApi, updateValidationApi } from "../lib/api";
+import ActiveIdeaDropdown from "../components/ActiveIdeaDropdown";
+import { executeAiToolApi } from "../lib/api";
 import { useToast } from "../context/ToastContext";
 import { useActiveIdea } from "../context/IdeaContext";
+import { useFounderFlow } from "../hooks/useFounderFlow";
 
-const DIMENSIONS = [
-  {
-    key: "dim_problem",
-    title: "1. Real Problem (Do people actually care?)",
-    subtitle: "People lose time, money, or get frustrated because this problem isn't solved.",
-    tip: "Talk to at least 5-10 people experiencing this and see if it's a top headache for them.",
-    category: "User Need",
-  },
-  {
-    key: "dim_solution",
-    title: "2. Simple Solution (Does it fix it?)",
-    subtitle: "Solves the main problem in a simple, clear way without complicated extra stuff.",
-    tip: "Can you explain how it works in one sentence and test it simply before coding?",
-    category: "Solution",
-  },
-  {
-    key: "dim_demand",
-    title: "3. Will People Pay or Use It?",
-    subtitle: "People have promised to use it, pre-ordered, or confirmed they want to pay.",
-    tip: "Don't just take 'Cool idea!' as proof. Ask: 'Would you pay $5 or sign up today?'",
-    category: "Demand",
-  },
-  {
-    key: "dim_market_size",
-    title: "4. Good Audience Size",
-    subtitle: "There are enough potential users or customers to make building this worthwhile.",
-    tip: "Count: about how many people in your school, town, or online community need this?",
-    category: "Audience",
-  },
-  {
-    key: "dim_competition",
-    title: "5. Why You? (Competitors)",
-    subtitle: "You know what other apps or tools exist and why yours will be better or unique.",
-    tip: "What makes yours different: is it faster, simpler, cheaper, or built for your community?",
-    category: "Uniqueness",
-  },
-  {
-    key: "dim_feasibility",
-    title: "6. Can You Actually Build It?",
-    subtitle: "The app or project can be built with tools, skills, and resources you have or can learn.",
-    tip: "Pick tools and libraries you know or can pick up easily. Keep the first version small.",
-    category: "Feasibility",
-  },
-  {
-    key: "dim_business_model",
-    title: "7. Money & Costs (Unit Economics)",
-    subtitle: "You make more money from each user than it costs you to host or deliver the product.",
-    tip: "Think about monthly server costs or payment fees versus what you charge.",
-    category: "Money",
-  },
-  {
-    key: "dim_legal",
-    title: "8. Safety, Rules & Legal",
-    subtitle: "No major rules, copyright issues, or privacy laws are being broken.",
-    tip: "Check basic rules: don't copy logos, respect user privacy, and be transparent.",
-    category: "Safety",
-  },
-  {
-    key: "dim_risk",
-    title: "9. Backup Plan (What if things go wrong?)",
-    subtitle: "You have thought about what could break or go wrong, and how to handle it.",
-    tip: "Ask yourself: 'If our main tool or social channel stops working, what do we do?'",
-    category: "Backup Plan",
-  },
-];
+function MetricBadge({ rating }) {
+  const r = (rating || "").toLowerCase();
+  if (r === "strong") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+        Strong
+      </span>
+    );
+  }
+  if (r === "vague") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
+        Vague
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-400">
+      Weak
+    </span>
+  );
+}
 
 export default function FounderValidationPage() {
   const { showToast } = useToast();
-  const { activeVenture } = useActiveIdea();
-  const [dims, setDims] = useState({
-    dim_problem: false,
-    dim_solution: false,
-    dim_market_size: false,
-    dim_demand: false,
-    dim_competition: false,
-    dim_feasibility: false,
-    dim_business_model: false,
-    dim_legal: false,
-    dim_risk: false,
-  });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState(null);
+  const { activeVenture, activeVentureId } = useActiveIdea();
+  const { form: flowForm, analysis: flowAnalysis } = useFounderFlow();
 
+  // Inputs state
+  const [ideaInput, setIdeaInput] = useState("");
+  const [problemInput, setProblemInput] = useState("");
+  const [solutionInput, setSolutionInput] = useState("");
+  const [customerInput, setCustomerInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+
+  const [showInputDrawer, setShowInputDrawer] = useState(false);
+  const [evaluating, setEvaluating] = useState(false);
+  const [evaluation, setEvaluation] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [copied, setCopied] = useState(false);
+
+  // Sync inputs on activeVenture or flowForm update
   useEffect(() => {
-    async function fetchValidation() {
-      try {
-        const data = await getValidationApi();
-        if (data) {
-          setDims({
-            dim_problem: Boolean(data.dim_problem),
-            dim_solution: Boolean(data.dim_solution),
-            dim_market_size: Boolean(data.dim_market_size),
-            dim_demand: Boolean(data.dim_demand),
-            dim_competition: Boolean(data.dim_competition),
-            dim_feasibility: Boolean(data.dim_feasibility),
-            dim_business_model: Boolean(data.dim_business_model),
-            dim_legal: Boolean(data.dim_legal),
-            dim_risk: Boolean(data.dim_risk),
-          });
-          if (data.updated_at) {
-            setLastSaved(new Date(data.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-          }
-        }
-      } catch (err) {
-        // use default state
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchValidation();
-  }, []);
+    const candidateIdea = activeVenture?.idea || flowForm.idea || "";
+    const candidateProblem = activeVenture?.problem || flowForm.problem || "";
+    const candidateSolution = activeVenture?.solution || flowForm.solution || "";
+    const candidateCustomer = activeVenture?.customer || flowForm.customer || "";
+    const candidateLocation = activeVenture?.location || flowForm.location || "";
 
-  const currentScore = Object.values(dims).filter(Boolean).length;
+    if (candidateIdea) setIdeaInput(candidateIdea);
+    if (candidateProblem) setProblemInput(candidateProblem);
+    if (candidateSolution) setSolutionInput(candidateSolution);
+    if (candidateCustomer) setCustomerInput(candidateCustomer);
+    if (candidateLocation) setLocationInput(candidateLocation);
+  }, [activeVenture, flowForm]);
 
-  const toggleDim = (key) => {
-    setDims((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
+  // Load cached evaluation on venture switch
+  useEffect(() => {
+    const ventureKey = activeVentureId || activeVenture?.id || "draft";
+    const cacheKey = `alimeriq_validation_eval_${ventureKey}`;
     try {
-      const res = await updateValidationApi(dims);
-      setLastSaved(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      showToast("Checklist saved successfully!", "success");
+      const stored = localStorage.getItem(cacheKey);
+      if (stored) {
+        setEvaluation(JSON.parse(stored));
+      } else {
+        setEvaluation(null);
+      }
+    } catch {
+      // ignore
+    }
+  }, [activeVentureId, activeVenture?.id]);
+
+  // Execute AI Idea Validation
+  const handleRunValidation = async (e, forceRefresh = false) => {
+    if (e) e.preventDefault();
+    const effectiveIdea = ideaInput.trim() || activeVenture?.idea || flowForm.idea;
+    if (!effectiveIdea) {
+      showToast("Please provide or select an idea to evaluate.", "error");
+      return;
+    }
+
+    setEvaluating(true);
+    try {
+      const extraParams = {
+        refresh: forceRefresh,
+        summary: activeVenture?.summary || flowAnalysis?.summary || "",
+        market: activeVenture?.market || flowAnalysis?.market || "",
+        risks: activeVenture?.risks || flowAnalysis?.risks || [],
+        mvp: activeVenture?.mvp || flowAnalysis?.mvp || [],
+        problem: problemInput || activeVenture?.problem || flowForm.problem || "",
+        solution: solutionInput || activeVenture?.solution || flowForm.solution || "",
+      };
+
+      const payload = {
+        tool_key: "idea_validation",
+        idea: effectiveIdea,
+        problem: problemInput || activeVenture?.problem || flowForm.problem || "",
+        solution: solutionInput || activeVenture?.solution || flowForm.solution || "",
+        customer: customerInput || activeVenture?.customer || flowForm.customer || "General Market",
+        location: locationInput || activeVenture?.location || flowForm.location || "Global Market",
+        venture_id: activeVentureId || activeVenture?.id,
+        extra_params: extraParams,
+      };
+
+      const res = await executeAiToolApi(payload);
+      if (res?.result) {
+        setEvaluation(res.result);
+        const ventureKey = activeVentureId || activeVenture?.id || "draft";
+        try {
+          localStorage.setItem(`alimeriq_validation_eval_${ventureKey}`, JSON.stringify(res.result));
+        } catch {
+          // ignore
+        }
+        showToast("Idea validation completed successfully.", "success");
+      } else {
+        throw new Error("Unable to parse validation results");
+      }
     } catch (err) {
-      showToast(err.message || "Failed to save checklist", "error");
+      showToast(err.message || "Validation failed. Please try again.", "error");
     } finally {
-      setSaving(false);
+      setEvaluating(false);
     }
   };
 
-  let readinessLevel = {
-    label: "Getting Started",
-    color: "text-amber-400",
-    bg: "bg-amber-400/10 border-amber-400/20",
-    summary: "Talk to real people to make sure they actually want this before writing code.",
+  // Copy full evaluation
+  const handleCopyReport = () => {
+    if (!evaluation) return;
+    const effectiveIdea = ideaInput || activeVenture?.idea || "Startup Idea";
+    let text = `# AI Idea Validation Report: ${effectiveIdea}\n`;
+    text += `Overall Score: ${evaluation.overall_score || 0}/100 (${evaluation.overall_rating || "Evaluated"})\n\n`;
+    text += `## Executive Verdict\n${evaluation.executive_summary || ""}\n\n`;
+
+    if (evaluation.rubric) {
+      Object.entries(evaluation.rubric).forEach(([key, sec]) => {
+        const title = key.replace(/_/g, " ").toUpperCase();
+        text += `### ${title} — Rating: ${sec.rating}\n`;
+        text += `${sec.assessment || ""}\n\n`;
+      });
+    }
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    showToast("Report copied to clipboard.", "success");
+    setTimeout(() => setCopied(false), 2500);
   };
 
-  if (currentScore >= 7) {
-    readinessLevel = {
-      label: "Ready to Build!",
-      color: "text-[#52b788]",
-      bg: "bg-[#52b788]/15 border-[#52b788]/30",
-      summary: "Awesome job. You have checked the major boxes and are ready to start building.",
-    };
-  } else if (currentScore >= 4) {
-    readinessLevel = {
-      label: "Looking Good!",
-      color: "text-[#C9A15A]",
-      bg: "bg-[#C9A15A]/15 border-[#C9A15A]/30",
-      summary: "Good momentum. Solidify pricing and check competitors as you move forward.",
-    };
-  }
+  const rubricList = useMemo(() => {
+    if (!evaluation?.rubric) return [];
+    const entries = [
+      { key: "problem_and_solution", title: "Problem & Solution", data: evaluation.rubric.problem_and_solution },
+      { key: "market_size", title: "Market Size (TAM, SAM, SOM)", data: evaluation.rubric.market_size },
+      { key: "demand", title: "Demand & User Pull", data: evaluation.rubric.demand },
+      { key: "competition", title: "Competition & Defensibility", data: evaluation.rubric.competition },
+      { key: "feasibility", title: "Feasibilities (Tech, Regulatory & Resource)", data: evaluation.rubric.feasibility },
+      { key: "business_model", title: "Business Model & Monetization", data: evaluation.rubric.business_model },
+    ].filter((item) => Boolean(item.data));
+
+    if (activeFilter === "all") return entries;
+    return entries.filter((item) => (item.data.rating || "").toLowerCase() === activeFilter.toLowerCase());
+  }, [evaluation, activeFilter]);
+
+  const ratingCounts = useMemo(() => {
+    if (!evaluation?.rubric) return { strong: 0, vague: 0, weak: 0 };
+    let strong = 0;
+    let vague = 0;
+    let weak = 0;
+    Object.values(evaluation.rubric).forEach((sec) => {
+      const r = (sec?.rating || "").toLowerCase();
+      if (r === "strong") strong++;
+      else if (r === "vague") vague++;
+      else if (r === "weak") weak++;
+    });
+    return { strong, vague, weak };
+  }, [evaluation]);
 
   return (
     <FounderFlowGuard>
-      <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-4xl px-4 pb-20 pt-6 sm:px-6">
         <FounderStudioNav
-          title="Idea Checklist"
-          subtitle="Check 9 key steps to see if your idea is ready to build and launch."
+          title="Idea Validation"
+          subtitle="Comprehensive evaluation across problem/solution, TAM/SAM/SOM, demand, competition, feasibility, and business model."
           action={
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
-            >
-              {saving && <Loader2 size={14} className="animate-spin" />}
-              <span>{saving ? "Saving..." : "Save Checklist"}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {evaluation && (
+                <button
+                  type="button"
+                  onClick={handleCopyReport}
+                  className="rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+                  title="Copy full evaluation report"
+                >
+                  {copied ? "Copied" : "Copy Report"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={(e) => handleRunValidation(e, Boolean(evaluation))}
+                disabled={evaluating}
+                className="alq-submit sm:px-5"
+              >
+                {evaluating ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Evaluating…</span>
+                  </>
+                ) : (
+                  <span>{evaluation ? "Re-evaluate" : "Run Validation"}</span>
+                )}
+              </button>
+            </div>
           }
         />
 
-        {/* Active Idea Context Banner */}
-        {activeVenture?.idea && (
-          <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-[#C9A15A]/30 bg-[#C9A15A]/10 px-4 py-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="flex h-2 w-2 shrink-0 rounded-full bg-[#C9A15A] shadow-[0_0_8px_rgba(201,161,90,0.8)]" />
-              <div className="min-w-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8D6A8]">
-                  Checking Readiness For:
+        {/* ── Active Idea Header & Switcher (No card boxing) ── */}
+        <div className="mb-8 border-b border-white/10 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1.5 text-xs text-white/45">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-white/40">
+                  Target Idea
                 </span>
-                <p className="font-semibold text-white truncate text-xs sm:text-sm">
-                  {activeVenture.idea}
-                </p>
+                {customerInput && <span>· {customerInput}</span>}
+                {locationInput && <span className="capitalize">· {locationInput}</span>}
+              </div>
+              <h2 className="font-display text-lg sm:text-xl font-semibold text-white truncate">
+                {ideaInput || activeVenture?.idea || "No idea selected yet"}
+              </h2>
+            </div>
+
+            {/* Inline Dropdown Switcher + Input Toggle */}
+            <div className="flex items-center gap-3 shrink-0 pt-2 sm:pt-0">
+              <ActiveIdeaDropdown variant="switcher" />
+              <span className="text-white/20">|</span>
+              <button
+                type="button"
+                onClick={() => setShowInputDrawer((prev) => !prev)}
+                className="text-xs text-white/50 hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1"
+              >
+                <span>{showInputDrawer ? "Hide Inputs" : "Edit Inputs"}</span>
+                {showInputDrawer ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Spacious Input Editor Drawer */}
+          {showInputDrawer && (
+            <div className="mt-5 pt-5 border-t border-white/10 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-white/75 block mb-1.5">
+                  Startup Idea / Headline *
+                </label>
+                <input
+                  type="text"
+                  value={ideaInput}
+                  onChange={(e) => setIdeaInput(e.target.value)}
+                  placeholder="e.g. B2B inventory reconciliation platform for mid-market logistics"
+                  className="alq-input w-full text-sm py-3 px-4"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-white/75 block mb-1.5">
+                  Problem Statement
+                </label>
+                <textarea
+                  rows={3}
+                  value={problemInput}
+                  onChange={(e) => setProblemInput(e.target.value)}
+                  placeholder="What is the acute pain, friction, or cost experienced by users?"
+                  className="alq-input w-full min-h-28 text-sm py-3 px-4 resize-y leading-relaxed"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-white/75 block mb-1.5">
+                  Proposed Solution
+                </label>
+                <textarea
+                  rows={3}
+                  value={solutionInput}
+                  onChange={(e) => setSolutionInput(e.target.value)}
+                  placeholder="How does your product directly and uniquely solve this problem?"
+                  className="alq-input w-full min-h-28 text-sm py-3 px-4 resize-y leading-relaxed"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-white/75 block mb-1.5">
+                    Target Customer
+                  </label>
+                  <input
+                    type="text"
+                    value={customerInput}
+                    onChange={(e) => setCustomerInput(e.target.value)}
+                    placeholder="e.g. Warehouse managers & 3PL operators"
+                    className="alq-input w-full text-sm py-2.5 px-4"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-white/75 block mb-1.5">
+                    Market Location / Geography
+                  </label>
+                  <input
+                    type="text"
+                    value={locationInput}
+                    onChange={(e) => setLocationInput(e.target.value)}
+                    placeholder="e.g. North America / Kenya / Global"
+                    className="alq-input w-full text-sm py-2.5 px-4"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowInputDrawer(false)}
+                  className="px-4 py-2 text-xs font-medium text-white/50 hover:text-white transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleRunValidation(e, true)}
+                  disabled={evaluating}
+                  className="alq-submit text-xs sm:text-sm px-6 py-2.5"
+                >
+                  {evaluating ? "Evaluating..." : "Save & Evaluate"}
+                </button>
               </div>
             </div>
-            <Link
-              to="/founder/ventures"
-              className="shrink-0 text-[11px] font-semibold text-[#E8D6A8] hover:text-white underline underline-offset-2"
-            >
-              Switch idea
-            </Link>
+          )}
+        </div>
+
+        {/* ── Loading State ── */}
+        {evaluating && (
+          <div className="py-16 text-center">
+            <Loader2 size={24} className="animate-spin mx-auto text-[#c9a15a]" />
+            <p className="mt-4 text-sm font-semibold text-white">
+              Evaluating Validation Rubric…
+            </p>
+            <p className="mt-1 text-xs text-white/50 max-w-sm mx-auto">
+              Analyzing problem-solution fit, TAM/SAM/SOM sizing, market competitors, feasibility, and unit economics.
+            </p>
           </div>
         )}
 
-        {/* Clean Progress Strip */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-5 py-3.5">
-          <div className="flex items-center gap-3">
-            <span className="font-display text-xl font-bold text-white">
-              {currentScore}<span className="text-xs font-semibold text-white/40">/9</span>
-            </span>
-            <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${readinessLevel.bg} ${readinessLevel.color}`}>
-              {readinessLevel.label}
-            </span>
-            <span className="hidden text-xs text-white/50 sm:inline">
-              {readinessLevel.summary}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-28 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full bg-gradient-to-r from-[#C9A15A] to-[#52b788] transition-all duration-300"
-                style={{ width: `${(currentScore / 9) * 100}%` }}
-              />
-            </div>
-            {lastSaved && (
-              <span className="text-[11px] text-white/40">Saved {lastSaved}</span>
-            )}
-          </div>
-        </div>
-
-        {/* 9 Dimensions Unified Diagnostic Table */}
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
-          {DIMENSIONS.map((dim) => {
-            const isChecked = Boolean(dims[dim.key]);
-            return (
-              <div
-                key={dim.key}
-                onClick={() => toggleDim(dim.key)}
-                className={`group p-4 sm:p-5 flex items-start gap-4 transition-colors cursor-pointer hover:bg-white/[0.02] ${
-                  isChecked ? "bg-emerald-500/[0.02]" : ""
-                }`}
+        {/* ── Empty State ── */}
+        {!evaluating && !evaluation && (
+          <div className="py-16 text-center border border-dashed border-white/10 rounded-2xl p-8">
+            <h3 className="font-display text-lg font-semibold text-white">
+              No validation report yet
+            </h3>
+            <p className="mt-2 text-xs sm:text-sm text-white/55 max-w-md mx-auto leading-relaxed">
+              Run the AI validation rubric to evaluate this idea against venture standards. Each section is rated Strong, Vague, or Weak with specific evidence.
+            </p>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={handleRunValidation}
+                className="alq-submit sm:px-6"
               >
-                <button
-                  type="button"
-                  aria-label={`Toggle ${dim.title}`}
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
-                    isChecked
-                      ? "border-emerald-500 bg-emerald-500 text-white"
-                      : "border-white/20 bg-white/5 text-transparent group-hover:border-white/40"
-                  }`}
-                >
-                  <CheckCircle2 size={14} strokeWidth={2.5} />
-                </button>
+                Run Validation
+              </button>
+            </div>
+          </div>
+        )}
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h4
-                      className={`text-sm font-semibold transition-colors ${
-                        isChecked ? "text-white" : "text-white/80 group-hover:text-white"
-                      }`}
-                    >
-                      {dim.title}
-                    </h4>
-                    <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white/40">
-                      {dim.category}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-white/50 leading-relaxed">
-                    {dim.subtitle}
-                  </p>
-                  <p className="mt-2 text-[11px] leading-snug text-[#f2ca50]/80">
-                    <span className="font-semibold text-[#f2ca50]">Guidance:</span> {dim.tip}
-                  </p>
+        {/* ── Evaluated Report (Clean Editorial Layout) ── */}
+        {!evaluating && evaluation && (
+          <div className="space-y-10">
+            {/* Executive Diagnosis Section */}
+            <section className="pb-8 border-b border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-4">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-4xl sm:text-5xl font-bold text-white tracking-tight">
+                    {evaluation.overall_score || 0}
+                  </span>
+                  <span className="text-xs font-medium text-white/40 uppercase tracking-wider">
+                    / 100 Score
+                  </span>
+                  <MetricBadge rating={evaluation.overall_rating} />
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter(activeFilter === "strong" ? "all" : "strong")}
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                      activeFilter === "strong"
+                        ? "bg-emerald-500/20 text-emerald-300 font-medium"
+                        : "text-emerald-400/80 hover:bg-emerald-500/10"
+                    }`}
+                  >
+                    {ratingCounts.strong} Strong
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter(activeFilter === "vague" ? "all" : "vague")}
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                      activeFilter === "vague"
+                        ? "bg-amber-500/20 text-amber-300 font-medium"
+                        : "text-amber-400/80 hover:bg-amber-500/10"
+                    }`}
+                  >
+                    {ratingCounts.vague} Vague
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter(activeFilter === "weak" ? "all" : "weak")}
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                      activeFilter === "weak"
+                        ? "bg-rose-500/20 text-rose-300 font-medium"
+                        : "text-rose-400/80 hover:bg-rose-500/10"
+                    }`}
+                  >
+                    {ratingCounts.weak} Weak
+                  </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              {evaluation.executive_summary && (
+                <p className="text-sm leading-relaxed text-white/80 max-w-3xl">
+                  {evaluation.executive_summary}
+                </p>
+              )}
+
+              {/* Strengths & Red Flags 2-column text list */}
+              <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                {evaluation.top_strengths?.length > 0 && (
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-emerald-400/90 mb-2">
+                      Key Strengths
+                    </h4>
+                    <ul className="space-y-1.5 text-white/75">
+                      {evaluation.top_strengths.map((str, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-emerald-400/70 font-semibold">•</span>
+                          <span className="leading-relaxed">{str}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {evaluation.critical_red_flags?.length > 0 && (
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-rose-400/90 mb-2">
+                      Critical Blindspots & Risks
+                    </h4>
+                    <ul className="space-y-1.5 text-white/75">
+                      {evaluation.critical_red_flags.map((flag, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-rose-400/70 font-semibold">•</span>
+                          <span className="leading-relaxed">{flag}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Immediate Action Plan */}
+              {evaluation.immediate_action_plan?.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-white/5 text-xs">
+                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-3">
+                    Immediate Action Plan
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-white/80">
+                    {evaluation.immediate_action_plan.map((step, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="font-mono text-white/40 shrink-0">
+                          {idx + 1}.
+                        </span>
+                        <span className="leading-relaxed">{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* ── 6 Rubric Sections (Separated by subtle lines, not boxed cards) ── */}
+            <div className="space-y-12">
+              {rubricList.map(({ key, title, data }, sectionIndex) => (
+                <section key={key} className="border-b border-white/10 pb-10">
+                  <div className="flex items-center justify-between gap-4 mb-4">
+                    <h3 className="font-display text-base sm:text-lg font-semibold text-white">
+                      {sectionIndex + 1}. {title}
+                    </h3>
+                    <MetricBadge rating={data.rating} />
+                  </div>
+
+                  {data.assessment && (
+                    <p className="text-xs sm:text-sm leading-relaxed text-white/80 mb-5">
+                      {data.assessment}
+                    </p>
+                  )}
+
+                  {/* 1. Problem & Solution Specifics */}
+                  {key === "problem_and_solution" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mb-4">
+                      {data.problem_clarity && (
+                        <div>
+                          <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1">
+                            Problem Urgency
+                          </span>
+                          <p className="text-white/75 leading-relaxed">{data.problem_clarity}</p>
+                        </div>
+                      )}
+                      {data.solution_fit && (
+                        <div>
+                          <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1">
+                            Solution Fit
+                          </span>
+                          <p className="text-white/75 leading-relaxed">{data.solution_fit}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 2. Market Sizing (Clean Minimalist 3-column metric strip) */}
+                  {key === "market_size" && (
+                    <div className="space-y-4 mb-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-1 pb-3">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block">
+                            TAM (Total Addressable)
+                          </span>
+                          <div className="font-display text-xl sm:text-2xl font-bold text-white mt-1 mb-1">
+                            {data.tam?.value || "N/A"}
+                          </div>
+                          <p className="text-xs text-white/60 leading-relaxed">
+                            {data.tam?.description}
+                          </p>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block">
+                            SAM (Serviceable Available)
+                          </span>
+                          <div className="font-display text-xl sm:text-2xl font-bold text-white mt-1 mb-1">
+                            {data.sam?.value || "N/A"}
+                          </div>
+                          <p className="text-xs text-white/60 leading-relaxed">
+                            {data.sam?.description}
+                          </p>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-white/40 block">
+                            SOM (Serviceable Obtainable)
+                          </span>
+                          <div className="font-display text-xl sm:text-2xl font-bold text-white mt-1 mb-1">
+                            {data.som?.value || "N/A"}
+                          </div>
+                          <p className="text-xs text-white/60 leading-relaxed">
+                            {data.som?.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {data.sizing_rationale && (
+                        <p className="text-xs text-white/65 leading-relaxed border-t border-white/5 pt-3">
+                          <strong className="text-white/80">Methodology: </strong>
+                          {data.sizing_rationale}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 3. Demand Signals & Experiments */}
+                  {key === "demand" && (
+                    <div className="space-y-4 mb-4 text-xs">
+                      <div className="flex flex-wrap items-center gap-4 text-white/70">
+                        {data.urgency_level && (
+                          <div>
+                            <span className="text-white/40">Need Urgency: </span>
+                            <span className="font-medium text-white">{data.urgency_level}</span>
+                          </div>
+                        )}
+                        {data.willingness_to_pay && (
+                          <div>
+                            <span className="text-white/40">Willingness to Pay: </span>
+                            <span className="font-medium text-white">{data.willingness_to_pay}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {data.demand_signals && (
+                        <p className="text-white/75 leading-relaxed">
+                          {data.demand_signals}
+                        </p>
+                      )}
+
+                      {data.validation_experiments?.length > 0 && (
+                        <div className="pt-2">
+                          <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-2">
+                            Validation Experiments to Run Before Coding
+                          </span>
+                          <ol className="space-y-1.5 text-white/75">
+                            {data.validation_experiments.map((exp, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span className="font-mono text-white/40 shrink-0">{idx + 1}.</span>
+                                <span className="leading-relaxed">{exp}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 4. Competition & Defensibility */}
+                  {key === "competition" && (
+                    <div className="space-y-4 mb-4 text-xs">
+                      {data.landscape_summary && (
+                        <p className="text-white/75 leading-relaxed">
+                          {data.landscape_summary}
+                        </p>
+                      )}
+
+                      {data.identified_competitors?.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                          <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block">
+                            Identified Competitors
+                          </span>
+                          <div className="divide-y divide-white/5 border-t border-b border-white/5">
+                            {data.identified_competitors.map((comp, idx) => (
+                              <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                                <div className="min-w-0 sm:w-1/3">
+                                  <span className="font-semibold text-white">{comp.name}</span>
+                                  <span className="text-[10px] text-white/40 ml-2">({comp.type || "Direct"})</span>
+                                </div>
+                                <div className="sm:w-2/3 text-white/65 space-y-0.5 text-[11px]">
+                                  {comp.strengths && <div><span className="text-white/40">Advantage:</span> {comp.strengths}</div>}
+                                  {comp.differentiation_angle && (
+                                    <div className="text-white/80"><span className="text-white/40">How We Win:</span> {comp.differentiation_angle}</div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {data.moat_assessment && (
+                        <p className="text-white/75 leading-relaxed pt-1">
+                          <strong className="text-white/90">Defensibility Moats: </strong>
+                          {data.moat_assessment}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 5. Feasibilities */}
+                  {key === "feasibility" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-4 text-xs">
+                      {data.technical && (
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-semibold text-white">Technical</span>
+                            <MetricBadge rating={data.technical.rating} />
+                          </div>
+                          <p className="text-white/65 leading-relaxed text-[11px]">
+                            {data.technical.assessment}
+                          </p>
+                        </div>
+                      )}
+
+                      {data.operational_regulatory && (
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-semibold text-white">Regulatory & Ops</span>
+                            <MetricBadge rating={data.operational_regulatory.rating} />
+                          </div>
+                          <p className="text-white/65 leading-relaxed text-[11px]">
+                            {data.operational_regulatory.assessment}
+                          </p>
+                        </div>
+                      )}
+
+                      {data.economic && (
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-semibold text-white">Economic & Runway</span>
+                            <MetricBadge rating={data.economic.rating} />
+                          </div>
+                          <p className="text-white/65 leading-relaxed text-[11px]">
+                            {data.economic.assessment}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 6. Business Model */}
+                  {key === "business_model" && (
+                    <div className="space-y-4 mb-4 text-xs">
+                      {data.revenue_streams?.length > 0 && (
+                        <div>
+                          <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-2">
+                            Revenue Streams
+                          </span>
+                          <div className="space-y-1.5">
+                            {data.revenue_streams.map((rev, idx) => (
+                              <div key={idx} className="flex flex-col sm:flex-row sm:items-baseline gap-1 text-white/75">
+                                <span className="font-medium text-white">{rev.stream}:</span>
+                                <span>{rev.pricing_model || rev.rationale}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {data.pricing_strategy && (
+                        <p className="text-white/75 leading-relaxed">
+                          <strong className="text-white/90">Pricing Logic: </strong>
+                          {data.pricing_strategy}
+                        </p>
+                      )}
+
+                      {data.unit_economics && (
+                        <div className="flex flex-wrap items-center gap-6 text-white/70 pt-2 border-t border-white/5">
+                          {data.unit_economics.cac_outlook && (
+                            <div>
+                              <span className="text-white/40 text-[10px] block uppercase">Est. CAC</span>
+                              <span className="font-medium text-white">{data.unit_economics.cac_outlook}</span>
+                            </div>
+                          )}
+                          {data.unit_economics.ltv_outlook && (
+                            <div>
+                              <span className="text-white/40 text-[10px] block uppercase">Est. LTV</span>
+                              <span className="font-medium text-white">{data.unit_economics.ltv_outlook}</span>
+                            </div>
+                          )}
+                          {data.unit_economics.margin_potential && (
+                            <div>
+                              <span className="text-white/40 text-[10px] block uppercase">Gross Margin</span>
+                              <span className="font-medium text-white">{data.unit_economics.margin_potential}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Recommendations */}
+                  {data.recommendations?.length > 0 && (
+                    <div className="pt-2 text-xs text-white/70">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40 block mb-1.5">
+                        Recommendations
+                      </span>
+                      <ul className="space-y-1">
+                        {data.recommendations.map((rec, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-white/30">•</span>
+                            <span>{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </FounderFlowGuard>
   );

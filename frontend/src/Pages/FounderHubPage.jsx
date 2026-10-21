@@ -53,11 +53,11 @@ export default function FounderHubPage() {
       icon: Lightbulb,
     },
     {
-      title: "Idea Checklist",
-      desc: "Check 9 key things: do people actually want this, will they pay, and can you build it?",
+      title: "Idea Validation",
+      desc: "Comprehensive rubric evaluation: problem/solution fit, TAM/SAM/SOM, demand, competition, feasibility & business model.",
       link: "/founder/validation",
-      badge: `${validationScore}/9 points`,
-      badgeColor: validationScore >= 6 ? "text-[#C9A15A] bg-[#C9A15A]/15 border-[#C9A15A]/30" : "text-white/60 bg-white/5 border-white/10",
+      badge: "AI Evaluated",
+      badgeColor: "text-[#C9A15A] bg-[#C9A15A]/15 border-[#C9A15A]/30",
       icon: CheckCircle2,
     },
     {

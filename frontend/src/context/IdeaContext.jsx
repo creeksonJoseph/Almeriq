@@ -2,7 +2,7 @@
  * context/IdeaContext.jsx - Global active startup idea / venture state.
  *
  * Provides a unified source of truth for the currently active idea across
- * Founder Studio tools (Idea Checklist, Startup Tools, Product & Tech, Legal, Outreach, Analysis).
+ * Founder Studio tools (Idea Validation, Startup Tools, Product & Tech, Legal, Outreach, Analysis).
  */
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { listVenturesApi } from "../lib/api";
