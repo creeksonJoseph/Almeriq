@@ -368,17 +368,8 @@ export default function FounderValidationPage() {
               No validation report yet
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-white/55 max-w-md mx-auto leading-relaxed">
-              Run the AI validation rubric to evaluate this idea against venture standards. Each section is rated Strong, Vague, or Weak with specific evidence.
+              Use &ldquo;Run Validation&rdquo; at the top to evaluate this idea against venture standards across problem/solution fit, TAM/SAM/SOM, demand, competition, and unit economics.
             </p>
-            <div className="mt-6">
-              <button
-                type="button"
-                onClick={handleRunValidation}
-                className="alq-submit sm:px-6"
-              >
-                Run Validation
-              </button>
-            </div>
           </div>
         )}
 
