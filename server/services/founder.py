@@ -1,51 +1,23 @@
-"""services/founder.py - Founder analysis orchestration and Gemini integration."""
+"""services/founder.py - Founder analysis service orchestrating AI and persistence."""
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
-import time
-import urllib.error
-import urllib.request
+from typing import Any
 
-from core.config import GEMINI_API_KEY, GEMINI_MODEL
+from core.gemini import clean_gemini_error, request_gemini_json
 from schemas.founder import FounderAnalysisRequest, FounderAnalysisResponse
+from services.founder_prompts import (
+    VOICE_AND_STYLE_GUIDELINES,
+    get_intake_analysis_prompt,
+    get_tool_prompt,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def clean_gemini_error(error_message: str) -> str:
-    """Convert technical Gemini errors to user-friendly messages."""
-    error_lower = error_message.lower()
-    
-    if "429" in error_message or "quota" in error_lower or "rate" in error_lower:
-        return "Service is busy. Please try again in 30 seconds."
-    if "timeout" in error_lower or "timed out" in error_lower:
-        return "Analysis took too long. Please try again."
-    if "json" in error_lower or "parse" in error_lower:
-        return "Unable to parse analysis. Please try again."
-    if "connection" in error_lower or "refused" in error_lower:
-        return "Connection failed. Please check your internet and try again."
-    if "invalid" in error_lower or "malformed" in error_lower:
-        return "Invalid response from AI. Please try again."
-    if "400" in error_message:
-        return "Invalid request format. Please try again."
-    if "401" in error_message or "403" in error_message:
-        return "Authentication error. Please contact support."
-    if "500" in error_message or "502" in error_message or "503" in error_message:
-        return "AI service error. Please try again later."
-    
-    return "Unable to complete analysis. Please try again."
-
-
-def _parse_model_response(text: str) -> FounderAnalysisResponse:
-    """Parse and validate Gemini JSON response."""
-    cleaned = text.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-    
-    data = json.loads(cleaned)
-    
+def _parse_model_response(data: dict) -> FounderAnalysisResponse:
+    """Parse and validate Gemini JSON response into FounderAnalysisResponse."""
     return FounderAnalysisResponse(
         source="gemini",
         summary=str(data.get("summary", "")),
@@ -57,471 +29,48 @@ def _parse_model_response(text: str) -> FounderAnalysisResponse:
     )
 
 
-def _get_candidate_models() -> list[str]:
-    """Return ordered list of models to try, prioritizing configured model and falling back to fast alternatives."""
-    models = [GEMINI_MODEL] if GEMINI_MODEL else []
-    for fallback in ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-flash-latest"]:
-        if fallback not in models:
-            models.append(fallback)
-    return models
-
-
-VOICE_AND_STYLE_GUIDELINES = (
-    "LANGUAGE AND VOCABULARY RULES:\n"
-    "- Use simple, clear, everyday English. Speak like a practical, experienced advisor directly to a founder.\n"
-    "- STRICTLY AVOID pretentious, academic, or overly complex vocabulary (e.g. NEVER use words like 'ubiquitous', 'endemic', 'synergistic', 'nascent', 'paradigm', 'plethora', 'concomitant', 'behemoth', etc.).\n"
-    "- Use plain, natural words instead (e.g., write 'widely used' or 'everywhere' instead of 'ubiquitous'; 'deep-rooted problem' or 'widespread issue' instead of 'endemic friction'; 'hard to charge users' instead of 'monetization resistance').\n"
-    "- ONLY use specialized vocabulary when it is standard, practical business terminology that is directly relevant to this specific context (e.g., 'low margin', 'cash flow', 'working capital', 'customer acquisition cost', 'M-Pesa reconciliation', 'churn rate', 'gross margin').\n"
-    "- Avoid robotic AI hype clichés like 'brilliantly targets', 'revolutionary', 'game-changing', 'testament to'. Be objective, grounded, and helpful.\n"
-)
-
-
-def _request_gemini(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
-    """Request analysis from Gemini API with automatic fallback if a model is unavailable or times out."""
-    start_time = time.time()
-    logger.info(
-        "Starting Gemini analysis request",
-        extra={
-            "idea_length": len(payload.idea),
-            "problem_length": len(payload.problem),
-            "solution_length": len(payload.solution),
-            "customer": payload.customer,
-            "location": payload.location,
-        }
-    )
-    
-    prompt = f"""Analyze this startup idea and return JSON.
-{VOICE_AND_STYLE_GUIDELINES}
-Keys: summary, market, risks (array), mvp (array), roadmap (array), next_steps (array).
-
-Idea: {payload.idea}
-Problem: {payload.problem}
-Solution: {payload.solution}
-Customer: {payload.customer}
-Location: {payload.location}"""
-
-    body = json.dumps(
-        {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"responseMimeType": "application/json"},
-        }
-    ).encode("utf-8")
-
-    models = _get_candidate_models()
-    last_exception = None
-
-    for idx, model_name in enumerate(models):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
-        logger.debug(f"Attempting Gemini request with {model_name}: {url}")
-        
-        request = urllib.request.Request(
-            url,
-            data=body,
-            headers={
-                "Content-Type": "application/json",
-                "X-goog-api-key": GEMINI_API_KEY,
-            },
-            method="POST",
-        )
-        
-        try:
-            with urllib.request.urlopen(request, timeout=20) as response:
-                result = json.loads(response.read().decode("utf-8"))
-            
-            elapsed = time.time() - start_time
-            logger.info(
-                f"Gemini analysis completed successfully using {model_name}",
-                extra={"elapsed_seconds": round(elapsed, 2), "model": model_name}
-            )
-            
-            text = result["candidates"][0]["content"]["parts"][0]["text"]
-            return _parse_model_response(text)
-        
-        except urllib.error.HTTPError as e:
-            elapsed = time.time() - start_time
-            logger.warning(
-                f"Gemini HTTP error with {model_name}: {e.code} {e.reason}",
-                extra={
-                    "model": model_name,
-                    "status_code": e.code,
-                    "reason": e.reason,
-                    "elapsed_seconds": round(elapsed, 2),
-                }
-            )
-            last_exception = e
-            # Retry on 503 (high demand), 429 (rate/quota), 500, 502, 504 if another model is available
-            if e.code in (503, 429, 500, 502, 504) and idx < len(models) - 1:
-                logger.info(f"Retrying analysis with fallback model: {models[idx + 1]}")
-                continue
-            error_msg = f"HTTP {e.code}: {e.reason}"
-            raise ValueError(clean_gemini_error(error_msg)) from e
-        
-        except (urllib.error.URLError, TimeoutError, Exception) as e:
-            elapsed = time.time() - start_time
-            logger.warning(
-                f"Gemini request failed with {model_name}: {str(e)}",
-                extra={"model": model_name, "elapsed_seconds": round(elapsed, 2)}
-            )
-            last_exception = e
-            if idx < len(models) - 1:
-                logger.info(f"Retrying analysis with fallback model: {models[idx + 1]}")
-                continue
-            raise ValueError(clean_gemini_error(str(e))) from e
-
-    raise ValueError(clean_gemini_error(str(last_exception) if last_exception else "Service unavailable"))
-
-
 async def analyze_founder_idea(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
-    """Analyze founder idea using Gemini AI. No fallback - errors are raised."""
+    """Analyze founder idea using Gemini AI."""
     logger.info("analyze_founder_idea called")
-    
-    if not GEMINI_API_KEY:
-        logger.error("GEMINI_API_KEY not configured")
-        raise ValueError("AI service not configured. Please contact support.")
-    
+    prompt = get_intake_analysis_prompt(payload)
+
     try:
-        return await asyncio.to_thread(_request_gemini, payload)
+        data = await asyncio.to_thread(
+            request_gemini_json,
+            prompt,
+            timeout=25,
+            context_tag="intake_analysis",
+        )
+        return _parse_model_response(data)
     except ValueError as e:
-        logger.warning(f"Cleaned error returned to user: {str(e)}")
-        raise  # Re-raise cleaned errors
+        logger.warning(f"Validation error in founder analysis: {str(e)}")
+        raise
     except Exception as exc:
         logger.error(
             f"Unexpected error in founder analysis: {str(exc)}",
             extra={"error_type": type(exc).__name__},
-            exc_info=True
+            exc_info=True,
         )
         raise ValueError(clean_gemini_error(str(exc))) from exc
 
 
-# ── Individual AI Tools ────────────────────────────────────────────────────────
-
-def _get_tool_prompt(tool_key: str, payload) -> str:
-    """Generate tool-specific prompts to avoid HTTP 400 errors."""
-    idea = payload.idea
-    customer = payload.customer or "target customers"
-    location = payload.location or "global market"
-    problem = payload.problem or ""
-    solution = payload.solution or ""
-
-    if tool_key == "lean_canvas":
-        return f"Create a Lean Canvas for: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}. Return JSON with: problem, customer_segments, unique_value_prop, solution, channels, revenue_streams, cost_structure, key_metrics, unfair_advantage."
-
-    if tool_key == "swot":
-        return f"SWOT analysis for {idea} targeting {customer} in {location}. Return JSON with: strengths, weaknesses, opportunities, threats (each as array of 3 strings)."
-
-    if tool_key == "pitch_deck":
-        return f"Create 10-slide pitch deck outline for {idea}. Customer: {customer}. Return JSON with slides array (slide_number, title, bullets, speaker_notes)."
-
-    if tool_key == "financial_model":
-        return f"Financial model for {idea} with {customer} in {location}. Return JSON with: currency, assumptions, revenue_drivers, cost_drivers, projections_summary, break_even_units, unit_economics."
-
-    if tool_key == "risk_matrix":
-        return f"Risk matrix for {idea}. Return JSON with risks array (category, risk, likelihood, impact, mitigation)."
-
-    if tool_key == "user_personas":
-        return f"User personas for {idea} targeting {customer}. Return JSON with personas array (name, role, quote, goals, pain_points)."
-
-    if tool_key == "user_journey":
-        return f"User journey for {idea}. Return JSON with steps array (stage, user_action, emotion, touchpoint, opportunity)."
-
-    if tool_key == "tech_stack":
-        return f"Tech stack for {idea}. Return JSON with: frontend, backend, database, infrastructure, third_party_services, rationale."
-
-    if tool_key == "sprint_backlog":
-        return f"MVP sprint backlog for {idea}. Return JSON with mvp_epics array (epic, user_stories, priority, estimate)."
-
-    if tool_key == "investor_update":
-        return f"Monthly investor update for {idea}. Return JSON with: subject, highlights, lowlights, kpis, asks, full_email."
-
-    if tool_key == "job_post":
-        return f"Job posting for {idea}. Return JSON with: title, role_summary, responsibilities, requirements, why_join_us."
-
-    if tool_key == "market_analysis":
-        return (
-            f"You are a senior market research analyst. Produce a comprehensive market analysis for this startup.\n"
-            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
-            f"{VOICE_AND_STYLE_GUIDELINES}\n"
-            f"Return JSON with these keys:\n"
-            f"  market_overview (string, 2-3 sentences on the market landscape),\n"
-            f"  market_size (object: tam string, sam string, som string, each with a numeric estimate and explanation),\n"
-            f"  target_segments (array of objects: segment string, size_estimate string, pain_level string 1-10, willingness_to_pay string),\n"
-            f"  competitive_landscape (array of objects: competitor string, strengths array, weaknesses array, market_share_estimate string),\n"
-            f"  market_trends (array of 4-6 strings describing current and emerging trends),\n"
-            f"  entry_barriers (array of 3-5 strings),\n"
-            f"  go_to_market_channels (array of objects: channel string, rationale string, estimated_cost_to_acquire string),\n"
-            f"  differentiation_opportunity (string, 2-3 sentences),\n"
-            f"  key_risks (array of 3-5 strings),\n"
-            f"  verdict (string: one of 'Strong Opportunity', 'Moderate Opportunity', 'Niche Opportunity', 'Challenging Market'),\n"
-            f"  verdict_rationale (string, 1-2 sentences)."
-        )
-
-    if tool_key == "feasibility_analysis":
-        return (
-            f"You are a startup feasibility expert. Produce a thorough feasibility analysis for this startup idea.\n"
-            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
-            f"{VOICE_AND_STYLE_GUIDELINES}\n"
-            f"Return JSON with these keys:\n"
-            f"  overall_feasibility_score (integer 1-10),\n"
-            f"  overall_feasibility_verdict (string: one of 'Highly Feasible', 'Feasible with Effort', 'Feasible with Pivots', 'Low Feasibility'),\n"
-            f"  executive_summary (string, 2-3 sentences),\n"
-            f"  dimensions (array of objects: dimension string, score integer 1-10, assessment string, risks array of strings, recommendations array of strings) — cover: Technical Feasibility, Market Feasibility, Financial Feasibility, Operational Feasibility, Legal & Regulatory Feasibility,\n"
-            f"  critical_success_factors (array of 4-6 strings),\n"
-            f"  critical_failure_risks (array of 4-6 strings),\n"
-            f"  resource_requirements (object: team array of strings, technology array of strings, capital_estimate string, timeline_to_mvp string),\n"
-            f"  recommended_next_steps (array of 4-6 strings ordered by priority),\n"
-            f"  pivot_options (array of 2-3 objects: pivot string, rationale string)."
-        )
-
-    if tool_key == "business_plan":
-        return (
-            f"You are a seasoned business strategy consultant. Write a production-grade business plan for this startup.\n"
-            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
-            f"{VOICE_AND_STYLE_GUIDELINES}\n"
-            f"Return JSON with these keys:\n"
-            f"  executive_summary (string),\n"
-            f"  problem_statement (string),\n"
-            f"  solution_description (string),\n"
-            f"  value_proposition (string, one clear sentence),\n"
-            f"  target_market (object: primary_segment string, secondary_segment string, market_size_estimate string),\n"
-            f"  business_model (object: revenue_streams array of objects with stream and description, pricing_strategy string, unit_economics object with cac_estimate and ltv_estimate),\n"
-            f"  product_service_overview (object: core_features array of strings, mvp_scope string, roadmap_phases array of objects with phase and deliverables array),\n"
-            f"  marketing_strategy (object: positioning string, channels array of strings, acquisition_strategy string, retention_strategy string),\n"
-            f"  operations_plan (object: team_structure array of strings, key_processes array of strings, technology_stack string, partnerships array of strings),\n"
-            f"  financial_projections (object: assumptions array of strings, year1_revenue_estimate string, year2_revenue_estimate string, year3_revenue_estimate string, break_even_timeline string, funding_required string),\n"
-            f"  risk_mitigation (array of objects: risk string, mitigation string),\n"
-            f"  milestones (array of objects: milestone string, target_date string, success_metric string)."
-        )
-
-    if tool_key == "execution_roadmap":
-        return (
-            f"You are a product and operations expert. Create a detailed execution roadmap for this startup.\n"
-            f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
-            f"{VOICE_AND_STYLE_GUIDELINES}\n"
-            f"Return JSON with these keys:\n"
-            f"  summary (string, 1-2 sentences),\n"
-            f"  phases (array of exactly 4 objects representing: Foundation (0-30 days), Build (30-90 days), Launch (90-180 days), Scale (180-365 days) — each object has: phase string, duration string, objective string, key_activities array of 4-6 strings, deliverables array of 3-5 strings, success_metrics array of 3-4 strings, resources_needed array of strings, risks array of strings),\n"
-            f"  critical_path (array of 5-8 strings — the must-do items in order),\n"
-            f"  team_hiring_plan (array of objects: role string, when_to_hire string, priority string one of High/Medium/Low),\n"
-            f"  budget_allocation (array of objects: category string, percentage integer, notes string) — must sum to 100,\n"
-            f"  kpis (array of objects: metric string, target string, measurement_frequency string),\n"
-            f"  quick_wins (array of 3-5 strings — things achievable in first 2 weeks)."
-        )
-
-    if tool_key in ("idea_validation", "validation_analysis"):
-        extra_ctx = ""
-        if payload.extra_params and isinstance(payload.extra_params, dict):
-            for k in ("summary", "market", "risks", "mvp", "problem", "solution"):
-                v = payload.extra_params.get(k)
-                if v:
-                    extra_ctx += f"\n- {k.title()}: {v if isinstance(v, str) else json.dumps(v)}"
-
-        return (
-            f"You are a top-tier venture evaluator and startup analyst. Perform a comprehensive, rigorous Idea Validation Rubric analysis for this startup idea.\n"
-            f"Startup Idea: {idea}\n"
-            f"Problem Statement: {problem or 'Infer and synthesize from idea'}\n"
-            f"Proposed Solution: {solution or 'Infer and synthesize from idea'}\n"
-            f"Target Customer: {customer}\n"
-            f"Target Market/Location: {location}\n"
-            f"{f'Additional Verified Context from Previous Modules:{extra_ctx}' if extra_ctx else ''}\n\n"
-            f"{VOICE_AND_STYLE_GUIDELINES}\n"
-            f"Evaluate this idea thoroughly across 6 key rubric criteria. For each criterion, assign a rating of STRICTLY one of: 'Strong', 'Vague', or 'Weak'.\n"
-            f"Criteria details:\n"
-            f"1. Problem and Solution: Problem urgency, acute user pain vs mild inconvenience, solution clarity, differentiation, problem-solution fit.\n"
-            f"2. Market Size (TAM, SAM, SOM): Total Addressable Market (TAM), Serviceable Available Market (SAM), and Serviceable Obtainable Market (SOM) with numeric/dollar estimates and sizing rationale.\n"
-            f"3. Demand & User Pull: Evidence of real user demand, frequency of need, willingness to pay, validation experiments to prove traction.\n"
-            f"4. Competition: Realistic landscape check — identify actual real-world existing companies, products, or startups in this space by name. Detail their strengths, weaknesses, and defensibility moats.\n"
-            f"5. All Feasibilities: Comprehensive breakdown covering: Technical Feasibility (can it be built with current tech?), Operational & Regulatory Feasibility (legal, compliance, logistics), and Economic Feasibility (capital, unit economics, runway to MVP).\n"
-            f"6. Business Model: Monetization streams, pricing model, unit economics viability (CAC vs LTV dynamics, gross margins).\n\n"
-            f"Return a clean JSON object with this exact structure:\n"
-            f"{{\n"
-            f'  "overall_score": 82,\n'
-            f'  "overall_rating": "Strong",\n'
-            f'  "ratings_summary": {{"strong_count": 4, "vague_count": 2, "weak_count": 0}},\n'
-            f'  "executive_summary": "Concise 3-4 sentence diagnosis summarizing core strength, primary blindspot, and potential.",\n'
-            f'  "top_strengths": ["Strength 1", "Strength 2", "Strength 3"],\n'
-            f'  "critical_red_flags": ["Red flag 1", "Red flag 2", "Red flag 3"],\n'
-            f'  "immediate_action_plan": ["Step 1", "Step 2", "Step 3", "Step 4"],\n'
-            f'  "rubric": {{\n'
-            f'    "problem_and_solution": {{\n'
-            f'      "rating": "Strong",\n'
-            f'      "assessment": "Detailed assessment of the problem-solution fit...",\n'
-            f'      "problem_clarity": "Analysis of the pain point clarity and urgency...",\n'
-            f'      "solution_fit": "Analysis of how directly the solution solves the core problem...",\n'
-            f'      "strengths": ["...", "..."],\n'
-            f'      "gaps_and_risks": ["...", "..."],\n'
-            f'      "recommendations": ["...", "..."]\n'
-            f'    }},\n'
-            f'    "market_size": {{\n'
-            f'      "rating": "Strong",\n'
-            f'      "assessment": "Detailed assessment of total and serviceable market...",\n'
-            f'      "tam": {{"value": "$12.5B", "description": "Global market definition and methodology..."}},\n'
-            f'      "sam": {{"value": "$1.4B", "description": "Serviceable addressable segment for target customers..."}},\n'
-            f'      "som": {{"value": "$85M", "description": "Realistic 18-36 month serviceable obtainable capture..."}},\n'
-            f'      "sizing_rationale": "Clear sizing methodology and assumptions...",\n'
-            f'      "strengths": ["...", "..."],\n'
-            f'      "gaps_and_risks": ["...", "..."],\n'
-            f'      "recommendations": ["...", "..."]\n'
-            f'    }},\n'
-            f'    "demand": {{\n'
-            f'      "rating": "Vague",\n'
-            f'      "assessment": "Analysis of customer pull and purchasing urgency...",\n'
-            f'      "urgency_level": "High",\n'
-            f'      "willingness_to_pay": "Medium",\n'
-            f'      "demand_signals": "Signals indicating organic adoption vs push...",\n'
-            f'      "validation_experiments": ["Experiment 1: landing page pre-order test...", "Experiment 2: customer interview protocol...", "Experiment 3: concierge MVP..."],\n'
-            f'      "strengths": ["...", "..."],\n'
-            f'      "gaps_and_risks": ["...", "..."]\n'
-            f'    }},\n'
-            f'    "competition": {{\n'
-            f'      "rating": "Strong",\n'
-            f'      "assessment": "Thorough analysis of competitive density and positioning...",\n'
-            f'      "landscape_summary": "Summary of current incumbents and substitutes...",\n'
-            f'      "identified_competitors": [\n'
-            f'        {{\n'
-            f'          "name": "Actual Real Competitor or Incumbent Name",\n'
-            f'          "type": "Direct",\n'
-            f'          "strengths": "Established market presence, existing distribution",\n'
-            f'          "weaknesses": "High price, dated interface, missing core feature",\n'
-            f'          "differentiation_angle": "How this startup beats them"\n'
-            f'        }}\n'
-            f'      ],\n'
-            f'      "moat_assessment": "Defensibility analysis (network effects, switching costs, proprietary data)...",\n'
-            f'      "strengths": ["...", "..."],\n'
-            f'      "gaps_and_risks": ["...", "..."],\n'
-            f'      "recommendations": ["...", "..."]\n'
-            f'    }},\n'
-            f'    "feasibility": {{\n'
-            f'      "rating": "Strong",\n'
-            f'      "assessment": "Overall feasibility assessment across tech, ops, and economics...",\n'
-            f'      "technical": {{"rating": "Strong", "assessment": "Tech stack requirements and architectural difficulty...", "key_challenges": ["...", "..."]}},\n'
-            f'      "operational_regulatory": {{"rating": "Strong", "assessment": "Compliance, legal framework, licensing and operations...", "key_challenges": ["...", "..."]}},\n'
-            f'      "economic": {{"rating": "Vague", "assessment": "Capital required to reach MVP, runway needs and cash burn...", "key_challenges": ["...", "..."]}},\n'
-            f'      "strengths": ["...", "..."],\n'
-            f'      "gaps_and_risks": ["...", "..."],\n'
-            f'      "recommendations": ["...", "..."]\n'
-            f'    }},\n'
-            f'    "business_model": {{\n'
-            f'      "rating": "Strong",\n'
-            f'      "assessment": "Monetization and margin sustainability assessment...",\n'
-            f'      "revenue_streams": [\n'
-            f'        {{"stream": "SaaS Subscription / Usage Fee", "pricing_model": "Tiered monthly / annual", "rationale": "High recurring revenue potential"}}\n'
-            f'      ],\n'
-            f'      "pricing_strategy": "Pricing model logic and entry pricing...",\n'
-            f'      "unit_economics": {{"cac_outlook": "$50-$120 via organic + content", "ltv_outlook": "$900+ based on 18mo retention", "margin_potential": "75-82% gross margins"}},\n'
-            f'      "strengths": ["...", "..."],\n'
-            f'      "gaps_and_risks": ["...", "..."],\n'
-            f'      "recommendations": ["...", "..."]\n'
-            f'    }}\n'
-            f'  }}\n'
-            f'}}\n'
-        )
-
-    return f"Generate {tool_key} for {idea}."
-
-
-def _request_gemini_tool(payload) -> dict:
-    """Request tool deliverable from Gemini API."""
-    start_time = time.time()
-    logger.info(
-        f"Starting Gemini tool request: {payload.tool_key}",
-        extra={
-            "tool_key": payload.tool_key,
-            "idea_length": len(payload.idea),
-        }
-    )
-    
-    prompt = _get_tool_prompt(payload.tool_key, payload)
-    body = json.dumps(
-        {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"responseMimeType": "application/json"},
-        }
-    ).encode("utf-8")
-    
-    models = _get_candidate_models()
-    last_exception = None
-
-    for idx, model_name in enumerate(models):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
-        request = urllib.request.Request(
-            url,
-            data=body,
-            headers={"Content-Type": "application/json", "X-goog-api-key": GEMINI_API_KEY},
-            method="POST",
-        )
-        
-        try:
-            with urllib.request.urlopen(request, timeout=25) as response:
-                result = json.loads(response.read().decode("utf-8"))
-            
-            elapsed = time.time() - start_time
-            logger.info(
-                f"Gemini tool request completed: {payload.tool_key} using {model_name}",
-                extra={
-                    "tool_key": payload.tool_key,
-                    "model": model_name,
-                    "elapsed_seconds": round(elapsed, 2),
-                }
-            )
-            
-            text = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-            if text.startswith("```"):
-                text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-            return json.loads(text)
-        
-        except urllib.error.HTTPError as e:
-            elapsed = time.time() - start_time
-            logger.warning(
-                f"Gemini tool HTTP error with {model_name}: {e.code} {e.reason}",
-                extra={
-                    "tool_key": payload.tool_key,
-                    "model": model_name,
-                    "status_code": e.code,
-                    "reason": e.reason,
-                    "elapsed_seconds": round(elapsed, 2),
-                }
-            )
-            last_exception = e
-            if e.code in (503, 429, 500, 502, 504) and idx < len(models) - 1:
-                logger.info(f"Retrying tool request with fallback model: {models[idx + 1]}")
-                continue
-            error_msg = f"HTTP {e.code}: {e.reason}"
-            raise ValueError(clean_gemini_error(error_msg)) from e
-        
-        except (urllib.error.URLError, TimeoutError, Exception) as e:
-            elapsed = time.time() - start_time
-            logger.warning(
-                f"Gemini tool connection/timeout error with {model_name}: {str(e)}",
-                extra={
-                    "tool_key": payload.tool_key,
-                    "model": model_name,
-                    "elapsed_seconds": round(elapsed, 2),
-                }
-            )
-            last_exception = e
-            if idx < len(models) - 1:
-                logger.info(f"Retrying tool request with fallback model: {models[idx + 1]}")
-                continue
-            raise ValueError(clean_gemini_error(str(e))) from e
-
-    raise ValueError(clean_gemini_error(str(last_exception) if last_exception else "Service unavailable"))
-
-
-async def generate_tool_deliverable(payload) -> tuple[dict, str]:
-    """Generate tool deliverable using Gemini AI. No fallback - errors are raised."""
+async def generate_tool_deliverable(payload: Any) -> tuple[dict, str]:
+    """Generate tool deliverable using Gemini AI."""
     logger.info(f"generate_tool_deliverable called for: {payload.tool_key}")
-    
-    if not GEMINI_API_KEY:
-        logger.error("GEMINI_API_KEY not configured for tool generation")
-        raise ValueError("AI service not configured. Please contact support.")
-    
+    prompt = get_tool_prompt(payload.tool_key, payload)
+
     try:
-        data = await asyncio.to_thread(_request_gemini_tool, payload)
+        data = await asyncio.to_thread(
+            request_gemini_json,
+            prompt,
+            timeout=30,
+            context_tag=f"tool_{payload.tool_key}",
+        )
         logger.info(f"Tool deliverable generated successfully: {payload.tool_key}")
         return data, "gemini"
     except ValueError as e:
-        logger.warning(f"Cleaned error for tool {payload.tool_key}: {str(e)}")
-        raise  # Re-raise cleaned errors
+        logger.warning(f"Error for tool {payload.tool_key}: {str(e)}")
+        raise
     except Exception as exc:
         logger.error(
             f"Unexpected error in tool generation for {payload.tool_key}: {str(exc)}",
@@ -529,6 +78,6 @@ async def generate_tool_deliverable(payload) -> tuple[dict, str]:
                 "tool_key": payload.tool_key,
                 "error_type": type(exc).__name__,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise ValueError(clean_gemini_error(str(exc))) from exc
