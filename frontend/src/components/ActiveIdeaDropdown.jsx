@@ -64,22 +64,22 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
             <Link
               to="/founder/intake"
               title="Share an Idea"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-white/40 hover:bg-white/5 hover:text-white transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
             >
-              <Plus size={14} />
+              <Plus size={15} />
             </Link>
           </div>
         );
       }
 
       return (
-        <div className={`px-2 py-0.5 ${className}`}>
+        <div className={`px-1 ${className}`}>
           <Link
             to="/founder/intake"
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-white/50 hover:bg-white/5 hover:text-white transition-colors"
+            className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-3 py-2 text-xs font-medium text-white/60 hover:border-[#C9A15A]/40 hover:text-[#E8D6A8] hover:bg-[#C9A15A]/5 transition-all"
           >
-            <Plus size={12} className="shrink-0 text-white/40" />
-            <span className="font-medium truncate">Share an idea</span>
+            <Plus size={13} className="shrink-0 text-[#C9A15A]" />
+            <span className="truncate font-medium">Share first venture</span>
           </Link>
         </div>
       );
@@ -105,47 +105,61 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
-            className={`group flex h-7 w-7 items-center justify-center rounded-lg transition-all cursor-pointer ${
+            className={`group flex h-9 w-9 items-center justify-center rounded-xl transition-all cursor-pointer border ${
               open
-                ? "bg-white/10 text-white"
-                : "text-white/40 hover:bg-white/5 hover:text-white"
+                ? "bg-[#C9A15A]/20 border-[#C9A15A]/40 text-[#E8D6A8]"
+                : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-white/20"
             }`}
             aria-expanded={open}
             aria-haspopup="true"
-            title={`Active Idea: ${activeVenture?.idea || "Select idea"}`}
+            title={`Active Venture: ${activeVenture?.idea || "Select venture"}`}
           >
-            <ChevronDown
-              size={13}
-              className={`transition-transform duration-200 ${open ? "rotate-180 text-white" : ""}`}
-            />
+            {activeVenture?.idea ? (
+              <span className="font-bold text-xs uppercase text-[#E8D6A8]">
+                {activeVenture.idea.charAt(0)}
+              </span>
+            ) : (
+              <Lightbulb size={14} className="text-[#C9A15A]" />
+            )}
           </button>
         ) : (
-          /* Minimal single-line idea selector for sidebar */
+          /* High-Hierarchy Apex Project Context Card for Sidebar */
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
-            className={`group flex w-full items-center justify-between gap-1.5 rounded-lg px-2 py-1.5 text-left text-xs transition-colors cursor-pointer ${
+            className={`group flex w-full items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 text-left transition-all border cursor-pointer ${
               open
-                ? "bg-white/10 text-white"
-                : "text-white/60 hover:bg-white/5 hover:text-white"
+                ? "bg-white/10 border-white/20 text-white shadow-sm"
+                : "bg-[#141418] border-white/8 hover:bg-[#1a1a20] hover:border-white/15 text-white/90"
             }`}
             aria-expanded={open}
             aria-haspopup="true"
-            title={`Active Idea: ${activeVenture?.idea || "Select idea"}`}
+            title={`Active Venture: ${activeVenture?.idea || "Select venture"}`}
           >
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/35 shrink-0">
-                Idea:
-              </span>
-              <span className="truncate font-medium text-white/90 text-xs">
-                {activeVenture?.idea
-                  ? activeVenture.idea.slice(0, 18) + (activeVenture.idea.length > 18 ? "..." : "")
-                  : "Choose idea"}
-              </span>
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#C9A15A]/25 to-[#C9A15A]/5 border border-[#C9A15A]/30 text-[#E8D6A8] font-bold text-xs">
+                {activeVenture?.idea ? (
+                  activeVenture.idea.charAt(0).toUpperCase()
+                ) : (
+                  <Lightbulb size={13} />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 leading-none mb-1">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/40">
+                    Venture
+                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                </div>
+                <p className="truncate text-xs font-semibold text-white">
+                  {activeVenture?.idea
+                    ? activeVenture.idea.slice(0, 20) + (activeVenture.idea.length > 20 ? "..." : "")
+                    : "Choose a venture"}
+                </p>
+              </div>
             </div>
-            {/* Inverted "v" chevron */}
             <ChevronDown
-              size={12}
+              size={13}
               className={`shrink-0 text-white/40 transition-transform duration-200 group-hover:text-white ${
                 open ? "rotate-180 text-white" : ""
               }`}

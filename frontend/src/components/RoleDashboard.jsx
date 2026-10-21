@@ -195,75 +195,243 @@ function WorkspacePanel({ data }) {
   );
 }
 
-function FounderStudioEntry() {
-  const [ventures, setVentures] = useState([]);
-  const [loading, setLoading] = useState(true);
+import { useActiveIdea } from "../context/IdeaContext";
 
-  useEffect(() => {
-    async function loadVentures() {
-      try {
-        const data = await listVenturesApi();
-        if (Array.isArray(data)) {
-          setVentures(data.slice(0, 3));
-        }
-      } catch (err) {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadVentures();
-  }, []);
+function FounderWorkspaceOverview() {
+  const { ventures, activeVenture, setActiveVentureId, loading } = useActiveIdea();
+
+  // If there's an active venture, derive key details
+  const ventureName = activeVenture?.idea || (ventures && ventures.length > 0 ? ventures[0].idea : null);
+  const ventureProblem = activeVenture?.problem || "Customer problem definition in progress.";
+  const ventureLocation = activeVenture?.location || "Kenya / Global";
 
   return (
-    <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-7">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
-        Founder Studio
-      </p>
-      <h2 className="mt-2 font-display text-2xl font-semibold text-white sm:text-3xl">
-        Turn your idea into a real project.
-      </h2>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/60">
-        Check if your idea is ready, generate strategic plans, and get step-by-step guidance to build your startup.
-      </p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link
-          to="/founder"
-          className="inline-flex items-center gap-2 rounded-full bg-[#c9a15a] px-5 py-3 text-xs font-semibold text-[#161410] hover:brightness-105"
-        >
-          Open Founder Studio
-          <ArrowUpRight size={15} />
-        </Link>
-        <Link
-          to="/founder/intake"
-          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-xs font-semibold text-white hover:bg-white/10"
-        >
-          Share New Idea
-        </Link>
+    <div className="space-y-6">
+      {/* 1. VENTURE PULSE STAT STRIP */}
+      <StatStrip
+        items={[
+          {
+            label: "Active Venture",
+            value: ventureName
+              ? (ventureName.length > 18 ? ventureName.slice(0, 18) + "..." : ventureName)
+              : "No Venture Active",
+            subtext: activeVenture ? `${ventureLocation} · Active Context` : "Choose or share an idea",
+            valueColor: "text-[#E8D6A8]",
+          },
+          {
+            label: "Idea Validation",
+            value: "6-Point Rubric",
+            subtext: "TAM/SAM/SOM, Feasibility, Model",
+            valueColor: "text-[#C9A15A]",
+          },
+          {
+            label: "System Architecture",
+            value: "Full-Stack Spec",
+            subtext: "Data models, APIs, system diagrams",
+            valueColor: "text-emerald-400",
+          },
+          {
+            label: "Legal Framework",
+            value: "Entity Setup",
+            subtext: "Founders agreement & compliance",
+            valueColor: "text-emerald-400",
+          },
+        ]}
+      />
+
+      {/* 2. ACTIVE VENTURE SPOTLIGHT (HERO CARD) */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#14141a] via-[#101015] to-[#0c0c10] p-6 sm:p-7 shadow-xl">
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#C9A15A]">
+                Current Active Focus
+              </span>
+            </div>
+            {ventures && ventures.length > 1 && (
+              <span className="text-xs text-white/40">
+                {ventures.length} ventures saved in workspace
+              </span>
+            )}
+          </div>
+
+          <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl tracking-tight">
+            {ventureName || "Kickstart Your Next Startup"}
+          </h2>
+
+          <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-white/60">
+            {ventureProblem}
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link
+              to="/founder/validation"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#141416] hover:opacity-95 transition-all shadow-md"
+            >
+              Run Idea Validation
+              <ArrowUpRight size={14} />
+            </Link>
+            <Link
+              to="/founder"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors"
+            >
+              Open Studio Hub
+            </Link>
+            <Link
+              to="/founder/intake"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-white/15 bg-transparent px-3.5 py-2.5 text-xs font-medium text-white/50 hover:border-white/30 hover:text-white transition-colors"
+            >
+              + Share New Idea
+            </Link>
+          </div>
+        </div>
+
+        {/* Ambient subtle decorative background glow */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#C9A15A]/5 blur-3xl" />
       </div>
 
-      {!loading && ventures.length > 0 && (
-        <div className="mt-6 border-t border-[#f2ca50]/20 pt-6">
-          <p className="text-xs font-semibold text-white/70 mb-3">Recent Ideas</p>
-          <div className="space-y-2">
-            {ventures.map((v) => (
-              <Link
-                key={v.id}
-                to={`/founder/ventures/${v.id}`}
-                className="flex items-center justify-between rounded-lg bg-white/5 p-3 hover:bg-white/10 transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-white truncate">{v.idea.slice(0, 50)}</p>
-                </div>
-                <ChevronRight size={14} className="text-white/35 shrink-0" />
-              </Link>
-            ))}
-          </div>
-          {ventures.length > 0 && (
-            <Link to="/founder/ventures" className="mt-3 block text-xs font-semibold text-[#f2ca50] hover:text-white">
-              View all saved ideas →
+      {/* 3. CORE STUDIO ENGINES GRID (3 CARDS) */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">
+            Founder Studio Engines
+          </h3>
+          <span className="text-xs text-white/35">AI-Powered Build Flow</span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Card 1: Idea Validation */}
+          <Link
+            to="/founder/validation"
+            className="group flex flex-col justify-between rounded-2xl border border-white/8 bg-[#121217] p-5 hover:border-[#C9A15A]/30 hover:bg-[#16161d] transition-all cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/20">
+                <CheckCircle2 size={17} />
+              </div>
+              <h4 className="font-semibold text-sm text-white group-hover:text-[#E8D6A8] transition-colors">
+                Idea Validation
+              </h4>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                Rigorous 6-pillar evaluation: problem, solution, TAM/SAM/SOM sizing, customer demand, competition, and feasibility.
+              </p>
+            </div>
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#C9A15A] group-hover:translate-x-1 transition-transform">
+              <span>Evaluate Idea</span>
+              <ArrowUpRight size={13} />
+            </div>
+          </Link>
+
+          {/* Card 2: Product & Tech */}
+          <Link
+            to="/founder/product"
+            className="group flex flex-col justify-between rounded-2xl border border-white/8 bg-[#121217] p-5 hover:border-white/20 hover:bg-[#16161d] transition-all cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/20">
+                <Boxes size={17} />
+              </div>
+              <h4 className="font-semibold text-sm text-white group-hover:text-cyan-300 transition-colors">
+                Product & Tech Architecture
+              </h4>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                System diagrams, full-stack tech choices, database entity schemas, and core API architectural specifications.
+              </p>
+            </div>
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
+              <span>Generate Specs</span>
+              <ArrowUpRight size={13} />
+            </div>
+          </Link>
+
+          {/* Card 3: Legal & Setup */}
+          <Link
+            to="/founder/legal"
+            className="group flex flex-col justify-between rounded-2xl border border-white/8 bg-[#121217] p-5 hover:border-white/20 hover:bg-[#16161d] transition-all cursor-pointer shadow-sm"
+          >
+            <div>
+              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">
+                <Scale size={17} />
+              </div>
+              <h4 className="font-semibold text-sm text-white group-hover:text-emerald-300 transition-colors">
+                Legal & Incorporation
+              </h4>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                Founder pledge agreements, cap table distributions, IP protection, and regional incorporation guidelines.
+              </p>
+            </div>
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-emerald-400 group-hover:translate-x-1 transition-transform">
+              <span>Review Setup</span>
+              <ArrowUpRight size={13} />
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* 4. RECENT VENTURES QUICK-SWITCHER */}
+      {ventures && ventures.length > 0 && (
+        <div className="rounded-2xl border border-white/8 bg-[#121217] p-5 sm:p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-sm text-white">Saved Ventures</h3>
+              <p className="text-xs text-white/45 mt-0.5">Quickly toggle your workspace context</p>
+            </div>
+            <Link
+              to="/founder/ventures"
+              className="text-xs font-semibold text-[#C9A15A] hover:text-[#E8D6A8] transition-colors"
+            >
+              View all ({ventures.length}) →
             </Link>
-          )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {ventures.slice(0, 3).map((v) => {
+              const isSelected = activeVenture && String(activeVenture.id) === String(v.id);
+              return (
+                <div
+                  key={v.id}
+                  className={`flex flex-col justify-between rounded-xl border p-3.5 transition-all ${
+                    isSelected
+                      ? "border-[#C9A15A]/40 bg-[#C9A15A]/10 text-white"
+                      : "border-white/8 bg-white/[0.02] hover:bg-white/[0.05] text-white/80"
+                  }`}
+                >
+                  <div className="min-w-0 mb-3">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="truncate text-xs font-semibold text-white">
+                        {v.idea.slice(0, 32)}{v.idea.length > 32 ? "..." : ""}
+                      </span>
+                      {isSelected && (
+                        <span className="rounded-full bg-[#C9A15A]/20 px-2 py-0.5 text-[9px] font-bold text-[#E8D6A8]">
+                          ACTIVE
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-white/45 line-clamp-2">
+                      {v.problem || v.solution || "No description provided."}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveVentureId(v.id)}
+                      className="text-[11px] font-medium text-white/50 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {isSelected ? "Current focus" : "Set as active"}
+                    </button>
+                    <Link
+                      to={`/founder/ventures/${v.id}`}
+                      className="text-[11px] font-semibold text-[#C9A15A] hover:underline"
+                    >
+                      Details →
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
@@ -307,7 +475,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
       {/* OVERVIEW TAB */}
       {activeNav === "overview" && (
         user?.role === "founder" ? (
-          <FounderStudioEntry />
+          <FounderWorkspaceOverview />
         ) : (
           <>
             <StatStrip
