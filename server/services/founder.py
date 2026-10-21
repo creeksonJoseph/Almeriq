@@ -66,6 +66,16 @@ def _get_candidate_models() -> list[str]:
     return models
 
 
+VOICE_AND_STYLE_GUIDELINES = (
+    "LANGUAGE AND VOCABULARY RULES:\n"
+    "- Use simple, clear, everyday English. Speak like a practical, experienced advisor directly to a founder.\n"
+    "- STRICTLY AVOID pretentious, academic, or overly complex vocabulary (e.g. NEVER use words like 'ubiquitous', 'endemic', 'synergistic', 'nascent', 'paradigm', 'plethora', 'concomitant', 'behemoth', etc.).\n"
+    "- Use plain, natural words instead (e.g., write 'widely used' or 'everywhere' instead of 'ubiquitous'; 'deep-rooted problem' or 'widespread issue' instead of 'endemic friction'; 'hard to charge users' instead of 'monetization resistance').\n"
+    "- ONLY use specialized vocabulary when it is standard, practical business terminology that is directly relevant to this specific context (e.g., 'low margin', 'cash flow', 'working capital', 'customer acquisition cost', 'M-Pesa reconciliation', 'churn rate', 'gross margin').\n"
+    "- Avoid robotic AI hype clichés like 'brilliantly targets', 'revolutionary', 'game-changing', 'testament to'. Be objective, grounded, and helpful.\n"
+)
+
+
 def _request_gemini(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
     """Request analysis from Gemini API with automatic fallback if a model is unavailable or times out."""
     start_time = time.time()
@@ -81,6 +91,7 @@ def _request_gemini(payload: FounderAnalysisRequest) -> FounderAnalysisResponse:
     )
     
     prompt = f"""Analyze this startup idea and return JSON.
+{VOICE_AND_STYLE_GUIDELINES}
 Keys: summary, market, risks (array), mvp (array), roadmap (array), next_steps (array).
 
 Idea: {payload.idea}
@@ -229,6 +240,7 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
         return (
             f"You are a senior market research analyst. Produce a comprehensive market analysis for this startup.\n"
             f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
             f"Return JSON with these keys:\n"
             f"  market_overview (string, 2-3 sentences on the market landscape),\n"
             f"  market_size (object: tam string, sam string, som string, each with a numeric estimate and explanation),\n"
@@ -247,6 +259,7 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
         return (
             f"You are a startup feasibility expert. Produce a thorough feasibility analysis for this startup idea.\n"
             f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
             f"Return JSON with these keys:\n"
             f"  overall_feasibility_score (integer 1-10),\n"
             f"  overall_feasibility_verdict (string: one of 'Highly Feasible', 'Feasible with Effort', 'Feasible with Pivots', 'Low Feasibility'),\n"
@@ -263,6 +276,7 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
         return (
             f"You are a seasoned business strategy consultant. Write a production-grade business plan for this startup.\n"
             f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
             f"Return JSON with these keys:\n"
             f"  executive_summary (string),\n"
             f"  problem_statement (string),\n"
@@ -282,6 +296,7 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
         return (
             f"You are a product and operations expert. Create a detailed execution roadmap for this startup.\n"
             f"Idea: {idea}\nProblem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
             f"Return JSON with these keys:\n"
             f"  summary (string, 1-2 sentences),\n"
             f"  phases (array of exactly 4 objects representing: Foundation (0-30 days), Build (30-90 days), Launch (90-180 days), Scale (180-365 days) — each object has: phase string, duration string, objective string, key_activities array of 4-6 strings, deliverables array of 3-5 strings, success_metrics array of 3-4 strings, resources_needed array of strings, risks array of strings),\n"
@@ -308,6 +323,7 @@ def _get_tool_prompt(tool_key: str, payload) -> str:
             f"Target Customer: {customer}\n"
             f"Target Market/Location: {location}\n"
             f"{f'Additional Verified Context from Previous Modules:{extra_ctx}' if extra_ctx else ''}\n\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
             f"Evaluate this idea thoroughly across 6 key rubric criteria. For each criterion, assign a rating of STRICTLY one of: 'Strong', 'Vague', or 'Weak'.\n"
             f"Criteria details:\n"
             f"1. Problem and Solution: Problem urgency, acute user pain vs mild inconvenience, solution clarity, differentiation, problem-solution fit.\n"
