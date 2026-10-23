@@ -175,19 +175,17 @@ export default function FounderIntakePage() {
         </div>
       )}
 
-      <form onSubmit={submit} className="rounded-2xl border border-white/10 p-5 sm:p-8">
-        <div className="mb-7 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="font-display text-xl font-semibold text-white">Your startup idea</h2>
-            <p className="mt-1 text-xs text-white">
-              {isEditMode
-                ? `Editing: ${targetVenture?.name || (targetVenture?.idea ? targetVenture.idea.slice(0, 50) + "..." : "Current brief")}`
-                : "Be clear and direct. This is used to evaluate and build your plan."}
-            </p>
-          </div>
+      <form onSubmit={submit} className="max-w-2xl py-2">
+        <div className="mb-8">
+          <h2 className="font-display text-xl font-semibold text-white">Startup details</h2>
+          <p className="mt-2 text-sm text-white/70">
+            {isEditMode
+              ? `Editing: ${targetVenture?.name || (targetVenture?.idea ? targetVenture.idea.slice(0, 50) + "..." : "Current brief")}`
+              : "Be clear and direct. This is used to evaluate and build your plan."}
+          </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           {FIELDS.map(([key, label, placeholder, maxLength]) => (
             <label
               key={key}

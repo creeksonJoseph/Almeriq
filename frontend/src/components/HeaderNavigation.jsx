@@ -84,7 +84,7 @@ export default function HeaderNavigation({ currentUser, onLogout, onOpenSidebar 
                 <div className="hidden sm:flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-[#181824] border border-white/10 text-xs text-white shrink-0">
                   <UserAvatar user={currentUser} size="sm" />
                   <span className="font-semibold text-white truncate max-w-[120px]">
-                    {currentUser.full_name || currentUser.email.split("@")[0]}
+                    {currentUser.full_name || (currentUser.email && typeof currentUser.email === 'string' ? currentUser.email.split("@")[0] : "User")}
                   </span>
                 </div>
 
