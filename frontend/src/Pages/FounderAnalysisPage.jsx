@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import FounderFlowLayout from "../components/founder/FounderFlowLayout";
 import { useFounderFlow } from "../hooks/useFounderFlow";
+import { useActiveIdea } from "../context/IdeaContext";
 import { useToast } from "../context/ToastContext";
 import { executeAiToolApi } from "../lib/api";
 import ResultRenderer from "../components/founder/analysis/ResultRenderer";
@@ -128,6 +129,7 @@ export default function FounderAnalysisPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { form, ventureId, resetFlow } = useFounderFlow();
+  const { activeVenture, activeVentureId } = useActiveIdea();
 
   // Support auto-selecting a tool when navigated from Saved Ideas
   const autoSelectKey = location.state?.autoSelectTool || null;
@@ -145,7 +147,9 @@ export default function FounderAnalysisPage() {
   const { showToast } = useToast();
   const [result, setResult] = useState(null);
 
-  const hasForm = form && form.idea && form.idea.length >= 10;
+  const currentBrief = form && form.idea && form.idea.length >= 10 ? form : activeVenture || form;
+  const effectiveVentureId = ventureId || activeVentureId || activeVenture?.id;
+  const hasForm = Boolean(currentBrief && currentBrief.idea && currentBrief.idea.length >= 10);
 
   const handleSelect = (type) => {
     setSelected(type);
@@ -169,13 +173,13 @@ export default function FounderAnalysisPage() {
     try {
       const payload = {
         tool_key: targetTool.key,
-        idea: form.idea,
-        problem: form.problem,
-        solution: form.solution,
-        customer: form.customer,
-        location: form.location,
+        idea: currentBrief.idea,
+        problem: currentBrief.problem,
+        solution: currentBrief.solution,
+        customer: currentBrief.customer,
+        location: currentBrief.location,
         // Pass venture_id so the backend can link and update venture analysis
-        ...(ventureId ? { venture_id: ventureId } : {}),
+        ...(effectiveVentureId ? { venture_id: effectiveVentureId } : {}),
         ...(forceRefresh ? { extra_params: { refresh: true } } : {}),
       };
       const data = await executeAiToolApi(payload);
@@ -185,7 +189,7 @@ export default function FounderAnalysisPage() {
       showToast(err.message || "Analysis failed. Please try again.", "error");
       setStage("preview");
     }
-  }, [selected, form, hasForm, ventureId, showToast]);
+  }, [selected, currentBrief, hasForm, effectiveVentureId, showToast]);
 
   // If navigated from Saved Ideas with autoRun requested, immediately fetch from cache or run
   const autoRunExecuted = useRef(false);
@@ -210,10 +214,10 @@ export default function FounderAnalysisPage() {
       <FounderFlowLayout>
         <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center">
           <h1 className="font-display text-2xl font-semibold text-white">Your analysis is waiting</h1>
-          <p className="mt-2 text-sm text-white/50">
+          <p className="mt-2 text-sm text-white leading-relaxed">
             Share your startup idea first so we can generate your report and advice.
           </p>
-          <Link to="/founder/intake" className="alq-submit mt-6 sm:mx-auto sm:w-auto sm:px-8 inline-flex">
+          <Link to="/founder/intake?mode=new" className="alq-submit mt-6 sm:mx-auto sm:w-auto sm:px-8 inline-flex">
             Share your idea
           </Link>
         </div>
@@ -230,7 +234,7 @@ export default function FounderAnalysisPage() {
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             What do you want to explore?
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/50">
+          <p className="mt-3 text-sm leading-relaxed text-white">
             Select an area to evaluate for this project.
           </p>
         </div>
@@ -248,22 +252,19 @@ export default function FounderAnalysisPage() {
               <div className="font-semibold text-sm text-white group-hover:text-[#f2ca50] transition-colors">
                 {type.label}
               </div>
-              <p className="mt-1 text-xs text-white/45 leading-relaxed line-clamp-2">
+              <p className="mt-1 text-xs text-white leading-relaxed line-clamp-2">
                 {type.tagline}
               </p>
             </button>
           ))}
         </div>
 
-        <div className="mt-8 flex items-center justify-between border-t border-white/8 pt-6">
-          <Link to="/founder/ventures" className="text-xs text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
-            <ArrowLeft size={14} /> Back to Saved Ideas
-          </Link>
+        <div className="mt-6 flex justify-end">
           <Link
-            to="/founder/intake"
+            to="/founder/intake?mode=edit"
             className="text-xs text-white/40 hover:text-[#f2ca50] transition-colors"
           >
-            Edit project brief
+            Edit project brief →
           </Link>
         </div>
       </FounderFlowLayout>
@@ -278,9 +279,9 @@ export default function FounderAnalysisPage() {
         <button
           type="button"
           onClick={handleBack}
-          className="mb-6 flex items-center gap-2 text-xs text-white/40 hover:text-white transition-colors"
+          className="mb-6 flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
         >
-          <ArrowLeft size={14} /> Back to overview
+          <ArrowLeft size={14} /> Back
         </button>
 
         <div className="mb-6">
@@ -297,16 +298,16 @@ export default function FounderAnalysisPage() {
             </div>
             <div>
               <p className="text-base font-semibold text-white">{selected.label}</p>
-              <p className="text-xs text-white/50">Structured strategic review</p>
+              <p className="text-xs text-white">Structured strategic review</p>
             </div>
           </div>
-          <p className="text-sm text-white/70 leading-relaxed mb-6">{selected.plan.description}</p>
+          <p className="text-sm text-white leading-relaxed mb-6">{selected.plan.description}</p>
 
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-3">This report will cover:</p>
             <ul className="space-y-2">
               {selected.plan.covers.map((item, i) => (
-                <li key={i} className="flex items-center gap-2.5 text-sm text-white/70">
+                <li key={i} className="flex items-center gap-2.5 text-sm text-white">
                   <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${selected.iconColor}`} />
                   {item}
                 </li>
@@ -327,7 +328,7 @@ export default function FounderAnalysisPage() {
             ].map(([label, value]) => (
               <div key={label} className="flex gap-3 text-xs">
                 <span className="w-16 shrink-0 text-white/35 font-semibold">{label}</span>
-                <span className="text-white/65 leading-relaxed line-clamp-2">{value}</span>
+                <span className="text-white leading-relaxed line-clamp-2">{value}</span>
               </div>
             ))}
           </div>
@@ -366,7 +367,7 @@ export default function FounderAnalysisPage() {
             <Loader2 size={18} className="text-[#f2ca50] animate-spin" />
             <p className="text-base font-semibold text-white">Analyzing your {selected.label}...</p>
           </div>
-          <p className="text-sm text-white/45 max-w-xs leading-relaxed">
+          <p className="text-sm text-white max-w-xs leading-relaxed">
             Analyzing your startup idea. Please wait a moment while we assemble your report.
           </p>
           <div className="mt-6 flex gap-1">
@@ -395,9 +396,9 @@ export default function FounderAnalysisPage() {
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
               >
-                <ArrowLeft size={14} /> All Modules
+                <ArrowLeft size={14} /> Back
               </button>
               <span className="text-white/20">/</span>
               <span className="text-xs text-white/60">{selected.label}</span>
@@ -408,7 +409,7 @@ export default function FounderAnalysisPage() {
               </div>
               <div>
                 <h1 className="font-display text-2xl font-semibold text-white">{selected.label}</h1>
-                <p className="text-xs text-white/45 mt-0.5">Based on your startup idea</p>
+                <p className="text-xs text-white mt-0.5">Based on your startup idea</p>
               </div>
             </div>
           </div>
@@ -416,14 +417,14 @@ export default function FounderAnalysisPage() {
             <button
               type="button"
               onClick={handleRunAgain}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-white/60 hover:bg-white/5 hover:text-white transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-white/60 hover:bg-white/5 hover:text-white transition-all cursor-pointer"
             >
               <RefreshCw size={13} /> Regenerate
             </button>
             <button
               type="button"
               onClick={handleBack}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#f2ca50]/25 bg-[#f2ca50]/10 px-3 py-2 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#f2ca50]/25 bg-[#f2ca50]/10 px-3 py-2 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 transition-all cursor-pointer"
             >
               Run another analysis
             </button>
@@ -432,20 +433,6 @@ export default function FounderAnalysisPage() {
 
         {/* Result */}
         <ResultRenderer analysisKey={selected.key} result={result} />
-
-        {/* Footer */}
-        <div className="mt-8 flex items-center justify-between border-t border-white/8 pt-6">
-          <Link to="/founder/ventures" className="text-xs text-white/40 hover:text-white flex items-center gap-1.5 transition-colors">
-            <ArrowLeft size={14} /> Back to Saved Ideas
-          </Link>
-          <button
-            type="button"
-            onClick={handleBack}
-            className="text-xs font-semibold text-[#f2ca50] hover:text-white transition-colors"
-          >
-            ← Back to all modules
-          </button>
-        </div>
       </FounderFlowLayout>
     );
   }

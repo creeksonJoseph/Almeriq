@@ -2,6 +2,7 @@ import { ArrowLeft, BookOpen, CheckCircle2, Plus } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useFounderFlow } from "../../hooks/useFounderFlow";
+import { useActiveIdea } from "../../context/IdeaContext";
 
 const STEPS = [
   { path: "/founder/intake", number: "01", label: "Your Idea" },
@@ -26,30 +27,24 @@ export default function FounderFlowLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { form, resetFlow } = useFounderFlow();
+  const { activeVenture } = useActiveIdea();
   const currentIndex = Math.max(0, STEPS.findIndex((step) => step.path === location.pathname));
   const firstName = useAuth().user?.full_name?.split(" ")[0] || "Founder";
 
-  const isProjectWorkspace = location.pathname === "/founder/analysis" && Boolean(form?.idea);
+  const effectiveProject = (activeVenture && activeVenture.idea) ? activeVenture : form;
+  const isProjectWorkspace = location.pathname === "/founder/analysis" && Boolean(effectiveProject?.idea);
 
   return (
     <FounderFlowGuard>
       <div className="mx-auto w-full max-w-5xl px-4 pb-14 pt-5 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          {isProjectWorkspace ? (
-            <Link
-              to="/founder/ventures"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={14} /> Back to Saved Ideas
-            </Link>
-          ) : (
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors"
-            >
-              <ArrowLeft size={14} /> Dashboard
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={14} /> Back
+          </button>
         </div>
 
         {isProjectWorkspace ? (
@@ -60,19 +55,19 @@ export default function FounderFlowLayout({ children }) {
                   <span className="inline-flex items-center rounded-md bg-[#f2ca50]/10 border border-[#f2ca50]/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#f2ca50]">
                     Active Project
                   </span>
-                  {form.customer && (
-                    <span className="text-[11px] text-white/40 truncate max-w-xs">
-                      · {form.customer}
+                  {effectiveProject.customer && (
+                    <span className="text-[11px] text-white truncate max-w-xs">
+                      · {effectiveProject.customer}
                     </span>
                   )}
-                  {form.location && (
-                    <span className="text-[11px] text-white/40 capitalize">
-                      · {form.location}
+                  {effectiveProject.location && (
+                    <span className="text-[11px] text-white capitalize">
+                      · {effectiveProject.location}
                     </span>
                   )}
                 </div>
-                <h1 className="font-display text-base sm:text-xl font-semibold text-white truncate" title={form.idea}>
-                  {form.idea}
+                <h1 className="font-display text-base sm:text-xl font-semibold text-white truncate" title={effectiveProject.idea}>
+                  {effectiveProject.idea}
                 </h1>
               </div>
               <div className="flex shrink-0 items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
@@ -87,9 +82,9 @@ export default function FounderFlowLayout({ children }) {
                   type="button"
                   onClick={() => {
                     resetFlow();
-                    navigate("/founder/intake");
+                    navigate("/founder/intake?mode=new");
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-xs font-medium text-white/45 hover:border-[#f2ca50]/30 hover:text-[#f2ca50] transition-all"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-xs font-medium text-white/45 hover:border-[#f2ca50]/30 hover:text-[#f2ca50] transition-all cursor-pointer"
                 >
                   <Plus size={13} />
                   <span>New Idea</span>
@@ -102,10 +97,13 @@ export default function FounderFlowLayout({ children }) {
             {STEPS.map((step, index) => {
               const active = index === currentIndex;
               const complete = index < currentIndex;
+              const stepTarget = step.path === "/founder/intake"
+                ? (effectiveProject?.idea ? "/founder/intake?mode=edit" : "/founder/intake?mode=new")
+                : step.path;
               return (
                 <Link
                   key={step.path}
-                  to={step.path}
+                  to={stepTarget}
                   className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors sm:p-4 ${
                     active
                       ? "border-[#f2ca50]/50 bg-[#f2ca50]/10"

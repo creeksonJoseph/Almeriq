@@ -2,7 +2,7 @@
  * Pages/AdminWaitlistPage.jsx - Admin console for viewing waitlist participants.
  */
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   Search,
@@ -46,6 +46,7 @@ function formatDate(iso) {
 }
 
 export default function AdminWaitlistPage() {
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [data, setData] = useState({ total: 0, items: [] });
@@ -102,12 +103,13 @@ export default function AdminWaitlistPage() {
     <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
       {/* Top Header & Breadcrumb */}
       <div className="mb-8">
-        <Link
-          to="/dashboard"
-          className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 transition-colors hover:text-white"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 transition-colors hover:text-white cursor-pointer"
         >
-          <ArrowLeft size={14} /> Back to Dashboard
-        </Link>
+          <ArrowLeft size={14} /> Back
+        </button>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <div className="flex items-center gap-2">

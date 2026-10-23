@@ -37,7 +37,7 @@ export function IdeaProvider({ children }) {
 
   const [loading, setLoading] = useState(false);
 
-  // Sync active venture data into sessionStorage / localStorage so useFounderFlow and other components stay in sync
+  // Sync active venture data into localStorage and notify listeners
   const syncFlowStorage = useCallback((venture) => {
     if (!venture) return;
     try {
@@ -51,9 +51,8 @@ export function IdeaProvider({ children }) {
         customer: venture.customer || "",
         location: venture.location || "",
       };
-      sessionStorage.setItem(SS_FORM_KEY, JSON.stringify(briefForm));
 
-      // Dispatch custom event to notify any listeners (like useFounderFlow)
+      // Dispatch custom event to notify any listeners
       window.dispatchEvent(
         new CustomEvent("almeriq:active-idea-changed", {
           detail: { ...venture, brief: briefForm, ventureId: venture.id },

@@ -16,7 +16,7 @@ export default function ValidationRubricList({ rubricList }) {
           </div>
 
           {data.assessment && (
-            <p className="text-xs sm:text-sm leading-relaxed text-white/80 mb-5">
+            <p className="text-xs sm:text-sm leading-relaxed text-white mb-5">
               {data.assessment}
             </p>
           )}
@@ -29,7 +29,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1">
                     Problem Urgency
                   </span>
-                  <p className="text-white/75 leading-relaxed">{data.problem_clarity}</p>
+                  <p className="text-white leading-relaxed">{data.problem_clarity}</p>
                 </div>
               )}
               {data.solution_fit && (
@@ -37,7 +37,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1">
                     Solution Fit
                   </span>
-                  <p className="text-white/75 leading-relaxed">{data.solution_fit}</p>
+                  <p className="text-white leading-relaxed">{data.solution_fit}</p>
                 </div>
               )}
             </div>
@@ -54,7 +54,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <div className="font-display text-xl sm:text-2xl font-bold text-white mt-1 mb-1">
                     {data.tam?.value || "N/A"}
                   </div>
-                  <p className="text-xs text-white/60 leading-relaxed">
+                  <p className="text-xs text-white leading-relaxed">
                     {data.tam?.description}
                   </p>
                 </div>
@@ -66,7 +66,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <div className="font-display text-xl sm:text-2xl font-bold text-white mt-1 mb-1">
                     {data.sam?.value || "N/A"}
                   </div>
-                  <p className="text-xs text-white/60 leading-relaxed">
+                  <p className="text-xs text-white leading-relaxed">
                     {data.sam?.description}
                   </p>
                 </div>
@@ -78,15 +78,15 @@ export default function ValidationRubricList({ rubricList }) {
                   <div className="font-display text-xl sm:text-2xl font-bold text-white mt-1 mb-1">
                     {data.som?.value || "N/A"}
                   </div>
-                  <p className="text-xs text-white/60 leading-relaxed">
+                  <p className="text-xs text-white leading-relaxed">
                     {data.som?.description}
                   </p>
                 </div>
               </div>
 
               {data.sizing_rationale && (
-                <p className="text-xs text-white/65 leading-relaxed border-t border-white/5 pt-3">
-                  <strong className="text-white/80">Methodology: </strong>
+                <p className="text-xs text-white leading-relaxed border-t border-white/5 pt-3">
+                  <strong className="text-white font-semibold">Methodology: </strong>
                   {data.sizing_rationale}
                 </p>
               )}
@@ -96,7 +96,7 @@ export default function ValidationRubricList({ rubricList }) {
           {/* 3. Demand Signals & Experiments */}
           {key === "demand" && (
             <div className="space-y-4 mb-4 text-xs">
-              <div className="flex flex-wrap items-center gap-4 text-white/70">
+              <div className="flex flex-wrap items-center gap-4 text-white">
                 {data.urgency_level && (
                   <div>
                     <span className="text-white/40">Need Urgency: </span>
@@ -112,7 +112,7 @@ export default function ValidationRubricList({ rubricList }) {
               </div>
 
               {data.demand_signals && (
-                <p className="text-white/75 leading-relaxed">
+                <p className="text-white leading-relaxed">
                   {data.demand_signals}
                 </p>
               )}
@@ -122,7 +122,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-2">
                     Validation Experiments to Run Before Coding
                   </span>
-                  <ol className="space-y-1.5 text-white/75">
+                  <ol className="space-y-1.5 text-white">
                     {data.validation_experiments.map((exp, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="font-mono text-white/40 shrink-0">{idx + 1}.</span>
@@ -139,7 +139,7 @@ export default function ValidationRubricList({ rubricList }) {
           {key === "competition" && (
             <div className="space-y-4 mb-4 text-xs">
               {data.landscape_summary && (
-                <p className="text-white/75 leading-relaxed">
+                <p className="text-white leading-relaxed">
                   {data.landscape_summary}
                 </p>
               )}
@@ -156,10 +156,10 @@ export default function ValidationRubricList({ rubricList }) {
                           <span className="font-semibold text-white">{comp.name}</span>
                           <span className="text-[10px] text-white/40 ml-2">({comp.type || "Direct"})</span>
                         </div>
-                        <div className="sm:w-2/3 text-white/65 space-y-0.5 text-[11px]">
+                        <div className="sm:w-2/3 text-white space-y-0.5 text-[11px]">
                           {comp.strengths && <div><span className="text-white/40">Advantage:</span> {comp.strengths}</div>}
                           {comp.differentiation_angle && (
-                            <div className="text-white/80"><span className="text-white/40">How We Win:</span> {comp.differentiation_angle}</div>
+                            <div className="text-white"><span className="text-white/40">How We Win:</span> {comp.differentiation_angle}</div>
                           )}
                         </div>
                       </div>
@@ -169,8 +169,8 @@ export default function ValidationRubricList({ rubricList }) {
               )}
 
               {data.moat_assessment && (
-                <p className="text-white/75 leading-relaxed pt-1">
-                  <strong className="text-white/90">Defensibility Moats: </strong>
+                <p className="text-white leading-relaxed pt-1">
+                  <strong className="text-white">Defensibility Moats: </strong>
                   {data.moat_assessment}
                 </p>
               )}
@@ -186,7 +186,7 @@ export default function ValidationRubricList({ rubricList }) {
                     <span className="font-semibold text-white">Technical</span>
                     <MetricBadge rating={data.technical.rating} />
                   </div>
-                  <p className="text-white/65 leading-relaxed text-[11px]">
+                  <p className="text-white leading-relaxed text-[11px]">
                     {data.technical.assessment}
                   </p>
                 </div>
@@ -198,7 +198,7 @@ export default function ValidationRubricList({ rubricList }) {
                     <span className="font-semibold text-white">Regulatory & Ops</span>
                     <MetricBadge rating={data.operational_regulatory.rating} />
                   </div>
-                  <p className="text-white/65 leading-relaxed text-[11px]">
+                  <p className="text-white leading-relaxed text-[11px]">
                     {data.operational_regulatory.assessment}
                   </p>
                 </div>
@@ -210,7 +210,7 @@ export default function ValidationRubricList({ rubricList }) {
                     <span className="font-semibold text-white">Economic & Runway</span>
                     <MetricBadge rating={data.economic.rating} />
                   </div>
-                  <p className="text-white/65 leading-relaxed text-[11px]">
+                  <p className="text-white leading-relaxed text-[11px]">
                     {data.economic.assessment}
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export default function ValidationRubricList({ rubricList }) {
                   </span>
                   <div className="space-y-1.5">
                     {data.revenue_streams.map((rev, idx) => (
-                      <div key={idx} className="flex flex-col sm:flex-row sm:items-baseline gap-1 text-white/75">
+                      <div key={idx} className="flex flex-col sm:flex-row sm:items-baseline gap-1 text-white">
                         <span className="font-medium text-white">{rev.stream}:</span>
                         <span>{rev.pricing_model || rev.rationale}</span>
                       </div>
@@ -238,8 +238,8 @@ export default function ValidationRubricList({ rubricList }) {
               )}
 
               {data.pricing_strategy && (
-                <p className="text-white/75 leading-relaxed">
-                  <strong className="text-white/90">Pricing Logic: </strong>
+                <p className="text-white leading-relaxed">
+                  <strong className="text-white">Pricing Logic: </strong>
                   {data.pricing_strategy}
                 </p>
               )}
@@ -276,7 +276,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/80 block mb-1">
                     Strengths
                   </span>
-                  <ul className="space-y-1 text-white/70">
+                  <ul className="space-y-1 text-white">
                     {data.strengths.map((str, idx) => (
                       <li key={idx} className="flex items-start gap-1.5">
                         <span className="text-emerald-400">✓</span>
@@ -292,7 +292,7 @@ export default function ValidationRubricList({ rubricList }) {
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-[#c9a15a] block mb-1">
                     Action Recommendations
                   </span>
-                  <ul className="space-y-1 text-white/70">
+                  <ul className="space-y-1 text-white">
                     {data.recommendations.map((rec, idx) => (
                       <li key={idx} className="flex items-start gap-1.5">
                         <span className="text-[#c9a15a]">→</span>

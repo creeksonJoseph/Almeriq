@@ -90,7 +90,7 @@ export default function ConfirmModal({
             </h2>
             <p
               id="confirm-modal-description"
-              className="mt-2 text-xs leading-relaxed text-white/60"
+              className="mt-2 text-xs leading-relaxed text-white"
             >
               {message}
             </p>
@@ -103,7 +103,7 @@ export default function ConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-white/70 transition-all hover:bg-white/10 hover:text-white disabled:opacity-40"
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 hover:text-white disabled:opacity-40"
           >
             {cancelText}
           </button>

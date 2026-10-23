@@ -55,13 +55,13 @@ export default function FeasibilityResult({ result }) {
                       {dim.score}/10
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-white/70 leading-relaxed">{dim.assessment}</p>
+                  <p className="text-xs sm:text-sm text-white leading-relaxed">{dim.assessment}</p>
                   {dim.recommendations?.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-white/5">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-[#f2ca50] mb-1.5">Advice:</p>
                       <ul className="space-y-1">
                         {dim.recommendations.map((r, j) => (
-                          <li key={j} className="text-xs text-white/60 flex items-start gap-2">
+                          <li key={j} className="text-xs text-white flex items-start gap-2">
                             <span className="text-[#f2ca50] font-bold">·</span>
                             <span>{r}</span>
                           </li>
@@ -115,7 +115,7 @@ export default function FeasibilityResult({ result }) {
               {result.pivot_options.map((p, i) => (
                 <div key={i} className="border-l-2 border-white/20 pl-3 py-1">
                   <p className="text-sm font-semibold text-white">{p.pivot}</p>
-                  <p className="text-xs text-white/55 mt-0.5">{p.rationale}</p>
+                  <p className="text-xs text-white mt-0.5">{p.rationale}</p>
                 </div>
               ))}
             </div>

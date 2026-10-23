@@ -22,7 +22,7 @@ import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
 export const WORKSPACE_NAV = [
   { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
   { key: "ventures", label: "Saved Ventures", path: "/founder/ventures", icon: BookOpen },
-  { key: "intake", label: "Share New Idea", path: "/founder/intake", icon: Lightbulb },
+  { key: "intake", label: "Share New Idea", path: "/founder/intake?mode=new", icon: Lightbulb },
 ];
 
 export const FOUNDER_STUDIO_NAV = [
@@ -53,6 +53,10 @@ export default function AppSidebar({
     if (itemPath === "/dashboard") {
       const searchParams = new URLSearchParams(location.search);
       return (location.pathname === "/dashboard" || location.pathname === "/") && !searchParams.get("tab");
+    }
+    const baseItemPath = itemPath.split("?")[0];
+    if (baseItemPath === "/founder/intake") {
+      return location.pathname === "/founder/intake";
     }
     return location.pathname === itemPath;
   };
@@ -166,7 +170,7 @@ export default function AppSidebar({
                     } ${
                       active
                         ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
-                        : "text-white/65 hover:bg-white/[0.05] hover:text-white"
+                        : "text-white hover:bg-white/[0.05]"
                     }`}
                   >
                     {active && !isCollapsed && (
@@ -177,7 +181,7 @@ export default function AppSidebar({
                       className={`shrink-0 transition-colors ${
                         active
                           ? "text-[#C9A15A]"
-                          : "text-white/45 group-hover:text-white/80"
+                          : "text-white/70 group-hover:text-white"
                       }`}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -210,7 +214,7 @@ export default function AppSidebar({
                       } ${
                         active
                           ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
-                          : "text-white/65 hover:bg-white/[0.05] hover:text-white"
+                          : "text-white hover:bg-white/[0.05]"
                       }`}
                     >
                       {active && !isCollapsed && (
@@ -221,7 +225,7 @@ export default function AppSidebar({
                         className={`shrink-0 transition-colors ${
                           active
                             ? "text-[#C9A15A]"
-                            : "text-white/45 group-hover:text-white/80"
+                            : "text-white/70 group-hover:text-white"
                         }`}
                       />
                       {!isCollapsed && <span className="truncate">{tool.label}</span>}

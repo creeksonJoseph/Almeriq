@@ -220,7 +220,7 @@ export default function FounderLegalPage() {
                 <h4 className="mt-3 font-display text-base font-semibold text-[#F3F1EC]">
                   No active filings on record
                 </h4>
-                <p className="mt-1 text-xs text-[#9B9A94]">
+                <p className="mt-1 text-xs text-white leading-relaxed">
                   Initiate a company registration or intellectual property filing to generate an Alimeriq legal tracking number.
                 </p>
                 <div className="mt-5 flex justify-center gap-3">
@@ -255,7 +255,7 @@ export default function FounderLegalPage() {
                             {filing.ref_number}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-white/50">
+                        <p className="mt-1 text-xs text-white">
                           {filing.filing_type === "company"
                             ? `${filing.entity_type} · Jurisdiction: ${filing.jurisdiction}`
                             : `${filing.ip_type} · ${filing.ip_description || "Protected codebase"}`}
@@ -288,7 +288,7 @@ export default function FounderLegalPage() {
                 <h3 className="font-display text-lg font-bold text-[#F3F1EC]">
                   File Company Entity Registration
                 </h3>
-                <p className="text-xs text-[#9B9A94]">
+                <p className="text-xs text-white">
                   Generates an official Alimeriq tracking docket and prepares statutory incorporation papers.
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default function FounderLegalPage() {
                   maxLength={150}
                   value={companyForm.company_name}
                   onChange={(e) => setCompanyForm({ ...companyForm, company_name: e.target.value })}
-                  placeholder="e.g. Alimeriq Logistics Technologies Ltd"
+                  placeholder="e.g. Almeriq Logistics Technologies Ltd"
                   className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white placeholder-white/20 focus:border-[#C9A15A] focus:outline-none"
                 />
               </div>
@@ -390,7 +390,7 @@ export default function FounderLegalPage() {
                 <h3 className="font-display text-lg font-bold text-[#F3F1EC]">
                   Intellectual Property & Copyright Filing
                 </h3>
-                <p className="text-xs text-[#9B9A94]">
+                <p className="text-xs text-white">
                   Create an auditable timestamped record of algorithms, software IP, trademarks, and trade secrets.
                 </p>
               </div>
@@ -416,7 +416,7 @@ export default function FounderLegalPage() {
                   maxLength={150}
                   value={ipForm.ip_title}
                   onChange={(e) => setIpForm({ ...ipForm, ip_title: e.target.value })}
-                  placeholder="e.g. Alimeriq Autonomous Freight Dispatch Engine v1.0"
+                  placeholder="e.g. Almeriq Autonomous Freight Dispatch Engine v1.0"
                   className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white placeholder-white/20 focus:border-[#C9A15A] focus:outline-none"
                 />
               </div>
@@ -495,7 +495,7 @@ export default function FounderLegalPage() {
                       <h5 className="text-xs font-bold text-white">{tmpl.title}</h5>
                       {active && <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />}
                     </div>
-                    <p className="mt-1 text-[11px] text-white/45 line-clamp-2 leading-relaxed">{tmpl.desc}</p>
+                    <p className="mt-1 text-[11px] text-white line-clamp-2 leading-relaxed">{tmpl.desc}</p>
                   </button>
                 );
               })}
@@ -508,7 +508,7 @@ export default function FounderLegalPage() {
                   <h4 className="font-display text-base font-bold text-white">
                     {selectedTemplate.title}
                   </h4>
-                  <p className="text-xs text-white/50">{selectedTemplate.desc}</p>
+                  <p className="text-xs text-white">{selectedTemplate.desc}</p>
                 </div>
                 <button
                   type="button"
@@ -520,7 +520,7 @@ export default function FounderLegalPage() {
                 </button>
               </div>
 
-              <pre className="mt-4 max-h-96 overflow-y-auto rounded-lg border border-white/8 bg-[#0A0A0B] p-4 text-xs font-mono leading-relaxed text-white/70 whitespace-pre-wrap">
+              <pre className="mt-4 max-h-96 overflow-y-auto rounded-lg border border-white/8 bg-[#0A0A0B] p-4 text-xs font-mono leading-relaxed text-white whitespace-pre-wrap">
                 {selectedTemplate.content}
               </pre>
             </div>

@@ -46,7 +46,7 @@ export default function StepPersonal({
         <h2 className="font-serif text-xl text-white font-medium tracking-tight">
           Personal Details
         </h2>
-        <p className="text-sm text-white/80 mt-2">
+        <p className="text-sm text-white mt-2">
           Let&apos;s start by setting up your identity on Alimeriq.
         </p>
       </div>

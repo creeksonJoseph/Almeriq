@@ -36,7 +36,7 @@ export function StatStrip({ items = [], className = "" }) {
               {it.value}
             </p>
             {it.subtext && (
-              <p className="mt-1 text-xs text-white/45 leading-relaxed">
+              <p className="mt-1 text-xs text-white leading-relaxed">
                 {it.subtext}
               </p>
             )}
@@ -75,7 +75,7 @@ export function EditorialSection({
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
-      <div className="text-sm text-white/70 leading-relaxed">
+      <div className="text-sm text-white leading-relaxed">
         {children}
       </div>
     </section>
@@ -114,7 +114,7 @@ export function ExecutiveBanner({
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">{kicker}</p>
           <p className={`font-display text-xl sm:text-2xl font-bold tracking-tight ${textColor}`}>{verdict}</p>
-          {rationale && <p className="mt-1.5 text-xs sm:text-sm text-white/75 leading-relaxed">{rationale}</p>}
+          {rationale && <p className="mt-1.5 text-xs sm:text-sm text-white leading-relaxed">{rationale}</p>}
         </div>
         {aside && <div className="shrink-0">{aside}</div>}
       </div>
@@ -153,7 +153,7 @@ export function TimelineFlow({ steps = [], className = "" }) {
           </div>
 
           {st.description && (
-            <p className="text-xs sm:text-sm text-white/60 leading-relaxed max-w-3xl mb-3">
+            <p className="text-xs sm:text-sm text-white leading-relaxed max-w-3xl mb-3">
               {st.description}
             </p>
           )}
@@ -163,7 +163,7 @@ export function TimelineFlow({ steps = [], className = "" }) {
               {st.deliverables.map((d, di) => (
                 <span
                   key={di}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1 text-xs text-white/70"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-white/8 bg-white/[0.03] px-2.5 py-1 text-xs text-white"
                 >
                   <span className="text-[#f2ca50] text-[10px]">✓</span> {d}
                 </span>

@@ -45,10 +45,10 @@ export default function BusinessPlanResult({ result }) {
       {/* Problem & Solution Flow */}
       <div className="grid gap-8 lg:grid-cols-2">
         <EditorialSection title="Problem Being Solved">
-          <p className="text-sm leading-relaxed text-white/75">{result.problem_statement}</p>
+          <p className="text-sm leading-relaxed text-white">{result.problem_statement}</p>
         </EditorialSection>
         <EditorialSection title="The Solution">
-          <p className="text-sm leading-relaxed text-white/75">{result.solution_description}</p>
+          <p className="text-sm leading-relaxed text-white">{result.solution_description}</p>
         </EditorialSection>
       </div>
 
@@ -61,7 +61,7 @@ export default function BusinessPlanResult({ result }) {
                 <div key={i} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-white/[0.02] transition-colors">
                   <div>
                     <h4 className="text-sm font-semibold text-white">{rs.stream}</h4>
-                    <p className="text-xs text-white/55 mt-0.5">{rs.description}</p>
+                    <p className="text-xs text-white mt-0.5">{rs.description}</p>
                   </div>
                 </div>
               ))}
@@ -71,7 +71,7 @@ export default function BusinessPlanResult({ result }) {
           {result.business_model.pricing_strategy && (
             <div className="mb-6 p-4 rounded-xl border border-white/8 bg-white/[0.02]">
               <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1">Pricing Strategy</span>
-              <p className="text-xs sm:text-sm text-white/80">{result.business_model.pricing_strategy}</p>
+              <p className="text-xs sm:text-sm text-white">{result.business_model.pricing_strategy}</p>
             </div>
           )}
 
@@ -84,7 +84,7 @@ export default function BusinessPlanResult({ result }) {
         <EditorialSection title="3-Year Financial Estimates">
           <StatStrip items={financialMetrics} />
           {result.financial_projections && (
-            <div className="flex flex-wrap items-center gap-6 mt-4 text-xs text-white/60">
+            <div className="flex flex-wrap items-center gap-6 mt-4 text-xs text-white">
               <span>Break-even Target: <strong className="text-white font-medium">{result.financial_projections.break_even_timeline}</strong></span>
               <span>Capital Required: <strong className="text-[#f2ca50] font-medium">{result.financial_projections.funding_required}</strong></span>
             </div>
@@ -95,15 +95,15 @@ export default function BusinessPlanResult({ result }) {
       {/* Marketing Strategy */}
       {result.marketing_strategy && (
         <EditorialSection title="Go-to-Market & Acquisition">
-          <p className="text-sm text-white/70 mb-4">{result.marketing_strategy.positioning}</p>
+          <p className="text-sm text-white mb-4">{result.marketing_strategy.positioning}</p>
           <div className="grid gap-4 sm:grid-cols-2 p-4 rounded-xl border border-white/8 bg-white/[0.02] text-xs">
             <div>
               <span className="font-semibold text-white/90 block mb-1">Acquisition Loop</span>
-              <p className="text-white/60 leading-relaxed">{result.marketing_strategy.acquisition_strategy}</p>
+              <p className="text-white leading-relaxed">{result.marketing_strategy.acquisition_strategy}</p>
             </div>
             <div>
               <span className="font-semibold text-white/90 block mb-1">Retention Strategy</span>
-              <p className="text-white/60 leading-relaxed">{result.marketing_strategy.retention_strategy}</p>
+              <p className="text-white leading-relaxed">{result.marketing_strategy.retention_strategy}</p>
             </div>
           </div>
           {result.marketing_strategy.channels?.length > 0 && (
@@ -124,7 +124,7 @@ export default function BusinessPlanResult({ result }) {
                 <div key={i} className="p-3.5 flex items-center justify-between gap-3 text-xs">
                   <div>
                     <p className="font-semibold text-white">{m.milestone}</p>
-                    <p className="text-white/45 mt-0.5">{m.success_metric}</p>
+                    <p className="text-white mt-0.5">{m.success_metric}</p>
                   </div>
                   <span className="shrink-0 font-mono text-[11px] text-[#f2ca50] bg-[#f2ca50]/10 px-2.5 py-0.5 rounded-full">
                     {m.target_date}
@@ -141,7 +141,7 @@ export default function BusinessPlanResult({ result }) {
               {result.risk_mitigation.map((r, i) => (
                 <div key={i} className="border-l-2 border-rose-500/40 pl-3 py-1">
                   <p className="text-xs font-semibold text-rose-300">{r.risk}</p>
-                  <p className="text-xs text-white/60 mt-0.5">{r.mitigation}</p>
+                  <p className="text-xs text-white mt-0.5">{r.mitigation}</p>
                 </div>
               ))}
             </div>

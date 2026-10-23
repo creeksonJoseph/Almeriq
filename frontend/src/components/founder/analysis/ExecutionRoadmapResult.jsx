@@ -55,12 +55,12 @@ export default function ExecutionRoadmapResult({ result }) {
                 <div key={i} className="p-3.5 flex items-center justify-between gap-3 text-xs">
                   <div>
                     <p className="font-semibold text-white">{h.role}</p>
-                    <p className="text-white/45 mt-0.5">{h.when_to_hire}</p>
+                    <p className="text-white mt-0.5">{h.when_to_hire}</p>
                   </div>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                     h.priority === "High" ? "bg-rose-500/15 text-rose-300"
                     : h.priority === "Medium" ? "bg-[#f2ca50]/15 text-[#f2ca50]"
-                    : "bg-white/10 text-white/50"
+                    : "bg-white/10 text-white/70"
                   }`}>
                     {h.priority}
                   </span>
@@ -78,13 +78,13 @@ export default function ExecutionRoadmapResult({ result }) {
             {result.budget_allocation.map((b, i) => (
               <div key={i}>
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-white/80 font-medium">{b.category}</span>
+                  <span className="text-white font-medium">{b.category}</span>
                   <span className="font-mono font-bold text-[#f2ca50]">{b.percentage}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                   <div className="h-full rounded-full bg-[#f2ca50]/80 transition-all duration-500" style={{ width: `${b.percentage}%` }} />
                 </div>
-                {b.notes && <p className="text-[11px] text-white/40 mt-1">{b.notes}</p>}
+                {b.notes && <p className="text-[11px] text-white mt-1">{b.notes}</p>}
               </div>
             ))}
           </div>
@@ -108,7 +108,7 @@ export default function ExecutionRoadmapResult({ result }) {
                   <tr key={i} className="hover:bg-white/[0.02] transition-colors">
                     <td className="py-2.5 px-4 text-white font-medium">{k.metric}</td>
                     <td className="py-2.5 px-4 text-[#f2ca50] font-semibold">{k.target}</td>
-                    <td className="py-2.5 px-4 text-white/50">{k.measurement_frequency}</td>
+                    <td className="py-2.5 px-4 text-white">{k.measurement_frequency}</td>
                   </tr>
                 ))}
               </tbody>

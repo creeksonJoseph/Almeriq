@@ -34,7 +34,7 @@ export default function MarketAnalysisResult({ result }) {
       {/* Market Overview */}
       {result.market_overview && (
         <EditorialSection title="Market Overview">
-          <p className="text-sm sm:text-base leading-relaxed text-white/80 max-w-4xl">
+          <p className="text-sm sm:text-base leading-relaxed text-white max-w-4xl">
             {result.market_overview}
           </p>
         </EditorialSection>
@@ -60,13 +60,13 @@ export default function MarketAnalysisResult({ result }) {
                       Pain Score: {s.pain_level}/10
                     </span>
                   </div>
-                  <p className="text-xs text-white/50 mt-1">
-                    Market size estimate: <strong className="text-white/70 font-medium">{s.size_estimate}</strong>
+                  <p className="text-xs text-white mt-1">
+                    Market size estimate: <strong className="text-white font-medium">{s.size_estimate}</strong>
                   </p>
                 </div>
                 <div className="sm:text-right shrink-0">
                   <span className="text-[10px] uppercase tracking-wider text-white/40 block">Willingness to Pay</span>
-                  <span className="text-xs font-semibold text-white/85">{s.willingness_to_pay}</span>
+                  <span className="text-xs font-semibold text-white">{s.willingness_to_pay}</span>
                 </div>
               </div>
             ))}
@@ -83,8 +83,8 @@ export default function MarketAnalysisResult({ result }) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                   <h4 className="text-sm font-semibold text-white">{c.competitor}</h4>
                   {c.market_share_estimate && (
-                    <span className="text-xs text-white/45">
-                      Est. Share: <strong className="text-white/75">{c.market_share_estimate}</strong>
+                    <span className="text-xs text-white">
+                      Est. Share: <strong className="text-white font-medium">{c.market_share_estimate}</strong>
                     </span>
                   )}
                 </div>
@@ -112,7 +112,7 @@ export default function MarketAnalysisResult({ result }) {
       {result.differentiation_opportunity && (
         <EditorialSection title="Your Unfair Advantage & Wedge">
           <div className="border-l-2 border-[#f2ca50] pl-4 py-1">
-            <p className="text-sm sm:text-base leading-relaxed text-white/90 font-medium">
+            <p className="text-sm sm:text-base leading-relaxed text-white font-medium">
               {result.differentiation_opportunity}
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function MarketAnalysisResult({ result }) {
             {result.go_to_market_channels.map((ch, i) => (
               <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/[0.02]">
                 <h4 className="text-sm font-semibold text-white mb-1">{ch.channel}</h4>
-                <p className="text-xs text-white/60 leading-relaxed mb-3">{ch.rationale}</p>
+                <p className="text-xs text-white leading-relaxed mb-3">{ch.rationale}</p>
                 {ch.estimated_cost_to_acquire && (
                   <span className="text-[11px] font-mono text-[#f2ca50] bg-[#f2ca50]/10 px-2 py-0.5 rounded-md border border-[#f2ca50]/20 inline-block">
                     Est. CAC: {ch.estimated_cost_to_acquire}

@@ -1,18 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 export default function FounderStudioNav({ title, subtitle, action }) {
+  const navigate = useNavigate();
   return (
     <div className="mb-8">
       {/* Top breadcrumb & back */}
       <div className="mb-4">
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 transition-colors hover:text-white"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 transition-colors hover:text-white cursor-pointer"
         >
-          <ArrowLeft size={14} /> Back to Dashboard
-        </Link>
+          <ArrowLeft size={14} /> Back
+        </button>
       </div>
 
       {/* Header title & action */}
@@ -25,7 +27,7 @@ export default function FounderStudioNav({ title, subtitle, action }) {
               </h1>
             )}
             {subtitle && (
-              <p className="mt-1 text-sm text-[#9B9A94]">{subtitle}</p>
+              <p className="mt-1 text-sm text-white leading-relaxed">{subtitle}</p>
             )}
           </div>
           {action && <div className="shrink-0">{action}</div>}

@@ -1,6 +1,6 @@
 import React from "react";
 
-export function TagList({ items, colorClass = "bg-white/5 text-white/75 border border-white/8" }) {
+export function TagList({ items, colorClass = "bg-white/5 text-white border border-white/8" }) {
   if (!items?.length) return null;
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -18,7 +18,7 @@ export function NumberedList({ items, colorClass = "text-[#f2ca50]" }) {
   return (
     <ol className="space-y-2">
       {items.map((item, i) => (
-        <li key={i} className="flex gap-2.5 text-xs sm:text-sm text-white/70 leading-relaxed">
+        <li key={i} className="flex gap-2.5 text-xs sm:text-sm text-white leading-relaxed">
           <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold mt-0.5 bg-white/6 ${colorClass}`}>
             {i + 1}
           </span>

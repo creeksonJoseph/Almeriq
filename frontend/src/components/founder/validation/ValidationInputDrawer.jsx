@@ -18,7 +18,7 @@ export default function ValidationInputDrawer({
   return (
     <div className="mt-5 pt-5 border-t border-white/10 space-y-4">
       <div>
-        <label className="text-xs font-semibold text-white/75 block mb-1.5">
+        <label className="text-xs font-semibold text-white block mb-1.5">
           Startup Idea / Headline *
         </label>
         <input
@@ -31,7 +31,7 @@ export default function ValidationInputDrawer({
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-white/75 block mb-1.5">
+        <label className="text-xs font-semibold text-white block mb-1.5">
           Problem Statement
         </label>
         <textarea
@@ -44,7 +44,7 @@ export default function ValidationInputDrawer({
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-white/75 block mb-1.5">
+        <label className="text-xs font-semibold text-white block mb-1.5">
           Proposed Solution
         </label>
         <textarea
@@ -58,7 +58,7 @@ export default function ValidationInputDrawer({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs font-semibold text-white/75 block mb-1.5">
+          <label className="text-xs font-semibold text-white block mb-1.5">
             Target Customer
           </label>
           <input
@@ -71,7 +71,7 @@ export default function ValidationInputDrawer({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-white/75 block mb-1.5">
+          <label className="text-xs font-semibold text-white block mb-1.5">
             Market Location / Geography
           </label>
           <input

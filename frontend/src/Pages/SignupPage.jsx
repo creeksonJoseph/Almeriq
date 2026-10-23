@@ -256,7 +256,7 @@ export default function SignupPage() {
                   </div>
                   <div className="flex flex-col items-center gap-2 pt-1">
                     {countdown > 0 ? (
-                      <p className="text-xs text-white/50">
+                      <p className="text-xs text-white">
                         Resend code in{" "}
                         <span className="text-[#f2ca50] font-semibold">
                           {countdown}s
@@ -279,7 +279,7 @@ export default function SignupPage() {
                     <button
                       type="button"
                       onClick={resetToEmail}
-                      className="text-xs text-white/50 hover:text-white/80"
+                      className="text-xs text-white hover:text-white/80"
                       style={{
                         transition: "color 400ms cubic-bezier(0.32,0.72,0,1)",
                       }}

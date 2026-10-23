@@ -194,28 +194,35 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
               {venture.idea}
             </h2>
             {summaryText ? (
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/55">
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white">
                 {summaryText}
               </p>
             ) : hasCompletedAnalyses ? (
-              <p className="mt-2 text-sm text-[#f2ca50]/75">
+              <p className="mt-2 text-sm text-[#f2ca50]">
                 {analysesRun.length} of 4 analysis module{analysesRun.length !== 1 ? "s" : ""} completed · Click to view results or run additional modules.
               </p>
             ) : (
-              <p className="mt-2 text-sm text-white/35 italic">
+              <p className="mt-2 text-sm text-white/70 italic">
                 No analysis run yet — expand to choose an analysis type.
               </p>
             )}
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="flex items-center gap-1 text-xs text-white/40">
+              <span className="flex items-center gap-1 text-xs text-white">
                 <Users size={11} /> {venture.customer}
               </span>
-              <span className="flex items-center gap-1 text-xs text-white/40">
+              <span className="flex items-center gap-1 text-xs text-white">
                 <MapPin size={11} /> {venture.location}
               </span>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <Link
+              to={`/founder/intake?mode=edit&id=${venture.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-white/70 hover:border-white/30 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+            >
+              Edit
+            </Link>
             {!isActive && (
               <button
                 type="button"
@@ -273,22 +280,22 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
               <div className="space-y-3">
                 <div>
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">The Problem</p>
-                  <p className="text-sm leading-relaxed text-white/75">{venture.problem || "No problem statement recorded."}</p>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/60">The Problem</p>
+                  <p className="text-sm leading-relaxed text-white">{venture.problem || "No problem statement recorded."}</p>
                 </div>
                 <div>
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">Target Customer</p>
-                  <p className="text-sm leading-relaxed text-white/75">{venture.customer || "General market / Not specified"}</p>
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-white/60">Target Customer</p>
+                  <p className="text-sm leading-relaxed text-white">{venture.customer || "General market / Not specified"}</p>
                 </div>
               </div>
               <div className="space-y-3">
                 <div>
                   <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Proposed Solution</p>
-                  <p className="text-sm leading-relaxed text-white/75">{venture.solution || "No solution details recorded."}</p>
+                  <p className="text-sm leading-relaxed text-white">{venture.solution || "No solution details recorded."}</p>
                 </div>
                 <div>
                   <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]">Launch Market</p>
-                  <p className="text-sm leading-relaxed text-white/75 capitalize">{venture.location || "Not specified"}</p>
+                  <p className="text-sm leading-relaxed text-white capitalize">{venture.location || "Not specified"}</p>
                 </div>
               </div>
             </div>
@@ -303,7 +310,7 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#f2ca50] mb-1">
                     Market Context
                   </p>
-                  <p className="text-sm leading-relaxed text-white/75">{venture.market}</p>
+                  <p className="text-sm leading-relaxed text-white">{venture.market}</p>
                 </div>
               )}
 
@@ -331,11 +338,11 @@ function EmptyVentures() {
       <h2 className="mt-4 font-display text-xl font-semibold text-white">
         No ideas saved yet
       </h2>
-      <p className="mt-2 max-w-md text-sm leading-relaxed text-white/50">
+      <p className="mt-2 max-w-md text-sm leading-relaxed text-white">
         Share a startup idea and get full analysis. Every idea you explore is automatically saved here so you can check it anytime.
       </p>
       <Link
-        to="/founder/intake"
+        to="/founder/intake?mode=new"
         className="alq-submit mt-6 sm:mx-auto sm:w-auto sm:px-8"
       >
         Share your first startup idea
@@ -385,18 +392,19 @@ export default function VenturesPage() {
       <div className="mx-auto w-full max-w-5xl px-3 sm:px-6 lg:px-8 pb-14 pt-4 sm:pt-6">
         {/* Page header */}
         <div className="mb-8">
-          <Link
-            to="/dashboard"
-            className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-white/40 hover:text-white"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
           >
-            <ArrowLeft size={13} /> Dashboard
-          </Link>
+            <ArrowLeft size={14} /> Back
+          </button>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Saved Ideas
               </h1>
-              <p className="mt-2 text-sm text-white/50">
+              <p className="mt-2 text-sm text-white">
                 {ventures.length === 0
                   ? "Every analysis you run is saved here automatically."
                   : `${ventures.length} idea${ventures.length !== 1 ? "s" : ""} saved`}
@@ -413,7 +421,7 @@ export default function VenturesPage() {
                 Refresh
               </button>
               <Link
-                to="/founder/intake"
+                to="/founder/intake?mode=new"
                 className="alq-submit sm:w-auto sm:px-6"
               >
                 New idea

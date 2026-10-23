@@ -52,7 +52,7 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
   const handleCreateNew = () => {
     clearActiveVenture();
     setOpen(false);
-    navigate("/founder/intake");
+    navigate("/founder/intake?mode=new");
   };
 
   // If user has zero saved ventures yet, show simple button to share one
@@ -62,7 +62,7 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
         return (
           <div className={`flex justify-center ${className}`}>
             <Link
-              to="/founder/intake"
+              to="/founder/intake?mode=new"
               title="Share an Idea"
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-colors"
             >
@@ -75,7 +75,7 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
       return (
         <div className={`px-1 ${className}`}>
           <Link
-            to="/founder/intake"
+            to="/founder/intake?mode=new"
             className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-3 py-2 text-xs font-medium text-white/60 hover:border-[#C9A15A]/40 hover:text-[#E8D6A8] hover:bg-[#C9A15A]/5 transition-all"
           >
             <Plus size={13} className="shrink-0 text-[#C9A15A]" />
@@ -87,7 +87,7 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
 
     return (
       <Link
-        to="/founder/intake"
+        to="/founder/intake?mode=new"
         className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/10 transition-colors shrink-0 ${className}`}
       >
         <span>+ Share Idea</span>

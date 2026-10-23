@@ -13,7 +13,7 @@ export default function StepIdentity({
         <h2 className="font-serif text-xl text-white font-medium tracking-tight">
           Identity Verification
         </h2>
-        <p className="text-sm text-white/80 mt-2">
+        <p className="text-sm text-white mt-2">
           Required for legal company registration and compliance.
         </p>
       </div>
@@ -41,7 +41,7 @@ export default function StepIdentity({
             <h4 className="text-xs font-semibold text-white mb-0.5">
               Why we ask for identity numbers
             </h4>
-            <p className="text-xs text-white/70 leading-relaxed">
+            <p className="text-xs text-white leading-relaxed">
               Required for legal company registration, compliance, and regulatory verification when executing infrastructure or investment contracts.
             </p>
           </div>
@@ -51,7 +51,7 @@ export default function StepIdentity({
           <button
             type="button"
             onClick={onBack}
-            className="px-5 py-3 bg-[#13141a] hover:bg-[#181a22] text-white/80 text-xs font-semibold rounded-full transition-colors"
+            className="px-5 py-3 bg-[#13141a] hover:bg-[#181a22] text-white text-xs font-semibold rounded-full transition-colors"
           >
             ← Back
           </button>

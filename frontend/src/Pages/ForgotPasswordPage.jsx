@@ -172,7 +172,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="flex flex-col items-center gap-2 pt-1">
                   {countdown > 0 ? (
-                    <p className="text-xs text-white/50">
+                    <p className="text-xs text-white">
                       Resend code in <span className="text-[#f2ca50] font-semibold">{countdown}s</span>
                     </p>
                   ) : (
@@ -188,7 +188,7 @@ export default function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={() => { setStep(1); setError(""); }}
-                    className="text-xs text-white/50 hover:text-white/80"
+                    className="text-xs text-white hover:text-white/80"
                   >
                     ← Use a different email
                   </button>

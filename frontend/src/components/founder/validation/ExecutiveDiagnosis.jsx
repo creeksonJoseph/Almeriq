@@ -61,7 +61,7 @@ export default function ExecutiveDiagnosis({
       </div>
 
       {evaluation.executive_summary && (
-        <p className="text-sm leading-relaxed text-white/80 max-w-5xl">
+        <p className="text-sm leading-relaxed text-white max-w-5xl">
           {evaluation.executive_summary}
         </p>
       )}
@@ -73,7 +73,7 @@ export default function ExecutiveDiagnosis({
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-emerald-400/90 mb-2">
               Key Strengths
             </h4>
-            <ul className="space-y-1.5 text-white/75">
+            <ul className="space-y-1.5 text-white">
               {evaluation.top_strengths.map((str, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-emerald-400/70 font-semibold">•</span>
@@ -89,7 +89,7 @@ export default function ExecutiveDiagnosis({
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-rose-400/90 mb-2">
               Critical Blindspots & Risks
             </h4>
-            <ul className="space-y-1.5 text-white/75">
+            <ul className="space-y-1.5 text-white">
               {evaluation.critical_red_flags.map((flag, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-rose-400/70 font-semibold">•</span>
@@ -107,7 +107,7 @@ export default function ExecutiveDiagnosis({
           <h4 className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-3">
             Immediate Action Plan
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-white/80">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-white">
             {evaluation.immediate_action_plan.map((step, idx) => (
               <div key={idx} className="flex items-start gap-2">
                 <span className="font-mono text-white/40 shrink-0">

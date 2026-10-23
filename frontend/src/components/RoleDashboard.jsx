@@ -218,7 +218,7 @@ function FounderWorkspaceOverview() {
                 {ventureName}
               </h2>
               {ventureProblem && (
-                <p className="mt-2.5 text-sm leading-relaxed text-white/60">
+                <p className="mt-2.5 text-sm leading-relaxed text-white">
                   {ventureProblem}
                 </p>
               )}
@@ -231,14 +231,14 @@ function FounderWorkspaceOverview() {
                 AI Feedback <ArrowRight size={14} />
               </Link>
               <Link
-                to="/founder/intake"
-                className="rounded-xl border border-white/15 px-3.5 py-2 text-xs font-semibold text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                to="/founder/intake?mode=edit"
+                className="rounded-xl border border-white/20 px-3.5 py-2 text-xs font-semibold text-white hover:text-[#f2ca50] hover:border-white/40 transition-colors"
               >
                 Edit idea
               </Link>
               <Link
-                to="/founder/intake"
-                className="rounded-xl border border-dashed border-white/15 px-3.5 py-2 text-xs font-semibold text-white/40 hover:text-white hover:border-white/30 transition-colors"
+                to="/founder/intake?mode=new"
+                className="rounded-xl border border-dashed border-white/20 px-3.5 py-2 text-xs font-semibold text-white hover:text-[#f2ca50] hover:border-white/40 transition-colors"
               >
                 + New idea
               </Link>
@@ -248,11 +248,11 @@ function FounderWorkspaceOverview() {
       ) : (
         <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
           <h2 className="font-display text-xl font-semibold text-white">No startup idea yet</h2>
-          <p className="mt-2 text-sm text-white/50 max-w-md mx-auto">
+          <p className="mt-2 text-sm text-white max-w-md mx-auto">
             Add your startup idea to get AI analysis, market validation, and a build roadmap.
           </p>
           <div className="mt-5 flex justify-center">
-            <Link to="/founder/intake" className="alq-submit text-xs py-2 px-5">
+            <Link to="/founder/intake?mode=new" className="alq-submit text-xs py-2 px-5">
               + Add your startup idea <ArrowRight size={14} />
             </Link>
           </div>
@@ -308,7 +308,7 @@ function FounderWorkspaceOverview() {
                   <h4 className="font-semibold text-sm text-white group-hover:text-[#f2ca50] transition-colors">
                     {tool.title}
                   </h4>
-                  <p className="mt-1 text-xs leading-relaxed text-white/50">
+                  <p className="mt-1 text-xs leading-relaxed text-white">
                     {tool.desc}
                   </p>
                 </div>
@@ -328,7 +328,7 @@ function FounderWorkspaceOverview() {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="font-semibold text-sm text-white">Your Saved Ideas</h3>
-              <p className="text-xs text-white/45 mt-0.5">Switch active context</p>
+              <p className="text-xs text-white mt-0.5">Switch active context</p>
             </div>
             <Link
               to="/founder/ventures"
@@ -346,7 +346,7 @@ function FounderWorkspaceOverview() {
                   key={v.id}
                   className={`flex flex-col justify-between rounded-xl border p-3.5 transition-all ${isSelected
                       ? "border-[#f2ca50]/40 bg-[#f2ca50]/5 text-white"
-                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-white/80"
+                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-white"
                     }`}
                 >
                   <div className="min-w-0 mb-3">
@@ -360,7 +360,7 @@ function FounderWorkspaceOverview() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-white/45 line-clamp-2">
+                    <p className="text-[11px] text-white line-clamp-2">
                       {v.problem || v.solution || "No description provided."}
                     </p>
                   </div>
@@ -369,7 +369,7 @@ function FounderWorkspaceOverview() {
                     <button
                       type="button"
                       onClick={() => setActiveVentureId(v.id)}
-                      className="text-[11px] font-medium text-white/50 hover:text-white transition-colors cursor-pointer"
+                      className="text-[11px] font-medium text-white hover:text-[#f2ca50] transition-colors cursor-pointer"
                     >
                       {isSelected ? "Current idea" : "Set as active"}
                     </button>
@@ -410,7 +410,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {role.title}
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white">
             Good to see you, {firstName}. {role.subtitle}
           </p>
         </div>
@@ -451,7 +451,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
                 <h2 className="mt-2 font-display text-xl font-semibold text-white">
                   {role.secondaryTitle}
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-white/55">
+                <p className="mt-2 text-sm leading-relaxed text-white">
                   {role.secondaryCopy}
                 </p>
                 <button
@@ -480,7 +480,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
           <h2 className="mt-3 font-display text-2xl font-semibold text-white">
             {role.secondaryTitle}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-white/60">
+          <p className="mt-2 text-sm leading-relaxed text-white">
             {role.secondaryCopy}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -546,7 +546,7 @@ function EmptyState({ icon: Icon, title, copy }) {
       <h2 className="mt-4 font-display text-xl font-semibold text-white">
         {title}
       </h2>
-      <p className="mt-2 max-w-md text-sm leading-relaxed text-white/50">
+      <p className="mt-2 max-w-md text-sm leading-relaxed text-white">
         {copy}
       </p>
     </div>

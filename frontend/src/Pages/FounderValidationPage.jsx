@@ -215,7 +215,7 @@ export default function FounderValidationPage() {
                   Target Venture
                 </span>
                 {locationInput && (
-                  <span className="text-xs text-white/40">
+                  <span className="text-xs text-white">
                     · {locationInput}
                   </span>
                 )}
@@ -228,8 +228,8 @@ export default function FounderValidationPage() {
 
               {/* Target Customer / Context */}
               {customerInput && (
-                <p className="mt-2 text-xs leading-relaxed text-white/50 max-w-3xl">
-                  <span className="font-medium text-white/60">Target:</span> {customerInput}
+                <p className="mt-2 text-xs leading-relaxed text-white max-w-3xl">
+                  <span className="font-medium text-white">Target:</span> {customerInput}
                 </p>
               )}
             </div>
@@ -278,7 +278,7 @@ export default function FounderValidationPage() {
             <p className="mt-4 text-sm font-semibold text-white">
               Evaluating Validation Rubric…
             </p>
-            <p className="mt-1 text-xs text-white/50 max-w-sm mx-auto">
+            <p className="mt-1 text-xs text-white leading-relaxed max-w-sm mx-auto">
               Analyzing problem-solution fit, TAM/SAM/SOM sizing, market competitors, feasibility, and unit economics.
             </p>
           </div>
@@ -292,7 +292,7 @@ export default function FounderValidationPage() {
                 <h3 className="font-display text-base sm:text-lg font-semibold text-white">
                   Evaluation Framework
                 </h3>
-                <p className="mt-1 text-xs text-white/50">
+                <p className="mt-1 text-xs text-white">
                   Run validation using the button at the top to benchmark this idea across the 6 venture pillars.
                 </p>
               </div>
@@ -347,7 +347,7 @@ export default function FounderValidationPage() {
                       <span className="text-xs sm:text-sm font-medium text-white block sm:inline sm:mr-2">
                         {pillar.name}
                       </span>
-                      <span className="text-xs text-white/40 hidden md:inline">
+                      <span className="text-xs text-white hidden md:inline">
                         — {pillar.desc}
                       </span>
                     </div>

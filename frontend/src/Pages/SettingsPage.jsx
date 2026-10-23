@@ -50,7 +50,7 @@ export default function SettingsPage() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
               Password & Security
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-white/50">
+            <p className="mt-1 text-xs sm:text-sm text-white">
               Manage your account password and security preferences.
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function SettingsPage() {
             <h2 className="text-base font-semibold text-white mt-1">
               Verify Your Identity
             </h2>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-xs text-white mt-0.5">
               Request and verify a 6-digit security code sent to your email.
             </p>
           </div>
@@ -83,7 +83,7 @@ export default function SettingsPage() {
           {/* STEP 1: Request Code */}
           {pwdStep === 1 && (
             <form onSubmit={handleRequestChangeOtp} className="space-y-4">
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/70 leading-relaxed flex items-start gap-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white leading-relaxed flex items-start gap-3">
                 <Mail size={16} className="text-[#C9A15A] shrink-0 mt-0.5" />
                 <div>
                   We will send a 6-digit security code to{" "}
@@ -132,7 +132,7 @@ export default function SettingsPage() {
               )}
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-white/70">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-white">
                   Enter 6-Digit Code
                 </label>
                 <input
@@ -216,7 +216,7 @@ export default function SettingsPage() {
             <h2 className="text-base font-semibold text-white mt-1">
               Set New Password
             </h2>
-            <p className="text-xs text-white/50 mt-0.5">
+            <p className="text-xs text-white mt-0.5">
               {pwdStep < 3
                 ? "🔒 Verify the security code on the left to unlock."
                 : "Enter your new password below."}
@@ -225,7 +225,7 @@ export default function SettingsPage() {
 
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-white/70">
+              <label className="block text-xs font-semibold text-white">
                 New Password
               </label>
               <div className="relative">
@@ -253,7 +253,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-white/70">
+              <label className="block text-xs font-semibold text-white">
                 Confirm New Password
               </label>
               <div className="relative">

@@ -119,7 +119,7 @@ export default function FounderProductPage() {
               <h3 className="font-display text-xl font-bold text-[#F3F1EC]">
                 {PRODUCT_TOOLS.find((t) => t.id === activeTab)?.label}
               </h3>
-              <p className="mt-1 text-xs text-[#9B9A94]">
+              <p className="mt-1 text-xs text-white">
                 {PRODUCT_TOOLS.find((t) => t.id === activeTab)?.desc}
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function FounderProductPage() {
                 type="button"
                 onClick={handleCopy}
                 disabled={!currentData}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B2B31] bg-[#1C1C21] px-3 py-1.5 text-xs font-medium text-[#9B9A94] transition-colors hover:text-white disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B2B31] bg-[#1C1C21] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:text-white disabled:opacity-40"
               >
                 {copied ? <Check size={14} className="text-[#3E8368]" /> : <Copy size={14} />}
                 <span>{copied ? "Copied" : "Copy"}</span>
@@ -148,7 +148,7 @@ export default function FounderProductPage() {
           {loading && (
             <div className="flex min-h-64 flex-col items-center justify-center py-12">
               <Loader2 size={32} className="animate-spin text-[#C9A15A]" />
-              <p className="mt-4 text-xs font-medium text-[#9B9A94]">
+              <p className="mt-4 text-xs font-medium text-white">
                 Synthesizing product specifications with engineering heuristics...
               </p>
             </div>
@@ -169,7 +169,7 @@ export default function FounderProductPage() {
                               {p.role}
                             </span>
                           </div>
-                          <blockquote className="mt-2 border-l-2 border-[#f2ca50]/50 pl-3 text-xs italic text-white/70 leading-relaxed">
+                          <blockquote className="mt-2 border-l-2 border-[#f2ca50]/50 pl-3 text-xs italic text-white leading-relaxed">
                             "{p.quote}"
                           </blockquote>
                         </div>
@@ -179,7 +179,7 @@ export default function FounderProductPage() {
                             <span className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">
                               Primary Goals
                             </span>
-                            <ul className="space-y-1.5 text-xs text-white/80">
+                            <ul className="space-y-1.5 text-xs text-white">
                               {safeList(p.goals).map((g, gi) => (
                                 <li key={gi} className="flex items-start gap-1.5">
                                   <span className="text-[#f2ca50] font-bold">·</span>
@@ -228,11 +228,11 @@ export default function FounderProductPage() {
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 text-xs pl-7">
                         <div>
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40 block">User Action</span>
-                          <p className="mt-1 text-white/80 leading-relaxed">{step.user_action}</p>
+                          <p className="mt-1 text-white leading-relaxed">{step.user_action}</p>
                         </div>
                         <div>
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40 block">Touchpoint</span>
-                          <p className="mt-1 text-white/70 leading-relaxed font-mono text-[11px]">{step.touchpoint}</p>
+                          <p className="mt-1 text-white leading-relaxed font-mono text-[11px]">{step.touchpoint}</p>
                         </div>
                         <div>
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 block">Product Opportunity</span>
@@ -257,19 +257,19 @@ export default function FounderProductPage() {
                       </thead>
                       <tbody className="divide-y divide-white/5">
                         <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white/50">Frontend Client</td>
+                          <td className="py-3.5 px-5 font-medium text-white">Frontend Client</td>
                           <td className="py-3.5 px-5 font-semibold text-white text-sm">{currentData.frontend}</td>
                         </tr>
                         <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white/50">Backend & API</td>
+                          <td className="py-3.5 px-5 font-medium text-white">Backend & API</td>
                           <td className="py-3.5 px-5 font-semibold text-white text-sm">{currentData.backend}</td>
                         </tr>
                         <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white/50">Database Layer</td>
+                          <td className="py-3.5 px-5 font-medium text-white">Database Layer</td>
                           <td className="py-3.5 px-5 font-semibold text-white text-sm">{currentData.database}</td>
                         </tr>
                         <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white/50">Hosting & Infrastructure</td>
+                          <td className="py-3.5 px-5 font-medium text-white">Hosting & Infrastructure</td>
                           <td className="py-3.5 px-5 font-semibold text-[#f2ca50] text-sm">{currentData.infrastructure}</td>
                         </tr>
                       </tbody>
@@ -283,7 +283,7 @@ export default function FounderProductPage() {
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {safeList(currentData.third_party_services).map((s, si) => (
-                          <span key={si} className="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 text-xs text-white/80">
+                          <span key={si} className="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 text-xs text-white">
                             {typeof s === "object" ? JSON.stringify(s) : String(s)}
                           </span>
                         ))}
@@ -296,7 +296,7 @@ export default function FounderProductPage() {
                       <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1">
                         Velocity & Scale Rationale
                       </span>
-                      <p className="text-xs sm:text-sm leading-relaxed text-white/70">
+                      <p className="text-xs sm:text-sm leading-relaxed text-white">
                         {currentData.rationale}
                       </p>
                     </div>
@@ -324,7 +324,7 @@ export default function FounderProductPage() {
                         </div>
                       </div>
                       <div className="pl-6 pt-1">
-                        <ul className="space-y-1 text-xs text-white/75">
+                        <ul className="space-y-1 text-xs text-white">
                           {safeList(epic.user_stories).map((story, si) => (
                             <li key={si} className="flex items-start gap-1.5">
                               <span className="text-[#f2ca50] font-bold">·</span>
