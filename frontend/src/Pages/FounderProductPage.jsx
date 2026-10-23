@@ -102,7 +102,7 @@ export default function FounderProductPage() {
         )}
 
         {/* Tab Selection - Clean Horizontal Bar */}
-        <div className="mb-8 flex flex-wrap gap-2 border-b border-white/10 pb-4">
+        <div className="mb-10 flex flex-wrap gap-2 border-b border-white/10 pb-4">
           {PRODUCT_TOOLS.map((tool) => {
             const active = activeTab === tool.id;
             return (
@@ -110,10 +110,10 @@ export default function FounderProductPage() {
                 key={tool.id}
                 type="button"
                 onClick={() => setActiveTab(tool.id)}
-                className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
+                className={`rounded-full px-5 py-2 text-xs font-semibold transition-colors ${
                   active
-                    ? "bg-[#f2ca50]/15 text-[#f2ca50] border border-[#f2ca50]/30"
-                    : "text-white/60 hover:bg-white/5 hover:text-white"
+                    ? "bg-[#f2ca50]/15 text-[#f2ca50]"
+                    : "text-white/60 hover:text-white"
                 }`}
               >
                 {tool.label}
@@ -123,22 +123,22 @@ export default function FounderProductPage() {
         </div>
 
         {/* Content Box */}
-        <div className="rounded-2xl border border-[#2B2B31] bg-[#141417] p-6 sm:p-8">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#2B2B31] pb-5">
+        <div className="py-2">
+          <div className="mb-10 flex flex-wrap items-center justify-between gap-4 pb-5">
             <div>
-              <h3 className="font-display text-xl font-bold text-[#F3F1EC]">
+              <h3 className="font-display text-2xl font-bold text-white">
                 {PRODUCT_TOOLS.find((t) => t.id === activeTab)?.label}
               </h3>
-              <p className="mt-1 text-xs text-white">
+              <p className="mt-2 text-sm text-white/70 max-w-xl">
                 {PRODUCT_TOOLS.find((t) => t.id === activeTab)?.desc}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={handleCopy}
                 disabled={!currentData}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B2B31] bg-[#1C1C21] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:text-white disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:text-white disabled:opacity-40"
               >
                 {copied ? <Check size={14} className="text-[#3E8368]" /> : <Copy size={14} />}
                 <span>{copied ? "Copied" : "Copy"}</span>
@@ -147,7 +147,7 @@ export default function FounderProductPage() {
                 type="button"
                 onClick={() => fetchTool(true)}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#C9A15A]/30 bg-[#C9A15A]/10 px-3.5 py-1.5 text-xs font-semibold text-[#E8D6A8] transition-colors hover:bg-[#C9A15A]/20 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-full border border-[#f2ca50]/30 bg-[#f2ca50]/10 px-4 py-2 text-xs font-semibold text-[#f2ca50] transition-colors hover:bg-[#f2ca50]/20 disabled:opacity-60"
               >
                 <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
                 <span>{loading ? "Generating..." : "Regenerate"}</span>

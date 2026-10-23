@@ -153,25 +153,25 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
 
   return (
     <article
-      className={`transition-all py-6 sm:py-0 sm:rounded-2xl sm:border ${
+      className={`transition-all py-6 border-b ${
         isActive
-          ? "sm:border-[#f2ca50]/50 sm:bg-[#14141d] sm:shadow-[0_0_20px_rgba(242,202,80,0.06)] sm:ring-1 sm:ring-[#f2ca50]/30"
-          : "sm:border-white/10 sm:bg-[#12121a] sm:hover:border-white/15"
+          ? "border-[#f2ca50]/50"
+          : "border-white/10 hover:border-white/30"
       }`}
     >
       {/* ── Header row — always visible ── */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full text-left p-0 pb-2 sm:p-6"
+        className="w-full text-left p-0 pb-2"
         aria-expanded={expanded}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
               {isActive && (
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-[#f2ca50]/20 text-[#f2ca50] border border-[#f2ca50]/40 shadow-[0_0_8px_rgba(242,202,80,0.3)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#f2ca50] border border-[#f2ca50]/40">
+                  <span className="h-1 w-1 rounded-full bg-[#f2ca50]" />
                   Active Idea
                 </span>
               )}
@@ -190,33 +190,33 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
                 </span>
               )}
             </div>
-            <h2 className="font-display text-base font-semibold leading-snug text-white sm:text-lg">
+            <h2 className="font-display text-xl font-semibold leading-snug text-white">
               {venture.name || venture.idea}
             </h2>
             {venture.name && venture.idea && (
-              <p className="mt-1 text-xs text-white/80 font-medium line-clamp-2">
+              <p className="mt-2 text-sm text-white/80 font-medium line-clamp-2">
                 {venture.idea}
               </p>
             )}
             {summaryText ? (
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white">
+              <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-white">
                 {summaryText}
               </p>
             ) : hasCompletedAnalyses ? (
-              <p className="mt-2 text-sm text-[#f2ca50]">
+              <p className="mt-3 text-sm text-[#f2ca50]">
                 {analysesRun.length} of 4 analysis module{analysesRun.length !== 1 ? "s" : ""} completed · Click to view results or run additional modules.
               </p>
             ) : (
-              <p className="mt-2 text-sm text-white/70 italic">
+              <p className="mt-3 text-sm text-white/70 italic">
                 No analysis run yet — expand to choose an analysis type.
               </p>
             )}
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="flex items-center gap-1 text-xs text-white">
-                <Users size={11} /> {venture.customer}
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              <span className="flex items-center gap-1.5 text-xs text-white">
+                <Users size={12} /> {venture.customer}
               </span>
-              <span className="flex items-center gap-1 text-xs text-white">
-                <MapPin size={11} /> {venture.location}
+              <span className="flex items-center gap-1.5 text-xs text-white">
+                <MapPin size={12} /> {venture.location}
               </span>
             </div>
           </div>
@@ -224,7 +224,7 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
             <Link
               to={`/founder/intake?mode=edit&id=${venture.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-white/70 hover:border-white/30 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-white/70 hover:border-white/40 hover:text-white transition-all cursor-pointer"
             >
               Edit
             </Link>
@@ -233,12 +233,12 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
               onClick={handleDelete}
               disabled={deleting}
               aria-label="Delete venture"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/25 transition-colors hover:bg-red-400/10 hover:text-red-300 disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/25 transition-colors hover:text-red-300 disabled:opacity-40"
             >
-              <Trash2 size={14} />
+              <Trash2 size={16} />
             </button>
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg text-white/35">
-              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50">
+              {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </span>
           </div>
         </div>
@@ -246,7 +246,7 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
 
       {/* ── Expanded section ── */}
       {expanded && (
-        <div className="pt-4 sm:pt-5 px-0 sm:px-6 sm:border-t sm:border-white/8 pb-4 sm:pb-6">
+        <div className="pt-6 pb-2">
 
           {/* Analysis type pills — shows what's been run + buttons for what hasn't */}
           <div className="mb-6">

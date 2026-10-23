@@ -241,22 +241,30 @@ export default function FounderAnalysisPage() {
 
 
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {ANALYSIS_TYPES.map((type) => (
-            <button
-              key={type.key}
-              type="button"
-              onClick={() => handleSelect(type)}
-              className="p-4 rounded-xl border border-white/10 bg-white/[0.02] text-left hover:border-[#f2ca50]/50 hover:bg-[#f2ca50]/5 transition-all group"
-            >
-              <div className="font-semibold text-sm text-white group-hover:text-[#f2ca50] transition-colors">
-                {type.label}
-              </div>
-              <p className="mt-1 text-xs text-white leading-relaxed line-clamp-2">
-                {type.tagline}
-              </p>
-            </button>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-white/10">
+          {ANALYSIS_TYPES.map((type) => {
+            const Icon = type.icon;
+            return (
+              <button
+                key={type.key}
+                type="button"
+                onClick={() => handleSelect(type)}
+                className="group flex flex-col justify-start py-2 text-left transition-all"
+              >
+                <div className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg bg-[#f2ca50]/10 text-[#f2ca50]">
+                  <Icon size={16} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm text-white group-hover:text-[#f2ca50] transition-colors">
+                    {type.label}
+                  </h4>
+                  <p className="mt-2 text-xs leading-relaxed text-white/70">
+                    {type.tagline}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -279,62 +287,55 @@ export default function FounderAnalysisPage() {
         <button
           type="button"
           onClick={handleBack}
-          className="mb-6 flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
+          className="mb-8 flex items-center gap-2 text-xs font-semibold text-white/50 hover:text-white transition-colors cursor-pointer"
         >
           <ArrowLeft size={14} /> Back
         </button>
 
-        <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">Overview</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            {selected.plan.title}
-          </h1>
-        </div>
-
-        <div className={`rounded-2xl border bg-gradient-to-br ${selected.gradient} ${selected.border} p-6 sm:p-8 mb-6`}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`rounded-xl p-2.5 bg-white/8 ${selected.iconColor}`}>
-              <Icon size={22} />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-white">{selected.label}</p>
-              <p className="text-xs text-white">Structured strategic review</p>
-            </div>
+        <div className="max-w-3xl">
+          <div className="mb-10 pb-8 border-b border-white/10">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">Overview</p>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              {selected.plan.title}
+            </h1>
+            <p className="mt-4 text-base text-white/80 leading-relaxed max-w-2xl">{selected.plan.description}</p>
           </div>
-          <p className="text-sm text-white leading-relaxed mb-6">{selected.plan.description}</p>
 
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-3">This report will cover:</p>
-            <ul className="space-y-2">
+          <div className="mb-10 pb-8 border-b border-white/10">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#f2ca50] mb-5">This report will cover:</p>
+            <ul className="space-y-4">
               {selected.plan.covers.map((item, i) => (
-                <li key={i} className="flex items-center gap-2.5 text-sm text-white">
-                  <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${selected.iconColor}`} />
+                <li key={i} className="flex items-center gap-3 text-sm text-white">
+                  <div className={`h-2 w-2 rounded-full shrink-0 bg-[#f2ca50]/50`} />
                   {item}
                 </li>
               ))}
             </ul>
           </div>
-        </div>
 
-        {/* Startup idea preview */}
-        <div className="rounded-2xl border border-white/8 bg-[#141417] p-5 mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-3">Your startup idea</p>
-          <div className="space-y-2">
-            {[
-              ["Idea", form.idea],
-              ["Problem", form.problem],
-              ["Customer", form.customer],
-              ["Location", form.location],
-            ].map(([label, value]) => (
-              <div key={label} className="flex gap-3 text-xs">
-                <span className="w-16 shrink-0 text-white/35 font-semibold">{label}</span>
-                <span className="text-white leading-relaxed line-clamp-2">{value}</span>
-              </div>
-            ))}
+          {/* Startup idea preview */}
+          <div className="mb-10 pb-8 border-b border-white/10">
+            <div className="flex justify-between items-center mb-5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#f2ca50]">Your startup idea</p>
+              <Link to="/founder/intake?mode=edit" className="text-[10px] font-semibold uppercase tracking-widest text-white/40 hover:text-white transition-colors">Edit</Link>
+            </div>
+            <div className="space-y-4">
+              {[
+                ["Idea", form.idea],
+                ["Problem", form.problem],
+                ["Customer", form.customer],
+                ["Location", form.location],
+              ].map(([label, value]) => (
+                <div key={label} className="grid grid-cols-[100px_1fr] gap-4 text-sm">
+                  <span className="text-white/40 font-semibold pt-0.5">{label}</span>
+                  <span className="text-white leading-relaxed">{value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center gap-4">
           <button
             type="button"
             onClick={handleBack}
