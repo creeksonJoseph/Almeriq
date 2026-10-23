@@ -199,7 +199,7 @@ function WorkspacePanel({ data }) {
 import { useActiveIdea } from "../context/IdeaContext";
 
 function FounderWorkspaceOverview() {
-  const { ventures, activeVenture, setActiveVentureId } = useActiveIdea();
+  const { ventures, activeVenture } = useActiveIdea();
 
   const target = activeVenture || (ventures && ventures.length > 0 ? ventures[0] : null);
   const ventureName = target?.name || target?.idea || null;
@@ -328,64 +328,6 @@ function FounderWorkspaceOverview() {
           })}
         </div>
       </div>
-
-      {/* 3. RECENT VENTURES QUICK-SWITCHER */}
-      {ventures && ventures.length > 1 && (
-        <div className="rounded-2xl border border-white/10 bg-[#141417] p-5 sm:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-sm text-white">Your Saved Ideas</h3>
-              <p className="text-xs text-white mt-0.5">Switch active context</p>
-            </div>
-            <Link
-              to="/founder/ventures"
-              className="text-xs font-semibold text-[#f2ca50] hover:underline"
-            >
-              View all ({ventures.length}) →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-            {ventures.slice(0, 3).map((v) => {
-              const isSelected = activeVenture && String(activeVenture.id) === String(v.id);
-              return (
-                <div
-                  key={v.id}
-                  className={`flex flex-col justify-between rounded-xl border p-3.5 transition-all ${isSelected
-                      ? "border-[#f2ca50]/40 bg-[#f2ca50]/5 text-white"
-                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-white"
-                    }`}
-                >
-                  <div className="min-w-0 mb-3">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="truncate text-xs font-semibold text-white">
-                        {v.name || v.idea}
-                      </span>
-                      {isSelected && (
-                        <span className="rounded-full bg-[#f2ca50]/20 px-2 py-0.5 text-[9px] font-bold text-[#f2ca50]">
-                          ACTIVE
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-white line-clamp-2">
-                      {v.name ? v.idea : (v.problem || v.solution || "No description provided.")}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-end pt-2 border-t border-white/5">
-                    <Link
-                      to={`/founder/ventures/${v.id}`}
-                      className="text-[11px] font-semibold text-[#f2ca50] hover:underline"
-                    >
-                      Details →
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
