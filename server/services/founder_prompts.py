@@ -5,12 +5,12 @@ import json
 from typing import Any
 
 VOICE_AND_STYLE_GUIDELINES = (
-    "LANGUAGE AND VOCABULARY RULES:\n"
-    "- Use simple, clear, everyday English. Speak like a practical, experienced advisor directly to a founder.\n"
-    "- STRICTLY AVOID pretentious, academic, or overly complex vocabulary (e.g. NEVER use words like 'ubiquitous', 'endemic', 'synergistic', 'nascent', 'paradigm', 'plethora', 'concomitant', 'behemoth', etc.).\n"
-    "- Use plain, natural words instead (e.g., write 'widely used' or 'everywhere' instead of 'ubiquitous'; 'deep-rooted problem' or 'widespread issue' instead of 'endemic friction'; 'hard to charge users' instead of 'monetization resistance').\n"
-    "- ONLY use specialized vocabulary when it is standard, practical business terminology that is directly relevant to this specific context (e.g., 'low margin', 'cash flow', 'working capital', 'customer acquisition cost', 'M-Pesa reconciliation', 'churn rate', 'gross margin').\n"
-    "- Avoid robotic AI hype clichés like 'brilliantly targets', 'revolutionary', 'game-changing', 'testament to'. Be objective, grounded, and helpful.\n"
+    "LANGUAGE, SIMPLICITY, AND PUNCTUATION RULES:\n"
+    "- Use simple, clear, plain English. Speak like a friendly, practical mentor helping a founder. Keep it so clear that even a teenager or first-time high school student starting their first business can understand every single sentence.\n"
+    "- STRICTLY AVOID pretentious, academic, or dense legal vocabulary. Never use words like 'ubiquitous', 'endemic', 'synergistic', 'nascent', 'paradigm', 'plethora', 'concomitant', 'behemoth', 'juridical', 'ring-fence', or 'statutory'.\n"
+    "- Explain legal and business ideas in plain human words (for example, write 'your personal money is safe if the business owes debt' instead of 'limited liability ring-fences personal assets'; write 'how you make money' instead of 'monetization architecture').\n"
+    "- PUNCTUATION RULES: NEVER use em dashes (—) or en dashes (–). Use only basic everyday punctuation marks: periods, commas, and question marks. Only use hyphens (-) when really needed for compound words.\n"
+    "- Avoid robotic AI hype words like 'brilliantly targets', 'revolutionary', 'game-changing', or 'testament to'. Be direct, clear, and genuinely helpful.\n"
 )
 
 
@@ -96,7 +96,7 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
             f"  overall_feasibility_score (integer 1-10),\n"
             f"  overall_feasibility_verdict (string: one of 'Highly Feasible', 'Feasible with Effort', 'Feasible with Pivots', 'Low Feasibility'),\n"
             f"  executive_summary (string, 2-3 sentences),\n"
-            f"  dimensions (array of objects: dimension string, score integer 1-10, assessment string, risks array of strings, recommendations array of strings) — cover: Technical Feasibility, Market Feasibility, Financial Feasibility, Operational Feasibility, Legal & Regulatory Feasibility,\n"
+            f"  dimensions (array of objects: dimension string, score integer 1-10, assessment string, risks array of strings, recommendations array of strings), covering: Technical Feasibility, Market Feasibility, Financial Feasibility, Operational Feasibility, Legal & Regulatory Feasibility,\n"
             f"  critical_success_factors (array of 4-6 strings),\n"
             f"  critical_failure_risks (array of 4-6 strings),\n"
             f"  resource_requirements (object: team array of strings, technology array of strings, capital_estimate string, timeline_to_mvp string),\n"
@@ -131,12 +131,12 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
             f"{VOICE_AND_STYLE_GUIDELINES}\n"
             f"Return JSON with these keys:\n"
             f"  summary (string, 1-2 sentences),\n"
-            f"  phases (array of exactly 4 objects representing: Foundation (0-30 days), Build (30-90 days), Launch (90-180 days), Scale (180-365 days) — each object has: phase string, duration string, objective string, key_activities array of 4-6 strings, deliverables array of 3-5 strings, success_metrics array of 3-4 strings, resources_needed array of strings, risks array of strings),\n"
-            f"  critical_path (array of 5-8 strings — the must-do items in order),\n"
+            f"  phases (array of exactly 4 objects representing: Foundation (0-30 days), Build (30-90 days), Launch (90-180 days), Scale (180-365 days): each object has phase string, duration string, objective string, key_activities array of 4-6 strings, deliverables array of 3-5 strings, success_metrics array of 3-4 strings, resources_needed array of strings, risks array of strings),\n"
+            f"  critical_path (array of 5-8 strings, the must-do items in order),\n"
             f"  team_hiring_plan (array of objects: role string, when_to_hire string, priority string one of High/Medium/Low),\n"
-            f"  budget_allocation (array of objects: category string, percentage integer, notes string) — must sum to 100,\n"
+            f"  budget_allocation (array of objects: category string, percentage integer, notes string, must sum to 100),\n"
             f"  kpis (array of objects: metric string, target string, measurement_frequency string),\n"
-            f"  quick_wins (array of 3-5 strings — things achievable in first 2 weeks)."
+            f"  quick_wins (array of 3-5 strings, things achievable in first 2 weeks)."
         )
 
     if tool_key in ("idea_validation", "validation_analysis"):
@@ -161,7 +161,7 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
             f"1. Problem and Solution: Problem urgency, acute user pain vs mild inconvenience, solution clarity, differentiation, problem-solution fit.\n"
             f"2. Market Size (TAM, SAM, SOM): Total Addressable Market (TAM), Serviceable Available Market (SAM), and Serviceable Obtainable Market (SOM) with numeric/dollar estimates and sizing rationale.\n"
             f"3. Demand & User Pull: Evidence of real user demand, frequency of need, willingness to pay, validation experiments to prove traction.\n"
-            f"4. Competition: Realistic landscape check — identify actual real-world existing companies, products, or startups in this space by name. Detail their strengths, weaknesses, and defensibility moats.\n"
+            f"4. Competition: Realistic landscape check, identify actual real-world existing companies, products, or startups in this space by name. Detail their strengths, weaknesses, and defensibility moats.\n"
             f"5. All Feasibilities: Comprehensive breakdown covering: Technical Feasibility (can it be built with current tech?), Operational & Regulatory Feasibility (legal, compliance, logistics), and Economic Feasibility (capital, unit economics, runway to MVP).\n"
             f"6. Business Model: Monetization streams, pricing model, unit economics viability (CAC vs LTV dynamics, gross margins).\n\n"
             f"Return a clean JSON object with this exact structure:\n"

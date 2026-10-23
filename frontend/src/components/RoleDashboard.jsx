@@ -201,8 +201,10 @@ import { useActiveIdea } from "../context/IdeaContext";
 function FounderWorkspaceOverview() {
   const { ventures, activeVenture, setActiveVentureId } = useActiveIdea();
 
-  const ventureName = activeVenture?.idea || (ventures && ventures.length > 0 ? ventures[0].idea : null);
-  const ventureProblem = activeVenture?.problem || "";
+  const target = activeVenture || (ventures && ventures.length > 0 ? ventures[0] : null);
+  const ventureName = target?.name || target?.idea || null;
+  const ventureWhatBuilding = target?.name ? target.idea : "";
+  const ventureProblem = target?.problem || "";
 
   return (
     <div className="space-y-6">
@@ -217,8 +219,13 @@ function FounderWorkspaceOverview() {
               <h2 className="mt-1.5 font-display text-2xl font-semibold text-white tracking-tight sm:text-3xl">
                 {ventureName}
               </h2>
+              {ventureWhatBuilding && (
+                <p className="mt-2 text-sm font-medium leading-relaxed text-white">
+                  {ventureWhatBuilding}
+                </p>
+              )}
               {ventureProblem && (
-                <p className="mt-2.5 text-sm leading-relaxed text-white">
+                <p className="mt-1.5 text-xs leading-relaxed text-white/80">
                   {ventureProblem}
                 </p>
               )}
@@ -352,7 +359,7 @@ function FounderWorkspaceOverview() {
                   <div className="min-w-0 mb-3">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <span className="truncate text-xs font-semibold text-white">
-                        {v.idea.slice(0, 32)}{v.idea.length > 32 ? "..." : ""}
+                        {v.name || v.idea}
                       </span>
                       {isSelected && (
                         <span className="rounded-full bg-[#f2ca50]/20 px-2 py-0.5 text-[9px] font-bold text-[#f2ca50]">
@@ -361,18 +368,11 @@ function FounderWorkspaceOverview() {
                       )}
                     </div>
                     <p className="text-[11px] text-white line-clamp-2">
-                      {v.problem || v.solution || "No description provided."}
+                      {v.name ? v.idea : (v.problem || v.solution || "No description provided.")}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                    <button
-                      type="button"
-                      onClick={() => setActiveVentureId(v.id)}
-                      className="text-[11px] font-medium text-white hover:text-[#f2ca50] transition-colors cursor-pointer"
-                    >
-                      {isSelected ? "Current idea" : "Set as active"}
-                    </button>
+                  <div className="flex items-center justify-end pt-2 border-t border-white/5">
                     <Link
                       to={`/founder/ventures/${v.id}`}
                       className="text-[11px] font-semibold text-[#f2ca50] hover:underline"

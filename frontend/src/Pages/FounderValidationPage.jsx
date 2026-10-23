@@ -223,8 +223,13 @@ export default function FounderValidationPage() {
 
               {/* Title */}
               <h2 className="font-display text-xl sm:text-2xl font-semibold text-white tracking-tight leading-snug">
-                {ideaInput || activeVenture?.idea || "No idea selected yet"}
+                {activeVenture?.name || ideaInput || activeVenture?.idea || "No idea selected yet"}
               </h2>
+              {activeVenture?.name && (ideaInput || activeVenture?.idea) && (
+                <p className="mt-1 text-xs text-white/80 font-medium">
+                  {ideaInput || activeVenture?.idea}
+                </p>
+              )}
 
               {/* Target Customer / Context */}
               {customerInput && (

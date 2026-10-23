@@ -8,7 +8,8 @@ import { useToast } from "../context/ToastContext";
 import { saveBriefApi } from "../lib/api";
 
 const FIELDS = [
-  ["idea", "What are you building?", "Describe the idea in one or two sentences.", 500],
+  ["name", "Startup / Idea Name", "e.g. Almeriq, Stripe, Airbnb, FarmDirect", 100],
+  ["idea", "What are you building?", "Describe the product, platform, or service in one or two sentences.", 500],
   ["problem", "What problem does it solve?", "Who experiences this problem and why does it matter now?", 500],
   ["solution", "How does it work?", "Explain the product or service and its core outcome.", 500],
   ["customer", "Who will pay first?", "Name your first customer segment, not everyone.", 200],
@@ -16,6 +17,7 @@ const FIELDS = [
 ];
 
 const BLANK_FORM = {
+  name: "",
   idea: "",
   problem: "",
   solution: "",
@@ -43,6 +45,7 @@ export default function FounderIntakePage() {
   const [form, setForm] = useState(() => {
     if (isEditMode && targetVenture) {
       return {
+        name: targetVenture.name || "",
         idea: targetVenture.idea || "",
         problem: targetVenture.problem || "",
         solution: targetVenture.solution || "",
@@ -60,6 +63,7 @@ export default function FounderIntakePage() {
   const [savedFormSnapshot, setSavedFormSnapshot] = useState(() => {
     if (isEditMode && targetVenture) {
       return {
+        name: targetVenture.name || "",
         idea: targetVenture.idea || "",
         problem: targetVenture.problem || "",
         solution: targetVenture.solution || "",
@@ -81,6 +85,7 @@ export default function FounderIntakePage() {
         : activeVenture;
       if (v) {
         const fields = {
+          name: v.name || "",
           idea: v.idea || "",
           problem: v.problem || "",
           solution: v.solution || "",
@@ -176,7 +181,7 @@ export default function FounderIntakePage() {
             <h2 className="font-display text-xl font-semibold text-white">Your startup idea</h2>
             <p className="mt-1 text-xs text-white">
               {isEditMode
-                ? `Editing: ${targetVenture?.idea ? (targetVenture.idea.slice(0, 50) + (targetVenture.idea.length > 50 ? "..." : "")) : "Current brief"}`
+                ? `Editing: ${targetVenture?.name || (targetVenture?.idea ? targetVenture.idea.slice(0, 50) + "..." : "Current brief")}`
                 : "Be clear and direct. This is used to evaluate and build your plan."}
             </p>
           </div>
@@ -186,7 +191,7 @@ export default function FounderIntakePage() {
           {FIELDS.map(([key, label, placeholder, maxLength]) => (
             <label
               key={key}
-              className={key === "idea" || key === "problem" || key === "solution" ? "md:col-span-2" : ""}
+              className={key === "name" || key === "idea" || key === "problem" || key === "solution" ? "md:col-span-2" : ""}
             >
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold text-white">{label}</span>

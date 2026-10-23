@@ -91,6 +91,16 @@ export default function FounderProductPage() {
           subtitle="Plan who your users are, how the app will work, and what tech to use."
         />
 
+        {activeVenture && (
+          <div className="mb-6 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-2 text-xs">
+            <span className="font-semibold text-[#f2ca50]">Active Idea:</span>
+            <span className="font-medium text-white">{activeVenture.name || activeVenture.idea}</span>
+            {activeVenture.name && activeVenture.idea && (
+              <span className="text-white/60 truncate max-w-md hidden sm:inline">· {activeVenture.idea}</span>
+            )}
+          </div>
+        )}
+
         {/* Tab Selection - Clean Horizontal Bar */}
         <div className="mb-8 flex flex-wrap gap-2 border-b border-white/10 pb-4">
           {PRODUCT_TOOLS.map((tool) => {

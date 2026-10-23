@@ -66,9 +66,14 @@ export default function FounderFlowLayout({ children }) {
                     </span>
                   )}
                 </div>
-                <h1 className="font-display text-base sm:text-xl font-semibold text-white truncate" title={effectiveProject.idea}>
-                  {effectiveProject.idea}
+                <h1 className="font-display text-base sm:text-xl font-semibold text-white truncate" title={effectiveProject.name || effectiveProject.idea}>
+                  {effectiveProject.name || effectiveProject.idea}
                 </h1>
+                {effectiveProject.name && effectiveProject.idea && (
+                  <p className="mt-0.5 text-xs text-white/70 truncate">
+                    {effectiveProject.idea}
+                  </p>
+                )}
               </div>
               <div className="flex shrink-0 items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
                 <Link

@@ -190,9 +190,14 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
                 </span>
               )}
             </div>
-            <h2 className="font-display text-base font-semibold leading-snug text-white sm:text-lg line-clamp-2">
-              {venture.idea}
+            <h2 className="font-display text-base font-semibold leading-snug text-white sm:text-lg">
+              {venture.name || venture.idea}
             </h2>
+            {venture.name && venture.idea && (
+              <p className="mt-1 text-xs text-white/80 font-medium line-clamp-2">
+                {venture.idea}
+              </p>
+            )}
             {summaryText ? (
               <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white">
                 {summaryText}
@@ -223,18 +228,6 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
             >
               Edit
             </Link>
-            {!isActive && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSetActive();
-                }}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-white/70 hover:border-[#f2ca50]/40 hover:bg-[#f2ca50]/10 hover:text-[#f2ca50] transition-all cursor-pointer"
-              >
-                Set as Active
-              </button>
-            )}
             <button
               type="button"
               onClick={handleDelete}

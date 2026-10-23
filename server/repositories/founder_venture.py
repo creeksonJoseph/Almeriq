@@ -17,6 +17,7 @@ async def save_venture(
     """Persist a venture brief + analysis result for a founder."""
     venture = FounderVenture(
         user_id=user_id,
+        name=brief.get("name"),
         idea=brief["idea"],
         problem=brief["problem"],
         solution=brief["solution"],
@@ -42,6 +43,7 @@ async def save_brief_only(user_id: int, brief: dict) -> dict:
     """Persist only the venture brief (no AI analysis yet). Used when user wants to pick analysis type."""
     venture = FounderVenture(
         user_id=user_id,
+        name=brief.get("name"),
         idea=brief["idea"],
         problem=brief["problem"],
         solution=brief["solution"],

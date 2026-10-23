@@ -34,8 +34,10 @@ from schemas.founder import (
     FounderValidationOut,
     FounderValidationUpdate,
     VentureOut,
+    CompanyRegistrationGuideOut,
 )
 from services.founder import analyze_founder_idea, generate_tool_deliverable
+from services.company_guide import get_or_create_company_guide
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["founder"])
@@ -279,6 +281,43 @@ async def legal_create(
     )
     return await create_filing(user_id, body.model_dump())
 
+
+@router.get("/founder/legal/company-guide", response_model=CompanyRegistrationGuideOut)
+@router.get("/api/founder/legal/company-guide", response_model=CompanyRegistrationGuideOut)
+async def legal_company_guide(
+    country: str | None = None,
+    refresh: bool = False,
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    user_id = _require_founder(current_user)
+
+    target_country = (country or "").strip()
+    if not target_country:
+        target_country = (current_user.get("nationality") or "").strip()
+    if not target_country:
+        try:
+            ventures = await list_ventures(user_id)
+            if ventures and ventures[0].get("location"):
+                target_country = ventures[0]["location"].strip()
+        except Exception:
+            pass
+    if not target_country:
+        target_country = "Kenya"
+
+    logger.info(
+        "GET /founder/legal/company-guide",
+        extra={"user_id": user_id, "country": target_country, "refresh": refresh},
+    )
+
+    try:
+        guide, source = await get_or_create_company_guide(target_country, force_refresh=refresh)
+        return guide
+    except Exception as exc:
+        logger.error(f"Error getting company registration guide for '{target_country}': {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Unable to generate the registration guide for {target_country}. Please retry.",
+        ) from exc
 
 
 # ── AI Tools Deliverables (with caching) ───────────────────────────────────────

@@ -45,6 +45,7 @@ export {
   updateValidationApi,
   listLegalFilingsApi,
   createLegalFilingApi,
+  getCompanyRegistrationGuideApi,
   executeAiToolApi,
 } from "./api/founder";
 

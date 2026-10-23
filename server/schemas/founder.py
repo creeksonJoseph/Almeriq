@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 
 class FounderAnalysisRequest(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
     idea: str = Field(..., min_length=10, max_length=500)
     problem: str = Field(..., min_length=10, max_length=500)
     solution: str = Field(..., min_length=10, max_length=500)
@@ -16,6 +17,7 @@ class FounderAnalysisRequest(BaseModel):
 
 class FounderBriefSaveRequest(BaseModel):
     """Save venture brief without triggering AI — used by the new analysis-hub flow."""
+    name: Optional[str] = Field(None, max_length=100)
     idea: str = Field(..., min_length=10, max_length=500)
     problem: str = Field(..., min_length=10, max_length=500)
     solution: str = Field(..., min_length=10, max_length=500)
@@ -44,6 +46,7 @@ class FounderAnalysisResponse(BaseModel):
 class VentureOut(BaseModel):
     id: int
     user_id: int
+    name: Optional[str] = None
     idea: str
     problem: str
     solution: str
@@ -132,4 +135,27 @@ class FounderToolResponse(BaseModel):
     source: str
     result: dict
     venture_id: Optional[int] = None
+
+
+class CompanyRegistrationStep(BaseModel):
+    step_number: int
+    title: str
+    description: str
+    requirements: Optional[str] = None
+    online_process: Optional[str] = None
+
+
+class CompanyRegistrationGuideOut(BaseModel):
+    id: Optional[int] = None
+    country: str
+    country_name: str
+    regulatory_body: Optional[str] = None
+    portal_url: Optional[str] = None
+    estimated_timeline: Optional[str] = None
+    estimated_cost: Optional[str] = None
+    prerequisites: list[str] = []
+    steps: list[CompanyRegistrationStep] = []
+    common_pitfalls: list[str] = []
+    post_registration: list[str] = []
+    source: str
 

@@ -7,6 +7,7 @@ const ANALYSIS_KEY = "alimeriq_founder_analysis";
 const VENTURE_ID_KEY = "alimeriq_venture_id";
 
 export const INITIAL_FOUNDER_FORM = {
+  name: "",
   idea: "",
   problem: "",
   solution: "",

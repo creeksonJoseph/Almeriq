@@ -45,6 +45,7 @@ export function IdeaProvider({ children }) {
       localStorage.setItem(LS_VENTURE_ID_KEY, String(venture.id));
 
       const briefForm = {
+        name: venture.name || "",
         idea: venture.idea || "",
         problem: venture.problem || "",
         solution: venture.solution || "",
@@ -52,12 +53,14 @@ export function IdeaProvider({ children }) {
         location: venture.location || "",
       };
 
-      // Dispatch custom event to notify any listeners
-      window.dispatchEvent(
-        new CustomEvent("almeriq:active-idea-changed", {
-          detail: { ...venture, brief: briefForm, ventureId: venture.id },
-        })
-      );
+      // Defer event dispatch to avoid updating other components synchronously during render
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("almeriq:active-idea-changed", {
+            detail: { ...venture, brief: briefForm, ventureId: venture.id },
+          })
+        );
+      }, 0);
     } catch (e) {
       console.warn("[IdeaContext] Storage sync error:", e);
     }
@@ -74,20 +77,17 @@ export function IdeaProvider({ children }) {
           localStorage.setItem(LS_VENTURES_CACHE_KEY, JSON.stringify(data));
         } catch {}
 
-        // If no active venture currently selected, or active venture no longer exists, default to the latest
-        setActiveVentureIdState((currentId) => {
-          const exists = data.some((v) => String(v.id) === String(currentId));
-          if (!exists && data.length > 0) {
-            const defaultVenture = data[0];
-            syncFlowStorage(defaultVenture);
-            return String(defaultVenture.id);
-          }
-          if (exists) {
-            const found = data.find((v) => String(v.id) === String(currentId));
-            if (found) syncFlowStorage(found);
-          }
-          return currentId;
-        });
+        // Determine active venture cleanly outside of state updater
+        const currentId = activeVentureId;
+        const exists = data.some((v) => String(v.id) === String(currentId));
+        if (!exists && data.length > 0) {
+          const defaultVenture = data[0];
+          setActiveVentureIdState(String(defaultVenture.id));
+          syncFlowStorage(defaultVenture);
+        } else if (exists) {
+          const found = data.find((v) => String(v.id) === String(currentId));
+          if (found) syncFlowStorage(found);
+        }
         return data;
       }
       return [];
@@ -97,7 +97,7 @@ export function IdeaProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user, syncFlowStorage]);
+  }, [user, activeVentureId, syncFlowStorage]);
 
   // Load ventures whenever authenticated user changes
   useEffect(() => {

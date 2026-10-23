@@ -112,11 +112,11 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
             }`}
             aria-expanded={open}
             aria-haspopup="true"
-            title={`Active Venture: ${activeVenture?.idea || "Select venture"}`}
+            title={`Active Venture: ${activeVenture?.name || activeVenture?.idea || "Select venture"}`}
           >
-            {activeVenture?.idea ? (
+            {activeVenture ? (
               <span className="font-semibold text-xs text-white/90">
-                {activeVenture.idea.charAt(0).toUpperCase()}
+                {(activeVenture.name || activeVenture.idea).charAt(0).toUpperCase()}
               </span>
             ) : (
               <ChevronDown size={14} className="text-white/40" />
@@ -134,11 +134,11 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
             }`}
             aria-expanded={open}
             aria-haspopup="true"
-            title={`Active Venture: ${activeVenture?.idea || "Select venture"}`}
+            title={`Active Venture: ${activeVenture?.name || activeVenture?.idea || "Select venture"}`}
           >
             <span className="truncate text-xs font-medium text-white/85 group-hover:text-white">
-              {activeVenture?.idea
-                ? activeVenture.idea.slice(0, 24) + (activeVenture.idea.length > 24 ? "..." : "")
+              {activeVenture
+                ? (activeVenture.name || activeVenture.idea)
                 : "Choose a venture"}
             </span>
             <ChevronDown
@@ -178,11 +178,11 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
           }`}
           aria-expanded={open}
           aria-haspopup="true"
-          title={`Current active idea: ${activeVenture?.idea || "Select idea"}`}
+          title={`Current active idea: ${activeVenture?.name || activeVenture?.idea || "Select idea"}`}
         >
           <span className="font-medium text-white/90 truncate text-xs min-w-0">
-            {activeVenture?.idea
-              ? activeVenture.idea.slice(0, 18) + (activeVenture.idea.length > 18 ? "..." : "")
+            {activeVenture
+              ? (activeVenture.name || activeVenture.idea)
               : "Select idea"}
           </span>
           {/* Inverted 'v' chevron */}
@@ -216,26 +216,33 @@ export default function ActiveIdeaDropdown({ variant = "header", collapsed = fal
             </span>
           </div>
 
-          {/* List of saved ideas - compact first few letters */}
+          {/* List of saved ideas - compact name + subtitle */}
           <div className="max-h-52 overflow-y-auto space-y-0.5 py-1 custom-scrollbar">
             {ventures.map((v) => {
               const isSelected = activeVenture && String(activeVenture.id) === String(v.id);
+              const displayName = v.name || v.idea;
               return (
                 <button
                   key={v.id}
                   type="button"
                   onClick={() => handleSelect(v.id)}
-                  title={v.idea}
+                  title={v.idea || v.name}
                   className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
                     isSelected
                       ? "bg-[#f2ca50]/15 text-[#f2ca50] font-medium"
                       : "text-white/70 hover:bg-white/5 hover:text-white"
                   }`}
                 >
-                  <span className="truncate flex-1 font-medium">
-                    {v.idea.slice(0, 24)}
-                    {v.idea.length > 24 ? "..." : ""}
-                  </span>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="truncate font-medium">
+                      {displayName}
+                    </span>
+                    {v.name && v.idea && v.name !== v.idea && (
+                      <span className="truncate text-[10px] text-white/45">
+                        {v.idea}
+                      </span>
+                    )}
+                  </div>
 
                   {isSelected && (
                     <Check size={13} className="shrink-0 text-[#f2ca50]" />

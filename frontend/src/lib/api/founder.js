@@ -105,6 +105,21 @@ export async function createLegalFilingApi(payload) {
   }
 }
 
+export async function getCompanyRegistrationGuideApi(country = "", refresh = false) {
+  try {
+    const params = {};
+    if (country) params.country = country;
+    if (refresh) params.refresh = true;
+    const { data } = await apiClient.get("/founder/legal/company-guide", {
+      params,
+      timeout: 45000,
+    });
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to load company registration guide");
+  }
+}
+
 export async function executeAiToolApi(payload) {
   try {
     const { data } = await apiClient.post("/founder/ai-tools", payload, {

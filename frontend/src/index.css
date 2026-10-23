@@ -33,6 +33,14 @@ body {
   overflow-x: hidden;
 }
 
+.font-serif {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+.font-mono {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
 /* Auth content centers when it fits, but remains reachable when it is taller than the viewport. */
 .auth-screen {
   position: fixed;
@@ -278,3 +286,154 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Publication-Grade Print & PDF Styles ──────────────── */
+@media print {
+  /* Hide non-printable navigation, sidebar, and interactive controls */
+  aside,
+  nav,
+  header,
+  button,
+  select,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset document for clean white paper printing */
+  html,
+  body,
+  #root,
+  main,
+  div,
+  section,
+  article,
+  footer {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    color: #111827 !important;
+  }
+
+  /* Force all headings to solid black with avoid-break */
+  h1, h2, h3, h4, h5, h6 {
+    color: #000000 !important;
+    font-weight: 700 !important;
+    page-break-after: avoid;
+  }
+
+  /* Prevent faint opacity from washing out printed text */
+  p, span, li, td, th, strong, em, b, i, a, div {
+    opacity: 1 !important;
+  }
+
+  /* Force all text classes to high-contrast dark ink */
+  .text-white,
+  [class*="text-white"] {
+    color: #111827 !important;
+  }
+
+  /* Secondary metadata text in clear dark slate (never faint white) */
+  [class*="text-white/30"],
+  [class*="text-white/40"],
+  [class*="text-white/50"],
+  [class*="text-white/60"],
+  [class*="text-white/70"] {
+    color: #374151 !important;
+  }
+
+  [class*="text-white/80"],
+  [class*="text-white/90"] {
+    color: #111827 !important;
+  }
+
+  /* Gold accents convert to dark amber/bronze so they pop with high contrast on white paper */
+  .text-\[\#f2ca50\],
+  [class*="text-\[\#f2ca50\]"],
+  [class*="text-gold"] {
+    color: #92400e !important;
+    font-weight: 700 !important;
+  }
+
+  .bg-\[\#f2ca50\],
+  [class*="bg-\[\#f2ca50\]"] {
+    background-color: #f59e0b !important;
+    color: #000000 !important;
+  }
+
+  .border-\[\#f2ca50\],
+  [class*="border-\[\#f2ca50\]"] {
+    border-color: #b45309 !important;
+  }
+
+  /* All dark card containers and boxes become clean white with crisp borders */
+  .bg-\[\#090a0d\],
+  .bg-\[\#0a0a0b\],
+  .bg-\[\#0c0d12\],
+  .bg-\[\#13141b\],
+  .bg-white\/\[0\.01\],
+  .bg-white\/\[0\.015\],
+  .bg-white\/\[0\.02\],
+  .bg-white\/\[0\.03\],
+  .bg-white\/\[0\.04\],
+  .bg-white\/5 {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border-color: #d1d5db !important;
+  }
+
+  /* Clean light borders for print dividers instead of faint dark-mode borders */
+  [class*="border-white"],
+  [class*="divide-white"] {
+    border-color: #d1d5db !important;
+  }
+
+  /* Table styling */
+  table {
+    width: 100% !important;
+    border: 1px solid #d1d5db !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #9ca3af !important;
+    padding: 6pt 8pt !important;
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+  }
+
+  td {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 6pt 8pt !important;
+    color: #1f2937 !important;
+  }
+
+  /* Preformatted contract blocks */
+  pre {
+    background: #f9fafb !important;
+    color: #111827 !important;
+    border: 1px solid #d1d5db !important;
+    white-space: pre-wrap !important;
+    font-size: 9pt !important;
+    line-height: 1.6 !important;
+    padding: 8pt !important;
+  }
+
+  /* Margins for standard letter/A4 paper */
+  @page {
+    margin: 1.2cm;
+    size: auto;
+  }
+}
+

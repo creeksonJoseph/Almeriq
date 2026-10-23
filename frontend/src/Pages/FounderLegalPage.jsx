@@ -1,528 +1,867 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Building2,
-  ShieldCheck,
+  ExternalLink,
+  RotateCcw,
+  AlertCircle,
+  Loader2,
   Copy,
   Check,
-  Loader2,
+  Building2,
+  FileText,
+  Printer,
 } from "lucide-react";
 import FounderStudioNav from "../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
-import { listLegalFilingsApi, createLegalFilingApi } from "../lib/api";
+import { getCompanyRegistrationGuideApi } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { useActiveIdea } from "../context/IdeaContext";
+import { COUNTRIES } from "../lib/countries";
 
+// ── Plain English Starter Legal Templates ─────────────────────────────────────
 const LEGAL_TEMPLATES = [
   {
     id: "nda",
     title: "Mutual Non-Disclosure Agreement (NDA)",
-    desc: "Standard bilateral agreement for investor meetings, contractor discussions, and co-founder exploration.",
+    tag: "Keep Secrets Safe",
+    desc: "A two-way agreement so both sides can share ideas safely without worrying that the other person will copy or share them.",
     content: `MUTUAL NON-DISCLOSURE AGREEMENT
 
-1. PURPOSE: The parties wish to explore a potential business relationship concerning startup development and venture operations.
-2. CONFIDENTIAL INFORMATION: Includes all technical, financial, customer, product, and strategy data disclosed directly or indirectly.
-3. OBLIGATIONS: The receiving party shall hold all information in strict confidence and use it solely to evaluate the relationship.
-4. TERM: This Agreement remains in effect for 2 years from date of disclosure.
-5. GOVERNING LAW: Governed by local commercial arbitration codes.`,
+1. WHY WE ARE SHARING INFORMATION:
+We are sharing ideas, plans, and details to see if we should work together on a startup project.
+
+2. WHAT IS PRIVATE:
+Everything we share about the product, code, business plans, and finances is private unless we both agree in writing that it is public.
+
+3. PROMISE TO KEEP SECRETS:
+Both parties promise not to share this private information with anyone else, and to use it only to evaluate this project.
+
+4. HOW LONG THIS LASTS:
+This agreement protects secrets for 2 years from the date information is shared.
+
+5. GOVERNING LAW:
+This agreement follows the standard business laws of the place where the company is registered.`,
   },
   {
     id: "ip_assignment",
-    title: "Proprietary Information & Inventions Assignment (PIIA)",
-    desc: "Ensures all code, designs, and intellectual property developed by founders and contractors belong strictly to the corporate entity.",
-    content: `INVENTIONS & PROPRIETARY INFORMATION AGREEMENT
+    title: "Inventions and Intellectual Property Agreement (PIIA)",
+    tag: "Company Owns Code",
+    desc: "Makes sure all software code, designs, and ideas created for the startup belong to the company, not to any individual person.",
+    content: `INVENTIONS AND INTELLECTUAL PROPERTY AGREEMENT
 
-1. ASSIGNMENT OF INVENTIONS: The contributor irrevocably assigns to the Company all right, title, and interest in all inventions, software code, designs, and documentation created during engagement.
-2. WORK FOR HIRE: All copyrightable material shall be deemed a "work made for hire."
-3. NO PRIOR RESTRICTIONS: Contributor warrants that work performed does not breach any prior employment or non-compete agreements.`,
+1. COMPANY OWNS ALL WORK:
+All code, designs, ideas, and work you create for the startup belong 100% to the company.
+
+2. NO OUTSIDE CLAIMS:
+You confirm that the work you do here does not belong to any former school, employer, or past project.
+
+3. HELPING WITH PAPERWORK:
+If the company ever needs to file a trademark or patent, you agree to help sign the needed documents.`,
   },
   {
     id: "safe",
     title: "Simple Agreement for Future Equity (SAFE)",
-    desc: "Standard pre-money valuation cap SAFE for angel investments and early accelerator checks.",
+    tag: "Simple Investment Deal",
+    desc: "A standard contract to take investment money today and give the investor company shares in the future.",
     content: `SIMPLE AGREEMENT FOR FUTURE EQUITY (SAFE)
 
-1. INVESTMENT: Investor pays the Purchase Amount in exchange for the right to shares upon an Equity Financing event.
-2. VALUATION CAP: Negotiated pre-money valuation cap applies on conversion.
-3. DISCOUNT RATE: 20% standard discount or valuation cap (whichever yields lower price per share).
-4. LIQUIDITY EVENT: Investor receives cash payout or common stock conversion upon acquisition or IPO.`,
+1. INVESTMENT AMOUNT:
+The investor gives the startup money today in exchange for shares when the company does its next funding round.
+
+2. VALUATION CAP:
+Sets the maximum price the investor pays when their investment turns into shares.
+
+3. DISCOUNT RATE:
+Standard 20% discount so early investors get a lower share price than later investors.
+
+4. WHAT HAPPENS IN A SALE:
+If the company is sold, the investor gets their money back or gets shares in the sale.`,
+  },
+  {
+    id: "founder_accord",
+    title: "Founders' Agreement (MOU)",
+    tag: "Co-Founder Rules",
+    desc: "Agrees on who owns what percentage of the company, how shares vest over 4 years, and how major decisions are made.",
+    content: `FOUNDERS' AGREEMENT (MOU)
+
+1. OWNERSHIP SPLIT:
+The founders agree on what percentage of the company each person owns.
+
+2. VESTING (4 YEARS WITH 1-YEAR CLIFF):
+Founders earn their shares over 4 years. If someone leaves during the first year, they do not keep any shares. This keeps everyone committed.
+
+3. ALL IDEAS BELONG TO THE COMPANY:
+All code, domain names, and prototypes created before today belong to the company.
+
+4. MAKING BIG DECISIONS:
+Major decisions like selling the company or taking large loans require all founders to agree.`,
   },
 ];
 
+// ── Plain English Why-Register Pillars (Strict White, Gold & Dark) ───────────
+const THESIS_PILLARS = [
+  {
+    index: "01",
+    title: "Keep Your Personal Money Safe",
+    category: "Personal Protection",
+    desc: "If your business owes money or gets into a legal dispute, your personal savings, phone, laptop, and home are safe. The company owes the money, not you.",
+  },
+  {
+    index: "02",
+    title: "Take Money From Investors",
+    category: "Ready for Funding",
+    desc: "Investors cannot wire money to your personal bank account. Registering lets you create company shares and sign standard investment contracts like SAFEs.",
+  },
+  {
+    index: "03",
+    title: "Open Business Bank Accounts and Stripe",
+    category: "Payments and Banking",
+    desc: "Payment services like Stripe and business banks require official company paperwork before they let you take payments from customers around the world.",
+  },
+  {
+    index: "04",
+    title: "Sign Deals With Other Companies",
+    category: "Customer Trust",
+    desc: "Businesses and enterprise clients only sign vendor agreements and pay invoices to registered companies, not individuals.",
+  },
+  {
+    index: "05",
+    title: "Protect Your Code and Brand",
+    category: "Company Ownership",
+    desc: "Registering ensures your software code, logo, and ideas belong to the business. This stops a co-founder from leaving and taking your product with them.",
+  },
+];
+
+// ── Normalization Helpers for Any Country's AI Output ─────────────────────────
+function normalizePrerequisite(item) {
+  if (typeof item === "string") {
+    const colonIdx = item.indexOf(":");
+    if (colonIdx > 0 && colonIdx < 50) {
+      return {
+        title: item.slice(0, colonIdx).trim(),
+        desc: item.slice(colonIdx + 1).trim(),
+      };
+    }
+    return { title: item, desc: "" };
+  }
+  return {
+    title: item?.title || item?.name || "Document Required",
+    desc: item?.desc || item?.description || "",
+  };
+}
+
+function normalizePitfall(item) {
+  if (typeof item === "string") {
+    const colonIdx = item.indexOf(":");
+    if (colonIdx > 0 && colonIdx < 50) {
+      return {
+        label: item.slice(0, colonIdx).trim(),
+        text: item.slice(colonIdx + 1).trim(),
+      };
+    }
+    return { label: "", text: item };
+  }
+  return {
+    label: item?.label || item?.title || "",
+    text: item?.text || item?.desc || item?.description || "",
+  };
+}
+
+function normalizePostRegistration(item, idx) {
+  const defaultAgencies = [
+    "Tax and Revenue Authority",
+    "Commercial Bank or Fintech",
+    "City or County Council",
+    "Social Security and Labor Office",
+  ];
+  const defaultWindows = [
+    "Within 10 Days",
+    "Within 14 Days",
+    "Within 21 Days",
+    "Within 30 Days",
+  ];
+
+  if (typeof item === "string") {
+    const colonIdx = item.indexOf(":");
+    if (colonIdx > 0 && colonIdx < 50) {
+      return {
+        milestone: item.slice(0, colonIdx).trim(),
+        agency: defaultAgencies[idx % defaultAgencies.length],
+        action: item.slice(colonIdx + 1).trim(),
+        window: defaultWindows[idx % defaultWindows.length],
+      };
+    }
+    return {
+      milestone: item.length > 45 ? `${item.slice(0, 42)}...` : item,
+      agency: defaultAgencies[idx % defaultAgencies.length],
+      action: item,
+      window: defaultWindows[idx % defaultWindows.length],
+    };
+  }
+  return {
+    milestone: item?.milestone || item?.title || "Next Step",
+    agency: item?.agency || defaultAgencies[idx % defaultAgencies.length],
+    action: item?.action || item?.description || item?.desc || "",
+    window: item?.window || defaultWindows[idx % defaultWindows.length],
+  };
+}
+
 export default function FounderLegalPage() {
+  const { user } = useAuth();
   const { showToast } = useToast();
-  const { activeVenture } = useActiveIdea();
-  const [filings, setFilings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("filings"); // "filings" | "new_company" | "new_ip" | "templates"
 
-  // Company Filing Form State
-  const [companyForm, setCompanyForm] = useState({
-    company_name: "",
-    entity_type: "Private Limited Company (Ltd)",
-    jurisdiction: "Kenya",
-  });
+  // Mode: "dossier" (Company Formation) | "templates" (Contracts)
+  const [activeMode, setActiveMode] = useState("dossier");
 
-  // IP Filing Form State
-  const [ipForm, setIpForm] = useState({
-    ip_title: "",
-    ip_type: "Software Codebase & Algorithm",
-    ip_description: "",
-  });
+  // Detect user's initial country from profile (nationality) or default to Kenya
+  const initialCountry = useMemo(() => {
+    const rawNationality = (user?.nationality || "").trim();
+    if (!rawNationality) return "Kenya";
+    const matched = COUNTRIES.find(
+      (c) =>
+        c.code.toLowerCase() === rawNationality.toLowerCase() ||
+        c.name.toLowerCase() === rawNationality.toLowerCase()
+    );
+    return matched ? matched.name : rawNationality;
+  }, [user?.nationality]);
 
-  const [submitting, setSubmitting] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(initialCountry);
+  const [guide, setGuide] = useState(null);
+  const [guideLoading, setGuideLoading] = useState(true);
+  const [guideError, setGuideError] = useState(null);
+
+  // Starter contracts state
   const [selectedTemplate, setSelectedTemplate] = useState(LEGAL_TEMPLATES[0]);
   const [copiedTemplate, setCopiedTemplate] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await listLegalFilingsApi();
-        if (Array.isArray(data)) {
-          setFilings(data);
-        }
-      } catch (err) {
-        // default
-      } finally {
-        setLoading(false);
-      }
+  // Fetch company registration guide
+  const loadGuide = useCallback(async (countryName, forceRefresh = false) => {
+    setGuideLoading(true);
+    setGuide(null); // Clear previous country data immediately
+    setGuideError(null);
+    try {
+      const data = await getCompanyRegistrationGuideApi(countryName, forceRefresh);
+      setGuide(data);
+    } catch (err) {
+      console.error("Failed to load company registration guide:", err);
+      setGuideError(
+        err.message ||
+          "Could not load the registration guide right now. Please check your internet connection and click retry."
+      );
+    } finally {
+      setGuideLoading(false);
     }
-    load();
   }, []);
 
-  const handleCreateCompanyFiling = async (e) => {
-    e.preventDefault();
-    if (!companyForm.company_name.trim()) {
-      showToast("Please enter a proposed company name", "error");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await createLegalFilingApi({
-        filing_type: "company",
-        company_name: companyForm.company_name,
-        entity_type: companyForm.entity_type,
-        jurisdiction: companyForm.jurisdiction,
-      });
-      setFilings([res, ...filings]);
-      showToast(`Company registration filed successfully! Ref: ${res.ref_number}`, "success");
-      setCompanyForm({ company_name: "", entity_type: "Private Limited Company (Ltd)", jurisdiction: "Kenya" });
-      setActiveTab("filings");
-    } catch (err) {
-      showToast(err.message || "Filing failed", "error");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    loadGuide(selectedCountry);
+  }, [selectedCountry, loadGuide]);
 
-  const handleCreateIpFiling = async (e) => {
-    e.preventDefault();
-    if (!ipForm.ip_title.trim()) {
-      showToast("Please enter the title of your intellectual property", "error");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await createLegalFilingApi({
-        filing_type: "ip",
-        ip_title: ipForm.ip_title,
-        ip_type: ipForm.ip_type,
-        ip_description: ipForm.ip_description,
-      });
-      setFilings([res, ...filings]);
-      showToast(`IP registration record created! Ref: ${res.ref_number}`, "success");
-      setIpForm({ ip_title: "", ip_type: "Software Codebase & Algorithm", ip_description: "" });
-      setActiveTab("filings");
-    } catch (err) {
-      showToast(err.message || "Filing failed", "error");
-    } finally {
-      setSubmitting(false);
-    }
+  const handleCountryChange = (e) => {
+    const newCountry = e.target.value;
+    setSelectedCountry(newCountry);
+    setGuide(null); // Clear previous country data immediately
+    setGuideError(null);
   };
 
   const copyTemplateContent = () => {
     if (!selectedTemplate) return;
     navigator.clipboard.writeText(selectedTemplate.content);
     setCopiedTemplate(true);
-    showToast("Legal template copied to clipboard", "success");
+    showToast("Template copied to clipboard", "success");
     setTimeout(() => setCopiedTemplate(false), 2000);
   };
 
+  // Safe normalized collections
+  const prerequisitesList = useMemo(() => {
+    if (!guide?.prerequisites || !Array.isArray(guide.prerequisites)) return [];
+    return guide.prerequisites.map(normalizePrerequisite);
+  }, [guide?.prerequisites]);
+
+  const pitfallsList = useMemo(() => {
+    if (!guide?.common_pitfalls || !Array.isArray(guide.common_pitfalls)) return [];
+    return guide.common_pitfalls.map(normalizePitfall);
+  }, [guide?.common_pitfalls]);
+
+  const postRegList = useMemo(() => {
+    if (!guide?.post_registration || !Array.isArray(guide.post_registration)) return [];
+    return guide.post_registration.map(normalizePostRegistration);
+  }, [guide?.post_registration]);
+
   return (
     <FounderFlowGuard>
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:px-10">
+        {/* Top Navigation Bar with Back Button & Page Title */}
         <FounderStudioNav
-          title="Legal & Setup"
-          subtitle="Register your business name, protect your idea, and access starter contracts."
+          title="Legal and Company Registration"
+          subtitle="How to register your company step by step, protect your personal money, and access basic legal templates."
         />
 
-        {/* Action Bar */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-[#2B2B31] pb-4">
-          <div className="flex gap-2">
+        {/* ── Clean Mode Tabs (Hidden in Print) ── */}
+        <div className="mb-10 flex items-center justify-between border-b border-white/10 pb-5 no-print">
+          {/* Mode Switcher Tabs */}
+          <div className="flex rounded-md bg-white/[0.04] p-0.5 border border-white/10 text-xs font-medium">
             <button
               type="button"
-              onClick={() => setActiveTab("filings")}
-              className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors ${
-                activeTab === "filings"
-                  ? "bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/30"
-                  : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
+              onClick={() => setActiveMode("dossier")}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded transition-all cursor-pointer ${
+                activeMode === "dossier"
+                  ? "bg-[#f2ca50] text-black font-semibold shadow-sm"
+                  : "text-white hover:text-[#f2ca50]"
               }`}
             >
-              Saved Records ({filings.length})
+              <Building2 size={13} className={activeMode === "dossier" ? "text-black" : "text-[#f2ca50]"} />
+              <span>Company Registration Guide</span>
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab("new_company")}
-              className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors ${
-                activeTab === "new_company"
-                  ? "bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/30"
-                  : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
+              onClick={() => setActiveMode("templates")}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded transition-all cursor-pointer ${
+                activeMode === "templates"
+                  ? "bg-[#f2ca50] text-black font-semibold shadow-sm"
+                  : "text-white hover:text-[#f2ca50]"
               }`}
             >
-              Register Business Name
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("new_ip")}
-              className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors ${
-                activeTab === "new_ip"
-                  ? "bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/30"
-                  : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
-              }`}
-            >
-              Protect Idea / Trademark
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("templates")}
-              className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors ${
-                activeTab === "templates"
-                  ? "bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/30"
-                  : "text-[#9B9A94] hover:bg-[#1C1C21] hover:text-white"
-              }`}
-            >
-              Starter Contracts
+              <FileText size={13} className={activeMode === "templates" ? "text-black" : "text-[#f2ca50]"} />
+              <span>Starter Legal Templates</span>
             </button>
           </div>
         </div>
 
-        {/* TAB 1: FILINGS LIST */}
-        {activeTab === "filings" && (
-          <div>
-            {loading && (
-              <div className="flex min-h-48 items-center justify-center">
-                <Loader2 size={24} className="animate-spin text-[#C9A15A]" />
-              </div>
-            )}
+        {/* ── MODE 1: COMPANY REGISTRATION GUIDE ── */}
+        {activeMode === "dossier" && (
+          <div className="space-y-12">
+            {/* ── PART 1: THE EXPLANATION (Why Register Early & Legal Foundation) ── */}
+            <section className="border-b border-white/10 pb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                <div className="lg:col-span-4 space-y-4">
+                  <div className="inline-flex items-center gap-2 text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">
+                    <span>01 / Start Here</span>
+                  </div>
+                  <h2 className="font-serif text-2xl font-medium text-white tracking-tight sm:text-3xl">
+                    Why You Should Register Your Company Early
+                  </h2>
+                  <p className="text-sm font-normal text-white leading-relaxed">
+                    If you run a business without registering it, you are personally responsible for everything that goes wrong. If the business gets sued or owes money, you could lose your personal savings. Registering your company separates the business from you as a person, making it safe to grow, take investments, and hire people.
+                  </p>
+                  <div className="rounded border border-white/10 bg-white/[0.02] p-4 text-xs text-white space-y-2">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-[#f2ca50]">
+                      Simple Legal Rule
+                    </div>
+                    <p className="italic text-white font-normal">
+                      "Your company is its own legal person. Any debts or legal problems belong to the company, not to you or your family."
+                    </p>
+                  </div>
+                </div>
 
-            {!loading && filings.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-[#2B2B31] p-12 text-center">
-                <Scale size={32} className="mx-auto text-[#5F5E5A]" />
-                <h4 className="mt-3 font-display text-base font-semibold text-[#F3F1EC]">
-                  No active filings on record
-                </h4>
-                <p className="mt-1 text-xs text-white leading-relaxed">
-                  Initiate a company registration or intellectual property filing to generate an Alimeriq legal tracking number.
-                </p>
-                <div className="mt-5 flex justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("new_company")}
-                    className="rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-4 py-2 text-xs font-semibold text-white"
-                  >
-                    File Company Registration
-                  </button>
+                <div className="lg:col-span-8">
+                  {/* Structured Line-item List of Foundation Pillars */}
+                  <div className="divide-y divide-white/5 border-t border-b border-white/10">
+                    {THESIS_PILLARS.map((pillar) => (
+                      <div
+                        key={pillar.index}
+                        className="group flex items-start gap-5 py-4 px-2 transition-colors hover:bg-white/[0.015]"
+                      >
+                        <span className="w-6 shrink-0 pt-0.5 font-mono text-xs text-[#f2ca50]">
+                          {pillar.index}
+                        </span>
+                        <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-3 md:gap-6">
+                          <div className="md:col-span-1">
+                            <h3 className="text-sm font-semibold text-white transition-colors group-hover:text-[#f2ca50]">
+                              {pillar.title}
+                            </h3>
+                            <span className="text-[11px] font-mono text-white/70">
+                              {pillar.category}
+                            </span>
+                          </div>
+                          <div className="text-xs font-normal text-white leading-relaxed md:col-span-2">
+                            {pillar.desc}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            )}
+            </section>
 
-            {!loading && filings.length > 0 && (
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
-                {filings.map((filing) => (
-                  <div
-                    key={filing.id}
-                    className="flex flex-col justify-between gap-4 p-5 transition-colors hover:bg-white/[0.02] sm:flex-row sm:items-center"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.02] text-[#f2ca50]">
-                        {filing.filing_type === "company" ? <Building2 size={18} /> : <ShieldCheck size={18} />}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-display text-sm font-bold text-white">
-                            {filing.filing_type === "company" ? filing.company_name : filing.ip_title}
-                          </h4>
-                          <span className="rounded bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-mono font-medium text-[#f2ca50]">
-                            {filing.ref_number}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs text-white">
-                          {filing.filing_type === "company"
-                            ? `${filing.entity_type} · Jurisdiction: ${filing.jurisdiction}`
-                            : `${filing.ip_type} · ${filing.ip_description || "Protected codebase"}`}
-                        </p>
-                      </div>
+            {/* ── PART 2: THE GUIDANCE (Official Registration in {selectedCountry}) ── */}
+            <section className="space-y-8">
+              {/* Guidance Header with Full Width Title and Dedicated Toolbar Below */}
+              <div className="border-b border-white/10 pb-6 space-y-5">
+                <div>
+                  <div className="mb-2 inline-flex items-center gap-2 text-xs font-mono tracking-widest text-[#f2ca50] uppercase">
+                    <span className="h-0.5 w-2 bg-[#f2ca50]"></span> 02 / Official Registration Guidance
+                  </div>
+                  <h1 className="font-serif text-3xl font-medium tracking-tight text-white sm:text-4xl lg:text-5xl leading-tight">
+                    Company Registration <span className="italic text-[#f2ca50] font-normal">&amp;</span> Legal Standing in{" "}
+                    <span className="text-[#f2ca50]">{guide?.country_name || selectedCountry}</span>
+                  </h1>
+                  <p className="mt-2 max-w-3xl text-sm font-normal text-white leading-relaxed">
+                    Select your country to view official registration procedures, regulatory fees, timelines, and required documents.
+                  </p>
+                </div>
+
+                {/* Dedicated Action & Country Selection Toolbar Below the Title */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 no-print">
+                  {/* Country Jurisdiction Selector */}
+                  <div className="relative flex items-center">
+                    <label className="sr-only" htmlFor="guidance-jurisdiction-select">
+                      Select Country
+                    </label>
+                    <div className="flex items-center gap-2.5 rounded-md bg-[#13141b] border border-white/10 px-3.5 py-2 text-xs transition-colors hover:border-[#f2ca50]/50 shadow-sm">
+                      <span className="text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">Country:</span>
+                      <select
+                        id="guidance-jurisdiction-select"
+                        value={selectedCountry}
+                        onChange={handleCountryChange}
+                        className="bg-transparent font-medium text-white focus:outline-none cursor-pointer pr-1"
+                      >
+                        {COUNTRIES.map((c) => (
+                          <option key={c.code} value={c.name} className="bg-[#13141b] text-white">
+                            {c.name} ({c.code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Actions on the right */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => loadGuide(selectedCountry, true)}
+                      disabled={guideLoading}
+                      className="inline-flex items-center gap-2 rounded border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-white/[0.08] disabled:opacity-50 cursor-pointer"
+                    >
+                      <RotateCcw
+                        size={13}
+                        className={guideLoading ? "animate-spin text-[#f2ca50]" : "text-[#f2ca50]"}
+                      />
+                      <span>{guideLoading ? "Checking..." : "Refresh"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      disabled={guideLoading || !guide}
+                      className="inline-flex items-center gap-2 rounded border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-white/[0.08] disabled:opacity-50 cursor-pointer"
+                      title="Print or Save as PDF"
+                    >
+                      <Printer size={13} className="text-[#f2ca50]" />
+                      <span>Save as PDF / Print</span>
+                    </button>
+
+                    {!guideLoading && guide?.portal_url && (
+                      <a
+                        href={
+                          guide.portal_url.startsWith("http")
+                            ? guide.portal_url
+                            : `https://${guide.portal_url}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-colors hover:bg-[#e2ba40] shadow-sm cursor-pointer"
+                      >
+                        <span>Official Registry Portal</span>
+                        <ExternalLink size={13} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Loading State when country is selected or refreshing */}
+              {guideLoading && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.015] p-16 text-center space-y-4">
+                  <Loader2 size={36} className="mx-auto animate-spin text-[#f2ca50]" />
+                  <h3 className="font-serif text-xl font-medium text-white">
+                    Loading Official Registration Guide for {selectedCountry}...
+                  </h3>
+                  <p className="mx-auto max-w-md text-xs font-normal text-white leading-relaxed">
+                    Checking our database for official {selectedCountry} procedures. If this is the first search for this country, our system synthesizes the steps and saves them permanently for all founders.
+                  </p>
+                </div>
+              )}
+
+              {/* Error State with Retry Button */}
+              {!guideLoading && guideError && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-12 text-center space-y-4">
+                  <AlertCircle size={36} className="mx-auto text-[#f2ca50]" />
+                  <h3 className="font-serif text-lg font-medium text-white">
+                    Could Not Load Registration Guide for {selectedCountry}
+                  </h3>
+                  <p className="mx-auto max-w-md text-xs font-normal text-white leading-relaxed">
+                    {guideError}
+                  </p>
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => loadGuide(selectedCountry, true)}
+                      className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-all hover:bg-[#e2ba40] cursor-pointer"
+                    >
+                      <RotateCcw size={13} />
+                      <span>Retry Request</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Loaded Country Guidance Content */}
+              {!guideLoading && !guideError && guide && (
+                <div className="space-y-10">
+                  {/* Metric Data Strip: Expected Time, Fees, Registry for THIS country */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-y border-white/10 py-4 bg-white/[0.01]">
+                    <div className="px-4 py-2 md:first:pl-2">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                        Official Registry
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-white truncate">
+                        {guide.regulatory_body || "Government Company Registry"}
+                      </span>
+                      <span className="text-[11px] text-white/70 truncate block">
+                        {guide.country_name || selectedCountry}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-4 sm:flex-col sm:items-end">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        {filing.status}
+                    <div className="px-4 py-2">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                        Expected Time
                       </span>
-                      <span className="text-[11px] text-white/40">
-                        Filed {new Date(filing.filed_at).toLocaleDateString()}
+                      <span className="mt-1 block text-sm font-semibold text-white">
+                        {guide.estimated_timeline || "3 to 7 business days"}
+                      </span>
+                      <span className="text-[11px] font-mono text-[#f2ca50]">
+                        Standard queue
+                      </span>
+                    </div>
+
+                    <div className="px-4 py-2">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                        Estimated Government Fees
+                      </span>
+                      <span className="mt-1 block font-mono text-sm font-semibold text-white">
+                        {guide.estimated_cost || "Standard government fee"}
+                      </span>
+                      <span className="text-[11px] text-white/70">
+                        Official registry fee
+                      </span>
+                    </div>
+
+                    <div className="px-4 py-2 md:last:pr-2">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                        Company Type
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-white">
+                        Private Limited Company (Ltd)
+                      </span>
+                      <span className="text-[11px] font-mono text-[#f2ca50]">
+                        {guide.source === "database" ? "Saved in Database" : "Freshly Generated"}
                       </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* TAB 2: NEW COMPANY FILING */}
-        {activeTab === "new_company" && (
-          <div className="mx-auto max-w-2xl rounded-2xl border border-[#2B2B31] bg-[#141417] p-6 sm:p-8">
-            <div className="flex items-center gap-3 border-b border-[#2B2B31] pb-4">
-              <Building2 size={22} className="text-[#C9A15A]" />
-              <div>
-                <h3 className="font-display text-lg font-bold text-[#F3F1EC]">
-                  File Company Entity Registration
-                </h3>
-                <p className="text-xs text-white">
-                  Generates an official Alimeriq tracking docket and prepares statutory incorporation papers.
-                </p>
-              </div>
-            </div>
-
-            {activeVenture?.idea && (
-              <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#C9A15A]/30 bg-[#C9A15A]/10 px-3.5 py-2 text-xs text-[#E8D6A8]">
-                <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-[#C9A15A]" />
-                <span className="font-semibold text-white/90">Active Idea Context:</span>
-                <span className="truncate text-white/70">{activeVenture.idea}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleCreateCompanyFiling} className="mt-6 space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-[#F3F1EC]">Proposed Legal Company Name</label>
-                  <span className={`text-xs font-medium ${
-                    companyForm.company_name.length > 100
-                      ? "text-red-400"
-                      : companyForm.company_name.length > 80
-                        ? "text-yellow-400"
-                        : "text-white/45"
-                  }`}>
-                    {companyForm.company_name.length}/150
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  required
-                  maxLength={150}
-                  value={companyForm.company_name}
-                  onChange={(e) => setCompanyForm({ ...companyForm, company_name: e.target.value })}
-                  placeholder="e.g. Almeriq Logistics Technologies Ltd"
-                  className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white placeholder-white/20 focus:border-[#C9A15A] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-[#F3F1EC]">Entity Type</label>
-                <select
-                  value={companyForm.entity_type}
-                  onChange={(e) => setCompanyForm({ ...companyForm, entity_type: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white focus:border-[#C9A15A] focus:outline-none"
-                >
-                  <option value="Private Limited Company (Ltd)">Private Limited Company (Ltd)</option>
-                  <option value="Delaware C-Corporation">Delaware C-Corporation (US Venture Backed)</option>
-                  <option value="Limited Liability Company (LLC)">Limited Liability Company (LLC)</option>
-                  <option value="UK Private Limited">UK Private Limited (Gov.uk)</option>
-                  <option value="Rwanda Special Economic Zone Co">Rwanda Kigali Financial Centre Entity</option>
-                  <option value="UAE Freezone Entity">UAE / DIFC Freezone Co</option>
-                </select>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-[#F3F1EC]">Primary Operating Jurisdiction</label>
-                  <span className={`text-xs font-medium ${
-                    companyForm.jurisdiction.length > 60
-                      ? "text-red-400"
-                      : companyForm.jurisdiction.length > 50
-                        ? "text-yellow-400"
-                        : "text-white/45"
-                  }`}>
-                    {companyForm.jurisdiction.length}/100
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  required
-                  maxLength={100}
-                  value={companyForm.jurisdiction}
-                  onChange={(e) => setCompanyForm({ ...companyForm, jurisdiction: e.target.value })}
-                  placeholder="e.g. Kenya, Delaware, Nigeria, United Kingdom"
-                  className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white placeholder-white/20 focus:border-[#C9A15A] focus:outline-none"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
-                >
-                  {submitting && <Loader2 size={16} className="animate-spin" />}
-                  <span>{submitting ? "Submitting Filing..." : "Generate Filing & Reference Number"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* TAB 3: NEW IP FILING */}
-        {activeTab === "new_ip" && (
-          <div className="mx-auto max-w-2xl rounded-2xl border border-[#2B2B31] bg-[#141417] p-6 sm:p-8">
-            <div className="flex items-center gap-3 border-b border-[#2B2B31] pb-4">
-              <ShieldCheck size={22} className="text-[#C9A15A]" />
-              <div>
-                <h3 className="font-display text-lg font-bold text-[#F3F1EC]">
-                  Intellectual Property & Copyright Filing
-                </h3>
-                <p className="text-xs text-white">
-                  Create an auditable timestamped record of algorithms, software IP, trademarks, and trade secrets.
-                </p>
-              </div>
-            </div>
-
-            <form onSubmit={handleCreateIpFiling} className="mt-6 space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-[#F3F1EC]">Asset / Innovation Title</label>
-                  <span className={`text-xs font-medium ${
-                    ipForm.ip_title.length > 100
-                      ? "text-red-400"
-                      : ipForm.ip_title.length > 80
-                        ? "text-yellow-400"
-                        : "text-white/45"
-                  }`}>
-                    {ipForm.ip_title.length}/150
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  required
-                  maxLength={150}
-                  value={ipForm.ip_title}
-                  onChange={(e) => setIpForm({ ...ipForm, ip_title: e.target.value })}
-                  placeholder="e.g. Almeriq Autonomous Freight Dispatch Engine v1.0"
-                  className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white placeholder-white/20 focus:border-[#C9A15A] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-[#F3F1EC]">IP Classification</label>
-                <select
-                  value={ipForm.ip_type}
-                  onChange={(e) => setIpForm({ ...ipForm, ip_type: e.target.value })}
-                  className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white focus:border-[#C9A15A] focus:outline-none"
-                >
-                  <option value="Software Codebase & Algorithm">Software Codebase & Proprietary Algorithm</option>
-                  <option value="Brand Trademark & Logo">Brand Trademark, Logo & Trade Dress</option>
-                  <option value="Hardware Architecture & Schematics">Hardware Architecture & Schematics</option>
-                  <option value="Proprietary Training Dataset">Proprietary Training Dataset & Weights</option>
-                  <option value="Trade Secret & Operations Methodology">Trade Secret & Operations Methodology</option>
-                </select>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-[#F3F1EC]">Technical Description & Claim</label>
-                  <span className={`text-xs font-medium ${
-                    ipForm.ip_description.length > 450
-                      ? "text-red-400"
-                      : ipForm.ip_description.length > 400
-                        ? "text-yellow-400"
-                        : "text-white/45"
-                  }`}>
-                    {ipForm.ip_description.length}/500
-                  </span>
-                </div>
-                <textarea
-                  rows={3}
-                  maxLength={500}
-                  value={ipForm.ip_description}
-                  onChange={(e) => setIpForm({ ...ipForm, ip_description: e.target.value })}
-                  placeholder="Briefly describe what makes this invention novel and its key components..."
-                  className="mt-1.5 w-full rounded-xl border border-[#2B2B31] bg-[#1C1C21] px-4 py-2.5 text-xs text-white placeholder-white/20 focus:border-[#C9A15A] focus:outline-none"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-6 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] disabled:opacity-60"
-                >
-                  {submitting && <Loader2 size={16} className="animate-spin" />}
-                  <span>{submitting ? "Registering IP..." : "Register IP & Issue Docket"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* TAB 4: LEGAL TEMPLATES */}
-        {activeTab === "templates" && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {/* Template Selector Rail */}
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5 md:col-span-1">
-              {LEGAL_TEMPLATES.map((tmpl) => {
-                const active = selectedTemplate.id === tmpl.id;
-                return (
-                  <button
-                    key={tmpl.id}
-                    type="button"
-                    onClick={() => setSelectedTemplate(tmpl)}
-                    className={`w-full p-4 text-left transition-colors ${
-                      active
-                        ? "bg-[#f2ca50]/10 text-white font-semibold"
-                        : "text-white/60 hover:bg-white/[0.02] hover:text-white"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h5 className="text-xs font-bold text-white">{tmpl.title}</h5>
-                      {active && <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />}
+                {/* ── Section 02: Step-by-Step Procedure & Pre-filing Checklist ── */}
+                <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 border-b border-white/10 pb-12">
+                  {/* Left Column: Sequential Milestone Timeline */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div>
+                      <div className="inline-flex items-center gap-2 text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">
+                        <span>02 / Step-by-Step Guide</span>
+                      </div>
+                      <h2 className="mt-1 font-serif text-2xl font-medium text-white tracking-tight sm:text-3xl">
+                        How to Register Your Company Step by Step
+                      </h2>
+                      <p className="mt-1 text-xs text-white/80">
+                        Follow these simple steps through the official registry in{" "}
+                        {guide.country_name || selectedCountry}.
+                      </p>
                     </div>
-                    <p className="mt-1 text-[11px] text-white line-clamp-2 leading-relaxed">{tmpl.desc}</p>
-                  </button>
-                );
-              })}
-            </div>
 
-            {/* Template Preview Stage */}
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 sm:p-6 md:col-span-2">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    {/* Chronological Step Timeline */}
+                    {guide.steps && guide.steps.length > 0 && (
+                      <div className="relative ml-2 mt-6 space-y-8 border-l border-white/15 pl-6">
+                        {guide.steps.map((step, idx) => (
+                          <div key={idx} className="group relative">
+                            {/* Timeline Node Indicator */}
+                            <div className="absolute -left-[31px] top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#090a0d] border-2 border-[#f2ca50]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]"></span>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-baseline justify-between">
+                                <h3 className="text-sm font-semibold text-white transition-colors group-hover:text-[#f2ca50]">
+                                  {step.step_number || idx + 1}. {step.title}
+                                </h3>
+                                <span className="text-[10px] font-mono text-[#f2ca50]">
+                                  {step.online_process || "Online"}
+                                </span>
+                              </div>
+
+                              <p className="text-xs font-normal text-white leading-relaxed">
+                                {step.description}
+                              </p>
+
+                              {step.requirements && (
+                                <div className="flex flex-wrap gap-2 pt-1.5 text-[11px] font-mono text-white">
+                                  <span className="rounded border border-white/10 bg-white/[0.03] px-2 py-0.5">
+                                    What you need: {step.requirements}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Pre-Filing Checklist & Common Pitfalls */}
+                  <div className="lg:col-span-5 space-y-6">
+                    {/* Documents You Need Before You Start */}
+                    <div className="rounded border border-white/10 bg-white/[0.015] p-6">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-white">
+                          Documents You Need Before You Start
+                        </h3>
+                        <span className="text-[10px] font-mono text-[#f2ca50]">
+                          {prerequisitesList.length} Items
+                        </span>
+                      </div>
+
+                      <ul className="mt-2 divide-y divide-white/5 text-xs">
+                        {prerequisitesList.length > 0 ? (
+                          prerequisitesList.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-3 py-2.5">
+                              <span className="font-mono text-xs font-bold text-[#f2ca50]">✓</span>
+                              <div>
+                                <span className="block font-medium text-white">{item.title}</span>
+                                {item.desc && (
+                                  <span className="text-[11px] font-normal text-white/70">{item.desc}</span>
+                                )}
+                              </div>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="py-3 text-white font-normal">
+                            Copies of your national ID or passport, your registered address, and founder list.
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    {/* Common Mistakes to Avoid */}
+                    <div className="rounded border border-white/10 bg-white/[0.015] p-6">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#f2ca50]">
+                          Mistakes to Avoid
+                        </h3>
+                        <span className="text-[10px] font-mono text-white border border-white/10 bg-white/5 px-2 py-0.5 rounded">
+                          Important
+                        </span>
+                      </div>
+
+                      <div className="mt-3 space-y-3 text-xs leading-relaxed">
+                        {pitfallsList.length > 0 ? (
+                          pitfallsList.map((pitfall, idx) => (
+                            <div key={idx} className="flex items-start gap-2.5">
+                              <span className="font-mono text-xs text-[#f2ca50]">•</span>
+                              <p className="text-white font-normal">
+                                {pitfall.label ? (
+                                  <strong className="font-medium text-white">{pitfall.label}: </strong>
+                                ) : null}
+                                {pitfall.text}
+                              </p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-white font-normal">
+                            Make sure the company name is not already taken and that your name on your ID matches your tax registration details.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+            {/* ── Section 03: Immediate Next Steps ── */}
+            <section className="space-y-4">
+              <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
                 <div>
-                  <h4 className="font-display text-base font-bold text-white">
-                    {selectedTemplate.title}
-                  </h4>
-                  <p className="text-xs text-white">{selectedTemplate.desc}</p>
+                  <div className="inline-flex items-center gap-2 text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">
+                    <span>03 / What to Do Next</span>
+                  </div>
+                  <h2 className="mt-1 font-serif text-2xl font-medium text-white tracking-tight sm:text-3xl">
+                    Things to Do Right After Getting Your Certificate
+                  </h2>
                 </div>
+                <p className="font-mono text-xs text-white/70">
+                  Complete these within 30 days of receiving your certificate
+                </p>
+              </div>
+
+              {/* Clean Tabular Next Steps Table */}
+              <div className="overflow-x-auto rounded border border-white/10">
+                <table className="w-full border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/[0.03] text-[10px] font-mono uppercase text-white/70">
+                      <th className="py-3 px-4 font-semibold">Next Step</th>
+                      <th className="py-3 px-4 font-semibold">Where to Go</th>
+                      <th className="py-3 px-4 font-semibold">What You Need to Do</th>
+                      <th className="py-3 px-4 font-semibold text-right">Recommended Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-white">
+                    {postRegList.length > 0 ? (
+                      postRegList.map((row, idx) => (
+                        <tr key={idx} className="transition-colors hover:bg-white/[0.015]">
+                          <td className="py-3 px-4 font-medium text-white">
+                            <span className="inline-flex items-center gap-2">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]"></span>
+                              {row.milestone}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-mono text-white/80">{row.agency}</td>
+                          <td className="py-3 px-4 font-normal text-white">{row.action}</td>
+                          <td className="py-3 px-4 text-right font-mono text-[#f2ca50]">
+                            {row.window}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="hover:bg-white/[0.015]">
+                        <td className="py-3 px-4 font-medium text-white flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]"></span>
+                          Get Company Tax Number
+                        </td>
+                        <td className="py-3 px-4 font-mono text-white/80">Revenue Authority</td>
+                        <td className="py-3 px-4 font-normal text-white">
+                          Register your company for a tax number so you can send legal invoices to customers.
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-[#f2ca50]">
+                          Within 14 Days
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* Document Footer */}
+            <footer className="flex flex-col justify-between gap-4 border-t border-white/5 pt-8 text-xs font-mono text-white/70 sm:flex-row sm:items-center">
+              <div>
+                <span>ALIMERIQ Legal Protocol</span>
+                <span className="mx-2">•</span>
+                <span>Jurisdiction: {guide?.country_name || selectedCountry}</span>
+              </div>
+              <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={copyTemplateContent}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#f2ca50]/30 bg-[#f2ca50]/10 px-3 py-1.5 text-xs font-semibold text-[#f2ca50] hover:bg-[#f2ca50]/20 transition-colors"
+                  onClick={() => window.print()}
+                  className="hover:text-[#f2ca50] transition-colors inline-flex items-center gap-1.5 cursor-pointer text-white no-print"
                 >
-                  {copiedTemplate ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                  <span>{copiedTemplate ? "Copied" : "Copy Template"}</span>
+                  <Printer size={13} className="text-[#f2ca50]" />
+                  <span>Save as PDF / Print</span>
                 </button>
+                <span className="text-white/30 no-print">|</span>
+                <span className="text-white/80">Helpful Registration Guide</span>
+              </div>
+            </footer>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+        {/* ── MODE 2: STARTER LEGAL TEMPLATES ── */}
+        {activeMode === "templates" && (
+          <div className="space-y-8">
+            <div className="border-b border-white/10 pb-6">
+              <div className="inline-flex items-center gap-2 text-xs font-mono tracking-widest text-[#f2ca50] uppercase mb-2">
+                <span className="h-0.5 w-2 bg-[#f2ca50]"></span> Starter Agreements
+              </div>
+              <h2 className="font-serif text-3xl font-medium tracking-tight text-white sm:text-4xl">
+                Starter Contracts and Legal Templates
+              </h2>
+              <p className="mt-2 text-sm font-normal text-white leading-relaxed max-w-3xl">
+                Simple, standard agreements to protect your code, keep your ideas confidential, divide equity fairly among co-founders, and take early investment.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+              {/* Template Rail */}
+              <div className="overflow-hidden rounded border border-white/10 bg-white/[0.01] divide-y divide-white/5 lg:col-span-4">
+                {LEGAL_TEMPLATES.map((tmpl) => {
+                  const active = selectedTemplate.id === tmpl.id;
+                  return (
+                    <button
+                      key={tmpl.id}
+                      type="button"
+                      onClick={() => setSelectedTemplate(tmpl)}
+                      className={`w-full p-4 text-left transition-colors cursor-pointer ${
+                        active
+                          ? "bg-white/[0.04] border-l-2 border-[#f2ca50]"
+                          : "hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono tracking-wider text-[#f2ca50] uppercase">
+                          {tmpl.tag}
+                        </span>
+                      </div>
+                      <h4 className="mt-1 text-sm font-semibold text-white">
+                        {tmpl.title}
+                      </h4>
+                      <p className="mt-1 text-xs font-normal text-white/70 line-clamp-2 leading-relaxed">
+                        {tmpl.desc}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
 
-              <pre className="mt-4 max-h-96 overflow-y-auto rounded-lg border border-white/8 bg-[#0A0A0B] p-4 text-xs font-mono leading-relaxed text-white whitespace-pre-wrap">
-                {selectedTemplate.content}
-              </pre>
+              {/* Template Preview Stage */}
+              <div className="rounded border border-white/10 bg-white/[0.015] p-6 lg:col-span-8 flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-col gap-4 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <span className="text-[10px] font-mono text-[#f2ca50] uppercase tracking-wider">
+                        {selectedTemplate.tag}
+                      </span>
+                      <h3 className="font-serif text-lg font-medium text-white mt-0.5">
+                        {selectedTemplate.title}
+                      </h3>
+                      <p className="text-xs font-normal text-white mt-1">
+                        {selectedTemplate.desc}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={copyTemplateContent}
+                      className="inline-flex items-center justify-center gap-1.5 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black hover:bg-[#e2ba40] transition-all cursor-pointer shadow-sm shrink-0"
+                    >
+                      {copiedTemplate ? (
+                        <Check size={14} className="text-black" />
+                      ) : (
+                        <Copy size={14} className="text-black" />
+                      )}
+                      <span>{copiedTemplate ? "Copied" : "Copy Template"}</span>
+                    </button>
+                  </div>
+
+                  <div className="mt-4">
+                    <pre className="max-h-[500px] overflow-y-auto rounded border border-white/5 bg-[#090a0d] p-5 text-xs font-mono leading-relaxed text-white whitespace-pre-wrap selection:bg-[#f2ca50]/20 selection:text-[#f2ca50]">
+                      {selectedTemplate.content}
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="mt-6 border-t border-white/5 pt-4 flex items-center justify-between text-xs font-mono text-white/70">
+                  <span>Standard Founder Contract Format</span>
+                  <span className="text-[#f2ca50]">Ready to Use</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

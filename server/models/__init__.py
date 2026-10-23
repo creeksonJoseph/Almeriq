@@ -7,8 +7,10 @@ from .founder_venture import FounderVenture
 from .founder_validation import FounderValidation
 from .founder_legal import FounderLegalFiling
 from .founder_ai_cache import FounderAiCache
+from .company_guide import CompanyRegistrationGuide
 
 __all__ = [
     "Base", "User", "Waitlist",
     "FounderVenture", "FounderValidation", "FounderLegalFiling", "FounderAiCache",
+    "CompanyRegistrationGuide",
 ]

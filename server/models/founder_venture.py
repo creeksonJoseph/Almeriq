@@ -13,6 +13,7 @@ class FounderVenture(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Brief inputs (stored for display)
+    name: Mapped[str | None] = mapped_column(Text, nullable=True)
     idea: Mapped[str] = mapped_column(Text, nullable=False)
     problem: Mapped[str] = mapped_column(Text, nullable=False)
     solution: Mapped[str] = mapped_column(Text, nullable=False)
@@ -39,6 +40,7 @@ class FounderVenture(Base):
         return {
             "id": self.id,
             "user_id": self.user_id,
+            "name": self.name or "",
             "idea": self.idea,
             "problem": self.problem,
             "solution": self.solution,
