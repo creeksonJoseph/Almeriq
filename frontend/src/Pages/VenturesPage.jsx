@@ -393,10 +393,7 @@ export default function VenturesPage() {
           </Link>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
-                Founder Studio · Saved Ideas
-              </p>
-              <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Saved Ideas
               </h1>
               <p className="mt-2 text-sm text-white/50">

@@ -189,12 +189,12 @@ export default function AppSidebar({
             </div>
           </div>
 
-          {/* GROUP 2: Founder Studio Engines */}
+          {/* GROUP 2: Startup Tools */}
           {role === "founder" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Founder Studio
+                  Startup Tools
                 </p>
               )}
               <div className="space-y-0.5">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import {
+  ArrowRight,
   ArrowUpRight,
   Bell,
   BookOpen,
@@ -34,9 +35,9 @@ const ROLE_DATA = {
     icon: Building2,
     stats: [
       ["Idea validation", "68%", "Strong early signal", "gold"],
-      ["Active tasks", "08", "3 due this week", "green"],
+      ["Active tasks", "08", "3 due this week", "white"],
       ["Capital target", "$250k", "Seed round", "gold"],
-      ["Team members", "04", "2 roles open", "green"],
+      ["Team members", "04", "2 roles open", "white"],
     ],
     primaryTitle: "Your build plan",
     primaryCopy:
@@ -58,9 +59,9 @@ const ROLE_DATA = {
     icon: TrendingUp,
     stats: [
       ["New deal flow", "24", "+6 this week", "gold"],
-      ["Deployed capital", "$1.2m", "Across 8 companies", "green"],
+      ["Deployed capital", "$1.2m", "Across 8 companies", "white"],
       ["Avg. response", "2d", "Down from 4d", "gold"],
-      ["Saved companies", "12", "4 new updates", "green"],
+      ["Saved companies", "12", "4 new updates", "white"],
     ],
     primaryTitle: "Deal flow",
     primaryCopy: "Companies aligned with your sectors and stage preferences.",
@@ -81,9 +82,9 @@ const ROLE_DATA = {
     icon: Building2,
     stats: [
       ["Active listings", "18", "All systems live", "gold"],
-      ["Utilization", "74%", "+12% this month", "green"],
+      ["Utilization", "74%", "+12% this month", "white"],
       ["Monthly revenue", "$84k", "Across 11 orders", "gold"],
-      ["Open requests", "07", "2 need response", "green"],
+      ["Open requests", "07", "2 need response", "white"],
     ],
     primaryTitle: "Open requests",
     primaryCopy:
@@ -106,9 +107,9 @@ const ROLE_DATA = {
     icon: BriefcaseBusiness,
     stats: [
       ["Profile strength", "82%", "Add 2 more skills", "gold"],
-      ["New matches", "14", "+5 this week", "green"],
+      ["New matches", "14", "+5 this week", "white"],
       ["Applications", "06", "2 awaiting reply", "gold"],
-      ["Interviews", "02", "Next one Friday", "green"],
+      ["Interviews", "02", "Next one Friday", "white"],
     ],
     primaryTitle: "Recommended for you",
     primaryCopy:
@@ -141,7 +142,7 @@ function StatCard({ stat }) {
           {label}
         </span>
         <span
-          className={`h-2 w-2 shrink-0 rounded-full ${tone === "gold" ? "bg-[#f2ca50]" : "bg-[#52b788]"}`}
+          className={`h-2 w-2 shrink-0 rounded-full ${tone === "gold" ? "bg-[#f2ca50]" : "bg-white/40"}`}
         />
       </div>
       <p className="font-display text-2xl font-semibold text-white sm:text-3xl">
@@ -198,188 +199,140 @@ function WorkspacePanel({ data }) {
 import { useActiveIdea } from "../context/IdeaContext";
 
 function FounderWorkspaceOverview() {
-  const { ventures, activeVenture, setActiveVentureId, loading } = useActiveIdea();
+  const { ventures, activeVenture, setActiveVentureId } = useActiveIdea();
 
-  // If there's an active venture, derive key details
   const ventureName = activeVenture?.idea || (ventures && ventures.length > 0 ? ventures[0].idea : null);
-  const ventureProblem = activeVenture?.problem || "Customer problem definition in progress.";
-  const ventureLocation = activeVenture?.location || "Kenya / Global";
+  const ventureProblem = activeVenture?.problem || "";
 
   return (
     <div className="space-y-6">
-      {/* 1. VENTURE PULSE STAT STRIP */}
-      <StatStrip
-        items={[
-          {
-            label: "Active Venture",
-            value: ventureName
-              ? (ventureName.length > 18 ? ventureName.slice(0, 18) + "..." : ventureName)
-              : "No Venture Active",
-            subtext: activeVenture ? `${ventureLocation} · Active Context` : "Choose or share an idea",
-            valueColor: "text-[#E8D6A8]",
-          },
-          {
-            label: "Idea Validation",
-            value: "6-Point Rubric",
-            subtext: "TAM/SAM/SOM, Feasibility, Model",
-            valueColor: "text-[#C9A15A]",
-          },
-          {
-            label: "System Architecture",
-            value: "Full-Stack Spec",
-            subtext: "Data models, APIs, system diagrams",
-            valueColor: "text-emerald-400",
-          },
-          {
-            label: "Legal Framework",
-            value: "Entity Setup",
-            subtext: "Founders agreement & compliance",
-            valueColor: "text-emerald-400",
-          },
-        ]}
-      />
-
-      {/* 2. ACTIVE VENTURE SPOTLIGHT (HERO CARD) */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#14141a] via-[#101015] to-[#0c0c10] p-6 sm:p-7 shadow-xl">
-        <div className="relative z-10">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#C9A15A]">
-                Current Active Focus
+      {/* 1. ACTIVE STARTUP IDEA */}
+      {ventureName ? (
+        <div className="rounded-2xl  bg-[#141417] p-6 sm:p-7">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="max-w-2xl">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f2ca50]">
+                Active Startup Idea
               </span>
+              <h2 className="mt-1.5 font-display text-2xl font-semibold text-white tracking-tight sm:text-3xl">
+                {ventureName}
+              </h2>
+              {ventureProblem && (
+                <p className="mt-2.5 text-sm leading-relaxed text-white/60">
+                  {ventureProblem}
+                </p>
+              )}
             </div>
-            {ventures && ventures.length > 1 && (
-              <span className="text-xs text-white/40">
-                {ventures.length} ventures saved in workspace
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-2.5 sm:self-start">
+              <Link
+                to="/founder/analysis"
+                className="alq-submit text-xs py-2 px-4"
+              >
+                AI Feedback <ArrowRight size={14} />
+              </Link>
+              <Link
+                to="/founder/intake"
+                className="rounded-xl border border-white/15 px-3.5 py-2 text-xs font-semibold text-white/60 hover:text-white hover:border-white/30 transition-colors"
+              >
+                Edit idea
+              </Link>
+              <Link
+                to="/founder/intake"
+                className="rounded-xl border border-dashed border-white/15 px-3.5 py-2 text-xs font-semibold text-white/40 hover:text-white hover:border-white/30 transition-colors"
+              >
+                + New idea
+              </Link>
+            </div>
           </div>
-
-          <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl tracking-tight">
-            {ventureName || "Kickstart Your Next Startup"}
-          </h2>
-
-          <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-white/60">
-            {ventureProblem}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
+          <h2 className="font-display text-xl font-semibold text-white">No startup idea yet</h2>
+          <p className="mt-2 text-sm text-white/50 max-w-md mx-auto">
+            Add your startup idea to get AI analysis, market validation, and a build roadmap.
           </p>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              to="/founder/validation"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#141416] hover:opacity-95 transition-all shadow-md"
-            >
-              Run Idea Validation
-              <ArrowUpRight size={14} />
-            </Link>
-            <Link
-              to="/founder"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 py-2.5 text-xs font-medium text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors"
-            >
-              Open Studio Hub
-            </Link>
-            <Link
-              to="/founder/intake"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-white/15 bg-transparent px-3.5 py-2.5 text-xs font-medium text-white/50 hover:border-white/30 hover:text-white transition-colors"
-            >
-              + Share New Idea
+          <div className="mt-5 flex justify-center">
+            <Link to="/founder/intake" className="alq-submit text-xs py-2 px-5">
+              + Add your startup idea <ArrowRight size={14} />
             </Link>
           </div>
         </div>
+      )}
 
-        {/* Ambient subtle decorative background glow */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#C9A15A]/5 blur-3xl" />
-      </div>
-
-      {/* 3. CORE STUDIO ENGINES GRID (3 CARDS) */}
+      {/* 2. STARTUP TOOLS */}
       <div>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">
-            Founder Studio Engines
+            Startup Tools
           </h3>
-          <span className="text-xs text-white/35">AI-Powered Build Flow</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {/* Card 1: Idea Validation */}
-          <Link
-            to="/founder/validation"
-            className="group flex flex-col justify-between rounded-2xl border border-white/8 bg-[#121217] p-5 hover:border-[#C9A15A]/30 hover:bg-[#16161d] transition-all cursor-pointer shadow-sm"
-          >
-            <div>
-              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[#C9A15A]/15 text-[#E8D6A8] border border-[#C9A15A]/20">
-                <CheckCircle2 size={17} />
-              </div>
-              <h4 className="font-semibold text-sm text-white group-hover:text-[#E8D6A8] transition-colors">
-                Idea Validation
-              </h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
-                Rigorous 6-pillar evaluation: problem, solution, TAM/SAM/SOM sizing, customer demand, competition, and feasibility.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#C9A15A] group-hover:translate-x-1 transition-transform">
-              <span>Evaluate Idea</span>
-              <ArrowUpRight size={13} />
-            </div>
-          </Link>
-
-          {/* Card 2: Product & Tech */}
-          <Link
-            to="/founder/product"
-            className="group flex flex-col justify-between rounded-2xl border border-white/8 bg-[#121217] p-5 hover:border-white/20 hover:bg-[#16161d] transition-all cursor-pointer shadow-sm"
-          >
-            <div>
-              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/20">
-                <Boxes size={17} />
-              </div>
-              <h4 className="font-semibold text-sm text-white group-hover:text-cyan-300 transition-colors">
-                Product & Tech Architecture
-              </h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
-                System diagrams, full-stack tech choices, database entity schemas, and core API architectural specifications.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
-              <span>Generate Specs</span>
-              <ArrowUpRight size={13} />
-            </div>
-          </Link>
-
-          {/* Card 3: Legal & Setup */}
-          <Link
-            to="/founder/legal"
-            className="group flex flex-col justify-between rounded-2xl border border-white/8 bg-[#121217] p-5 hover:border-white/20 hover:bg-[#16161d] transition-all cursor-pointer shadow-sm"
-          >
-            <div>
-              <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">
-                <Scale size={17} />
-              </div>
-              <h4 className="font-semibold text-sm text-white group-hover:text-emerald-300 transition-colors">
-                Legal & Incorporation
-              </h4>
-              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
-                Founder pledge agreements, cap table distributions, IP protection, and regional incorporation guidelines.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-emerald-400 group-hover:translate-x-1 transition-transform">
-              <span>Review Setup</span>
-              <ArrowUpRight size={13} />
-            </div>
-          </Link>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              title: "AI Analysis",
+              desc: "Market, feasibility, business plan & roadmap.",
+              to: "/founder/analysis",
+              icon: Cpu,
+            },
+            {
+              title: "Idea Checklist",
+              desc: "Test customer demand and willingness to pay.",
+              to: "/founder/validation",
+              icon: CheckCircle2,
+            },
+            {
+              title: "Action Plan",
+              desc: "Clear step-by-step milestones to build.",
+              to: "/founder/roadmap",
+              icon: Target,
+            },
+            {
+              title: "AI Tools",
+              desc: "Generate pitch notes, financials & pros/cons.",
+              to: "/founder/ai-tools",
+              icon: Lightbulb,
+            },
+          ].map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <Link
+                key={tool.to}
+                to={tool.to}
+                className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-[#141417] p-5 hover:border-[#f2ca50]/40 transition-all shadow-sm"
+              >
+                <div>
+                  <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-[#f2ca50]/10 text-[#f2ca50]">
+                    <Icon size={18} />
+                  </div>
+                  <h4 className="font-semibold text-sm text-white group-hover:text-[#f2ca50] transition-colors">
+                    {tool.title}
+                  </h4>
+                  <p className="mt-1 text-xs leading-relaxed text-white/50">
+                    {tool.desc}
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-[#f2ca50] group-hover:translate-x-1 transition-transform">
+                  <span>Open tool</span>
+                  <ArrowRight size={13} />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
-      {/* 4. RECENT VENTURES QUICK-SWITCHER */}
-      {ventures && ventures.length > 0 && (
-        <div className="rounded-2xl border border-white/8 bg-[#121217] p-5 sm:p-6">
+      {/* 3. RECENT VENTURES QUICK-SWITCHER */}
+      {ventures && ventures.length > 1 && (
+        <div className="rounded-2xl border border-white/10 bg-[#141417] p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-sm text-white">Saved Ventures</h3>
-              <p className="text-xs text-white/45 mt-0.5">Quickly toggle your workspace context</p>
+              <h3 className="font-semibold text-sm text-white">Your Saved Ideas</h3>
+              <p className="text-xs text-white/45 mt-0.5">Switch active context</p>
             </div>
             <Link
               to="/founder/ventures"
-              className="text-xs font-semibold text-[#C9A15A] hover:text-[#E8D6A8] transition-colors"
+              className="text-xs font-semibold text-[#f2ca50] hover:underline"
             >
               View all ({ventures.length}) →
             </Link>
@@ -391,11 +344,10 @@ function FounderWorkspaceOverview() {
               return (
                 <div
                   key={v.id}
-                  className={`flex flex-col justify-between rounded-xl border p-3.5 transition-all ${
-                    isSelected
-                      ? "border-[#C9A15A]/40 bg-[#C9A15A]/10 text-white"
-                      : "border-white/8 bg-white/[0.02] hover:bg-white/[0.05] text-white/80"
-                  }`}
+                  className={`flex flex-col justify-between rounded-xl border p-3.5 transition-all ${isSelected
+                      ? "border-[#f2ca50]/40 bg-[#f2ca50]/5 text-white"
+                      : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-white/80"
+                    }`}
                 >
                   <div className="min-w-0 mb-3">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -403,7 +355,7 @@ function FounderWorkspaceOverview() {
                         {v.idea.slice(0, 32)}{v.idea.length > 32 ? "..." : ""}
                       </span>
                       {isSelected && (
-                        <span className="rounded-full bg-[#C9A15A]/20 px-2 py-0.5 text-[9px] font-bold text-[#E8D6A8]">
+                        <span className="rounded-full bg-[#f2ca50]/20 px-2 py-0.5 text-[9px] font-bold text-[#f2ca50]">
                           ACTIVE
                         </span>
                       )}
@@ -419,11 +371,11 @@ function FounderWorkspaceOverview() {
                       onClick={() => setActiveVentureId(v.id)}
                       className="text-[11px] font-medium text-white/50 hover:text-white transition-colors cursor-pointer"
                     >
-                      {isSelected ? "Current focus" : "Set as active"}
+                      {isSelected ? "Current idea" : "Set as active"}
                     </button>
                     <Link
                       to={`/founder/ventures/${v.id}`}
-                      className="text-[11px] font-semibold text-[#C9A15A] hover:underline"
+                      className="text-[11px] font-semibold text-[#f2ca50] hover:underline"
                     >
                       Details →
                     </Link>
@@ -483,7 +435,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
                 label,
                 value,
                 subtext: note,
-                valueColor: tone === "gold" ? "text-[#f2ca50]" : "text-emerald-400",
+                valueColor: tone === "gold" ? "text-[#f2ca50]" : "text-white/80",
               }))}
               className="mb-6"
             />
@@ -622,8 +574,8 @@ function ProfileSummary({ user, role, onEdit }) {
           value={user?.nationality || "Not specified"}
         />
         <Info
-          label="Member ID"
-          value={`ALQ-USR-${String(user?.id).padStart(5, "0")}`}
+          label="Role"
+          value={role.label}
         />
         <Info label="Status" value="Verified account" />
       </div>

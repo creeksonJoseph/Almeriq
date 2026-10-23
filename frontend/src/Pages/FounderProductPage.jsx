@@ -159,7 +159,7 @@ export default function FounderProductPage() {
               {/* PERSONAS - Profile Split */}
               {activeTab === "user_personas" && (
                 <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/10">
-                  {currentData.personas?.map((p, idx) => (
+                  {safeList(currentData.personas).map((p, idx) => (
                     <div key={idx} className="p-6 sm:p-7 hover:bg-white/[0.02] transition-colors">
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                         <div className="md:w-1/3">
@@ -180,10 +180,10 @@ export default function FounderProductPage() {
                               Primary Goals
                             </span>
                             <ul className="space-y-1.5 text-xs text-white/80">
-                              {p.goals?.map((g, gi) => (
+                              {safeList(p.goals).map((g, gi) => (
                                 <li key={gi} className="flex items-start gap-1.5">
                                   <span className="text-[#f2ca50] font-bold">·</span>
-                                  <span>{g}</span>
+                                  <span>{typeof g === "object" ? JSON.stringify(g) : String(g)}</span>
                                 </li>
                               ))}
                             </ul>
@@ -194,10 +194,10 @@ export default function FounderProductPage() {
                               Friction & Pain Points
                             </span>
                             <ul className="space-y-1.5 text-xs text-rose-200/80">
-                              {p.pain_points?.map((pp, ppi) => (
+                              {safeList(p.pain_points).map((pp, ppi) => (
                                 <li key={ppi} className="flex items-start gap-1.5">
                                   <span className="text-rose-400 font-bold">·</span>
-                                  <span>{pp}</span>
+                                  <span>{typeof pp === "object" ? JSON.stringify(pp) : String(pp)}</span>
                                 </li>
                               ))}
                             </ul>
@@ -212,7 +212,7 @@ export default function FounderProductPage() {
               {/* USER JOURNEY - Streamlined Flow Rows */}
               {activeTab === "user_journey" && (
                 <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
-                  {currentData.steps?.map((step, idx) => (
+                  {safeList(currentData.steps).map((step, idx) => (
                     <div key={idx} className="p-4 sm:p-5 hover:bg-white/[0.02] transition-colors">
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <div className="flex items-center gap-2">
@@ -282,9 +282,9 @@ export default function FounderProductPage() {
                         Integrated 3rd-Party APIs & Services
                       </span>
                       <div className="flex flex-wrap gap-2">
-                        {currentData.third_party_services.map((s, si) => (
+                        {safeList(currentData.third_party_services).map((s, si) => (
                           <span key={si} className="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 text-xs text-white/80">
-                            {s}
+                            {typeof s === "object" ? JSON.stringify(s) : String(s)}
                           </span>
                         ))}
                       </div>
@@ -307,7 +307,7 @@ export default function FounderProductPage() {
               {/* SPRINT BACKLOG - Clean Epic Stream */}
               {activeTab === "sprint_backlog" && (
                 <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
-                  {currentData.mvp_epics?.map((epic, idx) => (
+                  {safeList(currentData.mvp_epics).map((epic, idx) => (
                     <div key={idx} className="p-4 sm:p-5 hover:bg-white/[0.02] transition-colors">
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
@@ -325,10 +325,10 @@ export default function FounderProductPage() {
                       </div>
                       <div className="pl-6 pt-1">
                         <ul className="space-y-1 text-xs text-white/75">
-                          {epic.user_stories?.map((story, si) => (
+                          {safeList(epic.user_stories).map((story, si) => (
                             <li key={si} className="flex items-start gap-1.5">
                               <span className="text-[#f2ca50] font-bold">·</span>
-                              <span>{story}</span>
+                              <span>{typeof story === "object" ? JSON.stringify(story) : String(story)}</span>
                             </li>
                           ))}
                         </ul>
@@ -344,3 +344,24 @@ export default function FounderProductPage() {
     </FounderFlowGuard>
   );
 }
+
+function safeList(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    if (val.includes("\n")) {
+      return val
+        .split("\n")
+        .map((s) => s.trim().replace(/^[-*•0-9.]+\s*/, ""))
+        .filter(Boolean);
+    }
+    return [val];
+  }
+  if (typeof val === "object") {
+    return Object.values(val).map((v) =>
+      typeof v === "object" ? JSON.stringify(v) : String(v)
+    );
+  }
+  return [String(val)];
+}
+

@@ -13,7 +13,7 @@ export function FounderFlowGuard({ children }) {
   if (user?.role !== "founder") {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <h1 className="font-display text-3xl font-semibold text-white">Founder studio access required</h1>
+        <h1 className="font-display text-3xl font-semibold text-white">Founder access required</h1>
         <p className="mt-3 text-sm text-white/55">Choose the founder role in your profile to use this workspace.</p>
         <Link to="/dashboard" className="mt-6 inline-flex rounded-full bg-[#c9a15a] px-5 py-3 text-sm font-semibold text-[#161410]">Back to dashboard</Link>
       </div>
@@ -50,9 +50,6 @@ export default function FounderFlowLayout({ children }) {
               <ArrowLeft size={14} /> Dashboard
             </Link>
           )}
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f2ca50]">
-            Founder studio · {firstName}
-          </p>
         </div>
 
         {isProjectWorkspace ? (

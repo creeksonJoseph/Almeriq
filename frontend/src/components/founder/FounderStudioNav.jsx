@@ -6,16 +6,13 @@ export default function FounderStudioNav({ title, subtitle, action }) {
   return (
     <div className="mb-8">
       {/* Top breadcrumb & back */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-4">
         <Link
           to="/dashboard"
           className="inline-flex items-center gap-2 text-xs font-semibold text-white/50 transition-colors hover:text-white"
         >
           <ArrowLeft size={14} /> Back to Dashboard
         </Link>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C9A15A]">
-          Founder Studio
-        </span>
       </div>
 
       {/* Header title & action */}

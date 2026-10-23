@@ -168,10 +168,10 @@ export default function FounderOutreachPage() {
                 <div className="border-l-2 border-[#f2ca50] pl-4 py-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">Highlights & Wins</span>
                   <ul className="space-y-1.5 text-xs text-white/80">
-                    {current.highlights?.map((h, i) => (
+                    {safeList(current.highlights).map((h, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-[#f2ca50] font-bold">·</span>
-                        <span>{h}</span>
+                        <span>{typeof h === "object" ? JSON.stringify(h) : String(h)}</span>
                       </li>
                     ))}
                   </ul>
@@ -180,10 +180,10 @@ export default function FounderOutreachPage() {
                 <div className="border-l-2 border-white/20 pl-4 py-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-white/60 block mb-2">Lowlights & Learnings</span>
                   <ul className="space-y-1.5 text-xs text-white/70">
-                    {current.lowlights?.map((l, i) => (
+                    {safeList(current.lowlights).map((l, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-white/40 font-bold">·</span>
-                        <span>{l}</span>
+                        <span>{typeof l === "object" ? JSON.stringify(l) : String(l)}</span>
                       </li>
                     ))}
                   </ul>
@@ -195,10 +195,10 @@ export default function FounderOutreachPage() {
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-white/50 block mb-2">Key Metric Pulse</span>
                   <ul className="space-y-1.5 text-xs text-white/80">
-                    {current.kpis?.map((k, i) => (
+                    {safeList(current.kpis).map((k, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-[#f2ca50] font-bold">·</span>
-                        <span>{k}</span>
+                        <span>{typeof k === "object" ? JSON.stringify(k) : String(k)}</span>
                       </li>
                     ))}
                   </ul>
@@ -207,10 +207,10 @@ export default function FounderOutreachPage() {
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">Asks from Backers</span>
                   <ul className="space-y-1.5 text-xs text-white/80">
-                    {current.asks?.map((a, i) => (
+                    {safeList(current.asks).map((a, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-[#f2ca50] font-bold">·</span>
-                        <span>{a}</span>
+                        <span>{typeof a === "object" ? JSON.stringify(a) : String(a)}</span>
                       </li>
                     ))}
                   </ul>
@@ -262,10 +262,10 @@ export default function FounderOutreachPage() {
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-white/60 block mb-2">Core Responsibilities</span>
                   <ul className="space-y-1.5 text-xs text-white/80">
-                    {current.responsibilities?.map((r, i) => (
+                    {safeList(current.responsibilities).map((r, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-[#f2ca50] font-bold">·</span>
-                        <span>{r}</span>
+                        <span>{typeof r === "object" ? JSON.stringify(r) : String(r)}</span>
                       </li>
                     ))}
                   </ul>
@@ -274,10 +274,10 @@ export default function FounderOutreachPage() {
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-white/60 block mb-2">Required Skills & Experience</span>
                   <ul className="space-y-1.5 text-xs text-white/80">
-                    {current.requirements?.map((req, i) => (
+                    {safeList(current.requirements).map((req, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-[#f2ca50] font-bold">·</span>
-                        <span>{req}</span>
+                        <span>{typeof req === "object" ? JSON.stringify(req) : String(req)}</span>
                       </li>
                     ))}
                   </ul>
@@ -300,3 +300,24 @@ export default function FounderOutreachPage() {
     </FounderFlowGuard>
   );
 }
+
+function safeList(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    if (val.includes("\n")) {
+      return val
+        .split("\n")
+        .map((s) => s.trim().replace(/^[-*•0-9.]+\s*/, ""))
+        .filter(Boolean);
+    }
+    return [val];
+  }
+  if (typeof val === "object") {
+    return Object.values(val).map((v) =>
+      typeof v === "object" ? JSON.stringify(v) : String(v)
+    );
+  }
+  return [String(val)];
+}
+

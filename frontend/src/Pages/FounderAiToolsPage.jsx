@@ -343,9 +343,9 @@ export default function FounderAiToolsPage() {
                         <span className="text-[10px] text-white/40">Internal</span>
                       </div>
                       <ul className="space-y-2">
-                        {currentData.strengths?.map((it, i) => (
+                        {safeList(currentData.strengths).map((it, i) => (
                           <li key={i} className="text-xs text-white/80 flex items-start gap-2">
-                            <span className="text-[#f2ca50] font-bold">·</span> {it}
+                            <span className="text-[#f2ca50] font-bold">·</span> {typeof it === "object" ? JSON.stringify(it) : String(it)}
                           </li>
                         ))}
                       </ul>
@@ -357,9 +357,9 @@ export default function FounderAiToolsPage() {
                         <span className="text-[10px] text-white/40">Internal</span>
                       </div>
                       <ul className="space-y-2">
-                        {currentData.weaknesses?.map((it, i) => (
+                        {safeList(currentData.weaknesses).map((it, i) => (
                           <li key={i} className="text-xs text-white/70 flex items-start gap-2">
-                            <span className="text-white/40 font-bold">·</span> {it}
+                            <span className="text-white/40 font-bold">·</span> {typeof it === "object" ? JSON.stringify(it) : String(it)}
                           </li>
                         ))}
                       </ul>
@@ -373,9 +373,9 @@ export default function FounderAiToolsPage() {
                         <span className="text-[10px] text-white/40">External</span>
                       </div>
                       <ul className="space-y-2">
-                        {currentData.opportunities?.map((it, i) => (
+                        {safeList(currentData.opportunities).map((it, i) => (
                           <li key={i} className="text-xs text-white/80 flex items-start gap-2">
-                            <span className="text-emerald-400 font-bold">·</span> {it}
+                            <span className="text-emerald-400 font-bold">·</span> {typeof it === "object" ? JSON.stringify(it) : String(it)}
                           </li>
                         ))}
                       </ul>
@@ -387,9 +387,9 @@ export default function FounderAiToolsPage() {
                         <span className="text-[10px] text-white/40">External</span>
                       </div>
                       <ul className="space-y-2">
-                        {currentData.threats?.map((it, i) => (
+                        {safeList(currentData.threats).map((it, i) => (
                           <li key={i} className="text-xs text-white/70 flex items-start gap-2">
-                            <span className="text-rose-400 font-bold">·</span> {it}
+                            <span className="text-rose-400 font-bold">·</span> {typeof it === "object" ? JSON.stringify(it) : String(it)}
                           </li>
                         ))}
                       </ul>
@@ -471,10 +471,10 @@ export default function FounderAiToolsPage() {
 
                         <div className="py-6">
                           <ul className="space-y-3">
-                            {currentData.slides[activeSlideIndex].bullets?.map((b, bi) => (
+                            {safeList(currentData.slides[activeSlideIndex].bullets).map((b, bi) => (
                               <li key={bi} className="text-sm text-white/80 flex items-start gap-3 leading-relaxed">
                                 <span className="text-[#f2ca50] text-sm mt-0.5">•</span>
-                                <span>{b}</span>
+                                <span>{typeof b === "object" ? JSON.stringify(b) : String(b)}</span>
                               </li>
                             ))}
                           </ul>
@@ -544,11 +544,11 @@ export default function FounderAiToolsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {currentData.risks.map((r, ri) => (
+                      {safeList(currentData.risks).map((r, ri) => (
                         <tr key={ri} className="hover:bg-white/[0.02] transition-colors">
                           <td className="py-3 px-4 whitespace-nowrap">
                             <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-[#f2ca50]">
-                              {r.category}
+                              {r.category || "General"}
                             </span>
                           </td>
                           <td className="py-3 px-4 font-medium text-white max-w-xs">
@@ -556,8 +556,8 @@ export default function FounderAiToolsPage() {
                           </td>
                           <td className="py-3 px-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-[10px]">
-                              <span className="rounded bg-white/5 px-2 py-0.5 text-white/70">Impact: {r.impact}</span>
-                              <span className="rounded bg-[#f2ca50]/10 px-2 py-0.5 text-[#f2ca50]">Likelihood: {r.likelihood}</span>
+                              <span className="rounded bg-white/5 px-2 py-0.5 text-white/70">Impact: {r.impact || "N/A"}</span>
+                              <span className="rounded bg-[#f2ca50]/10 px-2 py-0.5 text-[#f2ca50]">Likelihood: {r.likelihood || "N/A"}</span>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-white/60 max-w-sm leading-relaxed">
@@ -577,7 +577,28 @@ export default function FounderAiToolsPage() {
   );
 }
 
+function safeList(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    if (val.includes("\n")) {
+      return val
+        .split("\n")
+        .map((s) => s.trim().replace(/^[-*•0-9.]+\s*/, ""))
+        .filter(Boolean);
+    }
+    return [val];
+  }
+  if (typeof val === "object") {
+    return Object.values(val).map((v) =>
+      typeof v === "object" ? JSON.stringify(v) : String(v)
+    );
+  }
+  return [String(val)];
+}
+
 function CanvasCell({ title, items, text, highlight = false, badge }) {
+  const list = items ? safeList(items) : [];
   return (
     <div className={`p-4 sm:p-5 flex flex-col justify-between ${highlight ? "bg-white/[0.02]" : ""}`}>
       <div>
@@ -585,13 +606,17 @@ function CanvasCell({ title, items, text, highlight = false, badge }) {
           <h5 className="text-[11px] font-bold uppercase tracking-wider text-[#f2ca50]">{title}</h5>
           {badge && <span className="text-[9px] uppercase tracking-wider text-white/30">{badge}</span>}
         </div>
-        {text && <p className="text-xs sm:text-sm leading-relaxed text-white/80">{text}</p>}
-        {items && (
+        {text && (
+          <p className="text-xs sm:text-sm leading-relaxed text-white/80 mb-2">
+            {typeof text === "string" ? text : JSON.stringify(text)}
+          </p>
+        )}
+        {list.length > 0 && (
           <ul className="space-y-1.5 text-xs text-white/70">
-            {items.map((it, i) => (
+            {list.map((it, i) => (
               <li key={i} className="flex items-start gap-1.5 leading-snug">
                 <span className="text-[#f2ca50] font-bold">·</span>
-                <span>{it}</span>
+                <span>{typeof it === "object" ? JSON.stringify(it) : String(it)}</span>
               </li>
             ))}
           </ul>

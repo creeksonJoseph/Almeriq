@@ -88,7 +88,7 @@ function App() {
               path="/founder"
               element={
                 <ProtectedRoute>
-                  <FounderHubPage />
+                  <Navigate to="/dashboard" replace />
                 </ProtectedRoute>
               }
             />

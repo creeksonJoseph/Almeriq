@@ -36,7 +36,7 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
     solution = payload.solution or ""
 
     if tool_key == "lean_canvas":
-        return f"Create a Lean Canvas for: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}. Return JSON with: problem, customer_segments, unique_value_prop, solution, channels, revenue_streams, cost_structure, key_metrics, unfair_advantage."
+        return f"Create a Lean Canvas for: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}. Return JSON with: problem (array of 3 short strings), customer_segments (array of 3 short strings), unique_value_prop (single clear string), solution (array of 3 short strings), channels (array of 3 strings), revenue_streams (array of 2-3 strings), cost_structure (array of 2-3 strings), key_metrics (array of 3 strings), unfair_advantage (single string)."
 
     if tool_key == "swot":
         return f"SWOT analysis for {idea} targeting {customer} in {location}. Return JSON with: strengths, weaknesses, opportunities, threats (each as array of 3 strings)."
