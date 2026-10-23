@@ -43,12 +43,9 @@ const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/ForgotPasswordPag
 const FounderIntakePage = lazyWithRetry(() => import("./Pages/FounderIntakePage"));
 const FounderAnalysisPage = lazyWithRetry(() => import("./Pages/FounderAnalysisPage"));
 const VenturesPage = lazyWithRetry(() => import("./Pages/VenturesPage"));
-const FounderHubPage = lazyWithRetry(() => import("./Pages/FounderHubPage"));
 const FounderValidationPage = lazyWithRetry(() => import("./Pages/FounderValidationPage"));
-const FounderAiToolsPage = lazyWithRetry(() => import("./Pages/FounderAiToolsPage"));
 const FounderProductPage = lazyWithRetry(() => import("./Pages/FounderProductPage"));
 const FounderLegalPage = lazyWithRetry(() => import("./Pages/FounderLegalPage"));
-const FounderOutreachPage = lazyWithRetry(() => import("./Pages/FounderOutreachPage"));
 const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/AdminWaitlistPage"));
 const SettingsPage = lazyWithRetry(() => import("./Pages/SettingsPage"));
 
