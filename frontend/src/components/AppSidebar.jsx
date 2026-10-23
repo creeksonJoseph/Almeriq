@@ -27,10 +27,8 @@ export const WORKSPACE_NAV = [
 
 export const FOUNDER_STUDIO_NAV = [
   { key: "validation", label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
-  { key: "ai-tools", label: "Startup Tools", path: "/founder/ai-tools", icon: Cpu },
-  { key: "product", label: "Product & Tech", path: "/founder/product", icon: Boxes },
+  { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
-  { key: "outreach", label: "Updates & Team", path: "/founder/outreach", icon: Send },
 ];
 
 export default function AppSidebar({
@@ -189,12 +187,12 @@ export default function AppSidebar({
             </div>
           </div>
 
-          {/* GROUP 2: Startup Tools */}
+          {/* GROUP 2: Tools */}
           {role === "founder" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Startup Tools
+                  Tools
                 </p>
               )}
               <div className="space-y-0.5">

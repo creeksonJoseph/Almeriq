@@ -61,15 +61,7 @@ export default function FounderHubPage() {
       icon: CheckCircle2,
     },
     {
-      title: "Startup Workspace Tools",
-      desc: "Create simple 1-page plans, pitch slide notes, money estimates, and pros & cons.",
-      link: "/founder/ai-tools",
-      badge: "5 Document Tools",
-      badgeColor: "text-[#C9A15A] bg-[#C9A15A]/10 border-[#C9A15A]/20",
-      icon: Cpu,
-    },
-    {
-      title: "Product & Tech Plan",
+      title: "Product Development",
       desc: "Figure out who your users are, what tech to use, and what features to build first.",
       link: "/founder/product",
       badge: "4 Spec Tools",
@@ -83,14 +75,6 @@ export default function FounderHubPage() {
       badge: filingsCount > 0 ? `${filingsCount} filed` : "Templates ready",
       badgeColor: filingsCount > 0 ? "text-[#C9A15A] bg-[#C9A15A]/15 border-[#C9A15A]/30" : "text-white/40 bg-white/5 border-white/10",
       icon: Scale,
-    },
-    {
-      title: "Updates & Team",
-      desc: "Write quick monthly progress updates and help-wanted posts to find teammates.",
-      link: "/founder/outreach",
-      badge: "Ready",
-      badgeColor: "text-[#C9A15A] bg-[#C9A15A]/10 border-[#C9A15A]/20",
-      icon: Send,
     },
   ];
 

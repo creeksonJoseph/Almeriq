@@ -259,11 +259,11 @@ function FounderWorkspaceOverview() {
         </div>
       )}
 
-      {/* 2. STARTUP TOOLS */}
+      {/* 2. TOOLS */}
       <div>
         <div className="mb-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">
-            Startup Tools
+            Tools
           </h3>
         </div>
 
@@ -276,22 +276,22 @@ function FounderWorkspaceOverview() {
               icon: Cpu,
             },
             {
-              title: "Idea Checklist",
+              title: "Idea Validation",
               desc: "Test customer demand and willingness to pay.",
               to: "/founder/validation",
               icon: CheckCircle2,
             },
             {
-              title: "Action Plan",
-              desc: "Clear step-by-step milestones to build.",
-              to: "/founder/roadmap",
-              icon: Target,
+              title: "Product Development",
+              desc: "Personas, user flows, tech stack & MVP backlog.",
+              to: "/founder/product",
+              icon: Boxes,
             },
             {
-              title: "AI Tools",
-              desc: "Generate pitch notes, financials & pros/cons.",
-              to: "/founder/ai-tools",
-              icon: Lightbulb,
+              title: "Legal & Setup",
+              desc: "Entity formation, founder agreements & filings.",
+              to: "/founder/legal",
+              icon: Scale,
             },
           ].map((tool) => {
             const Icon = tool.icon;
@@ -485,10 +485,10 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              to="/founder/ai-tools"
+              to="/founder/analysis"
               className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B]"
             >
-              Generate Pitch Deck & Projections
+              Generate AI Strategy & Plan
             </Link>
             <Link
               to="/founder/validation"

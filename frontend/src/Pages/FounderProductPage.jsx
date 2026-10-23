@@ -87,7 +87,7 @@ export default function FounderProductPage() {
     <FounderFlowGuard>
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
-          title="Product & Tech Plan"
+          title="Product Development"
           subtitle="Plan who your users are, how the app will work, and what tech to use."
         />
 

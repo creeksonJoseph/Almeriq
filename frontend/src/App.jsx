@@ -136,7 +136,7 @@ function App() {
               path="/founder/ai-tools"
               element={
                 <ProtectedRoute>
-                  <FounderAiToolsPage />
+                  <Navigate to="/dashboard" replace />
                 </ProtectedRoute>
               }
             />
@@ -160,7 +160,7 @@ function App() {
               path="/founder/outreach"
               element={
                 <ProtectedRoute>
-                  <FounderOutreachPage />
+                  <Navigate to="/dashboard" replace />
                 </ProtectedRoute>
               }
             />
