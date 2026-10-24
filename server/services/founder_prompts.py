@@ -50,17 +50,23 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
     if tool_key == "risk_matrix":
         return f"Risk matrix for {idea}. Return JSON with risks array (category, risk, likelihood, impact, mitigation)."
 
-    if tool_key == "user_personas":
-        return f"User personas for {idea} targeting {customer}. Return JSON with personas array (name, role, quote, goals, pain_points)."
+    if tool_key == "product_brief":
+        return f"Create a Product Brief for {idea}. Customer: {customer}. Return JSON with: product_name, target_customer, key_differentiators (array of strings), core_features (array of strings)."
 
-    if tool_key == "user_journey":
-        return f"User journey for {idea}. Return JSON with steps array (stage, user_action, emotion, touchpoint, opportunity)."
+    if tool_key == "mvp_building":
+        return f"Create an MVP Building plan for {idea}. Return JSON with: working_prototype_spec (string describing the prototype), core_mvp_features (array of strings to build first)."
 
-    if tool_key == "tech_stack":
-        return f"Tech stack for {idea}. Return JSON with: frontend, backend, database, infrastructure, third_party_services, rationale."
+    if tool_key == "investor_summary":
+        return f"Create an Investor-Ready Summary for {idea}. Return JSON with: headline (string), problem_solved (string), solution (string), market_opportunity (string), traction_or_milestones (array of strings)."
 
-    if tool_key == "sprint_backlog":
-        return f"MVP sprint backlog for {idea}. Return JSON with mvp_epics array (epic, user_stories, priority, estimate)."
+    if tool_key == "design":
+        return f"Create a Design specification for {idea}. Return JSON with: user_journeys (array of strings), key_features (array of strings), ui_ux_guidelines (array of strings)."
+
+    if tool_key == "test_improve":
+        return f"Create a Test and Improve plan for {idea}. Return JSON with: testing_strategy (string), target_tester_profiles (array of strings), incentive_plan (string), feedback_channels (array of strings)."
+
+    if tool_key == "results_changes":
+        return f"Create a Results & Changes framework for {idea}. Return JSON with: key_metrics_to_track (array of strings), expected_feedback_themes (array of strings), pivot_or_persevere_criteria (array of strings)."
 
     if tool_key == "investor_update":
         return f"Monthly investor update for {idea}. Return JSON with: subject, highlights, lowlights, kpis, asks, full_email."
