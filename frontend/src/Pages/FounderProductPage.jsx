@@ -12,16 +12,18 @@ import { useToast } from "../context/ToastContext";
 import { useActiveIdea } from "../context/IdeaContext";
 
 const PRODUCT_TOOLS = [
-  { id: "user_personas", label: "User Profiles", desc: "Who your users are & what they need" },
-  { id: "user_journey", label: "User Steps", desc: "How users discover and use your app" },
-  { id: "tech_stack", label: "Tech Stack", desc: "Tools and frameworks to build it" },
-  { id: "sprint_backlog", label: "To-Do List", desc: "What features to code and build first" },
+  { id: "product_brief", label: "1. Product Brief", desc: "Define the core product, target customer, and key features" },
+  { id: "mvp_building", label: "2. MVP Building", desc: "Generate a working prototype and MVP plan" },
+  { id: "investor_summary", label: "3. Investor-Ready Summary", desc: "Create a summary for the investor page" },
+  { id: "design", label: "4. Design", desc: "User journeys, features, and UI/UX guidelines" },
+  { id: "test_improve", label: "5. Test and Improve", desc: "Plan for real user testing and feedback" },
+  { id: "results_changes", label: "6. Results & Changes", desc: "Track results, failures, and required changes" },
 ];
 
 export default function FounderProductPage() {
   const { showToast } = useToast();
   const { activeVenture } = useActiveIdea();
-  const [activeTab, setActiveTab] = useState("user_personas");
+  const [activeTab, setActiveTab] = useState("product_brief");
   const [brief, setBrief] = useState({
     idea: "",
     customer: "",
@@ -165,186 +167,204 @@ export default function FounderProductPage() {
           )}
 
           {!loading && currentData && (
-            <div>
-              {/* PERSONAS - Profile Split */}
-              {activeTab === "user_personas" && (
-                <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/10">
-                  {safeList(currentData.personas).map((p, idx) => (
-                    <div key={idx} className="p-6 sm:p-7 hover:bg-white/[0.02] transition-colors">
-                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                        <div className="md:w-1/3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-display text-lg font-bold text-white">{p.name}</h4>
-                            <span className="rounded bg-[#f2ca50]/10 border border-[#f2ca50]/20 px-2 py-0.5 text-[10px] font-semibold text-[#f2ca50]">
-                              {p.role}
-                            </span>
-                          </div>
-                          <blockquote className="mt-2 border-l-2 border-[#f2ca50]/50 pl-3 text-xs italic text-white leading-relaxed">
-                            "{p.quote}"
-                          </blockquote>
-                        </div>
-
-                        <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 md:pt-0 border-t md:border-t-0 md:border-l border-white/8 md:pl-6">
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">
-                              Primary Goals
-                            </span>
-                            <ul className="space-y-1.5 text-xs text-white">
-                              {safeList(p.goals).map((g, gi) => (
-                                <li key={gi} className="flex items-start gap-1.5">
-                                  <span className="text-[#f2ca50] font-bold">·</span>
-                                  <span>{typeof g === "object" ? JSON.stringify(g) : String(g)}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 block mb-2">
-                              Friction & Pain Points
-                            </span>
-                            <ul className="space-y-1.5 text-xs text-rose-200/80">
-                              {safeList(p.pain_points).map((pp, ppi) => (
-                                <li key={ppi} className="flex items-start gap-1.5">
-                                  <span className="text-rose-400 font-bold">·</span>
-                                  <span>{typeof pp === "object" ? JSON.stringify(pp) : String(pp)}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* USER JOURNEY - Streamlined Flow Rows */}
-              {activeTab === "user_journey" && (
-                <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
-                  {safeList(currentData.steps).map((step, idx) => (
-                    <div key={idx} className="p-4 sm:p-5 hover:bg-white/[0.02] transition-colors">
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f2ca50]/15 text-xs font-bold text-[#f2ca50]">
-                            {idx + 1}
-                          </span>
-                          <h4 className="text-sm font-bold text-white">{step.stage}</h4>
-                        </div>
-                        <span className="rounded bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-white/60">
-                          State: {step.emotion}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 text-xs pl-7">
-                        <div>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40 block">User Action</span>
-                          <p className="mt-1 text-white leading-relaxed">{step.user_action}</p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40 block">Touchpoint</span>
-                          <p className="mt-1 text-white leading-relaxed font-mono text-[11px]">{step.touchpoint}</p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 block">Product Opportunity</span>
-                          <p className="mt-1 text-emerald-300/90 leading-relaxed font-medium">{step.opportunity}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* TECH STACK - Unified Architectural Spec Table */}
-              {activeTab === "tech_stack" && (
-                <div className="space-y-6">
-                  <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01]">
-                    <table className="w-full text-xs text-left">
-                      <thead>
-                        <tr className="border-b border-white/10 bg-white/[0.02]">
-                          <th className="py-3 px-5 font-semibold uppercase tracking-wider text-white/40 w-1/3">Architecture Layer</th>
-                          <th className="py-3 px-5 font-semibold uppercase tracking-wider text-white/40">Recommended Tech</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white">Frontend Client</td>
-                          <td className="py-3.5 px-5 font-semibold text-white text-sm">{currentData.frontend}</td>
-                        </tr>
-                        <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white">Backend & API</td>
-                          <td className="py-3.5 px-5 font-semibold text-white text-sm">{currentData.backend}</td>
-                        </tr>
-                        <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white">Database Layer</td>
-                          <td className="py-3.5 px-5 font-semibold text-white text-sm">{currentData.database}</td>
-                        </tr>
-                        <tr className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-5 font-medium text-white">Hosting & Infrastructure</td>
-                          <td className="py-3.5 px-5 font-semibold text-[#f2ca50] text-sm">{currentData.infrastructure}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+            <div className="space-y-8">
+              {activeTab === "product_brief" && (
+                <div className="space-y-8 text-sm">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Product Name</h4>
+                    <p className="text-white font-display text-lg">{currentData.product_name}</p>
                   </div>
-
-                  {currentData.third_party_services && (
-                    <div className="p-5 rounded-xl border border-white/10 bg-white/[0.01]">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] block mb-2">
-                        Integrated 3rd-Party APIs & Services
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {safeList(currentData.third_party_services).map((s, si) => (
-                          <span key={si} className="rounded-md border border-white/8 bg-white/5 px-2.5 py-1 text-xs text-white">
-                            {typeof s === "object" ? JSON.stringify(s) : String(s)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {currentData.rationale && (
-                    <div className="border-l-2 border-white/20 pl-4 py-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 block mb-1">
-                        Velocity & Scale Rationale
-                      </span>
-                      <p className="text-xs sm:text-sm leading-relaxed text-white">
-                        {currentData.rationale}
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Target Customer</h4>
+                    <p className="text-white/80">{currentData.target_customer}</p>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">What Makes it Different</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.key_differentiators).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Core Features of the Idea</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.core_features).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
 
-              {/* SPRINT BACKLOG - Clean Epic Stream */}
-              {activeTab === "sprint_backlog" && (
-                <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.01] divide-y divide-white/5">
-                  {safeList(currentData.mvp_epics).map((epic, idx) => (
-                    <div key={idx} className="p-4 sm:p-5 hover:bg-white/[0.02] transition-colors">
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-[#f2ca50]">EP-{idx + 1}</span>
-                          <h4 className="text-sm font-bold text-white">{epic.epic}</h4>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded bg-[#f2ca50]/10 border border-[#f2ca50]/20 px-2 py-0.5 text-[10px] font-semibold text-[#f2ca50]">
-                            {epic.priority} Priority
-                          </span>
-                          <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-mono text-white/50">
-                            Est: {epic.estimate}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="pl-6 pt-1">
-                        <ul className="space-y-1 text-xs text-white">
-                          {safeList(epic.user_stories).map((story, si) => (
-                            <li key={si} className="flex items-start gap-1.5">
-                              <span className="text-[#f2ca50] font-bold">·</span>
-                              <span>{typeof story === "object" ? JSON.stringify(story) : String(story)}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+              {activeTab === "mvp_building" && (
+                <div className="space-y-8 text-sm">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Generate a working prototype</h4>
+                    <p className="text-white/80 whitespace-pre-wrap">{currentData.working_prototype_spec}</p>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Upload an MVP (Core MVP Features)</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.core_mvp_features).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "investor_summary" && (
+                <div className="space-y-8 text-sm">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Headline</h4>
+                    <p className="text-white font-display text-xl">{currentData.headline}</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-white/10 pt-6">
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Problem Solved</h4>
+                      <p className="text-white/80">{currentData.problem_solved}</p>
                     </div>
-                  ))}
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Solution</h4>
+                      <p className="text-white/80">{currentData.solution}</p>
+                    </div>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Market Opportunity</h4>
+                    <p className="text-white/80">{currentData.market_opportunity}</p>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Traction & Milestones</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.traction_or_milestones).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "design" && (
+                <div className="space-y-8 text-sm">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">User Journeys</h4>
+                    <ul className="space-y-4">
+                      {safeList(currentData.user_journeys).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 bg-white/[0.02] p-4 rounded-lg border border-white/5">
+                          <span className="text-[#f2ca50] font-mono font-bold">{idx + 1}.</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Features</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.key_features).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">UI / UX</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.ui_ux_guidelines).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "test_improve" && (
+                <div className="space-y-8 text-sm">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Testing Strategy</h4>
+                    <p className="text-white/80 whitespace-pre-wrap">{currentData.testing_strategy}</p>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Target Tester Profiles</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.target_tester_profiles).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-2">Incentive Plan</h4>
+                    <p className="text-white/80">{currentData.incentive_plan}</p>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Feedback Channels</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.feedback_channels).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "results_changes" && (
+                <div className="space-y-8 text-sm">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Key Metrics to Track</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.key_metrics_to_track).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Expected Feedback Themes</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.expected_feedback_themes).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#f2ca50] mb-4">Pivot or Persevere Criteria</h4>
+                    <ul className="space-y-3">
+                      {safeList(currentData.pivot_or_persevere_criteria).map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-[#f2ca50] mt-0.5">•</span>
+                          <span className="text-white/90">{typeof item === "object" ? JSON.stringify(item) : String(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>
