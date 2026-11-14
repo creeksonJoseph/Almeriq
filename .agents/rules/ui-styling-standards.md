@@ -18,3 +18,14 @@
 - **NO Dense Jargon or Legalese**: Avoid intimidating academic and legal terms (like "juridical person", "ring-fences personal liability", "statutory standing", "monetization architecture"). Explain concepts using simple human words.
 - **NEVER Use Em Dashes or En Dashes**: Absolutely NEVER use em dashes (—) or en dashes (–) anywhere in UI copy or AI prompts.
 - **Everyday Punctuation Only**: Use only basic punctuation (periods, commas, question marks). Only use hyphens (-) when truly necessary for compound words.
+
+## Button Design Standards
+- **Text OR Icon, Not Both**: Each button must use either text alone OR an icon alone — never both together. This prevents visual clutter.
+- **Icon-only buttons**: Reserved for universally obvious actions (e.g., delete = trash icon, close = X, menu = hamburger). No text label needed.
+- **Text buttons**: For actions that need explanation or are not immediately obvious (e.g., "Add Asset", "Export Report", "Confirm Order"). No icon unless the icon adds clear meaning.
+- **Avoid unnecessary icons**: Do not add decorative icons to buttons. Only include an icon when it instantly communicates the action without text.
+
+## Border Standards
+- **No White Borders**: Never use `border-white`, `border-white/*`, or `border-gray-200/300` on dark themes. White borders create harsh contrast and visual clutter.
+- **Subtle Surface Borders Only**: Use `#282a2f` (surfaceHigh) for card borders, `#1e2025` (surfaceContainer) for section separators. Keep borders minimal — they should gently separate, not frame everything.
+- **Remove Unnecessary Borders**: Don't add borders to every component. Use background color contrast (surface vs bg) instead of borders where possible. Less border = cleaner hierarchy.

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, Save, Eye, MapPin, Building2, Server, Globe, Users } from "lucide-react";
 import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../../components/ui";
 import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi } from "../../lib/api";
@@ -611,31 +611,21 @@ export default function ProviderSetupPage() {
 
               {/* Navigation */}
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className="min-w-[120px]">
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Back
-                </Button>
+<Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className="min-w-[120px]">
+  <ChevronLeft className="w-4 h-4" />
+</Button>
                 <div className="flex items-center gap-3">
-                  <Button type="button" variant="ghost" onClick={handleSaveDraft} disabled={saving}>
-                    <Save className="w-4 h-4 mr-1" /> Save Draft
-                  </Button>
+<Button type="button" variant="ghost" onClick={handleSaveDraft} disabled={saving}>
+  Save Draft
+</Button>
                   {isLastStep ? (
-                    <Button type="submit" disabled={saving} className="min-w-[160px]">
-                      {saving ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" /> Publishing...
-                        </>
-                      ) : (
-                        <>
-                          Complete Setup
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </>
-                      )}
-                    </Button>
+<Button type="submit" disabled={saving} className="min-w-[160px]">
+  {saving ? "Publishing..." : "Complete Setup"}
+</Button>
                   ) : (
-                    <Button type="submit" disabled={methods.formState.isSubmitting} className="min-w-[160px]">
-                      Continue
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
+<Button type="submit" disabled={methods.formState.isSubmitting} className="min-w-[160px]">
+  Continue
+</Button>
                   )}
                 </div>
               </div>

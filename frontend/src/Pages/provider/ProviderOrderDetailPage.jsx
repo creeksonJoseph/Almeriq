@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock, Shield, ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock, Shield } from "lucide-react";
 import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../../components/ui";
 import { getOrderApi, getWaybillApi, confirmOrderApi, declineOrderApi, shipOrderApi } from "../../lib/api";
 
@@ -75,9 +75,9 @@ export default function ProviderOrderDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[50vh] text-center">
         <p className="text-gold">Order not found</p>
-        <Button variant="ghost" className="mt-4" onClick={() => window.history.back()}>
-          <ChevronLeft className="w-4 h-4 mr-1" /> Back to Orders
-        </Button>
+<Button variant="ghost" className="mt-4" onClick={() => window.history.back()}>
+  Back to Orders
+</Button>
       </div>
     );
   }
@@ -97,9 +97,9 @@ export default function ProviderOrderDetailPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Button variant="ghost" size="sm" className="mb-2" onClick={() => window.history.back()}>
-            <ChevronLeft className="w-4 h-4 mr-1" /> Back to Orders
-          </Button>
+<Button variant="ghost" size="sm" className="mb-2" onClick={() => window.history.back()}>
+  Back to Orders
+</Button>
           <div className="flex items-center gap-3 flex-wrap">
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ${statusConfig.bg} ${statusConfig.color} ${statusConfig.border}`}>
               <span className={`w-2 h-2 rounded-full ${statusConfig.color.replace("text-", "bg-")}`}></span>
@@ -109,12 +109,12 @@ export default function ProviderOrderDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={loadWaybill}>
-            <FileText className="w-4 h-4 mr-1" /> Waybill
-          </Button>
-          <Button variant="ghost">
-            <Download className="w-4 h-4 mr-1" /> Export PDF
-          </Button>
+<Button variant="ghost" onClick={loadWaybill}>
+  Waybill
+</Button>
+<Button variant="ghost">
+  Export PDF
+</Button>
         </div>
       </div>
 
@@ -223,12 +223,12 @@ export default function ProviderOrderDetailPage() {
               <CheckCircle className="w-4 h-4 mr-1" /> Mark Delivered
             </Button>
           )}
-          <Button variant="ghost" onClick={loadWaybill}>
-            <FileText className="w-4 h-4 mr-1" /> View Waybill
-          </Button>
-          <Button variant="ghost">
-            <ExternalLink className="w-4 h-4 mr-1" /> Open in Marketplace
-          </Button>
+<Button variant="ghost" onClick={loadWaybill}>
+  View Waybill
+</Button>
+<Button variant="ghost">
+  Open in Marketplace
+</Button>
         </div>
       </Card>
 

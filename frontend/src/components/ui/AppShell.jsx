@@ -29,8 +29,8 @@ function NavItem({ to, label, icon: Icon, collapsed, onClick }) {
           collapsed ? "justify-center" : ""
         } ${
           isActive
-            ? "bg-gold/15 text-gold"
-            : "text-white/60 hover:text-text hover:bg-surface-2"
+            ? "bg-[#f2ca50]/15 text-[#f2ca50]"
+            : "text-[#ffffff]/60 hover:text-[#ffffff] hover:bg-[#111318]"
         }`
       }
     >

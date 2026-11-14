@@ -1,8 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Download, DollarSign, MessageSquare, TrendingUp, ExternalLink, ChevronRight } from "lucide-react";
+import { Plus, DollarSign, MessageSquare, TrendingUp, ExternalLink, ChevronRight } from "lucide-react";
 import { Button, Card, StatusPill, Skeleton, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
 import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi } from "../../lib/api";
+
+const C = {
+  bg: "#0c0e13",
+  surface: "#111318",
+  surfaceLow: "#1a1b21",
+  surfaceContainer: "#1e2025",
+  surfaceHigh: "#282a2f",
+  gold: "#f2ca50",
+  text: "#ffffff",
+  border: "#282a2f",
+};
 
 export default function ProviderDashboardPage() {
   const [profile, setProfile] = useState(null);
@@ -37,19 +48,19 @@ export default function ProviderDashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <SkeletonCard key={i} className="p-5" />)}
+          {[...Array(4)].map((_, i) => <SkeletonCard key={i} className="p-6 sm:p-8" />)}
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
           <div className="xl:col-span-8">
-            <Card className="p-5">
+            <Card className="p-6 sm:p-8">
               <SkeletonText lines={6} />
             </Card>
           </div>
           <div className="xl:col-span-4">
-            <Card className="p-5"><SkeletonText lines={8} /></Card>
-            <Card className="p-5"><SkeletonText lines={6} /></Card>
+            <Card className="p-6 sm:p-8"><SkeletonText lines={8} /></Card>
+            <Card className="p-6 sm:p-8"><SkeletonText lines={6} /></Card>
           </div>
         </div>
       </div>
@@ -58,9 +69,9 @@ export default function ProviderDashboardPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-center">
+      <div className="flex items-center justify-center min-h-[50vh] text-center px-4 sm:px-6 lg:px-8">
         <div>
-          <p className="text-gold mb-4">Failed to load dashboard: {error}</p>
+          <p className="text-[#f2ca50] mb-4 text-sm sm:text-base">Failed to load dashboard: {error}</p>
           <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
       </div>
@@ -75,21 +86,21 @@ export default function ProviderDashboardPage() {
   const highPriorityEnquiries = conversations?.filter(c => c.priority === "high" && c.unread_count > 0).length || 0;
 
   return (
-    <div className="space-y-8">
+    <div className={`min-h-screen bg-[#0c0e13] text-[#ffffff] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-10`}>
       {/* Top Ambient Context Bar */}
       <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2 text-label-caps text-white/60 font-medium tracking-widest">
-          <span className="inline-block w-2 h-2 rounded-full bg-gold"></span>
+        <div className="flex items-center gap-2 text-xs font-mono text-[#ffffff]/60 tracking-widest">
+          <span className="inline-block w-2 h-2 rounded-full bg-[#f2ca50]"></span>
           <span>OVERVIEW // PROVIDER DASHBOARD</span>
-          <span className="text-border font-normal">/</span>
-          <span className="text-gold font-semibold">CORE CLUSTER // LIVE</span>
+          <span className="text-[#282a2f] font-normal">/</span>
+          <span className="text-[#f2ca50] font-semibold">CORE CLUSTER // LIVE</span>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono text-white/60">
-          <span className="flex items-center gap-1.5 bg-surface px-2.5 py-1 rounded">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+        <div className="flex items-center gap-4 text-xs font-mono text-[#ffffff]/60">
+          <span className="flex items-center gap-1.5 bg-[#111318] px-2.5 py-1 rounded border border-[#282a2f]">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50] animate-pulse"></span>
             GATEWAY: EU-WEST-1A
           </span>
-          <span className="text-border">|</span>
+          <span className="text-[#282a2f]">|</span>
           <span>LATENCY: 14ms</span>
         </div>
       </div>
@@ -97,113 +108,113 @@ export default function ProviderDashboardPage() {
       {/* Hero Header */}
       <div className="w-full flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8">
         <div className="max-w-3xl">
-          <h1 className="font-serif text-3xl lg:text-4xl font-semibold text-text tracking-tight">
-            Good morning, <span className="text-gold">{companyName}</span>
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#ffffff] tracking-tight leading-[1.1]">
+            Good morning, <span className="text-[#f2ca50]">{companyName}</span>
           </h1>
-          <p className="font-sans text-base text-white/60 mt-2 max-w-2xl leading-relaxed">
+          <p className="font-sans text-base text-[#ffffff]/60 mt-2 max-w-2xl leading-relaxed">
             Here is what is happening across your physical fleet and compute clusters today. {activeListings} active listings operational with zero telemetry anomalies.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <Button variant="ghost" className="h-10 px-4">
-            <Download className="w-4 h-4 mr-1" /> Export Report
+            Download
           </Button>
           <Button>
-            <Plus className="w-4 h-4 mr-1" /> + Add Asset
+            Add Asset
           </Button>
         </div>
       </div>
 
       {/* 4-Stat Metric Cluster */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="p-5 flex flex-col justify-between relative overflow-hidden group hover:bg-surface transition-colors">
+        <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-label-caps text-white/60 uppercase tracking-wider">Active Listings</span>
-            <span className="p-2 rounded bg-surface text-gold group-hover:scale-105 transition-transform">
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Active Listings</span>
+            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
               <Plus className="w-5 h-5" />
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{activeListings}</div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-white/60">
-              <span className="text-gold font-medium">—</span>
+            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{activeListings}</div>
+            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#ffffff]/60">
+              <span className="text-[#f2ca50] font-medium">—</span>
               <span>indexed this month</span>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface group-hover:bg-gold transition-colors"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
 
-        <Card className="p-5 flex flex-col justify-between relative overflow-hidden group hover:bg-surface transition-colors">
+        <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-label-caps text-white/60 uppercase tracking-wider">Open Orders</span>
-            <span className="p-2 rounded bg-surface text-gold group-hover:scale-105 transition-transform">
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Open Orders</span>
+            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
               <ExternalLink className="w-5 h-5" />
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{orders?.length || 0}</div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-gold">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
+            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orders?.length || 0}</div>
+            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
               <span>{pendingOrders} awaiting review</span>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface group-hover:bg-gold transition-colors"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
 
-        <Card className="p-5 flex flex-col justify-between relative overflow-hidden group hover:bg-surface transition-colors">
+        <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-label-caps text-white/60 uppercase tracking-wider">Unread Enquiries</span>
-            <span className="p-2 rounded bg-surface text-gold group-hover:scale-105 transition-transform">
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Unread Enquiries</span>
+            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
               <MessageSquare className="w-5 h-5" />
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{unreadEnquiries}</div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-gold">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
+            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{unreadEnquiries}</div>
+            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
               <span>{highPriorityEnquiries} high priority</span>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface group-hover:bg-gold transition-colors"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
 
-        <Card className="p-5 flex flex-col justify-between relative overflow-hidden group hover:bg-surface transition-colors">
+        <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-label-caps text-white/60 uppercase tracking-wider">Revenue This Month</span>
-            <span className="p-2 rounded bg-surface text-gold group-hover:scale-105 transition-transform">
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Revenue This Month</span>
+            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
               <DollarSign className="w-5 h-5" />
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-gold tracking-tight">${totalRevenue.toLocaleString()}</div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-gold">
+            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">${totalRevenue.toLocaleString()}</div>
+            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
               <TrendingUp className="w-3.5 h-3.5" />
               <span>—</span>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface group-hover:bg-gold transition-colors"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
       </div>
 
       {/* Main Asymmetric Layout */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-10">
         {/* Left Column: Incoming Orders */}
-        <div className="xl:col-span-8 flex flex-col gap-3">
+        <div className="xl:col-span-8 flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <div className="text-label-caps text-white/60 tracking-wider uppercase flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold"></span>
-              INCOMING ORDERS & CLIENT CONTRACTS
+            <div className="text-xs font-mono text-[#ffffff]/60 tracking-wider uppercase flex items-center gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
+              INCOMING ORDERS &amp; CLIENT CONTRACTS
             </div>
-            <span className="text-xs font-mono text-border">UPDATED: REAL-TIME</span>
+            <span className="text-xs font-mono text-[#282a2f]">UPDATED: REAL-TIME</span>
           </div>
-          <Card className="p-5 md:p-6 flex flex-col">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-border">
+          <Card className="p-6 sm:p-8 flex flex-col border border-[#282a2f] rounded-xl bg-[#111318]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-[#282a2f]">
               <div className="flex items-center gap-3">
-                <h2 className="text-label-caps text-text font-semibold uppercase tracking-wider">Recent Client Orders</h2>
+                <h2 className="font-serif text-xl sm:text-2xl text-[#ffffff] font-medium tracking-tight uppercase">Recent Client Orders</h2>
                 <StatusPill status="pending" label={`${pendingOrders} Active`} />
               </div>
-              <div className="inline-flex rounded-lg bg-surface p-1 gap-1">
-                <Button variant="ghost" size="sm" className="bg-surface-2 text-gold border-gold/30 px-3 py-1 text-xs">All</Button>
+              <div className="inline-flex rounded-lg bg-[#111318] p-1 gap-1 border border-[#282a2f]">
+                <Button variant="ghost" size="sm" className="bg-[#111318] text-[#f2ca50] border-[#f2ca50]/30 px-3 py-1 text-xs">All</Button>
                 <Button variant="ghost" size="sm" className="px-3 py-1 text-xs">Pending Review</Button>
                 <Button variant="ghost" size="sm" className="px-3 py-1 text-xs">Confirmed</Button>
               </div>
@@ -213,18 +224,18 @@ export default function ProviderDashboardPage() {
               columns={[
                 { key: "client", header: "Client Entity", render: (row) => (
                   <div>
-                    <div className="font-medium text-text">{row.clientName || "—"}</div>
-                    <div className="text-xs font-mono text-white/60">—</div>
+                    <div className="font-medium text-[#ffffff]">{row.clientName || "—"}</div>
+                    <div className="text-xs font-mono text-[#ffffff]/60">—</div>
                   </div>
                 )},
                 { key: "asset", header: "Allocated Asset", render: (row) => (
                   <div>
-                    <div className="text-text font-medium">{row.assetName || "—"}</div>
-                    <div className="text-xs font-mono text-border">—</div>
+                    <div className="text-[#ffffff] font-medium">{row.assetName || "—"}</div>
+                    <div className="text-xs font-mono text-[#282a2f]">—</div>
                   </div>
                 )},
                 { key: "amount", header: "Amount", render: (row) => (
-                  <span className="font-serif text-lg font-semibold text-gold">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-white/60 font-normal">/mo</span></span>
+                  <span className="font-serif text-lg font-semibold text-[#f2ca50]">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-[#ffffff]/60 font-normal">/mo</span></span>
                 )},
                 { key: "status", header: "Status", render: (row) => (
                   <StatusPill status={row.status?.toLowerCase() || "pending"} />
@@ -241,9 +252,8 @@ export default function ProviderDashboardPage() {
             />
 
             <div className="pt-4 mt-4 flex items-center justify-between">
-              <Link to="/provider/orders" className="text-label-caps text-gold hover:text-gold-soft flex items-center gap-1 font-medium">
+              <Link to="/provider/orders" className="text-xs font-mono text-[#f2ca50] hover:text-[#e2ba40] flex items-center gap-1 font-medium">
                 View all orders and lease agreements
-                <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
           </Card>
@@ -252,56 +262,56 @@ export default function ProviderDashboardPage() {
         {/* Right Column: My Listings & Enquiries */}
         <div className="xl:col-span-4 flex flex-col gap-6">
           {/* My Listings */}
-          <Card className="p-5 flex flex-col gap-4">
+          <Card className="p-6 sm:p-8 flex flex-col gap-6 border border-[#282a2f] rounded-xl bg-[#111318]">
             <div className="flex items-center justify-between">
-              <div className="text-label-caps text-white/60 tracking-wider uppercase flex items-center gap-2">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold"></span>
+              <div className="text-xs font-mono text-[#ffffff]/60 tracking-wider uppercase flex items-center gap-2">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
                 MY LISTINGS
               </div>
-              <span className="text-xs font-mono text-gold">{activeListings} ACTIVE UNITS</span>
+              <span className="text-xs font-mono text-[#f2ca50]">{activeListings} ACTIVE UNITS</span>
             </div>
 
             {assets?.slice(0, 3).map((asset, i) => (
-              <div key={asset.id || i} className="p-3 rounded-lg bg-surface hover:bg-surface-2 transition-colors flex flex-col gap-2">
+              <div key={asset.id || i} className="p-3 rounded-lg bg-[#111318] hover:bg-[#1a1b21] transition-colors border border-[#282a2f] flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-sans font-semibold text-text">{asset.name || "—"}</span>
+                  <span className="font-sans font-semibold text-[#ffffff]">{asset.name || "—"}</span>
                   <StatusPill status={asset.status?.toLowerCase() || "available"} />
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gold font-mono">${asset.rate || asset.price_monthly || "—"}/mo</span>
-                  <Link to={`/provider/listings/${asset.id}/preview`} className="text-label-caps text-white/60 hover:text-gold flex items-center gap-0.5">
-                    <ExternalLink className="w-3.5 h-3.5" /> Edit
+                  <span className="text-[#f2ca50] font-mono">${asset.rate || asset.price_monthly || "—"}/mo</span>
+                  <Link to={`/provider/listings/${asset.id}/preview`} className="text-xs font-mono text-[#ffffff]/60 hover:text-[#f2ca50]">
+                    Edit
                   </Link>
                 </div>
               </div>
             ))}
 
             <Button variant="ghost" className="w-full h-10 mt-1">
-              <Plus className="w-4 h-4 mr-1" /> + Add Asset
+              Add Asset
             </Button>
           </Card>
 
           {/* Enquiries Feed */}
-          <Card className="p-5">
-            <div className="text-label-caps text-white/60 tracking-wider uppercase mb-4 flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold"></span>
+          <Card className="p-6 sm:p-8 border border-[#282a2f] rounded-xl bg-[#111318]">
+            <div className="text-xs font-mono text-[#ffffff]/60 tracking-wider uppercase mb-4 flex items-center gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
               RECENT ENQUIRIES
             </div>
             <div className="space-y-3">
               {conversations?.slice(0, 3).map((conv, i) => (
-                <Link key={conv.id || i} to="/messages" className="block p-3 rounded-lg bg-surface hover:bg-surface-2 transition-colors">
+                <Link key={conv.id || i} to="/messages" className="block p-3 rounded-lg bg-[#111318] hover:bg-[#1a1b21] transition-colors border border-transparent hover:border-[#282a2f]">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-label-caps text-gold">{conv.other_party_name || "—"}</span>
-                      <p className="text-xs text-white/60 mt-0.5 line-clamp-1">{conv.last_message_preview || "No messages yet"}</p>
+                      <span className="text-xs font-mono text-[#f2ca50]">{conv.other_party_name || "—"}</span>
+                      <p className="text-xs text-[#ffffff]/60 mt-0.5 line-clamp-1">{conv.last_message_preview || "No messages yet"}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-border shrink-0">{conv.last_message_at || "—"}</span>
+                    <span className="text-[10px] font-mono text-[#282a2f] shrink-0">{conv.last_message_at || "—"}</span>
                   </div>
-                  {conv.unread_count > 0 && <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold mt-2" />}
+                  {conv.unread_count > 0 && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50] mt-2" />}
                 </Link>
               ))}
               {!conversations?.length && (
-                <div className="text-center text-white/60 py-4">No enquiries yet.</div>
+                <div className="text-center text-[#ffffff]/60 py-4 text-sm sm:text-base">No enquiries yet.</div>
               )}
             </div>
           </Card>
