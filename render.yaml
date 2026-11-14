@@ -5,7 +5,7 @@ services:
     dockerfilePath: ./server/Dockerfile
     dockerContext: ./server
     healthCheckPath: /health
-    preDeployCommand: alembic upgrade head
+    preDeployCommand: uv run alembic upgrade head
     envVars:
       - key: DATABASE_URL
         sync: false

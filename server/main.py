@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import logging
 import sentry_sdk
+from alembic import command
+from alembic.config import Config
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -66,6 +68,13 @@ if SENTRY_DSN:
 # ── Lifespan ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Run Alembic migrations on startup so production DB is always in sync
+    try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        logging.info("Alembic migrations applied successfully")
+    except Exception as exc:
+        logging.warning("Alembic migration on startup failed: %s", exc)
     yield
     await close_db()
 
