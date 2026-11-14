@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import asyncio
+import re
 import sentry_sdk
 from alembic import command
 from alembic.config import Config
@@ -85,6 +86,10 @@ async def lifespan(app: FastAPI):
         alembic_cfg = Config("alembic.ini")
         script = ScriptDirectory.from_config(alembic_cfg)
         expected_heads = script.get_heads()
+        logging.info(
+            "Alembic startup check beginning: expected=%s",
+            ",".join(expected_heads) or "<none>",
+        )
         loop = asyncio.get_event_loop()
         migration_state = await loop.run_in_executor(
             None,
@@ -108,13 +113,12 @@ def _upgrade_and_read_migration_state(
     expected_heads: list[str],
 ) -> dict[str, str | bool]:
     """Apply migrations and return revision IDs for startup diagnostics."""
-    database_url = DATABASE_URL
-    if database_url.startswith("sqlite+aiosqlite://"):
-        database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://", 1)
-    elif database_url.startswith(("postgres://", "postgresql://")):
-        database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
-        if database_url.startswith("postgresql://"):
-            database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    database_url = re.sub(
+        r"^(postgres|postgresql)(\+[^:]+)?:",
+        "postgresql+psycopg:",
+        DATABASE_URL,
+    )
+    database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://", 1)
 
     sync_engine = create_engine(database_url, pool_pre_ping=True)
     try:
