@@ -1,8 +1,11 @@
 """core/config.py - Application settings via pydantic-settings (BaseSettings)."""
 from __future__ import annotations
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
+import json
+from typing import Annotated, List
+
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -23,7 +26,28 @@ class Settings(BaseSettings):
     DOMAIN: str = "alimeriq.app"
 
     # CORS
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"]
+    ALLOWED_ORIGINS: Annotated[List[str], NoDecode] = ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, value: object) -> object:
+        if not isinstance(value, str):
+            return value
+
+        value = value.strip()
+        if not value:
+            return []
+
+        if value.startswith("["):
+            try:
+                decoded = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+            else:
+                if isinstance(decoded, list):
+                    return [str(origin).strip() for origin in decoded if str(origin).strip()]
+
+        return [origin.strip() for origin in value.split(",") if origin.strip()]
 
     # Auth / Security
     JWT_SECRET_KEY: str = "generate_a_random_32_byte_secret_key_here"
@@ -46,6 +70,12 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-flash-lite-latest"
 
+    # Sentry
+    SENTRY_DSN: str = ""
+    SENTRY_ENVIRONMENT: str = "development"
+    SENTRY_TRACES_SAMPLE_RATE: float = 1.0
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.0
+
 
 settings = Settings()
 
@@ -66,3 +96,7 @@ UPSTASH_REDIS_URL = settings.UPSTASH_REDIS_URL
 UPSTASH_REDIS_TOKEN = settings.UPSTASH_REDIS_TOKEN
 GEMINI_API_KEY = settings.GEMINI_API_KEY
 GEMINI_MODEL = settings.GEMINI_MODEL
+SENTRY_DSN = settings.SENTRY_DSN
+SENTRY_ENVIRONMENT = settings.SENTRY_ENVIRONMENT
+SENTRY_TRACES_SAMPLE_RATE = settings.SENTRY_TRACES_SAMPLE_RATE
+SENTRY_PROFILES_SAMPLE_RATE = settings.SENTRY_PROFILES_SAMPLE_RATE

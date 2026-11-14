@@ -45,3 +45,12 @@ async def health_check(response: Response) -> dict:
     response.headers["Expires"] = "0"
 
     return await _get_health_status()
+
+
+@router.post("/sentry-test-error")
+async def sentry_test_error() -> dict:
+    """
+    Temporary Sentry verification endpoint. Throws a recognizable error so we can
+    confirm the Sentry SDK is wired correctly end to end.
+    """
+    raise RuntimeError("Sentry test error - ALIMERIQ backend Sentry wiring verified")

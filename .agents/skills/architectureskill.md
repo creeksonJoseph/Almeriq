@@ -413,6 +413,7 @@ Every user action that mutates state must produce visible feedback. Silent succe
 - [ ] Slow side effects in background tasks (durable queue if critical)
 - [ ] GZip on; ETag + correct `Cache-Control` (private for personalized data)
 - [ ] Cache invalidation in services (if a server cache exists)
+- [ ] Error handling pipeline: 4xx standardized + Sentry-suppressed, 5xx Sentry-reported with generic client response
 
 **Frontend**
 - [ ] Page shell renders instantly; skeleton per region, dimensions match
@@ -422,6 +423,102 @@ Every user action that mutates state must produce visible feedback. Silent succe
 - [ ] `content-visibility: auto` on long card lists
 - [ ] Manual vendor chunks + route-level lazy loading
 - [ ] Early upload, draft autosave, optimistic toggles where relevant
+
+## 16. Error Handling & Alerting Pipeline
+
+Strict separation between client-side user errors (4xx) and server-side crashes (5xx).
+
+### 16.1 Client-Side Errors (4xx) — Handled Gracefully, Suppressed in Sentry
+
+**Types:** `RequestValidationError` (Pydantic), `StarletteHTTPException` / `FastAPI HTTPException` with status < 500 (400, 401, 403, 404, 409, 422, 429), custom domain exceptions:
+- `BadRequestError` (400)
+- `AuthenticationError` (401)
+- `ForbiddenError` (403)
+- `NotFoundError` (404)
+- `ConflictError` (409)
+- `ValidationError` (422)
+
+**Response format (every 4xx):**
+```json
+{
+  "success": false,
+  "message": "User-safe error explanation",
+  "detail": "User-safe error explanation",
+  "code": "ERROR_CODE"
+}
+```
+
+**Alert suppression:** All 4xx errors are logged as `WARNING` and explicitly dropped via Sentry's `before_send` filter. They never trigger Sentry issues or error alerts.
+
+### 16.2 Server-Side Crashes (5xx) — Sentry Alerting
+
+**Types:** Unhandled exceptions (`ZeroDivisionError`, `KeyError`, database connectivity drops) and explicit 5xx HTTP exceptions.
+
+**Pipeline:**
+1. A global catch-all exception handler intercepts the failure.
+2. The failure and full stack trace are logged at `ERROR` level.
+3. The event is captured and reported to Sentry via `sentry-sdk`.
+4. Sentry routes real-time error notifications to `errorlogs@hooop.tech`.
+5. The client receives a safe, generic 500 response without leaking internal details:
+```json
+{
+  "success": false,
+  "message": "An unexpected server error occurred. Please try again in a moment.",
+  "detail": "An unexpected server error occurred. Please try again in a moment.",
+  "code": "INTERNAL_SERVER_ERROR"
+}
+```
+
+### 16.3 Implementation Pattern (FastAPI)
+
+```python
+# core/exceptions.py — custom domain exceptions
+class ALIMERIQError(Exception):
+    status_code: int
+    code: str
+    message: str
+
+class BadRequestError(ALIMERIQError): status_code = 400; code = "BAD_REQUEST"
+class AuthenticationError(ALIMERIQError): status_code = 401; code = "AUTHENTICATION_ERROR"
+class ForbiddenError(ALIMERIQError): status_code = 403; code = "FORBIDDEN"
+class NotFoundError(ALIMERIQError): status_code = 404; code = "NOT_FOUND"
+class ConflictError(ALIMERIQError): status_code = 409; code = "CONFLICT"
+class ValidationError(ALIMERIQError): status_code = 422; code = "VALIDATION_ERROR"
+
+# api/errors.py — exception handlers
+async def almeriq_error_handler(request, exc: ALIMERIQError):
+    logger.warning("4xx error: %s - %s", exc.code, exc.message)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"success": False, "message": exc.message, "detail": exc.message, "code": exc.code},
+    )
+
+async def http_exception_handler(request, exc: HTTPException):
+    if exc.status_code < 500:
+        logger.warning("4xx HTTP: %s - %s", exc.status_code, exc.detail)
+        return JSONResponse(status_code=exc.status_code, content={"success": False, "message": str(exc.detail), "detail": str(exc.detail), "code": f"HTTP_{exc.status_code}"})
+    # 5xx falls through to catch-all
+
+async def catch_all_handler(request, exc: Exception):
+    logger.error("5xx crash: %s", exc, exc_info=True)
+    sentry_sdk.capture_exception(exc)
+    return JSONResponse(
+        status_code=500,
+        content={"success": False, "message": "An unexpected server error occurred. Please try again in a moment.", "detail": "An unexpected server error occurred. Please try again in a moment.", "code": "INTERNAL_SERVER_ERROR"},
+    )
+
+# main.py — register handlers + Sentry before_send
+app.add_exception_handler(ALIMERIQError, almeriq_error_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, catch_all_handler)
+
+sentry_sdk.init(
+    ...
+    before_send=lambda event, hint: None if event.get("request", {}).get("method") and _is_4xx(event) else event,
+)
+```
+
+The `before_send` filter inspects the event: if the exception is an `ALIMERIQError` or `HTTPException` with status < 500, return `None` to drop it from Sentry.
 
 ## Optional infrastructure (add only if available)
 

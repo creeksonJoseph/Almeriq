@@ -69,6 +69,7 @@ const MessagesPage = lazyWithRetry(() => import("./Pages/MessagesPage"));
 
 // Checkout
 const CheckoutPage = lazyWithRetry(() => import("./Pages/CheckoutPage"));
+const SentryTestPage = lazyWithRetry(() => import("./Pages/SentryTestPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">
@@ -298,6 +299,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/sentry-test" element={<SentryTestPage />} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFoundPage />} />

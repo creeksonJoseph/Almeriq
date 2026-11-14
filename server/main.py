@@ -7,13 +7,28 @@ Layers: main → api/routers → services → repositories → core
 from __future__ import annotations
 
 import logging
+import sentry_sdk
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware  # §7.1
+from pydantic import ValidationError as PydanticValidationError
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from core.config import ALLOWED_ORIGINS, SENTRY_DSN, SENTRY_ENVIRONMENT, SENTRY_TRACES_SAMPLE_RATE, SENTRY_PROFILES_SAMPLE_RATE
 from core.db import close_db
+from core.exceptions import ALIMERIQError
+from api.errors import (
+    almeriq_error_handler,
+    catch_all_handler,
+    http_exception_handler,
+    pydantic_validation_error_handler,
+    sentry_before_send,
+    validation_error_handler,
+)
 from api.routers.waitlist import router as waitlist_router
 from api.routers.health import router as health_router
 from api.routers.auth import router as auth_router
@@ -31,6 +46,21 @@ from api.routers.message import router as message_router
 from api.routers.notification import router as notification_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
+
+# ── Sentry SDK ─────────────────────────────────────────────────────────────────
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+        integrations=[
+            FastApiIntegration(transaction_style="url"),
+            SqlalchemyIntegration(),
+        ],
+        send_default_pii=False,
+        before_send=sentry_before_send,
+    )
 
 
 # ── Lifespan ─────────────────────────────────────────────────────────────────
@@ -81,4 +111,12 @@ app.include_router(deal_router)
 app.include_router(conversation_router)
 app.include_router(message_router)
 app.include_router(notification_router)
+
+# ── Error Handling Pipeline (§16) ─────────────────────────────────────────────
+# Order matters: more specific handlers first, catch-all last.
+app.add_exception_handler(ALIMERIQError, almeriq_error_handler)
+app.add_exception_handler(RequestValidationError, validation_error_handler)
+app.add_exception_handler(PydanticValidationError, pydantic_validation_error_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, catch_all_handler)
 
