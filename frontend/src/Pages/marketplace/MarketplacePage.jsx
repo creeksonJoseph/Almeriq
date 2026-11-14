@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Search, Filter, MapPin, Zap, Shield, Truck, Layers, Box, Satellite, Sun, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { Button, Card, Pill, Skeleton, SkeletonCard } from "../components/ui";
-import { listMarketplaceProvidersApi, listMarketplaceListingsApi } from "../lib/api";
+import { Button, Card, Pill, Skeleton, SkeletonCard } from "../../components/ui";
+import { listMarketplaceProvidersApi, listMarketplaceListingsApi } from "../../lib/api";
 
 const CATEGORIES = [
   { id: "all", label: "All", icon: "LayoutDashboard", count: 142 },

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2 } from "lucide-react";
-import { Button, Card, StatusPill, Modal, Skeleton, SkeletonText } from "../components/ui";
-import { getAssetApi, getMarketplaceListingApi } from "../lib/api";
+import { Button, Card, StatusPill, Modal, Skeleton, SkeletonText } from "../../components/ui";
+import { getAssetApi, getMarketplaceListingApi } from "../../lib/api";
 
 export default function ProviderListingPreviewPage() {
   const { id } = useParams();

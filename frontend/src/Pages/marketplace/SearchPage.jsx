@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Search, Filter, ChevronRight, MapPin, Zap, Satellite, Box, Sun, Truck, Layers } from "lucide-react";
-import { Button, Card, Pill, Input, Skeleton, SkeletonCard, SkeletonText } from "../components/ui";
-import { searchMarketplaceApi, listMarketplaceProvidersApi } from "../lib/api";
+import { Button, Card, Pill, Input, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
+import { searchMarketplaceApi, listMarketplaceProvidersApi } from "../../lib/api";
 
 const SEARCH_CATEGORIES = [
   { id: "all", label: "All Infrastructure", icon: "LayoutDashboard" },

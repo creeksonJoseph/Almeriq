@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import BrandLogo from "../components/BrandLogo";
-import { usePasswordReset } from "../hooks/usePasswordReset";
+import BrandLogo from "../../components/BrandLogo";
+import { usePasswordReset } from "../../hooks/usePasswordReset";
 
 export default function ForgotPasswordPage() {
   const {

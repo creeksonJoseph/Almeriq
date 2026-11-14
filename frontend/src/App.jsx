@@ -10,7 +10,7 @@ import ProviderRoute from "./components/ProviderRoute";
 import Layout from "./components/Layout";
 
 // Eager load primary landing entry
-import LandingPage from "./Pages/LandingPage";
+import LandingPage from "./Pages/shared/LandingPage";
 
 /**
  * Safe lazy loader with auto-reload retry if a new deployment changed JS chunk hashes.
@@ -36,40 +36,44 @@ function lazyWithRetry(componentImport) {
 }
 
 // Code-split secondary routes with lazyWithRetry
-const LoginPage = lazyWithRetry(() => import("./Pages/LoginPage"));
-const SignupPage = lazyWithRetry(() => import("./Pages/SignupPage"));
-const DashboardPage = lazyWithRetry(() => import("./Pages/DashboardPage"));
-const NotFoundPage = lazyWithRetry(() => import("./Pages/NotFoundPage"));
-const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/ForgotPasswordPage"));
-const FounderIntakePage = lazyWithRetry(() => import("./Pages/FounderIntakePage"));
-const FounderAnalysisPage = lazyWithRetry(() => import("./Pages/FounderAnalysisPage"));
-const VenturesPage = lazyWithRetry(() => import("./Pages/VenturesPage"));
-const FounderValidationPage = lazyWithRetry(() => import("./Pages/FounderValidationPage"));
-const FounderProductPage = lazyWithRetry(() => import("./Pages/FounderProductPage"));
-const FounderLegalPage = lazyWithRetry(() => import("./Pages/FounderLegalPage"));
-const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/AdminWaitlistPage"));
-const SettingsPage = lazyWithRetry(() => import("./Pages/SettingsPage"));
+const LoginPage = lazyWithRetry(() => import("./Pages/auth/LoginPage"));
+const SignupPage = lazyWithRetry(() => import("./Pages/auth/SignupPage"));
+const DashboardPage = lazyWithRetry(() => import("./Pages/shared/DashboardPage"));
+const NotFoundPage = lazyWithRetry(() => import("./Pages/shared/NotFoundPage"));
+const ForgotPasswordPage = lazyWithRetry(() => import("./Pages/auth/ForgotPasswordPage"));
+
+// Founder routes
+const FounderIntakePage = lazyWithRetry(() => import("./Pages/founder/FounderIntakePage"));
+const FounderAnalysisPage = lazyWithRetry(() => import("./Pages/founder/FounderAnalysisPage"));
+const VenturesPage = lazyWithRetry(() => import("./Pages/founder/VenturesPage"));
+const FounderValidationPage = lazyWithRetry(() => import("./Pages/founder/FounderValidationPage"));
+const FounderProductPage = lazyWithRetry(() => import("./Pages/founder/FounderProductPage"));
+const FounderLegalPage = lazyWithRetry(() => import("./Pages/founder/FounderLegalPage"));
+
+// Admin routes
+const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/admin/AdminWaitlistPage"));
+
+// Shared routes
+const SettingsPage = lazyWithRetry(() => import("./Pages/shared/SettingsPage"));
+const AlertsPage = lazyWithRetry(() => import("./Pages/shared/AlertsPage"));
+const MessagesPage = lazyWithRetry(() => import("./Pages/shared/MessagesPage"));
 
 // Provider routes
-const ProviderSetupPage = lazyWithRetry(() => import("./Pages/ProviderSetupPage"));
-const ProviderDashboardPage = lazyWithRetry(() => import("./Pages/ProviderDashboardPage"));
-const ProviderListingsPage = lazyWithRetry(() => import("./Pages/ProviderListingsPage"));
-const ProviderListingPreviewPage = lazyWithRetry(() => import("./Pages/ProviderListingPreviewPage"));
-const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/ProviderOrdersPage"));
-const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/ProviderOrderDetailPage"));
+const ProviderSetupPage = lazyWithRetry(() => import("./Pages/provider/ProviderSetupPage"));
+const ProviderDashboardPage = lazyWithRetry(() => import("./Pages/provider/ProviderDashboardPage"));
+const ProviderListingsPage = lazyWithRetry(() => import("./Pages/provider/ProviderListingsPage"));
+const ProviderListingPreviewPage = lazyWithRetry(() => import("./Pages/provider/ProviderListingPreviewPage"));
+const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrdersPage"));
+const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrderDetailPage"));
 
 // Marketplace & Search
-const MarketplacePage = lazyWithRetry(() => import("./Pages/MarketplacePage"));
-const PublicListingPreviewPage = lazyWithRetry(() => import("./Pages/PublicListingPreviewPage"));
-const SearchPage = lazyWithRetry(() => import("./Pages/SearchPage"));
-
-// Alerts & Messages
-const AlertsPage = lazyWithRetry(() => import("./Pages/AlertsPage"));
-const MessagesPage = lazyWithRetry(() => import("./Pages/MessagesPage"));
+const MarketplacePage = lazyWithRetry(() => import("./Pages/marketplace/MarketplacePage"));
+const PublicListingPreviewPage = lazyWithRetry(() => import("./Pages/marketplace/PublicListingPreviewPage"));
+const SearchPage = lazyWithRetry(() => import("./Pages/marketplace/SearchPage"));
 
 // Checkout
-const CheckoutPage = lazyWithRetry(() => import("./Pages/CheckoutPage"));
-const SentryTestPage = lazyWithRetry(() => import("./Pages/SentryTestPage"));
+const CheckoutPage = lazyWithRetry(() => import("./Pages/checkout/CheckoutPage"));
+const SentryTestPage = lazyWithRetry(() => import("./Pages/checkout/SentryTestPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[50vh] w-full">

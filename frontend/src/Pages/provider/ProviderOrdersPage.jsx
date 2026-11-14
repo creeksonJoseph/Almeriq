@@ -1,22 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Download, Plus, Search, Filter, ChevronRight } from "lucide-react";
-import { Button, Card, StatusPill, DataTable, Skeleton, SkeletonCard, Drawer } from "../components/ui";
-import { listOrdersApi } from "../lib/api";
-
-const STATUS_TABS = [
-  { value: "all", label: "All", count: 18 },
-  { value: "pending", label: "Pending", count: 3 },
-  { value: "confirmed", label: "Confirmed", count: 7 },
-  { value: "shipped", label: "Shipped", count: 5 },
-  { value: "completed", label: "Completed", count: 3 },
-];
+import { Button, Card, StatusPill, DataTable, Skeleton, SkeletonCard, SkeletonText, Drawer } from "../../components/ui";
+import { listOrdersApi } from "../../lib/api";
 
 const STATUS_CONFIG = {
-  pending: { variant: "gold", label: "Pending", dot: "gold" },
-  confirmed: { variant: "gold", label: "Confirmed", dot: "gold" },
-  shipped: { variant: "gold", label: "Shipped", dot: "gold" },
-  completed: { variant: "gold", label: "Completed", dot: "gold" },
+  pending: { variant: "gold", label: "Pending" },
+  confirmed: { variant: "gold", label: "Confirmed" },
+  shipped: { variant: "gold", label: "Shipped" },
+  completed: { variant: "gold", label: "Completed" },
 };
 
 export default function ProviderOrdersPage() {
@@ -49,6 +41,14 @@ export default function ProviderOrdersPage() {
     o.assetName?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const statusTabs = useMemo(() => [
+    { value: "all", label: "All", count: orders.length },
+    { value: "pending", label: "Pending", count: orders.filter(o => o.status === "PENDING").length },
+    { value: "confirmed", label: "Confirmed", count: orders.filter(o => o.status === "CONFIRMED").length },
+    { value: "shipped", label: "Shipped", count: orders.filter(o => o.status === "SHIPPED").length },
+    { value: "completed", label: "Completed", count: orders.filter(o => o.status === "COMPLETED").length },
+  ], [orders]);
+
   const openDrawer = (order) => {
     setSelectedOrder(order);
     setDrawerOpen(true);
@@ -65,7 +65,7 @@ export default function ProviderOrdersPage() {
           {[...Array(4)].map((_, i) => <SkeletonCard key={i} className="p-4" />)}
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {STATUS_TABS.map(t => <Skeleton key={t.value} className="h-9 w-28 rounded-lg shrink-0" />)}
+          {statusTabs.map(t => <Skeleton key={t.value} className="h-9 w-28 rounded-lg shrink-0" />)}
         </div>
         <Skeleton className="h-9 w-64" />
         <Card className="p-5"><SkeletonText lines={10} /></Card>
@@ -80,6 +80,8 @@ export default function ProviderOrdersPage() {
       </div>
     );
   }
+
+  const escrowVolume = orders.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -110,7 +112,7 @@ export default function ProviderOrdersPage() {
         <KPICard label="Total Orders" value={orders.length} trend="+3 this wk" trendColor="text-gold" icon="Receipt" />
         <KPICard label="Pending Review" value={orders.filter(o => o.status === "PENDING").length} trend="Action Req" trendColor="text-gold" icon="AlertCircle" highlight />
         <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status === "SHIPPED").length} trend="GPS Ping OK" trendColor="text-gold" icon="Truck" />
-        <KPICard label="Escrow Vault Volume" value="$284,500" trend="100% Bonded" trendColor="text-gold" icon="Lock" />
+        <KPICard label="Escrow Vault Volume" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} trend="100% Bonded" trendColor="text-gold" icon="Lock" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
@@ -118,7 +120,7 @@ export default function ProviderOrdersPage() {
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Status Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="orderStatusTabs">
-            {STATUS_TABS.map(tab => (
+            {statusTabs.map(tab => (
               <Button
                 key={tab.value}
                 variant={activeTab === tab.value ? "primary" : "ghost"}
@@ -177,25 +179,25 @@ export default function ProviderOrdersPage() {
               { key: "client", header: "Client / Venture", render: (row) => (
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded bg-surface-2 border border-border text-text text-[11px] font-bold flex items-center justify-center shrink-0">
-                    {row.clientName?.split(' ').map(w => w[0]).join('') || "AD"}
+                    {row.clientName?.split(' ').map(w => w[0]).join('') || "—"}
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-medium text-text truncate">{row.clientName}</span>
-                    <span className="text-label-caps text-[10px] text-white/60 truncate">{row.ventureInfo || "YC W24 · Tier-1 Verified"}</span>
+                    <span className="font-medium text-text truncate">{row.clientName || "—"}</span>
+                    <span className="text-label-caps text-[10px] text-white/60 truncate">{row.ventureInfo || "—"}</span>
                   </div>
                 </div>
               )},
               { key: "asset", header: "Infrastructure Item", render: (row) => (
                 <div>
-                  <div className="font-medium text-text">{row.assetName}</div>
-                  <div className="text-label-caps text-[10px] text-white/60">{row.assetDetails || "Yard Bay 12 · Telemetry Bonded"}</div>
+                  <div className="font-medium text-text">{row.assetName || "—"}</div>
+                  <div className="text-label-caps text-[10px] text-white/60">{row.assetDetails || "—"}</div>
                 </div>
               )},
               { key: "allocation", header: "Allocation", render: (row) => (
-                <span className="font-mono text-white/60">{row.allocation || "3x 36-ton units"}</span>
+                <span className="font-mono text-white/60">{row.allocation || "—"}</span>
               )},
               { key: "amount", header: "Lease Amount", render: (row) => (
-                <span className="font-mono font-bold text-gold text-sm">${row.amount}<span className="text-xs font-normal text-white/60">/mo</span></span>
+                <span className="font-mono font-bold text-gold text-sm">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-normal text-white/60">/mo</span></span>
               )},
               { key: "status", header: "Status", render: (row) => {
                 const config = STATUS_CONFIG[row.status?.toLowerCase()] || STATUS_CONFIG.pending;
@@ -207,7 +209,7 @@ export default function ProviderOrdersPage() {
                 );
               }},
               { key: "timestamp", header: "Timestamp", render: (row) => (
-                <span className="font-mono text-white/60 text-[12px]">{row.timestamp || "Oct 24 · 14:02 UTC"}</span>
+                <span className="font-mono text-white/60 text-[12px]">{row.timestamp || "—"}</span>
               )},
               { key: "action", header: "Inspect", render: (row) => (
                 <button onClick={() => openDrawer(row)} className="text-gold hover:text-gold-soft p-1">
@@ -266,6 +268,9 @@ function KPICard({ label, value, trend, trendColor, icon, highlight }) {
 function OrderDetailDrawer({ order }) {
   const statusConfig = STATUS_CONFIG[order.status?.toLowerCase()] || STATUS_CONFIG.pending;
 
+  // Build timeline from order data if available, otherwise show empty state
+  const timelineEvents = order.events || [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -273,13 +278,15 @@ function OrderDetailDrawer({ order }) {
         <div>
           <div className="flex items-center gap-2 font-mono font-bold text-text">
             <span>{order.id}</span>
-<span className={`w-1.5 h-1.5 rounded-full ${statusConfig.variant === "gold" ? "bg-gold" : "bg-gold"}`}></span>
+            <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.variant === "gold" ? "bg-gold" : "bg-gold"}`}></span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <div className="w-7 h-7 rounded bg-surface-2 border border-gold/40 text-gold text-[11px] font-bold flex items-center justify-center shrink-0">AD</div>
+            <div className="w-7 h-7 rounded bg-surface-2 border border-gold/40 text-gold text-[11px] font-bold flex items-center justify-center shrink-0">
+              {order.clientName?.split(' ').map(w => w[0]).join('') || "—"}
+            </div>
             <div>
-              <span className="font-medium text-text">{order.clientName}</span>
-              <div className="text-label-caps text-[10px] text-white/60">{order.ventureInfo}</div>
+              <span className="font-medium text-text">{order.clientName || "—"}</span>
+              <div className="text-label-caps text-[10px] text-white/60">{order.ventureInfo || "—"}</div>
             </div>
           </div>
         </div>
@@ -291,15 +298,15 @@ function OrderDetailDrawer({ order }) {
 
       {/* Asset Details */}
       <div className="bg-surface-2 p-4 rounded-lg border border-border space-y-3">
-        <div className="font-medium text-text">{order.assetName}</div>
-        <div className="text-sm text-white/70">{order.assetDetails}</div>
+        <div className="font-medium text-text">{order.assetName || "—"}</div>
+        <div className="text-sm text-white/70">{order.assetDetails || "—"}</div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-white/70">Allocation:</span>
-          <span className="font-mono text-text">{order.allocation}</span>
+          <span className="font-mono text-text">{order.allocation || "—"}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-white/70">Lease Amount:</span>
-          <span className="font-mono font-bold text-gold">${order.amount}/mo</span>
+          <span className="font-mono font-bold text-gold">${(order.amount || order.lease_amount || 0).toLocaleString()}/mo</span>
         </div>
       </div>
 
@@ -307,25 +314,22 @@ function OrderDetailDrawer({ order }) {
       <div>
         <h3 className="text-label-caps text-white/60 uppercase tracking-wider mb-3">ORDER TIMELINE</h3>
         <div className="space-y-4">
-          {[
-            { event: "Order Created", time: "Oct 24 · 14:02 UTC", status: "completed" },
-            { event: "Escrow Funded", time: "Oct 24 · 14:15 UTC", status: "completed" },
-            { event: "Provider Review", time: "Oct 24 · 15:30 UTC", status: order.status === "PENDING" ? "current" : "completed" },
-            { event: "Confirmed and Contracted", time: "Oct 24 · 16:00 UTC", status: order.status === "PENDING" ? "pending" : "completed" },
-            { event: "Dispatch Initiated", time: "Oct 25 · 09:00 UTC", status: "pending" },
-            { event: "Delivered and Verified", time: "Oct 27 · 12:00 UTC", status: "pending" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-start gap-3 relative">
-              <div className="relative flex-shrink-0 w-6">
-                <div className={`w-2 h-2 rounded-full ${item.status === "completed" ? "bg-gold" : item.status === "current" ? "bg-gold animate-pulse" : "bg-border"} relative z-10`}></div>
-                {i < 5 && <div className="absolute left-0.5 top-2 w-0.5 h-full bg-border"></div>}
+          {timelineEvents.length > 0 ? (
+            timelineEvents.map((item, i) => (
+              <div key={item.id || i} className="flex items-start gap-3 relative">
+                <div className="relative flex-shrink-0 w-6">
+                  <div className={`w-2 h-2 rounded-full ${item.status === "completed" ? "bg-gold" : item.status === "current" ? "bg-gold animate-pulse" : "bg-border"} relative z-10`}></div>
+                  {i < timelineEvents.length - 1 && <div className="absolute left-0.5 top-2 w-0.5 h-full bg-border"></div>}
+                </div>
+                <div className="flex-1">
+                  <div className={`font-medium text-sm ${item.status === "current" ? "text-gold" : item.status === "completed" ? "text-text" : "text-white/70"}`}>{item.event}</div>
+                  <div className={`text-label-caps text-[10px] ${item.status === "completed" ? "text-white/70" : "text-white/40"}`}>{item.time}</div>
+                </div>
               </div>
-              <div className="flex-1">
-                <div className={`font-medium text-sm ${item.status === "current" ? "text-gold" : item.status === "completed" ? "text-text" : "text-white/70"}`}>{item.event}</div>
-                <div className={`text-label-caps text-[10px] ${item.status === "completed" ? "text-white/70" : "text-white/40"}`}>{item.time}</div>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className="text-center text-white/60 py-4">No timeline events available.</div>
+          )}
         </div>
       </div>
 

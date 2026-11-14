@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Download, DollarSign, MessageSquare, TrendingUp, ExternalLink, ChevronRight } from "lucide-react";
-import { Button, Card, StatusPill, Skeleton, SkeletonText, SkeletonCard, DataTable } from "../components/ui";
-import { listOrdersApi, getProviderProfileApi, listAssetsApi } from "../lib/api";
-
-const STAT_CARDS = [
-  { key: "activeListings", label: "Active Listings", icon: "Dns", value: "12", trend: "+2 indexed this month", trendColor: "text-gold", iconColor: "text-gold" },
-  { key: "openOrders", label: "Open Orders", icon: "Receipt", value: "4", trend: "1 awaiting review", trendColor: "text-gold", iconColor: "text-gold" },
-  { key: "unreadEnquiries", label: "Unread Enquiries", icon: "MessageSquare", value: "7", trend: "3 high priority", trendColor: "text-gold", iconColor: "text-gold" },
-  { key: "revenue", label: "Revenue This Month", icon: "DollarSign", value: "$48,250", trend: "+14.2% vs last month", trendColor: "text-gold", iconColor: "text-gold" },
-];
+import { Button, Card, StatusPill, Skeleton, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
+import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi } from "../../lib/api";
 
 export default function ProviderDashboardPage() {
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
   const [assets, setAssets] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,14 +16,16 @@ export default function ProviderDashboardPage() {
     async function loadData() {
       setLoading(true);
       try {
-        const [profileRes, ordersRes, assetsRes] = await Promise.all([
+        const [profileRes, ordersRes, assetsRes, conversationsRes] = await Promise.all([
           getProviderProfileApi(),
           listOrdersApi({ limit: 5, status: "PENDING,CONFIRMED" }),
           listAssetsApi({ limit: 3 }),
+          listConversationsApi({ limit: 5 }),
         ]);
         setProfile(profileRes);
         setOrders(ordersRes.data || ordersRes.orders || ordersRes);
         setAssets(assetsRes.data || assetsRes.assets || assetsRes);
+        setConversations(conversationsRes.data || conversationsRes.conversations || conversationsRes);
       } catch (e) {
         setError(e.message);
       } finally {
@@ -74,6 +70,9 @@ export default function ProviderDashboardPage() {
   const companyName = profile?.name || "Your Company";
   const activeListings = assets?.length || 0;
   const pendingOrders = orders?.filter(o => o.status === "PENDING").length || 0;
+  const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0) || 0;
+  const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
+  const highPriorityEnquiries = conversations?.filter(c => c.priority === "high" && c.unread_count > 0).length || 0;
 
   return (
     <div className="space-y-8">
@@ -125,9 +124,9 @@ export default function ProviderDashboardPage() {
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{activeListings || 12}</div>
+            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{activeListings}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-white/60">
-              <span className="text-gold font-medium">+2</span>
+              <span className="text-gold font-medium">—</span>
               <span>indexed this month</span>
             </div>
           </div>
@@ -142,7 +141,7 @@ export default function ProviderDashboardPage() {
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{orders?.length || 4}</div>
+            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{orders?.length || 0}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-gold">
               <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
               <span>{pendingOrders} awaiting review</span>
@@ -159,10 +158,10 @@ export default function ProviderDashboardPage() {
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-text tracking-tight">7</div>
+            <div className="font-serif text-3xl font-semibold text-text tracking-tight">{unreadEnquiries}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-gold">
               <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
-              <span>3 high priority</span>
+              <span>{highPriorityEnquiries} high priority</span>
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface group-hover:bg-gold transition-colors"></div>
@@ -176,10 +175,10 @@ export default function ProviderDashboardPage() {
             </span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-gold tracking-tight">$48,250</div>
+            <div className="font-serif text-3xl font-semibold text-gold tracking-tight">${totalRevenue.toLocaleString()}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-gold">
               <TrendingUp className="w-3.5 h-3.5" />
-              <span>+14.2% vs last month</span>
+              <span>—</span>
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface group-hover:bg-gold transition-colors"></div>
@@ -214,18 +213,18 @@ export default function ProviderDashboardPage() {
               columns={[
                 { key: "client", header: "Client Entity", render: (row) => (
                   <div>
-                    <div className="font-medium text-text">{row.clientName || "AeroLaunch Dynamics"}</div>
-                    <div className="text-xs font-mono text-white/60">VC: Founders Fund · TX, USA</div>
+                    <div className="font-medium text-text">{row.clientName || "—"}</div>
+                    <div className="text-xs font-mono text-white/60">—</div>
                   </div>
                 )},
                 { key: "asset", header: "Allocated Asset", render: (row) => (
                   <div>
-                    <div className="text-text font-medium">{row.assetName || "CAT 336 Next-Gen Excavator"}</div>
-                    <div className="text-xs font-mono text-border">6-mo operational lease</div>
+                    <div className="text-text font-medium">{row.assetName || "—"}</div>
+                    <div className="text-xs font-mono text-border">—</div>
                   </div>
                 )},
                 { key: "amount", header: "Amount", render: (row) => (
-                  <span className="font-serif text-lg font-semibold text-gold">${row.amount || "14,500"}<span className="text-xs font-mono text-white/60 font-normal">/mo</span></span>
+                  <span className="font-serif text-lg font-semibold text-gold">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-white/60 font-normal">/mo</span></span>
                 )},
                 { key: "status", header: "Status", render: (row) => (
                   <StatusPill status={row.status?.toLowerCase() || "pending"} />
@@ -236,12 +235,7 @@ export default function ProviderDashboardPage() {
                   </Link>
                 )},
               ]}
-              rows={orders?.slice(0, 4) || [
-                { id: "1", clientName: "AeroLaunch Dynamics", assetName: "CAT 336 Next-Gen Excavator", amount: "14,500", status: "PENDING" },
-                { id: "2", clientName: "CognitiveSynth AI Labs", assetName: "64x NVIDIA H100 SXM5 SuperPOD", amount: "48,200", status: "CONFIRMED" },
-                { id: "3", clientName: "VeloKinetics Suborbital", assetName: "Modular Tier-3 Edge Micro-Datacenter", amount: "15,000", status: "CONFIRMED" },
-                { id: "4", clientName: "TerraMine Autonomous", assetName: "Volvo L250H Loader with GNSS", amount: "11,900", status: "PENDING" },
-              ]}
+              rows={orders?.slice(0, 4) || []}
               emptyMessage="No orders found."
               rowKey={(row) => row.id}
             />
@@ -251,7 +245,6 @@ export default function ProviderDashboardPage() {
                 View all orders and lease agreements
                 <ChevronRight className="w-4 h-4" />
               </Link>
-              <span className="text-xs font-mono text-border hidden sm:inline">PG 1 OF 3 (18 TOTAL)</span>
             </div>
           </Card>
         </div>
@@ -271,11 +264,11 @@ export default function ProviderDashboardPage() {
             {assets?.slice(0, 3).map((asset, i) => (
               <div key={asset.id || i} className="p-3 rounded-lg bg-surface hover:bg-surface-2 transition-colors flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-sans font-semibold text-text">{asset.name || `Asset ${i + 1}`}</span>
+                  <span className="font-sans font-semibold text-text">{asset.name || "—"}</span>
                   <StatusPill status={asset.status?.toLowerCase() || "available"} />
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gold font-mono">${asset.rate || "14,500"}/mo</span>
+                  <span className="text-gold font-mono">${asset.rate || asset.price_monthly || "—"}/mo</span>
                   <Link to={`/provider/listings/${asset.id}/preview`} className="text-label-caps text-white/60 hover:text-gold flex items-center gap-0.5">
                     <ExternalLink className="w-3.5 h-3.5" /> Edit
                   </Link>
@@ -295,22 +288,21 @@ export default function ProviderDashboardPage() {
               RECENT ENQUIRIES
             </div>
             <div className="space-y-3">
-              {[
-                { from: "AeroLaunch Dynamics", preview: "Need clarification on CAT 336 delivery timeline...", time: "2m ago", unread: true },
-                { from: "CognitiveSynth AI Labs", preview: "Confirming H100 cluster specs for Q1...", time: "15m ago", unread: true },
-                { from: "VeloKinetics Suborbital", preview: "Site survey scheduled for next Tuesday", time: "1h ago", unread: false },
-              ].map((msg, i) => (
-                <Link key={i} to="/messages" className="block p-3 rounded-lg bg-surface hover:bg-surface-2 transition-colors">
+              {conversations?.slice(0, 3).map((conv, i) => (
+                <Link key={conv.id || i} to="/messages" className="block p-3 rounded-lg bg-surface hover:bg-surface-2 transition-colors">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-label-caps text-gold">{msg.from}</span>
-                      <p className="text-xs text-white/60 mt-0.5 line-clamp-1">{msg.preview}</p>
+                      <span className="text-label-caps text-gold">{conv.other_party_name || "—"}</span>
+                      <p className="text-xs text-white/60 mt-0.5 line-clamp-1">{conv.last_message_preview || "No messages yet"}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-border shrink-0">{msg.time}</span>
+                    <span className="text-[10px] font-mono text-border shrink-0">{conv.last_message_at || "—"}</span>
                   </div>
-                  {msg.unread && <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold mt-2" />}
+                  {conv.unread_count > 0 && <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold mt-2" />}
                 </Link>
               ))}
+              {!conversations?.length && (
+                <div className="text-center text-white/60 py-4">No enquiries yet.</div>
+              )}
             </div>
           </Card>
         </div>

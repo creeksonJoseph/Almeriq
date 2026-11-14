@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Bell, Check, ChevronRight, Filter, Loader2 } from "lucide-react";
-import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../components/ui";
-import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../lib/api";
+import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
+import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
 
 const TYPE_ICONS = {
   order: "📦",

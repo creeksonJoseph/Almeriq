@@ -18,10 +18,10 @@ import {
   Mail,
   User,
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
-import { getAdminWaitlistApi } from "../lib/api";
-import { StatStrip } from "../components/ui/BorderlessPrimitives";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { getAdminWaitlistApi } from "../../lib/api";
+import { StatStrip } from "../../components/ui/BorderlessPrimitives";
 
 const ROLE_BADGES = {
   Founder: { bg: "bg-gold/15 text-gold border-gold/30", icon: Building2 },

@@ -10,7 +10,7 @@ import {
   Loader2,
   User,
 } from "lucide-react";
-import { useSettings } from "../hooks/useSettings";
+import { useSettings } from "../../hooks/useSettings";
 
 export default function SettingsPage() {
   const navigate = useNavigate();

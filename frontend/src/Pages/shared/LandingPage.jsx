@@ -16,8 +16,8 @@ import {
   Mail,
   ShieldCheck,
 } from "lucide-react";
-import { useWaitlist } from "../hooks/useWaitlist";
-import BrandLogo from "../components/BrandLogo";
+import { useWaitlist } from "../../hooks/useWaitlist";
+import BrandLogo from "../../components/BrandLogo";
 
 const C = {
   bg: "#0c0e13",

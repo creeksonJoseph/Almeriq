@@ -10,12 +10,12 @@ import {
   FileText,
   Printer,
 } from "lucide-react";
-import FounderStudioNav from "../components/founder/FounderStudioNav";
-import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
-import { getCompanyRegistrationGuideApi } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
-import { COUNTRIES } from "../lib/countries";
+import FounderStudioNav from "../../components/founder/FounderStudioNav";
+import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
+import { getCompanyRegistrationGuideApi } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { COUNTRIES } from "../../lib/countries";
 
 // ── Plain English Starter Legal Templates ─────────────────────────────────────
 const LEGAL_TEMPLATES = [

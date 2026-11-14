@@ -4,9 +4,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import BrandLogo from "../components/BrandLogo";
-import { useToast } from "../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
+import BrandLogo from "../../components/BrandLogo";
+import { useToast } from "../../context/ToastContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();

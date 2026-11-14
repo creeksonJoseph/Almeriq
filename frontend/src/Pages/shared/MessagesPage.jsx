@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock } from "lucide-react";
-import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../components/ui";
-import { listConversationsApi, getConversationApi, sendMessageApi, markMessagesReadApi } from "../lib/api";
+import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
+import { listConversationsApi, getConversationApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
 
 export default function MessagesPage() {
   const [conversations, setConversations] = useState([]);

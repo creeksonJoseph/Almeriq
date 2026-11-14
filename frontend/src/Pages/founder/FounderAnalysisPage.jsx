@@ -16,12 +16,12 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
-import FounderFlowLayout from "../components/founder/FounderFlowLayout";
-import { useFounderFlow } from "../hooks/useFounderFlow";
-import { useActiveIdea } from "../context/IdeaContext";
-import { useToast } from "../context/ToastContext";
-import { executeAiToolApi } from "../lib/api";
-import ResultRenderer from "../components/founder/analysis/ResultRenderer";
+import FounderFlowLayout from "../../components/founder/FounderFlowLayout";
+import { useFounderFlow } from "../../hooks/useFounderFlow";
+import { useActiveIdea } from "../../context/IdeaContext";
+import { useToast } from "../../context/ToastContext";
+import { executeAiToolApi } from "../../lib/api";
+import ResultRenderer from "../../components/founder/analysis/ResultRenderer";
 
 // ── Analysis type definitions ────────────────────────────────────────────────
 

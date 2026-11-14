@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, Save, Eye, MapPin, Building2, Server, Globe, Users } from "lucide-react";
-import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../components/ui";
-import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi } from "../lib/api";
+import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../../components/ui";
+import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi } from "../../lib/api";
 
 const COVERAGE_REGIONS = [
   "Africa",

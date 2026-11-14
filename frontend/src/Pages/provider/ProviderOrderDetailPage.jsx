@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock, Shield, ExternalLink } from "lucide-react";
-import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../components/ui";
-import { getOrderApi, getWaybillApi, confirmOrderApi, declineOrderApi, shipOrderApi } from "../lib/api";
+import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../../components/ui";
+import { getOrderApi, getWaybillApi, confirmOrderApi, declineOrderApi, shipOrderApi } from "../../lib/api";
 
 const STATUS_STEPS = [
   { key: "created", label: "Order Created", icon: FileText },

@@ -5,11 +5,11 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
-import FounderStudioNav from "../components/founder/FounderStudioNav";
-import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
-import { listVenturesApi, executeAiToolApi } from "../lib/api";
-import { useToast } from "../context/ToastContext";
-import { useActiveIdea } from "../context/IdeaContext";
+import FounderStudioNav from "../../components/founder/FounderStudioNav";
+import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
+import { listVenturesApi, executeAiToolApi } from "../../lib/api";
+import { useToast } from "../../context/ToastContext";
+import { useActiveIdea } from "../../context/IdeaContext";
 
 const PRODUCT_TOOLS = [
   { id: "product_brief", label: "1. Product Brief", desc: "Define the core product, target customer, and key features" },

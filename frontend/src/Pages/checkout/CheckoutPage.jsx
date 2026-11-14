@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
-import { Button, Card, Input, Modal, Skeleton, SkeletonText } from "../components/ui";
-import { getDealApi, getMarketplaceListingApi } from "../lib/api";
+import { Button, Card, Input, Modal, Skeleton, SkeletonText } from "../../components/ui";
+import { getDealApi, getMarketplaceListingApi } from "../../lib/api";
 
 const STEPS = [
   { id: "payment", label: "1. Payment", short: "Pay" },

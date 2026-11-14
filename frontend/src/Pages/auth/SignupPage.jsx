@@ -4,8 +4,8 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { useSignupFlow } from "../hooks/useSignupFlow";
-import BrandLogo from "../components/BrandLogo";
+import { useSignupFlow } from "../../hooks/useSignupFlow";
+import BrandLogo from "../../components/BrandLogo";
 
 const STEP_META = {
   1: {

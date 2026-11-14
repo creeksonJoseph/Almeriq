@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
-vi.mock("../components/ui/index.js", () => ({
+vi.mock("../../components/ui/index.js", () => ({
   Button: ({ children, onClick, ...props }) => (
     <button onClick={onClick} {...props}>{children}</button>
   ),
@@ -23,14 +23,15 @@ vi.mock("../components/ui/index.js", () => ({
   DataTable: () => <div data-testid="data-table" />,
 }));
 
-vi.mock("../lib/api", () => ({
+vi.mock("../../lib/api", () => ({
   getProviderProfileApi: vi.fn(),
   listOrdersApi: vi.fn(),
   listAssetsApi: vi.fn(),
+  listConversationsApi: vi.fn(),
 }));
 
 import ProviderDashboardPage from "./ProviderDashboardPage.jsx";
-import * as api from "../lib/api";
+import * as api from "../../lib/api";
 
 describe("ProviderDashboardPage", () => {
   beforeEach(() => {
@@ -41,6 +42,7 @@ describe("ProviderDashboardPage", () => {
     vi.mocked(api.getProviderProfileApi).mockResolvedValue({ name: "Acme Rentals" });
     vi.mocked(api.listOrdersApi).mockResolvedValue({ data: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({ data: [] });
+    vi.mocked(api.listConversationsApi).mockResolvedValue({ data: [] });
 
     render(
       <MemoryRouter>
@@ -58,6 +60,7 @@ describe("ProviderDashboardPage", () => {
     vi.mocked(api.getProviderProfileApi).mockRejectedValue(new Error("Failed to load"));
     vi.mocked(api.listOrdersApi).mockResolvedValue({ data: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({ data: [] });
+    vi.mocked(api.listConversationsApi).mockResolvedValue({ data: [] });
 
     render(
       <MemoryRouter>
@@ -76,6 +79,7 @@ describe("ProviderDashboardPage", () => {
     vi.mocked(api.listAssetsApi).mockResolvedValue({
       data: [{ id: 1, name: "CAT 336", status: "available", rate: "14,500" }],
     });
+    vi.mocked(api.listConversationsApi).mockResolvedValue({ data: [] });
 
     render(
       <MemoryRouter>

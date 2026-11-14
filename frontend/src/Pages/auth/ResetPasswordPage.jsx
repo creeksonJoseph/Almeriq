@@ -4,9 +4,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import BrandLogo from "../components/BrandLogo";
-import { resetPasswordApi } from "../lib/api";
-import { useToast } from "../context/ToastContext";
+import BrandLogo from "../../components/BrandLogo";
+import { resetPasswordApi } from "../../lib/api";
+import { useToast } from "../../context/ToastContext";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();

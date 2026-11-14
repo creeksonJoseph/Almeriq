@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Loader2, CheckCircle2, X, ArrowRight } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import FounderFlowLayout from "../components/founder/FounderFlowLayout";
-import { useFounderFlow } from "../hooks/useFounderFlow";
-import { useActiveIdea } from "../context/IdeaContext";
-import { useToast } from "../context/ToastContext";
-import { saveBriefApi } from "../lib/api";
+import FounderFlowLayout from "../../components/founder/FounderFlowLayout";
+import { useFounderFlow } from "../../hooks/useFounderFlow";
+import { useActiveIdea } from "../../context/IdeaContext";
+import { useToast } from "../../context/ToastContext";
+import { saveBriefApi } from "../../lib/api";
 
 const FIELDS = [
   ["name", "Startup / Idea Name", "e.g. Almeriq, Stripe, Airbnb, FarmDirect", 100],

@@ -18,12 +18,12 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
-import { useVentures } from "../hooks/useVentures";
-import { useFounderFlow } from "../hooks/useFounderFlow";
-import { useConfirm } from "../context/ConfirmContext";
-import { useActiveIdea } from "../context/IdeaContext";
-import { useToast } from "../context/ToastContext";
+import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
+import { useVentures } from "../../hooks/useVentures";
+import { useFounderFlow } from "../../hooks/useFounderFlow";
+import { useConfirm } from "../../context/ConfirmContext";
+import { useActiveIdea } from "../../context/IdeaContext";
+import { useToast } from "../../context/ToastContext";
 
 // ── Analysis type metadata (mirrors FounderAnalysisPage) ─────────────────────
 

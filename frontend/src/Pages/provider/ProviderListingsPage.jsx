@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Filter, Search, MoreVertical, Trash2, Edit, Activity, ExternalLink, ChevronDown } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { Button, Card, Input, Pill, StatusPill, DataTable, Skeleton, SkeletonCard } from "../components/ui";
-import { AssetCard } from "../components/AssetCard";
-import { AssetGrid } from "../components/AssetGrid";
-import { listAssetsApi, deleteAssetApi } from "../lib/api";
+import { Button, Card, Input, Pill, StatusPill, DataTable, Skeleton, SkeletonCard } from "../../components/ui";
+import { AssetCard } from "../../components/AssetCard";
+import { AssetGrid } from "../../components/AssetGrid";
+import { listAssetsApi, deleteAssetApi } from "../../lib/api";
 
 const CATEGORIES = [
   { value: "all", label: "All", icon: "LayoutDashboard" },
@@ -46,7 +46,7 @@ const ProviderListingsPage = () => {
   }, []);
 
   const filteredAssets = assets.filter(a => {
-    const matchesCategory = filter.category === "all" || a.type === filter.category;
+    const matchesCategory = filter.category === "all" || a.kind === filter.category;
     const matchesStatus = filter.status === "all" || a.status?.toLowerCase() === filter.status;
     const matchesSearch = a.name?.toLowerCase().includes(watchSearch.toLowerCase()) ||
       a.category?.toLowerCase().includes(watchSearch.toLowerCase()) ||
@@ -126,7 +126,7 @@ const ProviderListingsPage = () => {
                 className="px-3.5 py-1.5 rounded-md text-xs font-medium"
                 onClick={() => setFilter(f => ({ ...f, category: cat.value }))}
               >
-                {cat.label} ({assets.filter(a => cat.value === "all" || a.type === cat.value).length})
+                {cat.label} ({cat.value === "all" ? assets.length : assets.filter(a => a.kind === cat.value).length})
               </Button>
             ))}
           </div>
@@ -162,10 +162,8 @@ const ProviderListingsPage = () => {
         <div className="flex items-center gap-4 text-xs text-white/60 self-end lg:self-center">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-gold"></span>
-            <span className="font-mono text-[11px] text-gold">14 NODES PINGING</span>
+            <span className="font-mono text-[11px] text-gold">{assets.length} ASSETS INDEXED</span>
           </div>
-          <span className="text-white/40">|</span>
-          <span className="font-mono text-[11px] tracking-wide text-white/60">ORBIT SYNCH: 100%</span>
         </div>
       </div>
 

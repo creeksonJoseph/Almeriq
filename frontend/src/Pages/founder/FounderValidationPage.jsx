@@ -6,16 +6,16 @@
  */
 import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
-import FounderStudioNav from "../components/founder/FounderStudioNav";
-import { FounderFlowGuard } from "../components/founder/FounderFlowLayout";
-import ActiveIdeaDropdown from "../components/ActiveIdeaDropdown";
-import ValidationInputDrawer from "../components/founder/validation/ValidationInputDrawer";
-import ExecutiveDiagnosis from "../components/founder/validation/ExecutiveDiagnosis";
-import ValidationRubricList from "../components/founder/validation/ValidationRubricList";
-import { executeAiToolApi } from "../lib/api";
-import { useToast } from "../context/ToastContext";
-import { useActiveIdea } from "../context/IdeaContext";
-import { useFounderFlow } from "../hooks/useFounderFlow";
+import FounderStudioNav from "../../components/founder/FounderStudioNav";
+import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
+import ActiveIdeaDropdown from "../../components/ActiveIdeaDropdown";
+import ValidationInputDrawer from "../../components/founder/validation/ValidationInputDrawer";
+import ExecutiveDiagnosis from "../../components/founder/validation/ExecutiveDiagnosis";
+import ValidationRubricList from "../../components/founder/validation/ValidationRubricList";
+import { executeAiToolApi } from "../../lib/api";
+import { useToast } from "../../context/ToastContext";
+import { useActiveIdea } from "../../context/IdeaContext";
+import { useFounderFlow } from "../../hooks/useFounderFlow";
 
 export default function FounderValidationPage() {
   const { showToast } = useToast();
