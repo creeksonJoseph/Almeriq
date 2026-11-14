@@ -7,6 +7,7 @@ Layers: main → api/routers → services → repositories → core
 from __future__ import annotations
 
 import logging
+import asyncio
 import sentry_sdk
 from alembic import command
 from alembic.config import Config
@@ -69,9 +70,11 @@ if SENTRY_DSN:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Run Alembic migrations on startup so production DB is always in sync
+    # (run_sync in executor because we're already inside a running event loop)
     try:
         alembic_cfg = Config("alembic.ini")
-        command.upgrade(alembic_cfg, "head")
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, lambda: command.upgrade(alembic_cfg, "head"))
         logging.info("Alembic migrations applied successfully")
     except Exception as exc:
         logging.warning("Alembic migration on startup failed: %s", exc)
