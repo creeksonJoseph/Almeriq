@@ -24,7 +24,7 @@ export function SkeletonText({ lines = 3, className = "" }) {
 
 export function SkeletonCard({ className = "" }) {
   return (
-    <div className={`bg-surface border border-border rounded-2xl p-4 space-y-3 ${className}`} aria-hidden="true">
+    <div className={`bg-surface border border-surface-2 rounded-2xl p-4 space-y-3 ${className}`} aria-hidden="true">
       <div className="animate-pulse bg-surface-2 rounded h-4 w-1/3" />
       <div className="animate-pulse bg-surface-2 rounded h-24 w-full" />
       <div className="animate-pulse bg-surface-2 rounded h-3 w-2/3" />
