@@ -2,25 +2,25 @@ import React from "react";
 
 const ROLES = [
   {
-    id: "founder",
+    id: "FOUNDER",
     title: "Founder / Entrepreneur",
     desc: "Building, scaling, and legalizing tech companies on Alimeriq",
     badge: "Building",
   },
   {
-    id: "investor",
+    id: "INVESTOR",
     title: "Investor / VC",
     desc: "Funding, evaluating, and backing high-growth ventures",
     badge: "Investing",
   },
   {
-    id: "infrastructure",
+    id: "INFRASTRUCTURE_PROVIDER",
     title: "Infrastructure Provider",
     desc: "Offering compute, legal, physical, or cloud resources",
     badge: "Providing",
   },
   {
-    id: "job_seeker",
+    id: "JOB_SEEKER",
     title: "Talent / Job Seeker",
     desc: "Joining high-impact teams and early-stage companies",
     badge: "Talent",

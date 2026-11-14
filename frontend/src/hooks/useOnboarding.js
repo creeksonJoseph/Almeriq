@@ -13,7 +13,7 @@ export function useOnboarding(user, onComplete) {
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [nationality, setNationality] = useState(user?.nationality || "United States");
   const [idNumber, setIdNumber] = useState(user?.id_number || "");
-  const [role, setRole] = useState(user?.role !== "user" ? user?.role : "founder");
+  const [role, setRole] = useState(user?.role !== "user" ? user?.role : "FOUNDER");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

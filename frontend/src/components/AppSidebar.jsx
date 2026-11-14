@@ -244,7 +244,7 @@ export default function AppSidebar({
           )}
 
           {/* GROUP 2b: Provider Navigation */}
-          {role === "infrastructure_provider" && (
+          {role === "INFRASTRUCTURE_PROVIDER" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
