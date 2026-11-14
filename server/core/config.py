@@ -1,40 +1,68 @@
-"""core/config.py - singleton settings loaded strictly from environment without fallbacks."""
+"""core/config.py - Application settings via pydantic-settings (BaseSettings)."""
 from __future__ import annotations
-import os
-from pathlib import Path
-from dotenv import load_dotenv
 
-# Explicitly load .env from the server root directory
-env_path = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
 
-# Strict Environment Variable Lookups (raises KeyError if missing from .env)
-DATABASE_URL: str = os.environ["DATABASE_URL"]
-RESEND_API_KEY: str = os.environ["RESEND_API_KEY"]
-DOMAIN: str = os.environ["DOMAIN"]
 
-ALLOWED_ORIGINS: list[str] = [
-    o.strip() for o in os.environ["ALLOWED_ORIGINS"].split(",") if o.strip()
-]
+class Settings(BaseSettings):
+    """Application configuration loaded from environment variables and .env files."""
 
-# Authentication & Security Settings
-JWT_SECRET_KEY: str = os.environ["JWT_SECRET_KEY"]
-JWT_ALGORITHM: str = os.environ.get("JWT_ALGORITHM", "HS256")
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
-    os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", str(60 * 24 * 7))
-)
-COOKIE_NAME: str = os.environ["COOKIE_NAME"]
-COOKIE_SECURE: bool = os.environ["COOKIE_SECURE"].lower() in ("true", "1", "yes")
-COOKIE_SAMESITE: str = os.environ["COOKIE_SAMESITE"]
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+    )
 
-# Google OAuth Credentials (Empty string until user adds them to server/.env)
-GOOGLE_CLIENT_ID: str = os.environ.get("GOOGLE_CLIENT_ID", "")
-GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+    # Database
+    DATABASE_URL: str = "sqlite+aiosqlite:///./almeriq_dev.db"
 
-# Upstash Redis (optional - falls back to in-memory if not set)
-UPSTASH_REDIS_URL: str = os.environ.get("UPSTASH_REDIS_URL", "")
-UPSTASH_REDIS_TOKEN: str = os.environ.get("UPSTASH_REDIS_TOKEN", "")
+    # Resend
+    RESEND_API_KEY: str = ""
+    DOMAIN: str = "alimeriq.app"
 
-# Founder AI analysis. Keep this key server-side; never expose it to the browser.
-GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
+    # CORS
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"]
+
+    # Auth / Security
+    JWT_SECRET_KEY: str = "generate_a_random_32_byte_secret_key_here"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
+
+    COOKIE_NAME: str = "auth_token"
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: str = "lax"
+
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+
+    # Upstash Redis
+    UPSTASH_REDIS_URL: str = ""
+    UPSTASH_REDIS_TOKEN: str = ""
+
+    # Gemini
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-flash-lite-latest"
+
+
+settings = Settings()
+
+# Export individual settings for backward compatibility
+DATABASE_URL = settings.DATABASE_URL
+RESEND_API_KEY = settings.RESEND_API_KEY
+DOMAIN = settings.DOMAIN
+ALLOWED_ORIGINS = settings.ALLOWED_ORIGINS
+JWT_SECRET_KEY = settings.JWT_SECRET_KEY
+JWT_ALGORITHM = settings.JWT_ALGORITHM
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+COOKIE_NAME = settings.COOKIE_NAME
+COOKIE_SECURE = settings.COOKIE_SECURE
+COOKIE_SAMESITE = settings.COOKIE_SAMESITE
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+UPSTASH_REDIS_URL = settings.UPSTASH_REDIS_URL
+UPSTASH_REDIS_TOKEN = settings.UPSTASH_REDIS_TOKEN
+GEMINI_API_KEY = settings.GEMINI_API_KEY
+GEMINI_MODEL = settings.GEMINI_MODEL

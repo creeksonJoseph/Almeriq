@@ -2,6 +2,10 @@
 
 Revision ID: d4f8c2b6e9a1
 Revises: c3e7b1a2f4d8
+
+Note: In the dialect-neutral initial migration, profile columns are already nullable.
+This migration is a no-op for SQLite. For PostgreSQL, it ensures columns
+are nullable if they were created as NOT NULL in legacy deployments.
 """
 from typing import Sequence, Union
 
@@ -15,15 +19,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute(
-        """
-        ALTER TABLE users
-            ALTER COLUMN full_name DROP NOT NULL,
-            ALTER COLUMN nationality DROP NOT NULL,
-            ALTER COLUMN id_number DROP NOT NULL,
-            ALTER COLUMN google_id DROP NOT NULL
-        """
-    )
+    # Columns are already nullable in the initial migration
+    # SQLite doesn't support ALTER COLUMN DROP NOT NULL
+    pass
 
 
 def downgrade() -> None:
