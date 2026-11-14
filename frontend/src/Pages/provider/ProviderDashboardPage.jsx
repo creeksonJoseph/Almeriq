@@ -18,8 +18,8 @@ export default function ProviderDashboardPage() {
       try {
         const [profileRes, ordersRes, assetsRes, conversationsRes] = await Promise.all([
           getProviderProfileApi(),
-          listOrdersApi({ limit: 5, status: "PENDING,CONFIRMED" }),
-          listAssetsApi({ limit: 3 }),
+          listOrdersApi(),
+          listAssetsApi(),
           listConversationsApi({ limit: 5 }),
         ]);
         setProfile(profileRes);
