@@ -199,3 +199,28 @@ async def update_user_onboarding(
         await s.commit()
         user = res.scalar_one_or_none()
         return user.to_dict() if user else None
+
+
+async def update_user_role(
+    user_id: int,
+    role: str,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    """Update a user's role without changing their admin privileges."""
+    stmt = (
+        update(User)
+        .where(User.id == user_id)
+        .values(role=role, onboarding_completed=True)
+        .returning(User)
+    )
+
+    if session is not None:
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        return user.to_dict() if user else None
+
+    async with async_session_factory() as s:
+        res = await s.execute(stmt)
+        await s.commit()
+        user = res.scalar_one_or_none()
+        return user.to_dict() if user else None

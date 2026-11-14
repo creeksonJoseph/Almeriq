@@ -20,3 +20,12 @@ export async function getAdminWaitlistApi() {
     throw apiErr(e, "Unable to load waitlist participants");
   }
 }
+
+export async function updateAdminRoleApi(role) {
+  try {
+    const { data } = await apiClient.patch("/admin/me/role", { role });
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to update your role");
+  }
+}

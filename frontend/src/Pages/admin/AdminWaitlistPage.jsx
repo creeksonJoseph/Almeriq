@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import { getAdminWaitlistApi } from "../../lib/api";
+import { getAdminWaitlistApi, updateAdminRoleApi } from "../../lib/api";
 import { StatStrip } from "../../components/ui/BorderlessPrimitives";
 
 const ROLE_BADGES = {
@@ -29,6 +29,17 @@ const ROLE_BADGES = {
   "Job Seeker": { bg: "bg-gold/15 text-gold border-gold/30", icon: Briefcase },
   "Infrastructure Provider": { bg: "bg-gold/15 text-gold border-gold/30", icon: Truck },
 };
+
+const USER_ROLES = [
+  { value: "FOUNDER", label: "Founder" },
+  { value: "INVESTOR", label: "Investor" },
+  { value: "JOB_SEEKER", label: "Job Seeker" },
+  { value: "INFRASTRUCTURE_PROVIDER", label: "Infrastructure Provider" },
+];
+
+function toUserRole(role) {
+  return role?.toUpperCase().replaceAll(" ", "_");
+}
 
 function formatDate(iso) {
   if (!iso) return "-";
@@ -47,12 +58,14 @@ function formatDate(iso) {
 
 export default function AdminWaitlistPage() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, updateUser } = useAuth();
   const { showToast } = useToast();
   const [data, setData] = useState({ total: 0, items: [] });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
+  const [savingRole, setSavingRole] = useState("");
+  const [myRole, setMyRole] = useState(toUserRole(user?.role) || "FOUNDER");
 
   const fetchWaitlist = async () => {
     setLoading(true);
@@ -63,6 +76,20 @@ export default function AdminWaitlistPage() {
       showToast(err.message || "Failed to load waitlist records.", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (role) => {
+    setSavingRole("self");
+    try {
+      const result = await updateAdminRoleApi(role);
+      setMyRole(role);
+      updateUser(result.user);
+      showToast("Your test role was updated.", "success");
+    } catch (err) {
+      showToast(err.message || "Unable to update your role.", "error");
+    } finally {
+      setSavingRole("");
     }
   };
 
@@ -125,6 +152,19 @@ export default function AdminWaitlistPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <select
+              value={myRole}
+              onChange={(event) => handleRoleChange(event.target.value)}
+              disabled={savingRole === "self"}
+              aria-label="Switch my test role"
+              className="rounded-xl bg-[#1a1b22] px-3 py-2.5 text-xs font-semibold text-white outline-none transition-colors focus:ring-1 focus:ring-[#f2ca50] disabled:opacity-50"
+            >
+              {USER_ROLES.map((role) => (
+                <option key={role.value} value={role.value}>
+                  Switch my role: {role.label}
+                </option>
+              ))}
+            </select>
             <button
               type="button"
               onClick={fetchWaitlist}
