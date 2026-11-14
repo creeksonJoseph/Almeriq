@@ -116,7 +116,7 @@ export default function FounderFlowLayout({ children }) {
                   }`}
                 >
                   {complete ? (
-                    <CheckCircle2 size={15} className="shrink-0 text-emerald-400" />
+                    <CheckCircle2 size={15} className="shrink-0 text-[#f2ca50]" />
                   ) : (
                     <span
                       className={`font-mono text-xs font-bold ${

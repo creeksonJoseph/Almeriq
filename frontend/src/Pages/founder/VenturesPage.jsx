@@ -233,7 +233,7 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
               onClick={handleDelete}
               disabled={deleting}
               aria-label="Delete venture"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/25 transition-colors hover:text-red-300 disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/25 transition-colors hover:text-[#f2ca50] disabled:opacity-40"
             >
               <Trash2 size={16} />
             </button>
@@ -309,7 +309,7 @@ function VentureCard({ venture, isActive, onSetActive, onDelete, onRunAnalysis }
 
               {/* Analysis list sections */}
               <div className="grid gap-6 sm:grid-cols-2">
-                <ListSection title="Risks to test" items={venture.risks} accentClass="text-red-300/70" />
+                <ListSection title="Risks to test" items={venture.risks} accentClass="text-[#f2ca50]" />
                 <ListSection title="Focused MVP" items={venture.mvp} accentClass="text-[#f2ca50]" />
                 <ListSection title="Roadmap" items={venture.roadmap} accentClass="text-[#f2ca50]" />
                 <ListSection title="Next steps" items={venture.next_steps} accentClass="text-white/70" />

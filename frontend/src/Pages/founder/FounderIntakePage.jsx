@@ -195,9 +195,9 @@ export default function FounderIntakePage() {
                 <span className="text-xs font-semibold text-white">{label}</span>
                 <span
                   className={`text-xs font-medium ${(form[key] || "").length > maxLength * 0.9
-                    ? "text-red-400"
+                    ? "text-[#f2ca50]"
                     : (form[key] || "").length > maxLength * 0.75
-                      ? "text-yellow-400"
+                      ? "text-[#f2ca50]"
                       : "text-white/45"
                   }`}
                 >

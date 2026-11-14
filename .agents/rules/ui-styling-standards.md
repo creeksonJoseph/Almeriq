@@ -3,8 +3,10 @@
 ## Color Palette Constraints
 - **Primary & Neutral**: Black / Dark Charcoal (`#090a0d`, `#0a0a0b`, `#0c0d12`, `#13141b`).
 - **Accent**: Gold (`#f2ca50`, `#e2ba40`, `#c9a15a`, `rgba(242, 202, 80, ...)`).
+- **Error**: Red (`text-red-*`, `border-red-*`, `bg-red-*`) — **reserved for error states only**.
 - **Text & Foreground**: Pure White (`text-white` / `#ffffff`). Emulate the landing page text standards.
-- **Forbidden Colors**: Do NOT use green (`text-emerald-*`, `text-green-*`, emerald badges), rose/pink/red (`text-rose-*`, `text-red-*`), or other disparate palette colors in dashboards, dossiers, or legal views. Keep everything in strict White, Gold, and Black.
+- **Forbidden Colors**: Do NOT use green (`text-emerald-*`, `text-green-*`, emerald badges), rose/pink (`text-rose-*`), or other disparate palette colors in dashboards, dossiers, or legal views. Keep everything in strict White, Gold, and Black.
+- **Red usage**: Red is allowed **only** for error states (error banners, error toasts, error text). All other states (success, info, warnings, accents, hover) must use Gold.
 
 ## Typography & Text Color Rules
 - **Always White Over Gray**: All body copy, titles, descriptions, and content must use crisp **white** (`text-white`), NOT gray (`text-slate-400`, `text-gray-400`, `text-slate-300`, etc.).
