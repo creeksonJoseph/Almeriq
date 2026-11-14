@@ -36,19 +36,41 @@ async def almeriq_error_handler(request: Request, exc: ALIMERIQError) -> JSONRes
 
 async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """Handle Pydantic RequestValidationError (422). Logged as WARNING, suppressed in Sentry."""
-    logger.warning("4xx VALIDATION_ERROR: %s (path=%s)", exc.errors(), request.url.path)
+    errors = exc.errors()
+    field_errors = [
+        {"field": " -> ".join(str(loc) for loc in err.get("loc", [])), "message": err.get("msg", "")}
+        for err in errors
+    ]
+    logger.warning("4xx VALIDATION_ERROR: %s (path=%s)", field_errors, request.url.path)
     return JSONResponse(
         status_code=422,
-        content=_error_payload(False, "Validation error.", "Validation error.", "VALIDATION_ERROR"),
+        content={
+            "success": False,
+            "message": "Validation error.",
+            "detail": f"Invalid fields: {', '.join(e['field'] for e in field_errors)}",
+            "code": "VALIDATION_ERROR",
+            "fields": field_errors,
+        },
     )
 
 
 async def pydantic_validation_error_handler(request: Request, exc: PydanticValidationError) -> JSONResponse:
     """Handle Pydantic v2 ValidationError (422). Logged as WARNING, suppressed in Sentry."""
-    logger.warning("4xx VALIDATION_ERROR: %s (path=%s)", exc.errors(), request.url.path)
+    errors = exc.errors()
+    field_errors = [
+        {"field": " -> ".join(str(loc) for loc in err.get("loc", [])), "message": err.get("msg", "")}
+        for err in errors
+    ]
+    logger.warning("4xx VALIDATION_ERROR: %s (path=%s)", field_errors, request.url.path)
     return JSONResponse(
         status_code=422,
-        content=_error_payload(False, "Validation error.", "Validation error.", "VALIDATION_ERROR"),
+        content={
+            "success": False,
+            "message": "Validation error.",
+            "detail": f"Invalid fields: {', '.join(e['field'] for e in field_errors)}",
+            "code": "VALIDATION_ERROR",
+            "fields": field_errors,
+        },
     )
 
 
