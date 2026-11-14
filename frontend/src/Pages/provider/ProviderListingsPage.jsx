@@ -35,7 +35,7 @@ const ProviderListingsPage = () => {
       setLoading(true);
       try {
         const res = await listAssetsApi();
-        setAssets(res.data || res.assets || res);
+        setAssets(res?.items || res.data?.items || res.data || res.assets || res);
       } catch (e) {
         setError(e.message);
       } finally {

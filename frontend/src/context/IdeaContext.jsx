@@ -99,9 +99,9 @@ export function IdeaProvider({ children }) {
     }
   }, [user, activeVentureId, syncFlowStorage]);
 
-  // Load ventures whenever authenticated user changes
+  // Load ventures whenever authenticated user changes (founders only)
   useEffect(() => {
-    if (user) {
+    if (user && user.role === "FOUNDER") {
       refreshVentures();
     } else {
       setVentures([]);

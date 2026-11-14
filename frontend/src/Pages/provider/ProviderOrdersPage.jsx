@@ -25,7 +25,7 @@ export default function ProviderOrdersPage() {
       setLoading(true);
       try {
         const res = await listOrdersApi({ status: activeTab !== "all" ? activeTab.toUpperCase() : undefined });
-        setOrders(res.data || res.orders || res);
+        setOrders(res?.items || res.data?.items || res.data || res.orders || res);
       } catch (e) {
         setError(e.message);
       } finally {

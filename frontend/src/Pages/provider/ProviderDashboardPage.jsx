@@ -23,9 +23,9 @@ export default function ProviderDashboardPage() {
           listConversationsApi({ limit: 5 }),
         ]);
         setProfile(profileRes);
-        setOrders(ordersRes.data || ordersRes.orders || ordersRes);
-        setAssets(assetsRes.data || assetsRes.assets || assetsRes);
-        setConversations(conversationsRes.data || conversationsRes.conversations || conversationsRes);
+        setOrders(ordersRes?.items || ordersRes?.data?.items || ordersRes?.orders || ordersRes);
+        setAssets(assetsRes?.items || assetsRes?.data?.items || assetsRes?.assets || assetsRes);
+        setConversations(conversationsRes?.items || conversationsRes?.data?.items || conversationsRes?.conversations || conversationsRes);
       } catch (e) {
         setError(e.message);
       } finally {

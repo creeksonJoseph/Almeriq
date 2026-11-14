@@ -40,9 +40,9 @@ describe("ProviderDashboardPage", () => {
 
   it("shows loading skeletons then renders dashboard", async () => {
     vi.mocked(api.getProviderProfileApi).mockResolvedValue({ name: "Acme Rentals" });
-    vi.mocked(api.listOrdersApi).mockResolvedValue({ data: [] });
-    vi.mocked(api.listAssetsApi).mockResolvedValue({ data: [] });
-    vi.mocked(api.listConversationsApi).mockResolvedValue({ data: [] });
+    vi.mocked(api.listOrdersApi).mockResolvedValue({ items: [] });
+    vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
+    vi.mocked(api.listConversationsApi).mockResolvedValue({ items: [] });
 
     render(
       <MemoryRouter>
@@ -58,9 +58,9 @@ describe("ProviderDashboardPage", () => {
 
   it("shows error state when API fails", async () => {
     vi.mocked(api.getProviderProfileApi).mockRejectedValue(new Error("Failed to load"));
-    vi.mocked(api.listOrdersApi).mockResolvedValue({ data: [] });
-    vi.mocked(api.listAssetsApi).mockResolvedValue({ data: [] });
-    vi.mocked(api.listConversationsApi).mockResolvedValue({ data: [] });
+    vi.mocked(api.listOrdersApi).mockResolvedValue({ items: [] });
+    vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
+    vi.mocked(api.listConversationsApi).mockResolvedValue({ items: [] });
 
     render(
       <MemoryRouter>
@@ -75,11 +75,11 @@ describe("ProviderDashboardPage", () => {
 
   it("renders active listings count from assets", async () => {
     vi.mocked(api.getProviderProfileApi).mockResolvedValue({ name: "Acme Rentals" });
-    vi.mocked(api.listOrdersApi).mockResolvedValue({ data: [] });
+    vi.mocked(api.listOrdersApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({
-      data: [{ id: 1, name: "CAT 336", status: "available", rate: "14,500" }],
+      items: [{ id: 1, name: "CAT 336", status: "available", rate: "14,500" }],
     });
-    vi.mocked(api.listConversationsApi).mockResolvedValue({ data: [] });
+    vi.mocked(api.listConversationsApi).mockResolvedValue({ items: [] });
 
     render(
       <MemoryRouter>
