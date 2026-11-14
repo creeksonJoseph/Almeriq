@@ -127,6 +127,12 @@ def _upgrade_and_read_migration_state(
         command.upgrade(alembic_cfg, "head")
         with sync_engine.connect() as connection:
             after = MigrationContext.configure(connection).get_current_revision() or "<none>"
+        logging.info(
+            "Alembic revision state: before=%s after=%s expected=%s",
+            before,
+            after,
+            ",".join(expected_heads) or "<none>",
+        )
         return {
             "before": before,
             "after": after,
