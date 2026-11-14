@@ -215,6 +215,13 @@ class WaybillUploadRequest(BaseModel):
     tracking_number: Optional[str] = Field(default=None, max_length=100)
 
 
+class WaybillResponse(BaseModel):
+    order_id: int
+    waybill_url: Optional[str] = None
+    tracking_number: Optional[str] = None
+    uploaded_at: Optional[datetime] = None
+
+
 class OrderResponse(OrderBase):
     id: int
     order_id: str
@@ -312,6 +319,10 @@ class UserSummary(BaseModel):
 # Message schemas
 class MessageCreateRequest(BaseModel):
     body: str = Field(..., min_length=1)
+
+
+class CoverageRegionUpdateRequest(BaseModel):
+    regions: List[str]
 
 
 class MessageResponse(BaseModel):

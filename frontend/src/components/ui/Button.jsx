@@ -4,11 +4,11 @@ const variants = {
   primary:
     "bg-gold text-bg hover:opacity-90 focus-visible:outline-gold",
   ghost:
-    "bg-transparent border border-border text-text hover:bg-surface-2 focus-visible:outline-gold",
+    "bg-transparent border border-[#2b2b31] text-text hover:bg-surface-2 focus-visible:outline-gold",
   destructive:
     "bg-gold/20 text-gold border border-gold/40 hover:bg-gold/30 focus-visible:outline-gold",
   icon:
-    "bg-transparent border border-border text-text hover:bg-surface-2 p-0 aspect-square focus-visible:outline-gold",
+    "bg-transparent border border-[#2b2b31] text-text hover:bg-surface-2 p-0 aspect-square focus-visible:outline-gold",
 };
 
 export default function Button({

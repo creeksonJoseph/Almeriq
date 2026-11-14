@@ -1,21 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Plus, DollarSign, MessageSquare, TrendingUp, ExternalLink, ChevronRight } from "lucide-react";
-import { Button, Card, StatusPill, Skeleton, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, Card, StatusPill, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
 import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi } from "../../lib/api";
 
-const C = {
-  bg: "#0c0e13",
-  surface: "#111318",
-  surfaceLow: "#1a1b21",
-  surfaceContainer: "#1e2025",
-  surfaceHigh: "#282a2f",
-  gold: "#f2ca50",
-  text: "#ffffff",
-  border: "#282a2f",
-};
-
 export default function ProviderDashboardPage() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
   const [assets, setAssets] = useState([]);
@@ -78,33 +67,15 @@ export default function ProviderDashboardPage() {
     );
   }
 
-  const companyName = profile?.name || "Your Company";
+  const companyName = profile?.company_name || profile?.trading_name || profile?.name || "your provider account";
   const activeListings = assets?.length || 0;
-  const pendingOrders = orders?.filter(o => o.status === "PENDING").length || 0;
+  const pendingOrders = orders?.filter(o => o.status?.toLowerCase() === "pending_review").length || 0;
   const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0) || 0;
   const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
   const highPriorityEnquiries = conversations?.filter(c => c.priority === "high" && c.unread_count > 0).length || 0;
 
   return (
     <div className={`min-h-screen bg-[#0c0e13] text-[#ffffff] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-10`}>
-      {/* Top Ambient Context Bar */}
-      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2 text-xs font-mono text-[#ffffff]/60 tracking-widest">
-          <span className="inline-block w-2 h-2 rounded-full bg-[#f2ca50]"></span>
-          <span>OVERVIEW // PROVIDER DASHBOARD</span>
-          <span className="text-[#282a2f] font-normal">/</span>
-          <span className="text-[#f2ca50] font-semibold">CORE CLUSTER // LIVE</span>
-        </div>
-        <div className="flex items-center gap-4 text-xs font-mono text-[#ffffff]/60">
-          <span className="flex items-center gap-1.5 bg-[#111318] px-2.5 py-1 rounded border border-[#282a2f]">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50] animate-pulse"></span>
-            GATEWAY: EU-WEST-1A
-          </span>
-          <span className="text-[#282a2f]">|</span>
-          <span>LATENCY: 14ms</span>
-        </div>
-      </div>
-
       {/* Hero Header */}
       <div className="w-full flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8">
         <div className="max-w-3xl">
@@ -112,14 +83,14 @@ export default function ProviderDashboardPage() {
             Good morning, <span className="text-[#f2ca50]">{companyName}</span>
           </h1>
           <p className="font-sans text-base text-[#ffffff]/60 mt-2 max-w-2xl leading-relaxed">
-            Here is what is happening across your physical fleet and compute clusters today. {activeListings} active listings operational with zero telemetry anomalies.
+            Manage your listings, orders, and client enquiries from one place.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <Button variant="ghost" className="h-10 px-4">
-            Download
-          </Button>
-          <Button>
+          <Button
+            onClick={() => navigate("/provider/listings/new")}
+            className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]"
+          >
             Add Asset
           </Button>
         </div>
@@ -130,16 +101,9 @@ export default function ProviderDashboardPage() {
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Active Listings</span>
-            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
-              <Plus className="w-5 h-5" />
-            </span>
           </div>
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{activeListings}</div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#ffffff]/60">
-              <span className="text-[#f2ca50] font-medium">—</span>
-              <span>indexed this month</span>
-            </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
@@ -147,14 +111,10 @@ export default function ProviderDashboardPage() {
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Open Orders</span>
-            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
-              <ExternalLink className="w-5 h-5" />
-            </span>
           </div>
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orders?.length || 0}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
               <span>{pendingOrders} awaiting review</span>
             </div>
           </div>
@@ -164,14 +124,10 @@ export default function ProviderDashboardPage() {
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Unread Enquiries</span>
-            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
-              <MessageSquare className="w-5 h-5" />
-            </span>
           </div>
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{unreadEnquiries}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
               <span>{highPriorityEnquiries} high priority</span>
             </div>
           </div>
@@ -181,16 +137,9 @@ export default function ProviderDashboardPage() {
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Revenue This Month</span>
-            <span className="p-2 rounded bg-[#111318] text-[#f2ca50] group-hover:scale-105 transition-transform">
-              <DollarSign className="w-5 h-5" />
-            </span>
           </div>
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">${totalRevenue.toLocaleString()}</div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>—</span>
-            </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
@@ -205,7 +154,6 @@ export default function ProviderDashboardPage() {
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
               INCOMING ORDERS &amp; CLIENT CONTRACTS
             </div>
-            <span className="text-xs font-mono text-[#282a2f]">UPDATED: REAL-TIME</span>
           </div>
           <Card className="p-6 sm:p-8 flex flex-col border border-[#282a2f] rounded-xl bg-[#111318]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-5 border-b border-[#282a2f]">
@@ -213,10 +161,10 @@ export default function ProviderDashboardPage() {
                 <h2 className="font-serif text-xl sm:text-2xl text-[#ffffff] font-medium tracking-tight uppercase">Recent Client Orders</h2>
                 <StatusPill status="pending" label={`${pendingOrders} Active`} />
               </div>
-              <div className="inline-flex rounded-lg bg-[#111318] p-1 gap-1 border border-[#282a2f]">
-                <Button variant="ghost" size="sm" className="bg-[#111318] text-[#f2ca50] border-[#f2ca50]/30 px-3 py-1 text-xs">All</Button>
-                <Button variant="ghost" size="sm" className="px-3 py-1 text-xs">Pending Review</Button>
-                <Button variant="ghost" size="sm" className="px-3 py-1 text-xs">Confirmed</Button>
+              <div className="inline-flex rounded-lg bg-[#111318] p-1 gap-1">
+                <Button variant="ghost" size="sm" className="bg-[#1a1b21] text-[#f2ca50] !border-0 px-3 py-1 text-xs">All</Button>
+                <Button variant="ghost" size="sm" className="bg-[#1a1b21] !border-0 px-3 py-1 text-xs" onClick={() => navigate("/provider/orders?status=pending")}>Pending Review</Button>
+                <Button variant="ghost" size="sm" className="bg-[#1a1b21] !border-0 px-3 py-1 text-xs" onClick={() => navigate("/provider/orders?status=confirmed")}>Confirmed</Button>
               </div>
             </div>
 
@@ -225,13 +173,13 @@ export default function ProviderDashboardPage() {
                 { key: "client", header: "Client Entity", render: (row) => (
                   <div>
                     <div className="font-medium text-[#ffffff]">{row.clientName || "—"}</div>
-                    <div className="text-xs font-mono text-[#ffffff]/60">—</div>
+                    {row.ventureInfo && <div className="text-xs font-mono text-[#ffffff]/60">{row.ventureInfo}</div>}
                   </div>
                 )},
                 { key: "asset", header: "Allocated Asset", render: (row) => (
                   <div>
                     <div className="text-[#ffffff] font-medium">{row.assetName || "—"}</div>
-                    <div className="text-xs font-mono text-[#282a2f]">—</div>
+                    {row.assetDetails && <div className="text-xs font-mono text-white/60">{row.assetDetails}</div>}
                   </div>
                 )},
                 { key: "amount", header: "Amount", render: (row) => (
@@ -279,14 +227,14 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-[#f2ca50] font-mono">${asset.rate || asset.price_monthly || "—"}/mo</span>
-                  <Link to={`/provider/listings/${asset.id}/preview`} className="text-xs font-mono text-[#ffffff]/60 hover:text-[#f2ca50]">
+                  <Link to={`/provider/listings/${asset.id}/edit`} className="text-xs font-mono text-[#ffffff]/60 hover:text-[#f2ca50]">
                     Edit
                   </Link>
                 </div>
               </div>
             ))}
 
-            <Button variant="ghost" className="w-full h-10 mt-1">
+            <Button variant="ghost" className="w-full h-10 mt-1 bg-[#1a1b21] !border-0" onClick={() => navigate("/provider/listings/new")}>
               Add Asset
             </Button>
           </Card>
@@ -305,7 +253,7 @@ export default function ProviderDashboardPage() {
                       <span className="text-xs font-mono text-[#f2ca50]">{conv.other_party_name || "—"}</span>
                       <p className="text-xs text-[#ffffff]/60 mt-0.5 line-clamp-1">{conv.last_message_preview || "No messages yet"}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-[#282a2f] shrink-0">{conv.last_message_at || "—"}</span>
+                    <span className="text-[10px] font-mono text-white/60 shrink-0">{conv.last_message_at || ""}</span>
                   </div>
                   {conv.unread_count > 0 && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50] mt-2" />}
                 </Link>

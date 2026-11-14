@@ -118,3 +118,28 @@ async def upload_waybill(
         session=session,
     )
     return order
+
+
+async def get_waybill(
+    order_id: int,
+    provider_id: int,
+    session: AsyncSession | None = None,
+) -> dict:
+    order = await order_repo.get_order_by_id(order_id, provider_id=provider_id, session=session)
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    events = await order_event_repo.list_order_events(order_id, session=session)
+    uploaded = next((event for event in reversed(events) if event["event_type"] == "waybill_uploaded"), None)
+    if not uploaded:
+        return {"order_id": order_id}
+    note = uploaded.get("note") or ""
+    waybill_url = note.removeprefix("Waybill uploaded: ").split(" | tracking:", 1)[0].strip()
+    tracking_number = None
+    if " | tracking:" in note:
+        tracking_number = note.split(" | tracking:", 1)[1].strip() or None
+    return {
+        "order_id": order_id,
+        "waybill_url": waybill_url or None,
+        "tracking_number": tracking_number,
+        "uploaded_at": uploaded.get("created_at"),
+    }

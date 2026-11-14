@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Plus, Filter, Search, ChevronDown } from "lucide-react";
 import { Button, Card, Input, Pill, StatusPill, DataTable, Skeleton, SkeletonCard } from "../../components/ui";
@@ -31,6 +32,7 @@ const STATUSES = [
 ];
 
 const ProviderListingsPage = () => {
+  const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -113,13 +115,10 @@ const ProviderListingsPage = () => {
       {/* Top Action & Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.14em] text-[#ffffff]/60 mb-1 font-medium">
-            ASSET MANAGEMENT // INFRASTRUCTURE FLEET &amp; CLUSTERS
-          </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#ffffff] tracking-tight leading-[1.1]">My listings</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Button>
+          <Button onClick={() => navigate("/provider/listings/new")} className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]">
             Add asset
           </Button>
         </div>
@@ -135,7 +134,11 @@ const ProviderListingsPage = () => {
                 key={cat.value}
                 variant={filter.category === cat.value ? "primary" : "ghost"}
                 size="sm"
-                className="px-3.5 py-1.5 rounded-md text-xs font-medium"
+                className={`!border-0 px-3.5 py-1.5 rounded-md text-xs font-medium ${
+                  filter.category === cat.value
+                    ? "!bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]"
+                    : "!bg-transparent !text-[#ffffff]/70 hover:!bg-[#1a1b21] hover:!text-[#ffffff]"
+                }`}
                 onClick={() => setFilter(f => ({ ...f, category: cat.value }))}
               >
                 {cat.label} ({cat.value === "all" ? assets.length : assets.filter(a => a.kind === cat.value).length})
@@ -174,7 +177,7 @@ const ProviderListingsPage = () => {
         <div className="flex items-center gap-4 text-xs text-[#ffffff]/60 self-end lg:self-center">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-[#f2ca50]"></span>
-            <span className="font-mono text-[11px] text-[#f2ca50]">{assets.length} ASSETS INDEXED</span>
+            <span className="font-mono text-[11px] text-[#f2ca50]">{assets.length} assets</span>
           </div>
         </div>
       </div>

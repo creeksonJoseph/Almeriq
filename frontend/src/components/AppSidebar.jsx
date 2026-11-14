@@ -5,7 +5,6 @@ import {
   Lightbulb,
   BookOpen,
   CheckCircle2,
-  Cpu,
   Boxes,
   Scale,
   Send,
@@ -35,7 +34,6 @@ export const PROVIDER_NAV = [
   { key: "provider-dashboard", label: "Provider Dashboard", path: "/provider/dashboard", icon: Home },
   { key: "provider-listings", label: "My Listings", path: "/provider/listings", icon: Boxes },
   { key: "provider-orders", label: "Orders", path: "/provider/orders", icon: Scale },
-  { key: "marketplace", label: "Marketplace", path: "/marketplace", icon: Cpu },
 ];
 
 export default function AppSidebar({
@@ -148,55 +146,59 @@ export default function AppSidebar({
           </div>
 
           {/* ── APEX CONTEXT SWITCHER: Active Venture ── */}
-          <div className="pt-3 pb-1">
-            <ActiveIdeaDropdown variant="sidebar" collapsed={isCollapsed} />
-          </div>
+          {role === "founder" && (
+            <div className="pt-3 pb-1">
+              <ActiveIdeaDropdown variant="sidebar" collapsed={isCollapsed} />
+            </div>
+          )}
         </div>
 
         {/* ── SCROLLABLE NAVIGATION BODY ── */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-4 no-scrollbar">
           {/* GROUP 1: Workspace Essentials */}
-          <div>
-            {!isCollapsed && (
-              <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                Workspace
-              </p>
-            )}
-            <div className="space-y-0.5">
-              {WORKSPACE_NAV.map((item) => {
-                const Icon = item.icon;
-                const active = isCurrentActive(item.path);
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => handleNavClick(item.path)}
-                    title={isCollapsed ? item.label : undefined}
-                    className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
-                      isCollapsed ? "justify-center px-0 h-9" : "h-9"
-                    } ${
-                      active
-                        ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
-                        : "text-white hover:bg-white/[0.05]"
-                    }`}
-                  >
-                    {active && !isCollapsed && (
-                      <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
-                    )}
-                    <Icon
-                      size={16}
-                      className={`shrink-0 transition-colors ${
+          {role !== "INFRASTRUCTURE_PROVIDER" && (
+            <div>
+              {!isCollapsed && (
+                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  Workspace
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {WORKSPACE_NAV.map((item) => {
+                  const Icon = item.icon;
+                  const active = isCurrentActive(item.path);
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => handleNavClick(item.path)}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                        isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                      } ${
                         active
-                          ? "text-[#C9A15A]"
-                          : "text-white/70 group-hover:text-white"
+                          ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                          : "text-white hover:bg-white/[0.05]"
                       }`}
-                    />
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                  </button>
-                );
-              })}
+                    >
+                      {active && !isCollapsed && (
+                        <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                      )}
+                      <Icon
+                        size={16}
+                        className={`shrink-0 transition-colors ${
+                          active
+                            ? "text-[#C9A15A]"
+                            : "text-white/70 group-hover:text-white"
+                        }`}
+                      />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* GROUP 2: Founder Tools */}
           {role === "founder" && (

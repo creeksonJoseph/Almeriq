@@ -41,7 +41,7 @@ export default function SearchPage() {
     async function loadCategories() {
       try {
         const res = await listMarketplaceProvidersApi({ limit: 8 });
-        setProviders(res.data || res.providers || res);
+        setProviders(res.items || res.data?.items || res.providers || res.data || res);
       } catch (e) {
         console.error("Failed to load categories", e);
       }
@@ -56,7 +56,7 @@ export default function SearchPage() {
     setError(null);
     try {
       const res = await searchMarketplaceApi(watchQuery, { category: activeCategory !== "all" ? activeCategory : undefined });
-      setResults(res.data || res.results || res);
+      setResults(res.items || res.data?.items || res.results || res.data || res);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -126,7 +126,7 @@ export default function SearchPage() {
       {watchQuery || searchLoading || results.length > 0 ? (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-serif text-xl font-semibold text-text">Results{found ? ` (${results.length})` : ""}</h2>
+            <h2 className="font-serif text-xl font-semibold text-text">Results{results.length ? ` (${results.length})` : ""}</h2>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm">Relevance</Button>
               <Button variant="ghost" size="sm">Price: Low to High</Button>
@@ -224,17 +224,17 @@ function FeaturedProviderCard({ provider }) {
     <Card className="p-5 flex flex-col">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-12 h-12 rounded-lg bg-surface-2 border border-gold/40 text-gold font-serif font-bold text-lg flex items-center justify-center">
-          {provider.name?.slice(0,2).toUpperCase() || "SC"}
+          {(provider.name || provider.provider_name)?.slice(0,2).toUpperCase() || "SC"}
         </div>
         <div>
-          <h3 className="font-serif text-base font-semibold text-text">{provider.name}</h3>
+          <h3 className="font-serif text-base font-semibold text-text">{provider.name || provider.provider_name}</h3>
           <div className="flex items-center gap-1 text-white/60 text-sm">
             <MapPin className="w-3.5 h-3.5" />
-            <span>{provider.location}</span>
+            <span>{provider.location || provider.provider_location}</span>
           </div>
         </div>
       </div>
-      <p className="text-sm text-white/70 line-clamp-2 mb-3">{provider.description}</p>
+      <p className="text-sm text-white/70 line-clamp-2 mb-3">{provider.description || "Verified infrastructure listing"}</p>
       <div className="flex items-center gap-2 mt-auto">
         <Pill variant="gold">{provider.status || "ONLINE"}</Pill>
         <span className="text-xs font-mono text-white/60">{provider.nodeCount || 0} nodes</span>

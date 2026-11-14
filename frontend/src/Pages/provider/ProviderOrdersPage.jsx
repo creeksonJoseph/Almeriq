@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import { Download, Plus, Filter, ChevronRight } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Download, Plus, Filter, ChevronRight, Search } from "lucide-react";
 import { Button, Card, Input, StatusPill, DataTable, Skeleton, SkeletonText, SkeletonCard, Drawer } from "../../components/ui";
 import { listOrdersApi } from "../../lib/api";
 
@@ -22,10 +23,12 @@ const STATUS_CONFIG = {
 };
 
 export default function ProviderOrdersPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(searchParams.get("status") || "all");
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -34,7 +37,7 @@ export default function ProviderOrdersPage() {
     async function loadOrders() {
       setLoading(true);
       try {
-        const res = await listOrdersApi({ status: activeTab !== "all" ? activeTab.toUpperCase() : undefined });
+        const res = await listOrdersApi({ status: activeTab !== "all" ? activeTab === "pending" ? "pending_review" : activeTab : undefined });
         setOrders(res?.items || res.data?.items || res.data || res.orders || res);
       } catch (e) {
         setError(e.message);
@@ -53,10 +56,10 @@ export default function ProviderOrdersPage() {
 
   const statusTabs = useMemo(() => [
     { value: "all", label: "All", count: orders.length },
-    { value: "pending", label: "Pending", count: orders.filter(o => o.status === "PENDING").length },
-    { value: "confirmed", label: "Confirmed", count: orders.filter(o => o.status === "CONFIRMED").length },
-    { value: "shipped", label: "Shipped", count: orders.filter(o => o.status === "SHIPPED").length },
-    { value: "completed", label: "Completed", count: orders.filter(o => o.status === "COMPLETED").length },
+    { value: "pending", label: "Pending", count: orders.filter(o => o.status?.toLowerCase() === "pending_review").length },
+    { value: "confirmed", label: "Confirmed", count: orders.filter(o => o.status?.toLowerCase() === "confirmed").length },
+    { value: "shipped", label: "Shipped", count: orders.filter(o => o.status?.toLowerCase() === "shipped").length },
+    { value: "completed", label: "Completed", count: orders.filter(o => o.status?.toLowerCase() === "completed").length },
   ], [orders]);
 
   const openDrawer = (order) => {
@@ -98,23 +101,21 @@ export default function ProviderOrdersPage() {
 
   return (
     <div className={`min-h-screen bg-[#0c0e13] text-[#ffffff] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-10`}>
-      {/* Screen Meta & Top Utility Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-2 border-b border-[#282a2f]/30 pb-5">
         <div className="flex flex-col gap-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#f2ca50] animate-pulse"></span>
-            <span className="text-xs font-mono text-[#282a2f] uppercase tracking-widest">LEASE CONTRACTS &amp; ESCROW FULFILLMENT // VERIFIED TENANTS</span>
-          </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#ffffff] tracking-tight leading-[1.1]">Orders</h1>
           <p className="font-sans text-base text-[#ffffff]/60 max-w-2xl mt-2 leading-relaxed">
-            Manage verified startup equipment reservations, escrow settlements, and lease lifecycle.
+            Review and manage client orders.
           </p>
         </div>
         <div className="flex items-center gap-2 self-start md:self-end shrink-0">
-          <Button variant="ghost">
+          <Button variant="ghost" className="bg-[#1a1b21] !border-0" onClick={() => {
+            const rows = filteredOrders.map((order) => [order.id, order.clientName, order.assetName, order.status, order.amount || order.lease_amount].join(","));
+            window.open(`data:text/csv;charset=utf-8,${encodeURIComponent(["Order ID,Client,Asset,Status,Amount", ...rows].join("\n"))}`, "_blank");
+          }}>
             Export CSV
           </Button>
-          <Button>
+          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" onClick={() => navigate("/provider/orders?status=confirmed")}>
             Manual Dispatch
           </Button>
         </div>
@@ -122,10 +123,10 @@ export default function ProviderOrdersPage() {
 
       {/* Summary KPIs Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KPICard label="Total Orders" value={orders.length} trend="+3 this wk" trendColor="text-[#f2ca50]" icon="Receipt" />
-        <KPICard label="Pending Review" value={orders.filter(o => o.status === "PENDING").length} trend="Action Req" trendColor="text-[#f2ca50]" icon="AlertCircle" highlight />
-        <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status === "SHIPPED").length} trend="GPS Ping OK" trendColor="text-[#f2ca50]" icon="Truck" />
-        <KPICard label="Escrow Vault Volume" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} trend="100% Bonded" trendColor="text-[#f2ca50]" icon="Lock" />
+        <KPICard label="Total Orders" value={orders.length} icon="Receipt" />
+        <KPICard label="Pending Review" value={orders.filter(o => o.status?.toLowerCase() === "pending_review").length} icon="AlertCircle" highlight />
+        <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status?.toLowerCase() === "shipped").length} icon="Truck" />
+        <KPICard label="Escrow Volume" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} icon="Lock" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
@@ -138,7 +139,7 @@ export default function ProviderOrdersPage() {
                 key={tab.value}
                 variant={activeTab === tab.value ? "primary" : "ghost"}
                 size="sm"
-                className="h-9 px-3.5 rounded-lg shrink-0 border border-[#282a2f]"
+                className="h-9 px-3.5 rounded-lg shrink-0 !border-0 bg-[#1a1b21]"
                 onClick={() => setActiveTab(tab.value)}
               >
                 <span>{tab.label}</span>
@@ -149,7 +150,7 @@ export default function ProviderOrdersPage() {
           {/* Search Bar & Filters */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1 sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#282a2f] w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ffffff]/60 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Filter by ID, client, or asset..."
@@ -158,9 +159,6 @@ export default function ProviderOrdersPage() {
                 className="w-full h-9 bg-[#111318] border border-[#282a2f] pl-9 pr-3 rounded-lg text-sm text-[#ffffff] placeholder:text-[#ffffff]/40 focus:outline-none focus:border-[#f2ca50] transition-colors"
               />
             </div>
-            <Button variant="ghost">
-              Filters
-            </Button>
           </div>
         </div>
       </div>
@@ -176,7 +174,7 @@ export default function ProviderOrdersPage() {
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-[#ffffff]/60">
               <span className="w-2 h-2 rounded-full bg-[#f2ca50]"></span>
-              <span>ESCROW BRIDGE ACTIVE</span>
+              <span>Order records</span>
             </div>
           </div>
 
@@ -185,7 +183,7 @@ export default function ProviderOrdersPage() {
               { key: "id", header: "Order ID", render: (row) => (
                 <div className="flex items-center gap-1.5 font-mono font-bold text-[#ffffff]">
                   <span>{row.id}</span>
-                  {row.status === "PENDING" && <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>}
+                  {row.status?.toLowerCase() === "pending_review" && <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>}
                 </div>
               )},
               { key: "client", header: "Client / Venture", render: (row) => (
@@ -243,14 +241,14 @@ export default function ProviderOrdersPage() {
           side="right"
           className="md:w-[520px]"
         >
-          {selectedOrder && <OrderDetailDrawer order={selectedOrder} />}
+          {selectedOrder && <OrderDetailDrawer order={selectedOrder} navigate={navigate} />}
         </Drawer>
       </div>
     </div>
   );
 }
 
-function KPICard({ label, value, trend, trendColor, icon, highlight }) {
+function KPICard({ label, value, icon, highlight }) {
   const icons = {
     Receipt: "Receipt",
     AlertCircle: "AlertCircle",
@@ -265,10 +263,6 @@ function KPICard({ label, value, trend, trendColor, icon, highlight }) {
       </div>
       <div className="flex items-baseline justify-between mt-2">
         <span className="font-serif text-2xl font-semibold text-[#ffffff]">{value}</span>
-        <span className={`text-xs font-mono ${trendColor} flex items-center gap-1`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#f2ca50]"></span>
-          {trend}
-        </span>
       </div>
       <div className="h-1 w-full bg-[#1a1b21] rounded-full overflow-hidden mt-2">
         <div className="h-full bg-[#282a2f] w-1/3 rounded-full"></div>
@@ -277,7 +271,7 @@ function KPICard({ label, value, trend, trendColor, icon, highlight }) {
   );
 }
 
-function OrderDetailDrawer({ order }) {
+function OrderDetailDrawer({ order, navigate }) {
   const statusConfig = STATUS_CONFIG[order.status?.toLowerCase()] || STATUS_CONFIG.pending;
 
   // Build timeline from order data if available, otherwise show empty state
@@ -347,20 +341,20 @@ function OrderDetailDrawer({ order }) {
 
       {/* Actions */}
       <div className="pt-4 border-t border-[#282a2f] flex flex-col gap-3">
-        {order.status === "PENDING" && (
+        {order.status?.toLowerCase() === "pending_review" && (
           <>
-            <Button className="w-full" variant="destructive">Decline Order</Button>
-            <Button className="w-full">Confirm &amp; Contract</Button>
+            <Button className="w-full" variant="destructive" onClick={() => navigate(`/provider/orders/${order.id}`)}>Decline Order</Button>
+            <Button className="w-full" onClick={() => navigate(`/provider/orders/${order.id}`)}>Confirm &amp; Contract</Button>
           </>
         )}
-        {order.status === "CONFIRMED" && (
-          <Button className="w-full">Initiate Dispatch</Button>
+        {order.status?.toLowerCase() === "confirmed" && (
+          <Button className="w-full" onClick={() => navigate(`/provider/orders/${order.id}/dispatch`)}>Initiate Dispatch</Button>
         )}
-        {order.status === "SHIPPED" && (
-          <Button className="w-full">Mark Delivered</Button>
+        {order.status?.toLowerCase() === "shipped" && (
+          <Button className="w-full" onClick={() => navigate(`/provider/orders/${order.id}`)}>Mark Delivered</Button>
         )}
-        <Button variant="ghost" className="w-full">View Waybill</Button>
-        <Button variant="ghost" className="w-full">Export Order PDF</Button>
+        <Button variant="ghost" className="w-full bg-[#1a1b21] !border-0" onClick={() => navigate(`/provider/orders/${order.id}`)}>View Waybill</Button>
+        <Button variant="ghost" className="w-full bg-[#1a1b21] !border-0" onClick={() => window.print()}>Export Order PDF</Button>
       </div>
     </div>
   );

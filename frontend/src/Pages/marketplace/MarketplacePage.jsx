@@ -41,7 +41,7 @@ export default function MarketplacePage() {
       setLoading(true);
       try {
         const res = await listMarketplaceProvidersApi();
-        setProviders(res.data || res.providers || res);
+        setProviders(res.items || res.data?.items || res.providers || res.data || res);
       } catch (e) {
         setError(e.message);
       } finally {
@@ -197,18 +197,18 @@ function ProviderCard({ provider, onChat, onOrder, onView, onImageClick }) {
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <h3 className="font-serif text-base font-semibold text-text truncate group-hover:text-gold transition-colors">{provider.name}</h3>
-                {provider.verified && <span className="text-gold" aria-label="Verified Provider">✓</span>}
+                <h3 className="font-serif text-base font-semibold text-text truncate group-hover:text-gold transition-colors">{provider.name || provider.provider_name}</h3>
+                {(provider.verified || provider.provider_verified) && <span className="text-gold" aria-label="Verified Provider">✓</span>}
               </div>
               <div className="flex items-center gap-1 text-white/60 text-sm">
                 <MapPin className="w-3.5 h-3.5" />
-                <span className="truncate">{provider.location}</span>
+                <span className="truncate">{provider.location || provider.provider_location}</span>
               </div>
             </div>
           </div>
           <Pill variant="gold" className="shrink-0">{provider.status || "ONLINE"}</Pill>
         </div>
-        <p className="text-sm text-white/70 line-clamp-2">{provider.description}</p>
+        <p className="text-sm text-white/70 line-clamp-2">{provider.description || "Verified infrastructure listing"}</p>
         <div className="flex items-center gap-1.5 flex-wrap">
           {(provider.tags || ["Tier-3 Micro-DC", "64x H100 SXM5"]).slice(0, 2).map((tag, i) => (
             <Pill key={i} variant="white" className="truncate max-w-full">{tag}</Pill>

@@ -12,6 +12,7 @@ from schemas.provider import (
     OrderResponse,
     OrderStatusUpdateRequest,
     WaybillUploadRequest,
+    WaybillResponse,
 )
 from services import order as svc
 
@@ -83,6 +84,17 @@ async def update_order_status(
         actor_id=profile["id"],
         session=db,
     )
+
+
+@router.get("/provider/orders/{order_id}/waybill", response_model=WaybillResponse)
+async def get_waybill(
+    response: Response,
+    order_id: int,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    response.headers["Cache-Control"] = "private, max-age=30"
+    return await svc.get_waybill(order_id=order_id, provider_id=profile["id"], session=db)
 
 
 @router.post("/provider/orders/{order_id}/waybill", response_model=OrderResponse)

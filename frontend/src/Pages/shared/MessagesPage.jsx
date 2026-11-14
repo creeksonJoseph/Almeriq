@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock } from "lucide-react";
+import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
 import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listConversationsApi, getConversationApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
 
@@ -35,7 +35,12 @@ export default function MessagesPage() {
     setMobileDrawerOpen(true);
     try {
       const res = await getConversationApi(conversation.id);
-      setMessages(res.data || res.messages || res);
+      setMessages((res.data || res.messages || res).map(message => ({
+        ...message,
+        content: message.content || message.body || "",
+        own: message.own ?? Boolean(message.sender_id && message.sender_id === conversation.user_id),
+        time: message.time || message.created_at,
+      })));
       if (!conversation.read) await markMessagesReadApi(conversation.id);
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, unread: 0 } : c));
     } catch (e) {
@@ -51,7 +56,8 @@ export default function MessagesPage() {
     setSending(true);
     try {
       const res = await sendMessageApi(activeConversation.id, data.content);
-      setMessages(prev => [...prev, res.data || res.message || { id: Date.now(), content: data.content, sent: true, time: "now", own: true }]);
+      const message = res.data || res.message || res;
+      setMessages(prev => [...prev, { ...message, content: message.content || message.body || data.content, own: true, time: message.time || message.created_at || "now" }]);
       messageForm.reset();
       setConversations(prev => prev.map(c => c.id === activeConversation.id ? { ...c, lastMessage: data.content, time: "now" } : c));
     } catch (e) {

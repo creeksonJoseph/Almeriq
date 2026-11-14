@@ -83,6 +83,8 @@ export {
   confirmOrderApi,
   declineOrderApi,
   shipOrderApi,
+  updateOrderStatusApi,
+  uploadWaybillApi,
   getWaybillApi,
 } from "./api/orders";
 

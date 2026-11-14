@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2 } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink } from "lucide-react";
 import { Button, Card, StatusPill, Modal, Skeleton, SkeletonText } from "../../components/ui";
 import { getAssetApi, getMarketplaceListingApi } from "../../lib/api";
 
 export default function ProviderListingPreviewPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,19 +69,13 @@ export default function ProviderListingPreviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="text-[11px] uppercase tracking-[0.14em] text-white/60 mb-1 font-medium">
-            PREVIEW // YOUR LISTING
+            Listing preview
           </div>
           <h1 className="font-serif text-3xl font-semibold text-text leading-tight">{asset.name}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" onClick={() => window.history.back()}>
             <ChevronLeft className="w-4 h-4 mr-1" /> Back to Listings
-          </Button>
-          <Button variant="ghost">
-            <Share2 className="w-4 h-4 mr-1" /> Share
-          </Button>
-          <Button>
-            <ExternalLink className="w-4 h-4 mr-1" /> View Public
           </Button>
         </div>
       </div>
@@ -122,9 +117,9 @@ export default function ProviderListingPreviewPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-serif text-lg font-semibold text-text">{asset.providerName || "TerraBore Heavy Dynamics Inc."}</h2>
                   <span className="text-gold" aria-label="Verified">✓</span>
-                  <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">DUNS #82-194-0912</span>
+                  {asset.duns && <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">DUNS {asset.duns}</span>}
                 </div>
-                <p className="text-sm text-white/70 mt-1">{asset.providerDescription || "Heavy equipment and autonomous field machinery fleet supporting Tier-1 excavation and robotics pilots."}</p>
+                {asset.providerDescription && <p className="text-sm text-white/70 mt-1">{asset.providerDescription}</p>}
               </div>
             </div>
           </Card>
@@ -133,9 +128,8 @@ export default function ProviderListingPreviewPage() {
           <Card className="p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-label-caps text-white/60 uppercase tracking-wider">ABOUT THE ASSET</span>
-              <span className="text-[10px] text-white/40 uppercase font-mono tracking-wider">SPEC 4.2</span>
             </div>
-            <p className="text-base text-white/70 leading-relaxed">{asset.description || "Caterpillar 336 Next-Gen Excavator with GNSS guidance system. 3x 36-ton units located at Yard Bay 12. High-ambient package for desert operations. Real-time CAN bus telemetry with 10Hz GNSS positioning. Bonded escrow ready."}</p>
+            {asset.description && <p className="text-base text-white/70 leading-relaxed">{asset.description}</p>}
           </Card>
 
           {/* Specs Grid */}
@@ -144,25 +138,25 @@ export default function ProviderListingPreviewPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Category</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.category || "Heavy Earthmoving / Excavation"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.category || "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Quantity</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.quantity || "3x 36-ton units"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.quantity || "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Location</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.location || "Yard Bay 12"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.location || "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Availability</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.availability || "Immediate (Turnkey Dispatch)"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.availability || "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Telemetry</span>
                 <span className="flex items-center gap-1.5 text-gold font-medium text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
-                  Active CAN Uplink
+                  {asset.telemetry_status || "Not provided"}
                 </span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
@@ -184,13 +178,8 @@ export default function ProviderListingPreviewPage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">Edit</Button>
-                <Button variant="ghost" size="sm" className="p-1.5"><ExternalLink className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate(`/provider/listings/${id}/edit`)} className="bg-[#1a1b21] !border-0">Edit</Button>
               </div>
-              <a href="#" className="text-xs font-mono text-white/60 hover:text-gold flex items-center gap-1">
-                <span>Telemetry</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
             </div>
           </Card>
         </div>
@@ -203,24 +192,14 @@ export default function ProviderListingPreviewPage() {
               <StatusPill status={asset.status?.toLowerCase() || "available"} />
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{asset.providerName || "TerraBore Heavy Dynamics"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{asset.type || "Physical"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{asset.category || "Heavy Earthmoving"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{asset.location || "Austin, TX, USA"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${asset.rate || "14,500"}/mo</span></div>
-            </div>
-            <div className="pt-3 border-t border-border">
-              <div className="flex items-center gap-2 text-gold text-sm font-medium">
-                <span className="w-2 h-2 rounded-full bg-gold"></span>
-                Escrow Qualified
-              </div>
-              <div className="text-xs text-white/60 mt-1">Instant Booking Available</div>
+              {asset.providerName && <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{asset.providerName}</span></div>}
+              {asset.type && <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{asset.type}</span></div>}
+              {asset.category && <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{asset.category}</span></div>}
+              {asset.location && <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{asset.location}</span></div>}
+              {asset.rate && <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${asset.rate}/mo</span></div>}
             </div>
           </Card>
 
-          <Card className="p-5 text-center border border-border bg-surface">
-            <span className="text-xs text-white/60">View Verified Catalog →</span>
-          </Card>
         </div>
       </div>
 

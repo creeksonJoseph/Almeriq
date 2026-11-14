@@ -1,12 +1,12 @@
 import { apiClient } from "../client";
 
 export async function listMarketplaceProvidersApi(params = {}) {
-  const res = await apiClient.get("/marketplace/providers", { params });
+  const res = await apiClient.get("/marketplace/listings", { params });
   return res.data;
 }
 
 export async function getMarketplaceProviderApi(id) {
-  const res = await apiClient.get(`/marketplace/providers/${id}`);
+  const res = await apiClient.get(`/marketplace/listings/${id}`);
   return res.data;
 }
 

@@ -11,7 +11,7 @@ export async function getConversationApi(id) {
 }
 
 export async function sendMessageApi(conversationId, content) {
-  const res = await apiClient.post(`/api/conversations/${conversationId}/messages`, { content });
+  const res = await apiClient.post(`/api/conversations/${conversationId}/messages`, { body: content });
   return res.data;
 }
 

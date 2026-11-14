@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   List,
   ShoppingCart,
-  Store,
   Bell,
   Menu,
   X,
@@ -14,7 +13,6 @@ const navItems = [
   { to: "/provider/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/provider/listings", label: "Listings", icon: List },
   { to: "/provider/orders", label: "Orders", icon: ShoppingCart },
-  { to: "/marketplace", label: "Marketplace", icon: Store },
   { to: "/alerts", label: "Alerts", icon: Bell },
 ];
 

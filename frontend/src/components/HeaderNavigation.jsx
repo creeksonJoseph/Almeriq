@@ -21,6 +21,7 @@ export default function HeaderNavigation({ currentUser, onLogout, onOpenSidebar 
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
+  const isProvider = currentUser?.role === "INFRASTRUCTURE_PROVIDER";
 
   const handleJoinWaitlist = (e) => {
     e.preventDefault();
@@ -58,7 +59,7 @@ export default function HeaderNavigation({ currentUser, onLogout, onOpenSidebar 
           {currentUser ? (
             onOpenSidebar ? (
               <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                <ActiveIdeaDropdown variant="header" />
+                {!isProvider && <ActiveIdeaDropdown variant="header" />}
                 <button
                   type="button"
                   onClick={onOpenSidebar}

@@ -9,7 +9,7 @@ export default function DataTable({
 }) {
   if (!rows.length) {
     return (
-      <Card className={`p-6 text-center text-sm text-white/70 ${className}`}>
+      <Card className={`p-6 text-center text-sm text-white/70 border-[#2b2b31] ${className}`}>
         {emptyMessage}
       </Card>
     );

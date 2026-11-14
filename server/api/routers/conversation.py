@@ -28,3 +28,35 @@ async def list_conversations(
         session=db,
     )
     return {"items": items}
+
+
+@router.get("/conversations/{conversation_id}")
+async def get_conversation(
+    response: Response,
+    conversation_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    conversation = await svc.get_conversation(
+        conversation_id=conversation_id,
+        user_id=current_user["id"],
+        session=db,
+    )
+    response.headers["Cache-Control"] = "private, max-age=30"
+    return conversation
+
+
+@router.post("/conversations/{conversation_id}/read")
+async def mark_conversation_read(
+    response: Response,
+    conversation_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    count = await svc.mark_conversation_read(
+        conversation_id=conversation_id,
+        user_id=current_user["id"],
+        session=db,
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return {"marked": count}

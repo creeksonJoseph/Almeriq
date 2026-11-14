@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock, Shield } from "lucide-react";
 import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../../components/ui";
-import { getOrderApi, getWaybillApi, confirmOrderApi, declineOrderApi, shipOrderApi } from "../../lib/api";
+import { getOrderApi, getWaybillApi, updateOrderStatusApi } from "../../lib/api";
 
 const STATUS_STEPS = [
   { key: "created", label: "Order Created", icon: FileText },
@@ -39,9 +39,9 @@ export default function ProviderOrderDetailPage() {
   const handleAction = async (action) => {
     setActionLoading(action);
     try {
-      if (action === "confirm") await confirmOrderApi(id);
-      else if (action === "decline") await declineOrderApi(id, "Provider declined");
-      else if (action === "ship") await shipOrderApi(id, { trackingNumber: `TRK-${Date.now()}` });
+      if (action === "confirm") await updateOrderStatusApi(id, "confirmed");
+      else if (action === "decline") await updateOrderStatusApi(id, "declined");
+      else if (action === "deliver") await updateOrderStatusApi(id, "completed");
       const res = await getOrderApi(id);
       setOrder(res.data || res.order || res);
     } catch (e) {
@@ -112,7 +112,7 @@ export default function ProviderOrderDetailPage() {
 <Button variant="ghost" onClick={loadWaybill}>
   Waybill
 </Button>
-<Button variant="ghost">
+<Button variant="ghost" className="bg-[#1a1b21] !border-0" onClick={() => window.print()}>
   Export PDF
 </Button>
         </div>
@@ -184,17 +184,17 @@ export default function ProviderOrderDetailPage() {
           <h3 className="text-label-caps text-white/60 uppercase tracking-wider">FINANCIAL SUMMARY</h3>
           <div className="space-y-3 bg-surface-2 p-4 rounded-lg border border-border">
             <div className="flex justify-between text-sm"><span className="text-white/60">Monthly Lease Rate</span><span className="font-mono text-gold">${order.amount}/mo</span></div>
-            <div className="flex justify-between text-sm"><span className="text-white/60">Lease Duration</span><span className="font-mono text-text">{order.duration || "6 months"}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-white/60">Escrow Deposit</span><span className="font-mono text-gold">${order.escrowAmount || "87,000"}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-white/60">Platform Fee (2%)</span><span className="font-mono text-white/60">${(order.amount * 0.02).toLocaleString()}/mo</span></div>
+            {order.duration && <div className="flex justify-between text-sm"><span className="text-white/60">Lease Duration</span><span className="font-mono text-text">{order.duration}</span></div>}
+            {order.escrowAmount && <div className="flex justify-between text-sm"><span className="text-white/60">Escrow Deposit</span><span className="font-mono text-gold">${order.escrowAmount}</span></div>}
+            {order.amount && <div className="flex justify-between text-sm"><span className="text-white/60">Platform Fee (2%)</span><span className="font-mono text-white/60">${(order.amount * 0.02).toLocaleString()}/mo</span></div>}
             <div className="border-t border-border pt-3 flex justify-between">
               <span className="font-semibold text-text">Total Commitment</span>
-              <span className="font-serif text-xl font-semibold text-gold">${((order.amount * 6) + order.escrowAmount).toLocaleString()}</span>
+              <span className="font-serif text-xl font-semibold text-gold">{order.amount && order.duration && order.escrowAmount ? `$${((order.amount * Number(order.duration) || 0) + Number(order.escrowAmount)).toLocaleString()}` : "—"}</span>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 bg-surface-2 rounded-lg border border-border text-sm text-white/60">
             <Shield className="w-5 h-5 text-gold shrink-0" />
-            <span>Funds held in 100% bonded ALIMERIQ multi-sig escrow until delivery confirmation and telemetry handshake at node {order.nodeId || "#BJ-H100-NODE09"}.</span>
+            <span>Escrow and delivery details are shown from the order record.</span>
           </div>
         </Card>
       </div>
@@ -203,7 +203,7 @@ export default function ProviderOrderDetailPage() {
       <Card className="p-5">
         <h3 className="text-label-caps text-white/60 uppercase tracking-wider mb-4">ACTIONS</h3>
         <div className="flex flex-wrap gap-3">
-          {order.status === "PENDING" && (
+          {order.status?.toLowerCase() === "pending_review" && (
             <>
               <Button onClick={() => handleAction("confirm")} disabled={actionLoading === "confirm"}>
                 <CheckCircle className="w-4 h-4 mr-1" /> Confirm & Contract
@@ -213,21 +213,18 @@ export default function ProviderOrderDetailPage() {
               </Button>
             </>
           )}
-          {order.status === "CONFIRMED" && (
-            <Button onClick={() => handleAction("ship")} disabled={actionLoading === "ship"}>
+          {order.status?.toLowerCase() === "confirmed" && (
+            <Button onClick={() => window.location.assign(`/provider/orders/${id}/dispatch`)} disabled={actionLoading === "ship"}>
               <Truck className="w-4 h-4 mr-1" /> Initiate Dispatch
             </Button>
           )}
-          {order.status === "SHIPPED" && (
+          {order.status?.toLowerCase() === "shipped" && (
             <Button onClick={() => handleAction("deliver")} disabled={actionLoading === "deliver"}>
               <CheckCircle className="w-4 h-4 mr-1" /> Mark Delivered
             </Button>
           )}
 <Button variant="ghost" onClick={loadWaybill}>
   View Waybill
-</Button>
-<Button variant="ghost">
-  Open in Marketplace
 </Button>
         </div>
       </Card>
@@ -243,16 +240,16 @@ export default function ProviderOrderDetailPage() {
         <div className="space-y-4">
           {waybill ? (
             <>
-              <div className="font-mono text-sm text-gold">{waybill.trackingNumber || `TRK-${order.id.slice(-6)}`}</div>
+              {waybill.trackingNumber && <div className="font-mono text-sm text-gold">{waybill.trackingNumber}</div>}
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-white/60">Carrier:</span> <span className="font-mono ml-2">{waybill.carrier || "ALIMERIQ Logistics"}</span></div>
-                <div><span className="text-white/60">Status:</span> <span className="font-mono ml-2 text-gold">{waybill.status || "In Transit"}</span></div>
-                <div><span className="text-white/60">Pickup:</span> <span className="font-mono ml-2">{waybill.pickupTime || "Oct 25 · 08:00 UTC"}</span></div>
-                <div><span className="text-white/60">Est. Delivery:</span> <span className="font-mono ml-2">{waybill.eta || "Oct 28 · 18:00 UTC"}</span></div>
-                <div className="col-span-2"><span className="text-white/60">Route:</span> <span className="font-mono ml-2 block">{waybill.route || "Yard Bay 12 → Client Site, Austin TX"}</span></div>
-                <div className="col-span-2"><span className="text-white/60">GPS:</span> <span className="font-mono ml-2 block text-gold">{waybill.gps || "30.2672° N, 97.7431° W (Live)"}</span></div>
+                {waybill.carrier && <div><span className="text-white/60">Carrier:</span> <span className="font-mono ml-2">{waybill.carrier}</span></div>}
+                {waybill.status && <div><span className="text-white/60">Status:</span> <span className="font-mono ml-2 text-gold">{waybill.status}</span></div>}
+                {waybill.pickupTime && <div><span className="text-white/60">Pickup:</span> <span className="font-mono ml-2">{waybill.pickupTime}</span></div>}
+                {waybill.eta && <div><span className="text-white/60">Est. Delivery:</span> <span className="font-mono ml-2">{waybill.eta}</span></div>}
+                {waybill.route && <div className="col-span-2"><span className="text-white/60">Route:</span> <span className="font-mono ml-2 block">{waybill.route}</span></div>}
+                {waybill.gps && <div className="col-span-2"><span className="text-white/60">GPS:</span> <span className="font-mono ml-2 block text-gold">{waybill.gps}</span></div>}
               </div>
-              <Button className="w-full" variant="ghost">Download Waybill PDF</Button>
+              <Button className="w-full bg-[#1a1b21] !border-0" variant="ghost" onClick={() => window.print()}>Download Waybill PDF</Button>
             </>
           ) : (
             <div className="flex items-center justify-center h-32 text-white/60">Loading waybill...</div>

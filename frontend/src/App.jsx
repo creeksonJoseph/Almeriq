@@ -7,6 +7,7 @@ import { SidebarProvider } from "./context/SidebarContext";
 import { IdeaProvider } from "./context/IdeaContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProviderRoute from "./components/ProviderRoute";
+import FounderRoute from "./components/FounderRoute";
 import Layout from "./components/Layout";
 
 // Eager load primary landing entry
@@ -62,9 +63,11 @@ const MessagesPage = lazyWithRetry(() => import("./Pages/shared/MessagesPage"));
 const ProviderSetupPage = lazyWithRetry(() => import("./Pages/provider/ProviderSetupPage"));
 const ProviderDashboardPage = lazyWithRetry(() => import("./Pages/provider/ProviderDashboardPage"));
 const ProviderListingsPage = lazyWithRetry(() => import("./Pages/provider/ProviderListingsPage"));
+const ProviderAssetPage = lazyWithRetry(() => import("./Pages/provider/ProviderAssetPage"));
 const ProviderListingPreviewPage = lazyWithRetry(() => import("./Pages/provider/ProviderListingPreviewPage"));
 const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrdersPage"));
 const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrderDetailPage"));
+const ProviderDispatchPage = lazyWithRetry(() => import("./Pages/provider/ProviderDispatchPage"));
 
 // Marketplace & Search
 const MarketplacePage = lazyWithRetry(() => import("./Pages/marketplace/MarketplacePage"));
@@ -238,6 +241,22 @@ function App() {
                   }
                 />
                 <Route
+                  path="/provider/listings/new"
+                  element={
+                    <ProviderRoute>
+                      <ProviderAssetPage />
+                    </ProviderRoute>
+                  }
+                />
+                <Route
+                  path="/provider/listings/:id/edit"
+                  element={
+                    <ProviderRoute>
+                      <ProviderAssetPage />
+                    </ProviderRoute>
+                  }
+                />
+                <Route
                   path="/provider/orders"
                   element={
                     <ProviderRoute>
@@ -253,30 +272,38 @@ function App() {
                     </ProviderRoute>
                   }
                 />
+                <Route
+                  path="/provider/orders/:id/dispatch"
+                  element={
+                    <ProviderRoute>
+                      <ProviderDispatchPage />
+                    </ProviderRoute>
+                  }
+                />
 
-                {/* Marketplace (accessible to all logged-in users) */}
+                {/* Marketplace (founders only) */}
                 <Route
                   path="/marketplace"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <MarketplacePage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/listings/:id"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <PublicListingPreviewPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/search"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <SearchPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
@@ -298,9 +325,9 @@ function App() {
                 <Route
                   path="/checkout/:orderId"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <CheckoutPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route path="/sentry-test" element={<SentryTestPage />} />

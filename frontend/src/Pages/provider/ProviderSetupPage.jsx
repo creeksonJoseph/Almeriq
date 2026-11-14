@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, Save, Eye, MapPin, Building2, Server, Globe, Users } from "lucide-react";
 import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../../components/ui";
-import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi } from "../../lib/api";
+import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi, createAssetApi } from "../../lib/api";
 
 const COVERAGE_REGIONS = [
   "Africa",
@@ -16,6 +16,17 @@ const COVERAGE_REGIONS = [
   "Middle East",
   "Global / no restriction",
 ];
+
+const coverageToApi = {
+  "Africa": "africa",
+  "North America": "north_america",
+  "Europe": "europe",
+  "Asia-Pacific": "asia_pacific",
+  "Latin America": "latin_america",
+  "Middle East": "middle_east",
+  "Global / no restriction": "global",
+};
+const coverageFromApi = Object.fromEntries(Object.entries(coverageToApi).map(([label, value]) => [value, label]));
 
 const providerSchema = z.object({
   name: z.string().min(2, "Provider name is required"),
@@ -92,9 +103,9 @@ export default function ProviderSetupPage() {
         const profile = await getProviderProfileApi();
         if (profile) {
           methods.setValue("info", {
-            name: profile.name || "",
+            name: profile.company_name || profile.trading_name || "",
             location: profile.location || "",
-            type: profile.type || "COMPANY",
+            type: profile.provider_type || "COMPANY",
             about: profile.about || "",
           });
           if (profile.assets?.physical) {
@@ -103,12 +114,8 @@ export default function ProviderSetupPage() {
           if (profile.assets?.digital) {
             profile.assets.digital.forEach(a => addDigitalAsset(a));
           }
-          if (profile.coverageRegions) {
-            methods.setValue("coverage.regions", profile.coverageRegions);
-          }
-          if (profile.engagementPreferences) {
-            methods.setValue("preferences.engagement", profile.engagementPreferences);
-          }
+          const coverage = await listCoverageRegionsApi();
+          methods.setValue("coverage.regions", (coverage.items || []).map(item => coverageFromApi[item.region] || item.region));
         }
       } catch (e) {
         console.error("Failed to load profile", e);
@@ -141,17 +148,12 @@ export default function ProviderSetupPage() {
     try {
       const data = methods.getValues();
       await updateProviderProfileApi({
-        name: data.info.name,
+        company_name: data.info.name,
+        provider_type: data.info.type,
         location: data.info.location,
-        type: data.info.type,
         about: data.info.about,
-        assets: {
-          physical: data.physicalAssets,
-          digital: data.digitalAssets,
-        },
-        coverageRegions: data.coverage.regions,
-        engagementPreferences: data.preferences.engagement,
       });
+      await updateCoverageRegionsApi(data.coverage.regions.map(region => coverageToApi[region] || region));
     } catch (e) {
       console.error("Save failed", e);
     } finally {
@@ -175,17 +177,28 @@ export default function ProviderSetupPage() {
     setSaving(true);
     try {
       await updateProviderProfileApi({
-        name: allData.info.name,
+        company_name: allData.info.name,
+        provider_type: allData.info.type,
         location: allData.info.location,
-        type: allData.info.type,
         about: allData.info.about,
-        assets: {
-          physical: allData.physicalAssets,
-          digital: allData.digitalAssets,
-        },
-        coverageRegions: allData.coverage.regions,
-        engagementPreferences: allData.preferences.engagement,
       });
+      await updateCoverageRegionsApi(allData.coverage.regions.map(region => coverageToApi[region] || region));
+      await Promise.all([
+        ...allData.physicalAssets.map(asset => createAssetApi({
+          name: asset.name,
+          category: asset.category,
+          kind: "physical",
+          quantity_capacity: asset.quantity ? Number(asset.quantity) : undefined,
+          price_monthly: asset.rate ? Number(asset.rate) : undefined,
+        })),
+        ...allData.digitalAssets.map(asset => createAssetApi({
+          name: asset.name,
+          category: asset.category,
+          kind: "digital",
+          quantity_capacity: asset.capacity ? Number(asset.capacity) : undefined,
+          price_monthly: asset.rate ? Number(asset.rate) : undefined,
+        })),
+      ]);
       navigate("/provider/dashboard");
     } catch (e) {
       console.error("Complete failed", e);
@@ -232,7 +245,7 @@ export default function ProviderSetupPage() {
             <Button variant="ghost" onClick={handleSaveDraft} disabled={saving} className="lg:hidden">
               <Save className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" className="text-xs text-white/60 hover:text-text px-2 py-1">
+            <Button variant="ghost" onClick={handleSaveDraft} disabled={saving} className="bg-[#1a1b21] !border-0 text-xs text-white/60 hover:text-text px-2 py-1">
               Save Draft
             </Button>
           </div>
@@ -615,7 +628,7 @@ export default function ProviderSetupPage() {
   <ChevronLeft className="w-4 h-4" />
 </Button>
                 <div className="flex items-center gap-3">
-<Button type="button" variant="ghost" onClick={handleSaveDraft} disabled={saving}>
+<Button type="button" variant="ghost" onClick={handleSaveDraft} disabled={saving} className="bg-[#1a1b21] !border-0">
   Save Draft
 </Button>
                   {isLastStep ? (
@@ -651,17 +664,17 @@ export default function ProviderSetupPage() {
                   </div>
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-1.5">
-                      <h4 className="text-sm font-semibold text-text truncate">{watchInfo.name || "Your Provider Name"}</h4>
+                      <h4 className="text-sm font-semibold text-text truncate">{watchInfo.name || "Provider name"}</h4>
                       <svg className="w-3.5 h-3.5 text-gold shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-semibold bg-gold/10 text-gold border border-gold/30">{watchInfo.type || "Company"}</span>
-                      <span className="text-xs text-white/60 truncate">{watchInfo.location || "City, Country"}</span>
+                      {watchInfo.location && <span className="text-xs text-white/60 truncate">{watchInfo.location}</span>}
                     </div>
                   </div>
                 </div>
                 <div className="text-xs text-white/60 leading-relaxed line-clamp-2 border-t border-border/60 pt-3">
-                  {watchInfo.about || "Your provider description will appear here..."}
+                  {watchInfo.about || "No provider description yet."}
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-border/40">
                   <div className="bg-surface/80 p-2 rounded-lg border border-border">
@@ -674,13 +687,8 @@ export default function ProviderSetupPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-white/60 bg-surface/50 px-2.5 py-1.5 rounded-lg border border-border">
-                  <span className="flex items-center gap-1.5 text-gold font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
-                    Escrow Qualified
-                  </span>
-                  <span className="text-white/40 text-[10px]">Instant Booking</span>
+                  <span className="text-white/60">Draft preview</span>
                 </div>
-                <div className="w-full py-2 bg-surface text-center rounded-lg border border-border text-[11px] text-white/60 font-medium">View Verified Catalog →</div>
               </div>
             </Card>
           </aside>

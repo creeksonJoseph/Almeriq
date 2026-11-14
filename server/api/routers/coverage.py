@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
 from api.dependencies import get_current_provider_profile
-from schemas.provider import CoverageRegionCreateRequest, CoverageRegionListResponse, CoverageRegionResponse
+from schemas.provider import CoverageRegionCreateRequest, CoverageRegionListResponse, CoverageRegionResponse, CoverageRegionUpdateRequest
 from services import coverage as svc
 
 router = APIRouter(prefix="/api", tags=["coverage"])
@@ -41,3 +41,16 @@ async def add_coverage_region(
         region=body.region,
         session=db,
     )
+
+
+@router.put("/provider/coverage-regions", response_model=CoverageRegionListResponse)
+async def replace_coverage_regions(
+    response: Response,
+    body: CoverageRegionUpdateRequest,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    valid = [CoverageRegionCreateRequest(region=region).region for region in body.regions]
+    refreshed = await svc.replace_coverage_regions(provider_id=profile["id"], regions=valid)
+    response.headers["Cache-Control"] = "no-store"
+    return {"items": [item for item in refreshed if item["region"] in valid]}
