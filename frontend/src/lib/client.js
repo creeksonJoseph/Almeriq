@@ -16,6 +16,7 @@ export const apiClient = axios.create({
 
 // ── Error Message Parser ──────────────────────────────────────────────────────
 export function extractErrorMessage(error, defaultMsg = "An error occurred") {
+  if (!error) return defaultMsg;
   if (
     error?.code === "ECONNABORTED" ||
     error?.code === "ETIMEDOUT" ||

@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 from fastapi import Request, HTTPException, status, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import COOKIE_NAME
+from core.db import get_db
 from core.security import decode_access_token
+from repositories import provider_profile as provider_repo
 from services import auth as auth_service
 
 
@@ -59,3 +62,29 @@ async def get_current_admin_user(current_user: dict = Depends(get_current_user))
             detail="Admin privileges required to access this resource",
         )
     return current_user
+
+
+async def get_current_provider_user(current_user: dict = Depends(get_current_user)) -> dict:
+    """FastAPI dependency to verify that the current user is an infrastructure provider."""
+    if current_user.get("role") != "INFRASTRUCTURE_PROVIDER":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Provider account required",
+        )
+    return current_user
+
+
+async def get_current_provider_profile(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_provider_user),
+) -> dict:
+    """Return the provider profile for the current provider user (enforces provider role)."""
+    profile = await provider_repo.get_provider_profile_by_user_id(
+        current_user["id"], session=db
+    )
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Provider profile not found. Complete provider onboarding first.",
+        )
+    return profile

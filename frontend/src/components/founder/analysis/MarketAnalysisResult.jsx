@@ -10,8 +10,8 @@ export default function MarketAnalysisResult({ result }) {
   const tone = result.verdict?.includes("Strong")
     ? "gold"
     : result.verdict?.includes("Challenging")
-    ? "red"
-    : "muted";
+    ? "muted"
+    : "gold";
 
   const marketSizeItems = result.market_size
     ? [
@@ -91,14 +91,14 @@ export default function MarketAnalysisResult({ result }) {
                 <div className="grid gap-4 sm:grid-cols-2 text-xs">
                   {c.strengths?.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/80 block mb-1.5">Their Strengths</span>
-                      <TagList items={c.strengths} colorClass="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gold/80 block mb-1.5">Their Strengths</span>
+                      <TagList items={c.strengths} colorClass="bg-gold/10 text-gold border border-gold/20" />
                     </div>
                   )}
                   {c.weaknesses?.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-400/80 block mb-1.5">Where They Fall Short</span>
-                      <TagList items={c.weaknesses} colorClass="bg-rose-500/10 text-rose-300 border border-rose-500/20" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60 block mb-1.5">Where They Fall Short</span>
+                      <TagList items={c.weaknesses} colorClass="bg-surface-2 text-white/60 border border-border" />
                     </div>
                   )}
                 </div>
@@ -128,7 +128,7 @@ export default function MarketAnalysisResult({ result }) {
         )}
         {result.entry_barriers?.length > 0 && (
           <EditorialSection title="Key Barriers to Entry">
-            <NumberedList items={result.entry_barriers} colorClass="text-rose-400" />
+            <NumberedList items={result.entry_barriers} colorClass="text-white/70" />
           </EditorialSection>
         )}
       </div>
@@ -155,7 +155,7 @@ export default function MarketAnalysisResult({ result }) {
       {/* Key Risks */}
       {result.key_risks?.length > 0 && (
         <EditorialSection title="Key Market Risks to Mitigate">
-          <NumberedList items={result.key_risks} colorClass="text-rose-400" />
+          <NumberedList items={result.key_risks} colorClass="text-white/70" />
         </EditorialSection>
       )}
     </div>

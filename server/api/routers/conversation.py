@@ -1,0 +1,30 @@
+"""api/routers/conversation.py - Conversation endpoints."""
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, Query, Response
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.db import get_db
+from api.dependencies import get_current_user
+from schemas.provider import ConversationListResponse
+from services import conversation as svc
+
+router = APIRouter(prefix="/api", tags=["conversations"])
+
+
+@router.get("/conversations", response_model=ConversationListResponse)
+async def list_conversations(
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """List conversations for the current user."""
+    response.headers["Cache-Control"] = "private, max-age=30"
+    items = await svc.list_conversations(
+        user_id=current_user["id"],
+        limit=limit,
+        offset=offset,
+        session=db,
+    )
+    return {"items": items}

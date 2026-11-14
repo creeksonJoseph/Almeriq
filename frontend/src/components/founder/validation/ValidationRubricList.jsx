@@ -273,13 +273,13 @@ export default function ValidationRubricList({ rubricList }) {
             <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               {data.strengths?.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/80 block mb-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gold/80 block mb-1">
                     Strengths
                   </span>
                   <ul className="space-y-1 text-white">
                     {data.strengths.map((str, idx) => (
                       <li key={idx} className="flex items-start gap-1.5">
-                        <span className="text-emerald-400">✓</span>
+                        <span className="text-gold">✓</span>
                         <span className="leading-relaxed">{str}</span>
                       </li>
                     ))}

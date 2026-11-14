@@ -10,8 +10,8 @@ export default function FeasibilityResult({ result }) {
   const tone = result.overall_feasibility_verdict?.includes("Highly")
     ? "gold"
     : result.overall_feasibility_verdict?.includes("Low")
-    ? "red"
-    : "muted";
+    ? "muted"
+    : "gold";
 
   const resourceItems = result.resource_requirements
     ? [
@@ -43,10 +43,10 @@ export default function FeasibilityResult({ result }) {
             {result.dimensions.map((dim, i) => {
               const scoreTone =
                 dim.score >= 8
-                  ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                  ? "text-gold bg-gold/10 border-gold/20"
                   : dim.score >= 6
                   ? "text-[#f2ca50] bg-[#f2ca50]/10 border-[#f2ca50]/20"
-                  : "text-rose-400 bg-rose-500/10 border-rose-500/20";
+                  : "text-white/60 bg-surface-2 border-border";
               return (
                 <div key={i} className="p-4 sm:p-5 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-center justify-between gap-3 mb-2">
@@ -103,7 +103,7 @@ export default function FeasibilityResult({ result }) {
           <NumberedList items={result.critical_success_factors} colorClass="text-[#f2ca50]" />
         </EditorialSection>
         <EditorialSection title="Failure Risks to Watch">
-          <NumberedList items={result.critical_failure_risks} colorClass="text-rose-400" />
+          <NumberedList items={result.critical_failure_risks} colorClass="text-white/70" />
         </EditorialSection>
       </div>
 

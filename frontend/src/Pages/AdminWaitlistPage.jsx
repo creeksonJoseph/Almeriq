@@ -24,10 +24,10 @@ import { getAdminWaitlistApi } from "../lib/api";
 import { StatStrip } from "../components/ui/BorderlessPrimitives";
 
 const ROLE_BADGES = {
-  Founder: { bg: "bg-[#f2ca50]/15 text-[#f2ca50] border-[#f2ca50]/30", icon: Building2 },
-  Investor: { bg: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30", icon: TrendingUp },
-  "Job Seeker": { bg: "bg-blue-500/15 text-blue-400 border-blue-500/30", icon: Briefcase },
-  "Infrastructure Provider": { bg: "bg-purple-500/15 text-purple-400 border-purple-500/30", icon: Truck },
+  Founder: { bg: "bg-gold/15 text-gold border-gold/30", icon: Building2 },
+  Investor: { bg: "bg-gold/15 text-gold border-gold/30", icon: TrendingUp },
+  "Job Seeker": { bg: "bg-gold/15 text-gold border-gold/30", icon: Briefcase },
+  "Infrastructure Provider": { bg: "bg-gold/15 text-gold border-gold/30", icon: Truck },
 };
 
 function formatDate(iso) {

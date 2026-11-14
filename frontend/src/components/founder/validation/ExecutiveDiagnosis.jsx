@@ -29,8 +29,8 @@ export default function ExecutiveDiagnosis({
             onClick={() => setActiveFilter(activeFilter === "strong" ? "all" : "strong")}
             className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
               activeFilter === "strong"
-                ? "bg-emerald-500/20 text-emerald-300 font-medium"
-                : "text-emerald-400/80 hover:bg-emerald-500/10"
+                ? "bg-gold/20 text-gold font-medium"
+                : "text-gold/80 hover:bg-gold/10"
             }`}
           >
             {ratingCounts.strong} Strong
@@ -51,8 +51,8 @@ export default function ExecutiveDiagnosis({
             onClick={() => setActiveFilter(activeFilter === "weak" ? "all" : "weak")}
             className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
               activeFilter === "weak"
-                ? "bg-rose-500/20 text-rose-300 font-medium"
-                : "text-rose-400/80 hover:bg-rose-500/10"
+                ? "bg-gold/20 text-gold font-medium"
+                : "text-gold/80 hover:bg-gold/10"
             }`}
           >
             {ratingCounts.weak} Weak
@@ -70,13 +70,13 @@ export default function ExecutiveDiagnosis({
       <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
         {evaluation.top_strengths?.length > 0 && (
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-emerald-400/90 mb-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-gold/90 mb-2">
               Key Strengths
             </h4>
             <ul className="space-y-1.5 text-white">
               {evaluation.top_strengths.map((str, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="text-emerald-400/70 font-semibold">•</span>
+                  <span className="text-gold/70 font-semibold">•</span>
                   <span className="leading-relaxed">{str}</span>
                 </li>
               ))}
@@ -86,13 +86,13 @@ export default function ExecutiveDiagnosis({
 
         {evaluation.critical_red_flags?.length > 0 && (
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-rose-400/90 mb-2">
-              Critical Blindspots & Risks
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-2">
+              Critical Blindspots and Risks
             </h4>
             <ul className="space-y-1.5 text-white">
               {evaluation.critical_red_flags.map((flag, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="text-rose-400/70 font-semibold">•</span>
+                  <span className="text-white/60 font-semibold">•</span>
                   <span className="leading-relaxed">{flag}</span>
                 </li>
               ))}

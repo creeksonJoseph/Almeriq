@@ -30,9 +30,7 @@ const C = {
   goldSoft: "rgba(242,202,80,0.12)",
   goldBorder: "rgba(242,202,80,0.35)",
   text: "#ffffff",
-  muted: "#ffffff",
   outline: "#ffffff",
-  rust: "#ffb4ab",
 };
 
 const ROLES = [
