@@ -11,6 +11,8 @@ import asyncio
 import sentry_sdk
 from alembic import command
 from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -20,8 +22,16 @@ from fastapi.middleware.gzip import GZipMiddleware  # §7.1
 from pydantic import ValidationError as PydanticValidationError
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sqlalchemy import create_engine
 
-from core.config import ALLOWED_ORIGINS, SENTRY_DSN, SENTRY_ENVIRONMENT, SENTRY_TRACES_SAMPLE_RATE, SENTRY_PROFILES_SAMPLE_RATE
+from core.config import (
+    ALLOWED_ORIGINS,
+    DATABASE_URL,
+    SENTRY_DSN,
+    SENTRY_ENVIRONMENT,
+    SENTRY_TRACES_SAMPLE_RATE,
+    SENTRY_PROFILES_SAMPLE_RATE,
+)
 from core.db import close_db
 from core.exceptions import ALIMERIQError
 from api.errors import (
@@ -73,13 +83,53 @@ async def lifespan(app: FastAPI):
     # (run_sync in executor because we're already inside a running event loop)
     try:
         alembic_cfg = Config("alembic.ini")
+        script = ScriptDirectory.from_config(alembic_cfg)
+        expected_heads = script.get_heads()
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, lambda: command.upgrade(alembic_cfg, "head"))
-        logging.info("Alembic migrations applied successfully")
+        migration_state = await loop.run_in_executor(
+            None,
+            lambda: _upgrade_and_read_migration_state(alembic_cfg, expected_heads),
+        )
+        logging.info(
+            "Alembic startup check: before=%s expected=%s after=%s upgraded=%s",
+            migration_state["before"],
+            ",".join(expected_heads) or "<none>",
+            migration_state["after"],
+            migration_state["upgraded"],
+        )
     except Exception as exc:
-        logging.warning("Alembic migration on startup failed: %s", exc)
+        logging.exception("Alembic startup check failed: %s", exc)
     yield
     await close_db()
+
+
+def _upgrade_and_read_migration_state(
+    alembic_cfg: Config,
+    expected_heads: list[str],
+) -> dict[str, str | bool]:
+    """Apply migrations and return revision IDs for startup diagnostics."""
+    database_url = DATABASE_URL
+    if database_url.startswith("sqlite+aiosqlite://"):
+        database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://", 1)
+    elif database_url.startswith(("postgres://", "postgresql://")):
+        database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
+        if database_url.startswith("postgresql://"):
+            database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+    sync_engine = create_engine(database_url, pool_pre_ping=True)
+    try:
+        with sync_engine.connect() as connection:
+            before = MigrationContext.configure(connection).get_current_revision() or "<none>"
+        command.upgrade(alembic_cfg, "head")
+        with sync_engine.connect() as connection:
+            after = MigrationContext.configure(connection).get_current_revision() or "<none>"
+        return {
+            "before": before,
+            "after": after,
+            "upgraded": after in expected_heads,
+        }
+    finally:
+        sync_engine.dispose()
 
 
 # ── App factory ───────────────────────────────────────────────────────────────
@@ -131,4 +181,3 @@ app.add_exception_handler(RequestValidationError, validation_error_handler)
 app.add_exception_handler(PydanticValidationError, pydantic_validation_error_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, catch_all_handler)
-
