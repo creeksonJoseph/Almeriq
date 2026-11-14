@@ -21,14 +21,21 @@ import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
 
 export const WORKSPACE_NAV = [
   { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
-  { key: "ventures", label: "Saved Ventures", path: "/founder/ventures", icon: BookOpen },
-  { key: "intake", label: "Share New Idea", path: "/founder/intake?mode=new", icon: Lightbulb },
 ];
 
 export const FOUNDER_STUDIO_NAV = [
+  { key: "ventures", label: "Saved Ventures", path: "/founder/ventures", icon: BookOpen },
+  { key: "intake", label: "Share New Idea", path: "/founder/intake?mode=new", icon: Lightbulb },
   { key: "validation", label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
   { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
+];
+
+export const PROVIDER_NAV = [
+  { key: "provider-dashboard", label: "Provider Dashboard", path: "/provider/dashboard", icon: Home },
+  { key: "provider-listings", label: "My Listings", path: "/provider/listings", icon: Boxes },
+  { key: "provider-orders", label: "Orders", path: "/provider/orders", icon: Scale },
+  { key: "marketplace", label: "Marketplace", path: "/marketplace", icon: Cpu },
 ];
 
 export default function AppSidebar({
@@ -191,12 +198,12 @@ export default function AppSidebar({
             </div>
           </div>
 
-          {/* GROUP 2: Tools */}
+          {/* GROUP 2: Founder Tools */}
           {role === "founder" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Tools
+                  Founder Studio
                 </p>
               )}
               <div className="space-y-0.5">
@@ -229,6 +236,51 @@ export default function AppSidebar({
                         }`}
                       />
                       {!isCollapsed && <span className="truncate">{tool.label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* GROUP 2b: Provider Navigation */}
+          {role === "infrastructure_provider" && (
+            <div>
+              {!isCollapsed && (
+                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  Provider Portal
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {PROVIDER_NAV.map((item) => {
+                  const Icon = item.icon;
+                  const active = isCurrentActive(item.path);
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => handleNavClick(item.path)}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                        isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                      } ${
+                        active
+                          ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                          : "text-white hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      {active && !isCollapsed && (
+                        <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                      )}
+                      <Icon
+                        size={16}
+                        className={`shrink-0 transition-colors ${
+                          active
+                            ? "text-[#C9A15A]"
+                            : "text-white/70 group-hover:text-white"
+                        }`}
+                      />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
                     </button>
                   );
                 })}

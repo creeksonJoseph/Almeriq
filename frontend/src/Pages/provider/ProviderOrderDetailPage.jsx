@@ -155,11 +155,11 @@ export default function ProviderOrderDetailPage() {
           <h3 className="text-label-caps text-white/60 uppercase tracking-wider">CLIENT & ASSET</h3>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded bg-surface-2 border border-border text-text text-sm font-bold flex items-center justify-center shrink-0">
-              {order.clientName?.split(' ').map(w => w[0]).join('') || "AD"}
+              {order.clientName?.split(' ').map(w => w[0]).join('') || "—"}
             </div>
             <div>
               <span className="font-semibold text-text">{order.clientName}</span>
-              <div className="text-sm text-white/60">{order.clientVenture || "YC W24 · Tier-1 Verified"}</div>
+              <div className="text-sm text-white/60">{order.clientVenture || "—"}</div>
             </div>
           </div>
           <div className="pt-3 border-t border-border space-y-3">
