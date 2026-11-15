@@ -141,7 +141,7 @@ export default function FounderIntakePage() {
 
   return (
     <FounderFlowLayout>
-      <div className="mb-7 max-w-2xl">
+      <div className="mb-7 max-w-4xl">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
           {isEditMode ? "Step 1 · Edit your startup brief" : "Step 1 · Share your idea"}
         </p>
@@ -175,7 +175,7 @@ export default function FounderIntakePage() {
         </div>
       )}
 
-      <form onSubmit={submit} className="max-w-2xl py-2">
+      <form onSubmit={submit} className="max-w-4xl py-2">
         <div className="mb-8">
           <h2 className="font-display text-xl font-semibold text-white">Startup details</h2>
           <p className="mt-2 text-sm text-white/70">
@@ -185,11 +185,19 @@ export default function FounderIntakePage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {FIELDS.map(([key, label, placeholder, maxLength]) => (
             <label
               key={key}
-              className={key === "name" || key === "idea" || key === "problem" || key === "solution" ? "md:col-span-2" : ""}
+              className={
+                key === "name" || key === "idea" || key === "problem" || key === "solution"
+                  ? "md:col-span-2 lg:col-span-3"
+                  : key === "customer"
+                    ? "lg:col-span-2"
+                    : key === "location"
+                      ? "lg:col-span-1"
+                      : ""
+              }
             >
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold text-white">{label}</span>

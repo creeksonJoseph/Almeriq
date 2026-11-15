@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
-  Bell,
   BookOpen,
   BriefcaseBusiness,
   Building2,
@@ -129,7 +128,6 @@ const ROLE_DATA = {
 const NAV_ITEMS = [
   ["overview", "Overview", Home],
   ["discover", "Discover", Search],
-  ["activity", "Activity", Bell],
   ["profile", "Profile", UserRound],
 ];
 
@@ -254,14 +252,14 @@ function FounderWorkspaceOverview() {
             </div>
           </div>
         ) : (
-          <div className="py-8">
+          <div className="py-8 px-6 rounded-xl bg-white/[0.03] backdrop-blur-sm border border-transparent">
             <h2 className="font-display text-2xl font-semibold text-white">No startup idea yet</h2>
             <p className="mt-2 text-sm text-white max-w-md">
               Add your startup idea to get AI analysis, market validation, and a build roadmap.
             </p>
-            <div className="mt-6 flex">
-              <Link to="/founder/intake?mode=new" className="alq-submit text-xs py-2 px-5">
-                + Add your startup idea <ArrowRight size={14} />
+            <div className="mt-6 flex w-full">
+              <Link to="/founder/intake?mode=new" className="alq-submit text-xs py-2 px-5 w-full">
+                + Add your startup idea
               </Link>
             </div>
           </div>
@@ -313,7 +311,7 @@ function FounderWorkspaceOverview() {
               <Link
                 key={tool.to}
                 to={tool.to}
-                className="group flex flex-col justify-start py-2 transition-all"
+                className="group flex flex-col justify-start py-2 transition-all hover:bg-white/10 hover:backdrop-blur-sm hover:border-white/20 rounded-lg p-4 border border-transparent"
               >
                 <div className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg bg-[#f2ca50]/10 text-[#f2ca50]">
                   <Icon size={16} />
@@ -363,14 +361,6 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
             Good to see you, {firstName}. {role.subtitle}
           </p>
         </div>
-        <button
-          type="button"
-          className="relative mt-1 hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-white/60 hover:text-white sm:flex"
-          aria-label="Notifications"
-        >
-          <Bell size={17} />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#f2ca50]" />
-        </button>
       </div>
 
       {/* OVERVIEW TAB */}

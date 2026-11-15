@@ -4,10 +4,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Response, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
-from core.db import async_session_factory
+from core.db import async_session_factory, get_db
+from sqlalchemy.ext.asyncio import AsyncSession
 from models.waitlist import Waitlist
 from api.dependencies import get_current_admin_user
 from repositories import user as user_repo
+from repositories import provider_profile as provider_repo
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -59,15 +61,32 @@ async def get_waitlist_participants(
 async def update_user_role(
     body: AdminRoleUpdateRequest,
     admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Admin only: switch the currently logged-in admin's test role."""
+    role = _normalize_role(body.role)
     updated_user = await user_repo.update_user_role(
         user_id=admin_user["id"],
-        role=_normalize_role(body.role),
+        role=role,
+        session=db,
     )
     if not updated_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Your account could not be updated",
         )
+
+    if role == "INFRASTRUCTURE_PROVIDER":
+        profile = await provider_repo.get_provider_profile_by_user_id(
+            admin_user["id"],
+            session=db,
+        )
+        if not profile:
+            await provider_repo.create_provider_profile(
+                user_id=admin_user["id"],
+                company_name=updated_user.get("full_name") or "Test Provider",
+                session=db,
+            )
+
+    await db.commit()
     return {"message": "Your test role was updated", "user": updated_user}

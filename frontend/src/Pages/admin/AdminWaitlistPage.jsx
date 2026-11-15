@@ -169,7 +169,7 @@ export default function AdminWaitlistPage() {
               type="button"
               onClick={fetchWaitlist}
               disabled={loading}
-              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl border border-[#282a2f] bg-white/5 px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 disabled:opacity-50"
             >
               <RotateCcw size={14} className={loading ? "animate-spin" : ""} />
               Refresh
@@ -195,19 +195,21 @@ export default function AdminWaitlistPage() {
             };
           }),
         ]}
-        className="mb-6"
+        className="mb-6 !border !border-[rgba(242,202,80,0.22)] !divide-x-0 !divide-y-0"
       />
 
       {/* Filter & Search Toolbar */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+          <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-white/40">
+            <Search size={15} />
+          </span>
           <input
             type="text"
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-[#14141a] py-2 pl-9 pr-4 text-xs text-white placeholder-white/35 outline-none transition-all focus:border-[#f2ca50]/50"
+            className="w-full rounded-xl border border-[#282a2f] bg-[#14141a] py-2 pl-9 pr-4 text-xs text-white placeholder-white/35 outline-none transition-all focus:border-[#f2ca50]/50"
           />
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -228,7 +230,7 @@ export default function AdminWaitlistPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#12121a]">
+      <div className="overflow-hidden rounded-2xl border border-[#282a2f] bg-[#12121a]">
         {loading ? (
           <div className="flex min-h-64 items-center justify-center">
             <Loader2 size={24} className="animate-spin text-[#f2ca50]" />
@@ -246,7 +248,7 @@ export default function AdminWaitlistPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-white/10 bg-white/[0.02] text-white/45">
+              <thead className="border-b border-[#1e2025] bg-white/[0.02] text-white/45">
                 <tr>
                   <th className="py-3.5 pl-6 pr-4 font-semibold">#</th>
                   <th className="py-3.5 px-4 font-semibold">Participant</th>
@@ -258,7 +260,7 @@ export default function AdminWaitlistPage() {
               <tbody className="divide-y divide-white/5 text-white/80">
                 {filteredItems.map((item, index) => {
                   const badge = ROLE_BADGES[item.role] || {
-                    bg: "bg-white/10 text-white/70 border-white/10",
+                    bg: "bg-white/10 text-white/70",
                     icon: Users,
                   };
                   const BadgeIcon = badge.icon;
@@ -280,7 +282,7 @@ export default function AdminWaitlistPage() {
                       </td>
                       <td className="py-3.5 px-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${badge.bg}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${badge.bg}`}
                         >
                           <BadgeIcon size={11} />
                           {item.role || "User"}

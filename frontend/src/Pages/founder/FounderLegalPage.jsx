@@ -9,6 +9,8 @@ import {
   Building2,
   FileText,
   Printer,
+  ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import FounderStudioNav from "../../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
@@ -212,6 +214,9 @@ export default function FounderLegalPage() {
   // Mode: "dossier" (Company Formation) | "templates" (Contracts)
   const [activeMode, setActiveMode] = useState("dossier");
 
+  // Company registration guide stepper: 1 = Why & Steps, 2 = Documents & Next Steps
+  const [guideStep, setGuideStep] = useState(1);
+
   // Detect user's initial country from profile (nationality) or default to Kenya
   const initialCountry = useMemo(() => {
     const rawNationality = (user?.nationality || "").trim();
@@ -330,9 +335,59 @@ export default function FounderLegalPage() {
         {/* ── MODE 1: COMPANY REGISTRATION GUIDE ── */}
         {activeMode === "dossier" && (
           <div className="space-y-12">
-            {/* ── PART 1: THE EXPLANATION (Why Register Early & Legal Foundation) ── */}
-            <section className="border-b border-white/10 pb-12">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Stepper Navigation */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-6">
+              <div className="flex items-center gap-4 text-xs font-mono">
+                {[
+                  { step: 1, label: "Why & Steps" },
+                  { step: 2, label: "Documents & Next Steps" },
+                ].map((s) => (
+                  <button
+                    key={s.step}
+                    type="button"
+                    onClick={() => setGuideStep(s.step)}
+                    className={`flex items-center gap-2 transition-colors ${
+                      guideStep === s.step
+                        ? "text-[#f2ca50] font-semibold"
+                        : "text-white/50 hover:text-white"
+                    }`}
+                  >
+                    <span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold transition-colors ${
+                      guideStep === s.step
+                        ? "bg-[#f2ca50] text-black border-transparent"
+                        : "border-white/20 text-white"
+                    }`}>
+                      {s.step}
+                    </span>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+                {guideStep === 2 && (
+                  <span className="text-[10px] text-white/40">· Page 2 of 2</span>
+                )}
+              </div>
+              {guideStep === 1 && (
+                <button
+                  type="button"
+                  onClick={() => setGuideStep(2)}
+                  className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black hover:bg-[#e2ba40] transition-colors cursor-pointer shadow-sm"
+                >
+                  Next: Documents & Next Steps <ArrowRight size={12} />
+                </button>
+              )}
+              {guideStep === 2 && (
+                <button
+                  type="button"
+                  onClick={() => setGuideStep(1)}
+                  className="inline-flex items-center gap-2 rounded border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <ArrowLeft size={12} /> Back: Why & Steps
+                </button>
+              )}
+            </div>
+              {guideStep === 1 && (
+                <section className="border-b border-white/10 pb-12">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                 <div className="lg:col-span-4 space-y-4">
                   <div className="inline-flex items-center gap-2 text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">
                     <span>01 / Start Here</span>
@@ -383,9 +438,10 @@ export default function FounderLegalPage() {
                 </div>
               </div>
             </section>
-
+                )}
             {/* ── PART 2: THE GUIDANCE (Official Registration in {selectedCountry}) ── */}
-            <section className="space-y-8">
+            {guideStep === 2 && (
+              <section className="space-y-8">
               {/* Guidance Header with Full Width Title and Dedicated Toolbar Below */}
               <div className="border-b border-white/10 pb-6 space-y-5">
                 <div>
@@ -767,11 +823,12 @@ export default function FounderLegalPage() {
                 <span className="text-white/80">Helpful Registration Guide</span>
               </div>
             </footer>
-                  </div>
-                )}
-              </section>
-            </div>
+          </div>
           )}
+        </section>
+          )}
+        </div>
+      )}
 
         {/* ── MODE 2: STARTER LEGAL TEMPLATES ── */}
         {activeMode === "templates" && (
