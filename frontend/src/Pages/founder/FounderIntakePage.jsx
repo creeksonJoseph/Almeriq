@@ -6,6 +6,8 @@ import { useFounderFlow } from "../../hooks/useFounderFlow";
 import { useActiveIdea } from "../../context/IdeaContext";
 import { useToast } from "../../context/ToastContext";
 import { saveBriefApi } from "../../lib/api";
+import { Skeleton, SkeletonText } from "../../components/ui";
+import { FormSkeleton } from "../../components/Skeletons";
 
 const FIELDS = [
   ["name", "Startup / Idea Name", "e.g. Almeriq, Stripe, Airbnb, FarmDirect", 100],
@@ -76,6 +78,7 @@ export default function FounderIntakePage() {
 
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Synchronize when mode, targetId, or active venture changes
   useEffect(() => {
@@ -103,6 +106,11 @@ export default function FounderIntakePage() {
       setVentureId(null);
     }
   }, [isEditMode, targetId, activeVenture?.id]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   const formHasChanged = savedFormSnapshot
     ? FIELDS.some(([key]) => (form[key] || "") !== (savedFormSnapshot[key] || ""))
@@ -141,7 +149,18 @@ export default function FounderIntakePage() {
 
   return (
     <FounderFlowLayout>
-      <div className="mb-7 max-w-4xl">
+      {initialLoading && (
+        <div className="max-w-4xl mx-auto py-20 space-y-6">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-6 w-full" />
+          <SkeletonText lines={3} className="max-w-md" />
+          <FormSkeleton />
+        </div>
+      )}
+      {!initialLoading && (
+        <>
+        <div className="mb-7 max-w-4xl">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
           {isEditMode ? "Step 1 · Edit your startup brief" : "Step 1 · Share your idea"}
         </p>
@@ -262,6 +281,8 @@ export default function FounderIntakePage() {
           </button>
         </div>
       </form>
+        </>
+      )}
     </FounderFlowLayout>
   );
 }

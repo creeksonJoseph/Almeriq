@@ -127,31 +127,31 @@ const ProviderListingsPage = () => {
       {/* Filter & Control Toolbar */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 mb-8 pb-5 border-b border-[#282a2f]">
         <div className="flex flex-wrap items-center gap-3 flex-1">
-          {/* Tabs */}
-          <div className="inline-flex p-1 bg-[#111318] rounded-lg border border-[#282a2f]">
-            {CATEGORIES.map(cat => (
-              <Button
-                key={cat.value}
-                variant={filter.category === cat.value ? "primary" : "ghost"}
-                size="sm"
-                className={`!border-0 px-3.5 py-1.5 rounded-md text-xs font-medium ${
-                  filter.category === cat.value
-                    ? "!bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]"
-                    : "!bg-transparent !text-[#ffffff]/70 hover:!bg-[#1a1b21] hover:!text-[#ffffff]"
-                }`}
-                onClick={() => setFilter(f => ({ ...f, category: cat.value }))}
-              >
-                {cat.label} ({cat.value === "all" ? assets.length : assets.filter(a => a.kind === cat.value).length})
-              </Button>
-            ))}
-          </div>
+            {/* Tabs */}
+            <div className="inline-flex p-1 bg-[#111318] rounded-lg border border-[#282a2f]">
+              {CATEGORIES.map(cat => (
+                <Button
+                  key={cat.value}
+                  variant={filter.category === cat.value ? "primary" : "ghost"}
+                  size="sm"
+                  className={`!border-0 px-3.5 py-2 rounded-md text-xs font-medium min-h-[44px] ${
+                    filter.category === cat.value
+                      ? "!bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]"
+                      : "!bg-transparent !text-[#ffffff]/70 hover:!bg-[#1a1b21] hover:!text-[#ffffff]"
+                  }`}
+                  onClick={() => setFilter(f => ({ ...f, category: cat.value }))}
+                >
+                  {cat.label} ({cat.value === "all" ? assets.length : assets.filter(a => a.kind === cat.value).length})
+                </Button>
+              ))}
+            </div>
 
           {/* Status dropdown */}
           <div className="relative inline-block text-xs">
             <select
               value={filter.status}
               onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
-              className="appearance-none bg-[#111318] border border-[#282a2f] hover:border-[#282a2f] text-[#ffffff] pl-3 pr-8 py-2 rounded-lg font-medium cursor-pointer focus:outline-none focus:border-[#f2ca50] transition-colors"
+              className="appearance-none bg-[#111318] border border-[#282a2f] hover:border-[#282a2f] text-[#ffffff] pl-3 pr-8 py-2 rounded-lg font-medium cursor-pointer focus:outline-none focus:border-[#f2ca50] transition-colors min-h-[44px]"
             >
               {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
@@ -167,7 +167,7 @@ const ProviderListingsPage = () => {
             </div>
             <Input
               placeholder="Search by serial, asset name, or spec..."
-              className="pl-9 pr-3 py-2 text-xs"
+              className="pl-9 pr-3 py-2 text-xs border-[#282a2f] focus:border-[#f2ca50]/50"
               {...searchForm.register("search")}
             />
           </div>

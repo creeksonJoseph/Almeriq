@@ -564,11 +564,25 @@ export default function FounderLegalPage() {
 
               {/* Loaded Country Guidance Content */}
               {!guideLoading && !guideError && guide && (
-                <div className="space-y-10">
+                <div className="space-y-12">
                   {/* Metric Data Strip: Expected Time, Fees, Registry for THIS country */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-y border-white/10 py-4 bg-white/[0.01]">
-                    <div className="px-4 py-2 md:first:pl-2">
-                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                  <section className="rounded-2xl border border-[#f2ca50]/25 bg-[#f2ca50]/[0.04] p-5 sm:p-6">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-mono font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
+                          At a glance
+                        </p>
+                        <p className="mt-1 text-xs text-white/70">
+                          The key facts for registering in {guide.country_name || selectedCountry}.
+                        </p>
+                      </div>
+                      <span className="hidden text-[10px] font-mono uppercase tracking-wider text-white/50 sm:block">
+                        Official guidance
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="rounded-xl bg-[#090a0d]/45 p-4">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
                         Official Registry
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white truncate">
@@ -579,8 +593,8 @@ export default function FounderLegalPage() {
                       </span>
                     </div>
 
-                    <div className="px-4 py-2">
-                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                    <div className="rounded-xl bg-[#090a0d]/45 p-4">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
                         Expected Time
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
@@ -591,8 +605,8 @@ export default function FounderLegalPage() {
                       </span>
                     </div>
 
-                    <div className="px-4 py-2">
-                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                    <div className="rounded-xl bg-[#090a0d]/45 p-4">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
                         Estimated Government Fees
                       </span>
                       <span className="mt-1 block font-mono text-sm font-semibold text-white">
@@ -603,8 +617,8 @@ export default function FounderLegalPage() {
                       </span>
                     </div>
 
-                    <div className="px-4 py-2 md:last:pr-2">
-                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
+                    <div className="rounded-xl bg-[#090a0d]/45 p-4">
+                      <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
                         Company Type
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
@@ -613,16 +627,17 @@ export default function FounderLegalPage() {
                       <span className="text-[11px] font-mono text-[#f2ca50]">
                         {guide.source === "database" ? "Saved in Database" : "Freshly Generated"}
                       </span>
+                      </div>
                     </div>
-                  </div>
+                  </section>
 
                 {/* ── Section 02: Step-by-Step Procedure & Pre-filing Checklist ── */}
-                <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 border-b border-white/10 pb-12">
+                <section className="grid grid-cols-1 gap-8 border-b border-[#1e2025] pb-12 lg:grid-cols-12 lg:gap-12">
                   {/* Left Column: Sequential Milestone Timeline */}
                   <div className="lg:col-span-7 space-y-6">
                     <div>
-                      <div className="inline-flex items-center gap-2 text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">
-                        <span>02 / Step-by-Step Guide</span>
+                      <div className="inline-flex items-center gap-2 text-[11px] font-mono font-semibold text-[#f2ca50] uppercase tracking-wider">
+                        <span>Do this first</span>
                       </div>
                       <h2 className="mt-1 font-serif text-2xl font-medium text-white tracking-tight sm:text-3xl">
                         How to Register Your Company Step by Step
@@ -635,7 +650,7 @@ export default function FounderLegalPage() {
 
                     {/* Chronological Step Timeline */}
                     {guide.steps && guide.steps.length > 0 && (
-                      <div className="relative ml-2 mt-6 space-y-8 border-l border-white/15 pl-6">
+                      <div className="relative ml-2 mt-6 space-y-8 border-l border-[#282a2f] pl-6">
                         {guide.steps.map((step, idx) => (
                           <div key={idx} className="group relative">
                             {/* Timeline Node Indicator */}
@@ -659,7 +674,7 @@ export default function FounderLegalPage() {
 
                               {step.requirements && (
                                 <div className="flex flex-wrap gap-2 pt-1.5 text-[11px] font-mono text-white">
-                                  <span className="rounded border border-white/10 bg-white/[0.03] px-2 py-0.5">
+                                  <span className="rounded-lg bg-white/[0.04] px-2.5 py-1 text-white/80">
                                     What you need: {step.requirements}
                                   </span>
                                 </div>
@@ -674,8 +689,8 @@ export default function FounderLegalPage() {
                   {/* Right Column: Pre-Filing Checklist & Common Pitfalls */}
                   <div className="lg:col-span-5 space-y-6">
                     {/* Documents You Need Before You Start */}
-                    <div className="rounded border border-white/10 bg-white/[0.015] p-6">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="rounded-2xl bg-[#13141b] p-6">
+                      <div className="flex items-center justify-between border-b border-[#282a2f] pb-3">
                         <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-white">
                           Documents You Need Before You Start
                         </h3>
@@ -706,12 +721,12 @@ export default function FounderLegalPage() {
                     </div>
 
                     {/* Common Mistakes to Avoid */}
-                    <div className="rounded border border-white/10 bg-white/[0.015] p-6">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="rounded-2xl bg-[#13141b] p-6">
+                      <div className="flex items-center justify-between border-b border-[#282a2f] pb-3">
                         <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#f2ca50]">
                           Mistakes to Avoid
                         </h3>
-                        <span className="text-[10px] font-mono text-white border border-white/10 bg-white/5 px-2 py-0.5 rounded">
+                        <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-mono text-white/70">
                           Important
                         </span>
                       </div>
@@ -743,8 +758,8 @@ export default function FounderLegalPage() {
             <section className="space-y-4">
               <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
                 <div>
-                  <div className="inline-flex items-center gap-2 text-[11px] font-mono text-[#f2ca50] uppercase tracking-wider">
-                    <span>03 / What to Do Next</span>
+                  <div className="inline-flex items-center gap-2 text-[11px] font-mono font-semibold text-[#f2ca50] uppercase tracking-wider">
+                    <span>Do this next</span>
                   </div>
                   <h2 className="mt-1 font-serif text-2xl font-medium text-white tracking-tight sm:text-3xl">
                     Things to Do Right After Getting Your Certificate
@@ -756,10 +771,10 @@ export default function FounderLegalPage() {
               </div>
 
               {/* Clean Tabular Next Steps Table */}
-              <div className="overflow-x-auto rounded border border-white/10">
+              <div className="overflow-x-auto rounded-2xl border border-[#282a2f] bg-[#13141b]">
                 <table className="w-full border-collapse text-left text-xs">
                   <thead>
-                    <tr className="border-b border-white/10 bg-white/[0.03] text-[10px] font-mono uppercase text-white/70">
+                    <tr className="border-b border-[#282a2f] bg-white/[0.03] text-[10px] font-mono uppercase text-white/70">
                       <th className="py-3 px-4 font-semibold">Next Step</th>
                       <th className="py-3 px-4 font-semibold">Where to Go</th>
                       <th className="py-3 px-4 font-semibold">What You Need to Do</th>

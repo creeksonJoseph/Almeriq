@@ -10,6 +10,7 @@ import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
 import { listVenturesApi, executeAiToolApi } from "../../lib/api";
 import { useToast } from "../../context/ToastContext";
 import { useActiveIdea } from "../../context/IdeaContext";
+import { Skeleton, SkeletonText } from "../../components/ui";
 
 const PRODUCT_TOOLS = [
   { id: "product_brief", label: "1. Product Brief", desc: "Define the core product, target customer, and key features" },
@@ -87,7 +88,22 @@ export default function FounderProductPage() {
 
   return (
     <FounderFlowGuard>
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      {loading && (
+        <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8 py-20">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-10 w-full mb-6" />
+          <Skeleton className="h-8 w-1/2 mb-4" />
+          <Skeleton className="h-8 w-1/3 mb-4" />
+          <Skeleton className="h-8 w-1/4 mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-64 w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
+      )}
+      {!loading && (
+        <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <FounderStudioNav
           title="Product Development"
           subtitle="Plan who your users are, how the app will work, and what tech to use."
@@ -370,7 +386,7 @@ export default function FounderProductPage() {
             </div>
           )}
         </div>
-      </div>
+      )}
     </FounderFlowGuard>
   );
 }

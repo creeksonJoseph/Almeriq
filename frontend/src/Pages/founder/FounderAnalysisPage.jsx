@@ -22,6 +22,7 @@ import { useActiveIdea } from "../../context/IdeaContext";
 import { useToast } from "../../context/ToastContext";
 import { executeAiToolApi } from "../../lib/api";
 import ResultRenderer from "../../components/founder/analysis/ResultRenderer";
+import { Skeleton, SkeletonCard } from "../../components/ui";
 
 // ── Analysis type definitions ────────────────────────────────────────────────
 
@@ -378,6 +379,11 @@ export default function FounderAnalysisPage() {
                 className="h-1.5 w-1.5 rounded-full bg-[#f2ca50]/60 animate-bounce"
                 style={{ animationDelay: `${i * 150}ms` }}
               />
+            ))}
+          </div>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonCard key={i} className="p-6 sm:p-8" />
             ))}
           </div>
         </div>

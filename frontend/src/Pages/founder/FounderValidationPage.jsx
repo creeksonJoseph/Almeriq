@@ -16,6 +16,7 @@ import { executeAiToolApi } from "../../lib/api";
 import { useToast } from "../../context/ToastContext";
 import { useActiveIdea } from "../../context/IdeaContext";
 import { useFounderFlow } from "../../hooks/useFounderFlow";
+import { SkeletonCard } from "../../components/ui";
 
 export default function FounderValidationPage() {
   const { showToast } = useToast();
@@ -286,6 +287,11 @@ export default function FounderValidationPage() {
             <p className="mt-1 text-xs text-white leading-relaxed max-w-sm mx-auto">
               Analyzing problem-solution fit, TAM/SAM/SOM sizing, market competitors, feasibility, and unit economics.
             </p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <SkeletonCard key={i} className="p-6 sm:p-8" />
+              ))}
+            </div>
           </div>
         )}
 

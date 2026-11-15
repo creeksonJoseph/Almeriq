@@ -61,32 +61,65 @@ export default function ProviderAssetPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="font-serif text-3xl font-semibold text-text">{editing ? "Edit asset" : "Add asset"}</h1>
-        <p className="text-sm text-white/60 mt-2">Enter the details clients need to evaluate this listing.</p>
+    <div className="w-full space-y-8 px-6 py-8 sm:px-8 lg:px-10">
+      <div className="max-w-3xl text-left">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
+          Provider listing
+        </p>
+        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight text-text">
+          {editing ? "Edit asset" : "Add asset"}
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-white/70">
+          Enter the details clients need to understand and evaluate this listing.
+        </p>
       </div>
-      <Card className="p-6">
-        <form onSubmit={submit} className="space-y-5">
-          <label className="block text-sm text-white/70">Asset name<Input required value={form.name} onChange={updateField("name")} /></label>
-          <label className="block text-sm text-white/70">Category<Input required value={form.category} onChange={updateField("category")} /></label>
-          <label className="block text-sm text-white/70">Asset type
-            <select value={form.kind} onChange={updateField("kind")} className="alq-input mt-1">
-              <option value="physical">Physical</option>
-              <option value="digital">Digital</option>
-            </select>
-          </label>
-          <label className="block text-sm text-white/70">Description
-            <textarea value={form.description} onChange={updateField("description")} rows={4} className="alq-input mt-1 resize-y" />
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="block text-sm text-white/70">Monthly price<Input type="number" min="0" value={form.price_monthly} onChange={updateField("price_monthly")} /></label>
-            <label className="block text-sm text-white/70">Quantity / capacity<Input type="number" min="0" value={form.quantity_capacity} onChange={updateField("quantity_capacity")} /></label>
+      <Card className="border-[#282a2f] bg-[#13141b] p-6 sm:p-8 lg:p-10">
+        <form onSubmit={submit} className="space-y-8">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-7 lg:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-white">Asset name</span>
+              <span className="text-xs text-white/55">Use a clear name clients will recognize.</span>
+              <Input required value={form.name} onChange={updateField("name")} className="!border-[#282a2f] focus:!border-[#f2ca50]" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-white">Category</span>
+              <span className="text-xs text-white/55">Choose the main category for this listing.</span>
+              <Input required value={form.category} onChange={updateField("category")} className="!border-[#282a2f] focus:!border-[#f2ca50]" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-white">Asset type</span>
+              <span className="text-xs text-white/55">Tell clients whether this is physical or digital.</span>
+              <select value={form.kind} onChange={updateField("kind")} className="alq-input !border-[#282a2f] focus:!border-[#f2ca50]">
+                <option value="physical">Physical</option>
+                <option value="digital">Digital</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-white">Monthly price</span>
+              <span className="text-xs text-white/55">Leave blank if the price depends on the request.</span>
+              <Input type="number" min="0" value={form.price_monthly} onChange={updateField("price_monthly")} className="!border-[#282a2f] focus:!border-[#f2ca50]" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-white">Quantity / capacity</span>
+              <span className="text-xs text-white/55">Add the available amount or service capacity.</span>
+              <Input type="number" min="0" value={form.quantity_capacity} onChange={updateField("quantity_capacity")} className="!border-[#282a2f] focus:!border-[#f2ca50]" />
+            </div>
+            <div className="flex flex-col gap-2 lg:col-span-2">
+              <span className="text-sm font-semibold text-white">Description</span>
+              <span className="text-xs text-white/55">Explain what clients receive, where it is available, and any important limits.</span>
+              <textarea value={form.description} onChange={updateField("description")} rows={6} className="alq-input !border-[#282a2f] focus:!border-[#f2ca50] resize-y" />
+            </div>
           </div>
-          {error && <p className="text-sm text-gold">{error}</p>}
-          <div className="flex justify-end gap-3">
+          {error && <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
+          <div className="flex flex-col-reverse justify-end gap-3 border-t border-[#282a2f] pt-6 sm:flex-row">
             <Button type="button" variant="ghost" className="bg-[#1a1b21] !border-0" onClick={() => navigate("/provider/listings")}>Cancel</Button>
-            <Button type="submit" disabled={saving}>{saving ? "Saving..." : editing ? "Save changes" : "Create asset"}</Button>
+            <Button
+              type="submit"
+              disabled={saving}
+              className="!bg-[#f2ca50] !text-[#111318] hover:!bg-[#e2ba40]"
+            >
+              {saving ? "Saving..." : editing ? "Save changes" : "Create asset"}
+            </Button>
           </div>
         </form>
       </Card>
