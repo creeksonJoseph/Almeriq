@@ -386,6 +386,7 @@ export default function FounderProductPage() {
             </div>
           )}
         </div>
+        </div>
       )}
     </FounderFlowGuard>
   );
@@ -410,4 +411,3 @@ function safeList(val) {
   }
   return [String(val)];
 }
-
