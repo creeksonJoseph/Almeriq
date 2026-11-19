@@ -68,6 +68,8 @@ const ProviderListingPreviewPage = lazyWithRetry(() => import("./Pages/provider/
 const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrdersPage"));
 const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrderDetailPage"));
 const ProviderDispatchPage = lazyWithRetry(() => import("./Pages/provider/ProviderDispatchPage"));
+// JobSeekerSetupPage not implemented; route removed
+const JobSeekerDashboardPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerDashboardPage"));
 
 // Marketplace & Search
 const MarketplacePage = lazyWithRetry(() => import("./Pages/marketplace/MarketplacePage"));
@@ -281,7 +283,15 @@ function App() {
                   }
                 />
 
-                {/* Marketplace (founders only) */}
+                  <Route
+                   path="/job-seeker/dashboard"
+                   element={
+                     <ProtectedRoute>
+                       <JobSeekerDashboardPage />
+                     </ProtectedRoute>
+                   }
+                  />
+
                 <Route
                   path="/marketplace"
                   element={

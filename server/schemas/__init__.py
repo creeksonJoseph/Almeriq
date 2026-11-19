@@ -4,6 +4,7 @@ from .auth import *
 from .provider import *
 from .waitlist import *
 from .founder import *
+from .investor import *
 
 __all__ = [
     # auth

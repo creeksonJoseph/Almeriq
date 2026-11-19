@@ -15,6 +15,12 @@ from . import founder_validation
 from . import founder_legal
 from . import founder_ai_cache
 from . import company_guide
+from . import investor_profile
+from . import startup_pitch
+from . import investment
+from . import job_posting
+from . import job_application
+from . import job_seeker_profile
 
 __all__ = [
     "user",
@@ -32,4 +38,7 @@ __all__ = [
     "founder_legal",
     "founder_ai_cache",
     "company_guide",
+    "job_posting",
+    "job_application",
+    "job_seeker_profile",
 ]

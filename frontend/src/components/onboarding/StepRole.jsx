@@ -25,6 +25,12 @@ const ROLES = [
     desc: "Joining high-impact teams and early-stage companies",
     badge: "Talent",
   },
+  {
+    id: "EXPERT",
+    title: "Expert / Advisor",
+    desc: "Offering sector expertise, mentorship, and advisory engagements",
+    badge: "Expert",
+  },
 ];
 
 export default function StepRole({ role, setRole, loading, onBack, onSubmit }) {

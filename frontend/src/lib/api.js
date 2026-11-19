@@ -106,3 +106,16 @@ export {
   markNotificationReadApi,
   markAllNotificationsReadApi,
 } from "./api/notifications";
+
+export {
+  getInvestorProfileApi,
+  updateInvestorProfileApi,
+  listInvestorStartupsApi,
+  getInvestorStartupApi,
+  createInvestmentApi,
+  getInvestmentApi,
+  signInvestmentApi,
+  completeInvestmentApi,
+  listInvestorPortfolioApi,
+  getInvestorPortfolioItemApi,
+} from "./api/investor";

@@ -28,6 +28,10 @@ const CANONICAL_ROLES = {
   FOUNDER: "founder",
   admin: "ADMIN",
   ADMIN: "ADMIN",
+  investor: "INVESTOR",
+  INVESTOR: "INVESTOR",
+  expert: "EXPERT",
+  EXPERT: "EXPERT",
 };
 
 function normalizeUser(user) {

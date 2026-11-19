@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, Zap, Shield, Truck, Layers, Box, Satellite, Sun, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
-import { listMarketplaceProvidersApi, listMarketplaceListingsApi } from "../../lib/api";
+import { listMarketplaceProvidersApi, listMarketplaceListingsApi, createDealApi } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 const CATEGORIES = [
   { id: "all", label: "All", icon: "LayoutDashboard", count: 142 },

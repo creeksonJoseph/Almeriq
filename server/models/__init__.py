@@ -17,6 +17,12 @@ from .deal import Deal
 from .conversation import Conversation
 from .message import Message
 from .notification import Notification
+from .investor_profile import InvestorProfile
+from .startup_pitch import StartupPitch
+from .investment import Investment
+from .job_posting import JobPosting
+from .job_application import JobApplication
+from .job_seeker_profile import JobSeekerProfile
 
 __all__ = [
     "Base", "User", "Waitlist",
@@ -24,4 +30,6 @@ __all__ = [
     "CompanyRegistrationGuide",
     "ProviderProfile", "Asset", "CoverageRegion", "Order", "OrderEvent",
     "Deal", "Conversation", "Message", "Notification",
+    "InvestorProfile", "StartupPitch", "Investment",
+    "JobPosting", "JobApplication", "JobSeekerProfile",
 ]

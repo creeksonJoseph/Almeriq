@@ -2,6 +2,9 @@ import React, { Suspense, lazy } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 const ProviderDashboardPage = lazy(() => import("../provider/ProviderDashboardPage"));
+const JobSeekerDashboardPage = lazy(() => import("../jobseeker/JobSeekerDashboardPage"));
+const InvestorDashboardPage = lazy(() => import("../investor/InvestorDashboardPage"));
+const ExpertDashboardPage = lazy(() => import("../expert/ExpertDashboardPage"));
 const DashboardComponent = lazy(() => import("../../components/Dashboard"));
 const AdminWaitlistPage = lazy(() => import("../admin/AdminWaitlistPage"));
 
@@ -23,7 +26,31 @@ export default function DashboardPage() {
     );
   }
 
-  if (role === "ADMIN") {
+  if (role === "JOB_SEEKER") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <JobSeekerDashboardPage />
+      </Suspense>
+    );
+  }
+
+  if (role === "INVESTOR") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <InvestorDashboardPage />
+      </Suspense>
+    );
+  }
+
+  if (role === "EXPERT") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <ExpertDashboardPage />
+      </Suspense>
+    );
+  }
+
+  if (role === "ADMIN" || Boolean(user?.is_admin)) {
     return (
       <Suspense fallback={<PageLoader />}>
         <AdminWaitlistPage />

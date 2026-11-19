@@ -14,6 +14,9 @@ import {
   ChevronRight,
   X,
   ShieldCheck,
+  TrendingUp,
+  UserRound,
+  Building2,
 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
@@ -28,6 +31,22 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "validation", label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
   { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
+];
+
+export const JOB_SEEKER_NAV = [
+  { key: "jobseeker-dashboard", label: "Job Seeker Dashboard", path: "/job-seeker/dashboard", icon: Home },
+  { key: "jobseeker-setup", label: "My Profile", path: "/job-seeker/setup", icon: Settings },
+];
+
+export const INVESTOR_NAV = [
+  { key: "investor-dashboard", label: "Investor Dashboard", path: "/dashboard", icon: TrendingUp },
+  { key: "investor-profile", label: "Investor Profile", path: "/investor/profile", icon: UserRound },
+  { key: "investor-pitches", label: "Startup Pitches", path: "/investor/pitches", icon: Building2 },
+];
+
+export const EXPERT_NAV = [
+  { key: "expert-dashboard", label: "Expert Dashboard", path: "/dashboard", icon: ShieldCheck },
+  { key: "expert-profile", label: "Expert Profile", path: "/expert/profile", icon: UserRound },
 ];
 
 export const PROVIDER_NAV = [
@@ -290,8 +309,139 @@ export default function AppSidebar({
             </div>
           )}
 
-          {/* GROUP 3: Administration (Admin Only) */}
-          {Boolean(user?.is_admin) && (
+                     {/* GROUP 2c: Job Seeker Navigation */}
+           {role === "JOB_SEEKER" && (
+             <div>
+               {!isCollapsed && (
+                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                   Job Seeker
+                 </p>
+               )}
+               <div className="space-y-0.5">
+                 {JOB_SEEKER_NAV.map((item) => {
+                   const Icon = item.icon;
+                   const active = isCurrentActive(item.path);
+                   return (
+                     <button
+                       key={item.key}
+                       type="button"
+                       onClick={() => handleNavClick(item.path)}
+                       title={isCollapsed ? item.label : undefined}
+                       className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                         isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                       } ${
+                         active
+                           ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                           : "text-white hover:bg-white/[0.05]"
+                       }`}
+                     >
+                       {active && !isCollapsed && (
+                         <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                       )}
+                       <Icon
+                         size={16}
+                         className={`shrink-0 transition-colors ${
+                           active
+                             ? "text-[#C9A15A]"
+                             : "text-white/70 group-hover:text-white"
+                         }`}
+                       />
+                       {!isCollapsed && <span className="truncate">{item.label}</span>}
+                     </button>
+                   );
+                 })}
+               </div>
+             </div>
+            )}
+            {/* GROUP 2d: Investor Navigation */}
+            {role === "INVESTOR" && (
+              <div>
+                {!isCollapsed && (
+                  <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                    Investor
+                  </p>
+                )}
+                <div className="space-y-0.5">
+                  {INVESTOR_NAV.map((item) => {
+                    const Icon = item.icon;
+                    const active = isCurrentActive(item.path);
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => handleNavClick(item.path)}
+                        title={isCollapsed ? item.label : undefined}
+                        className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                          isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                        } ${
+                          active
+                            ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                            : "text-white hover:bg-white/[0.05]"
+                        }`}
+                      >
+                        {active && !isCollapsed && (
+                          <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                        )}
+                        <Icon
+                          size={16}
+                          className={`shrink-0 transition-colors ${
+                            active
+                              ? "text-[#C9A15A]"
+                              : "text-white/70 group-hover:text-white"
+                          }`}
+                        />
+                        {!isCollapsed && <span className="truncate">{item.label}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {/* GROUP 2e: Expert Navigation */}
+            {role === "EXPERT" && (
+              <div>
+                {!isCollapsed && (
+                  <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                    Expert
+                  </p>
+                )}
+                <div className="space-y-0.5">
+                  {EXPERT_NAV.map((item) => {
+                    const Icon = item.icon;
+                    const active = isCurrentActive(item.path);
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => handleNavClick(item.path)}
+                        title={isCollapsed ? item.label : undefined}
+                        className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                          isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                        } ${
+                          active
+                            ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                            : "text-white hover:bg-white/[0.05]"
+                        }`}
+                      >
+                        {active && !isCollapsed && (
+                          <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                        )}
+                        <Icon
+                          size={16}
+                          className={`shrink-0 transition-colors ${
+                            active
+                              ? "text-[#C9A15A]"
+                              : "text-white/70 group-hover:text-white"
+                          }`}
+                        />
+                        {!isCollapsed && <span className="truncate">{item.label}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {Boolean(user?.is_admin) && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]/60">
@@ -365,14 +515,11 @@ export default function AppSidebar({
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C9A15A]/30 to-[#C9A15A]/10 border border-[#C9A15A]/25 text-[#E8D6A8] font-bold text-xs">
                   {userInitials}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold text-white">
-                    {userName}
-                  </p>
-                  <p className="truncate text-[10px] text-white/40 capitalize">
-                    {role.replace("_", " ")}
-                  </p>
-                </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold text-white">
+                      {userName}
+                    </p>
+                  </div>
               </button>
 
               {/* Action triggers */}

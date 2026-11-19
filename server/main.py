@@ -58,6 +58,9 @@ from api.routers.deal import router as deal_router
 from api.routers.conversation import router as conversation_router
 from api.routers.message import router as message_router
 from api.routers.notification import router as notification_router
+from api.routers.job import router as job_router
+from api.routers.investor import router as investor_router
+from api.routers.startup_pitch import router as startup_pitch_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
 
@@ -183,6 +186,9 @@ app.include_router(deal_router)
 app.include_router(conversation_router)
 app.include_router(message_router)
 app.include_router(notification_router)
+app.include_router(job_router)
+app.include_router(investor_router)
+app.include_router(startup_pitch_router)
 
 # ── Error Handling Pipeline (§16) ─────────────────────────────────────────────
 # Order matters: more specific handlers first, catch-all last.
