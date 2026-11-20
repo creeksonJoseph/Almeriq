@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, Zap, Shield, Truck, Layers, Box, Satellite, Sun, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
-import { listMarketplaceListingsApi, createMarketplaceOrderApi, createDealApi } from "../../lib/api";
+import { listMarketplaceListingsApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 const CATEGORIES = [
@@ -95,6 +95,19 @@ export default function MarketplacePage() {
     }
   };
 
+  const handleChat = async (listing) => {
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent("/messages")}`);
+      return;
+    }
+    try {
+      const conversation = await startProviderConversationApi(listing.provider_id);
+      navigate(`/messages?conversation=${conversation.id}`);
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Unable to start conversation.");
+    }
+  };
+
   const handleImageClick = (images, index) => {
     setGalleryImages(images);
     setGalleryIndex(index);
@@ -183,7 +196,7 @@ export default function MarketplacePage() {
           <ProviderCard
             key={provider.id}
             provider={provider}
-            onChat={() => navigate("/messages")}
+            onChat={() => handleChat(provider)}
             onOrder={() => handleOrder(provider)}
             ordering={orderingId === provider.id}
             onView={() => navigate(`/listings/${provider.id}`)}
