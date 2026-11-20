@@ -285,6 +285,7 @@ class DealResponse(BaseModel):
     id: int
     order_id: int
     payment_method: Optional[str]
+    payment_status: str = "simulated"
     amount: Optional[float]
     signature: Optional[str]
     signed_at: Optional[datetime]
