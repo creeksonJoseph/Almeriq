@@ -70,6 +70,7 @@ const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/Pro
 const ProviderDispatchPage = lazyWithRetry(() => import("./Pages/provider/ProviderDispatchPage"));
 // JobSeekerSetupPage not implemented; route removed
 const JobSeekerDashboardPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerDashboardPage"));
+const JobSeekerSetupPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerSetupPage"));
 
 // Marketplace & Search
 const MarketplacePage = lazyWithRetry(() => import("./Pages/marketplace/MarketplacePage"));
@@ -283,14 +284,22 @@ function App() {
                   }
                 />
 
-                  <Route
-                   path="/job-seeker/dashboard"
-                   element={
-                     <ProtectedRoute>
-                       <JobSeekerDashboardPage />
-                     </ProtectedRoute>
-                   }
-                  />
+                <Route
+                  path="/job-seeker/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <JobSeekerDashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/job-seeker/setup"
+                  element={
+                    <ProtectedRoute>
+                      <JobSeekerSetupPage />
+                    </ProtectedRoute>
+                  }
+                />
 
                 <Route
                   path="/marketplace"
