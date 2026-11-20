@@ -44,6 +44,7 @@ class AssetBase(BaseModel):
     client_asset_id: Optional[str] = Field(default=None, max_length=64)
     description: Optional[str] = None
     specs: Optional[dict] = None
+    media: List[dict] = Field(default_factory=list)
     price_monthly: Optional[Decimal] = Field(default=None, ge=0)
     quantity_capacity: Optional[int] = Field(default=None, ge=0)
     telemetry_url: Optional[str] = None
@@ -147,6 +148,7 @@ class MarketplaceListingResponse(BaseModel):
     provider_verified: bool
     provider_location: Optional[str]
     provider_enclave_key: Optional[str]
+    media: List[dict] = Field(default_factory=list)
     created_at: datetime
 
     class Config:
