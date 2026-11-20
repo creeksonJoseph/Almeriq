@@ -56,9 +56,17 @@ export default function MarketplacePage() {
     loadData();
   }, []);
 
+  const categoryTerms = {
+    trucks: ["truck", "transport", "logistics"],
+    satellites: ["satellite", "communications", "comms"],
+    generators: ["generator", "power"],
+    excavators: ["excavat", "earthmoving", "machinery"],
+    containers: ["container", "edge"],
+    solar: ["solar", "renewable"],
+  };
   const filteredProviders = activeCategory === "all"
     ? providers
-    : providers.filter(p => p.category?.toLowerCase() === activeCategory);
+    : providers.filter(p => (categoryTerms[activeCategory] || [activeCategory]).some(term => (p.category || "").toLowerCase().includes(term)));
 
   const handleOrder = async (listing) => {
     if (!user) {
