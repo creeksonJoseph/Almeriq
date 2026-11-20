@@ -93,7 +93,27 @@ async def update_order_status(
     actor_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Update an order's status (ownership check) and record an event."""
+    """Update an order's status using the supported provider workflow."""
+    order = await order_repo.get_order_by_id(
+        order_id, provider_id=provider_id, session=session
+    )
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found",
+        )
+
+    allowed_transitions = {
+        "pending_review": {"confirmed", "declined"},
+        "confirmed": {"shipped"},
+        "shipped": {"completed"},
+    }
+    if new_status not in allowed_transitions.get(order["status"], set()):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Order cannot transition from {order['status']} to {new_status}",
+        )
+
     order = await order_repo.update_order_status(
         order_id, provider_id, new_status, session=session
     )
@@ -136,6 +156,11 @@ async def upload_waybill(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found",
+        )
+    if order["status"] != "confirmed":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A waybill can only be uploaded for a confirmed order",
         )
     note = f"Waybill uploaded: {waybill_url}"
     if tracking_number:
