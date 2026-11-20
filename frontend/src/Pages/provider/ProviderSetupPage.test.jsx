@@ -1,7 +1,14 @@
+let navigateMock = vi.fn();
+
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, useNavigate: () => navigateMock };
+});
+
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useNavigate } from "react-router-dom";
 
 vi.mock("../../components/ui/index.js", () => ({
   Button: ({ children, onClick, ...props }) => (
@@ -31,6 +38,7 @@ import ProviderSetupPage from "./ProviderSetupPage.jsx";
 
 const setup = () => {
   window.alert = vi.fn();
+  navigateMock.mockClear();
   const all = [
     api.getProviderProfileApi,
     api.updateProviderProfileApi,
@@ -228,5 +236,66 @@ describe("ProviderSetupPage asset behavior", () => {
         expect.stringContaining("failed to save")
       );
     });
+  });
+
+  it("does not navigate to /provider/dashboard when pending deletion fails", async () => {
+    setup();
+    vi.mocked(api.listAssetsApi).mockResolvedValue({
+      items: [
+        {
+          id: 3,
+          client_asset_id: "del-1",
+          name: "Old Asset",
+          category: "Heavy Earthmoving / Excavation",
+          kind: "physical",
+          specs: { quantity: "", capacity: "", availability: "", rate: "" },
+        },
+      ],
+    });
+    vi.mocked(api.deleteAssetApi).mockRejectedValue(new Error("delete failed"));
+    vi.mocked(api.createAssetApi).mockResolvedValue({});
+    vi.mocked(api.updateAssetApi).mockResolvedValue({});
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+
+    // The pre-existing asset (id 3) is loaded with a remove button.
+    fireEvent.click(screen.getAllByText(/remove/i)[0]);
+    // confirm the asset entered pending deletions (delete API not yet called)
+    expect(api.deleteAssetApi).not.toHaveBeenCalled();
+
+    // Walk through the remaining steps to reach Complete Setup.
+    fireEvent.click(screen.getAllByText(/continue/i)[0]);
+    await waitFor(() => {
+      expect(screen.getByText(/add digital asset/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getAllByText(/continue/i)[0]);
+    await waitFor(() => {
+      expect(screen.getByText(/africa/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/africa/i));
+    fireEvent.click(screen.getAllByText(/continue/i)[0]);
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/company size/i)).toBeInTheDocument();
+    });
+
+    // Submit Complete Setup.
+    fireEvent.click(screen.getByText(/complete setup/i));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Deletion was attempted with the asset's form id.
+    await waitFor(() => expect(api.deleteAssetApi).toHaveBeenCalledTimes(1));
+    expect(typeof api.deleteAssetApi.mock.calls[0][0]).toBe("string");
+    // Failure is surfaced to the user.
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        expect.stringContaining("could not be deleted")
+      );
+    });
+    // Navigation was NOT triggered.
+    expect(navigateMock).not.toHaveBeenCalledWith("/provider/dashboard");
+    // The component is still mounted (no navigation occurred).
+    expect(screen.getByText(/complete setup/i)).toBeInTheDocument();
   });
 });
