@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Input, SkeletonText } from "../../components/ui";
-import { getOrderApi, uploadWaybillApi, updateOrderStatusApi } from "../../lib/api";
+import { getOrderApi, dispatchOrderApi } from "../../lib/api";
 
 export default function ProviderDispatchPage() {
   const { id } = useParams();
@@ -24,11 +24,10 @@ export default function ProviderDispatchPage() {
     setSaving(true);
     setError("");
     try {
-      await uploadWaybillApi(id, {
+      await dispatchOrderApi(id, {
         waybill_url: form.waybill_url.trim(),
         tracking_number: form.tracking_number.trim() || undefined,
       });
-      await updateOrderStatusApi(id, "shipped");
       navigate(`/provider/orders/${id}`);
     } catch (e) {
       setError(e.message || "Unable to dispatch order");
