@@ -1,18 +1,31 @@
 import { apiClient } from "../client";
 
+const normalizeOrder = (order) => ({
+  ...order,
+  clientName: order.client_name || order.client_email || "Client",
+  assetName: order.asset_name || "Asset listing",
+  assetDetails: order.asset_details || order.asset_category || "",
+  amount: order.lease_amount,
+});
+
+const normalizeOrderList = (data) => ({
+  ...data,
+  items: (data.items || []).map(normalizeOrder),
+});
+
 export async function listOrdersApi(params = {}) {
   const res = await apiClient.get("/api/provider/orders", { params });
-  return res.data;
+  return normalizeOrderList(res.data);
 }
 
 export async function getOrderApi(id) {
   const res = await apiClient.get(`/api/provider/orders/${id}`);
-  return res.data;
+  return normalizeOrder(res.data);
 }
 
 export async function confirmOrderApi(id) {
   const res = await apiClient.patch(`/api/provider/orders/${id}/status`, { status: "confirmed" });
-  return res.data;
+  return normalizeOrder(res.data);
 }
 
 export async function declineOrderApi(id, reason) {
@@ -27,7 +40,7 @@ export async function shipOrderApi(id, payload) {
 
 export async function updateOrderStatusApi(id, status) {
   const res = await apiClient.patch(`/api/provider/orders/${id}/status`, { status });
-  return res.data;
+  return normalizeOrder(res.data);
 }
 
 export async function uploadWaybillApi(id, payload) {
