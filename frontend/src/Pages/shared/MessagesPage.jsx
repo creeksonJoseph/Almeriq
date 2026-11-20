@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
 import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
@@ -7,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function MessagesPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -23,13 +25,17 @@ export default function MessagesPage() {
       try {
         const res = await listConversationsApi();
         const items = res.items || res.conversations || [];
-        setConversations(items.map(conv => ({
+        const normalized = items.map(conv => ({
           ...conv,
           otherParty: { name: conv.other_participant?.full_name || conv.other_participant?.email || "User" },
           lastMessage: conv.last_message?.body || "",
           time: conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "",
           unread: conv.unread_count || 0,
-        })));
+        }));
+        setConversations(normalized);
+        const requestedId = Number(searchParams.get("conversation"));
+        const requestedConversation = normalized.find(conv => conv.id === requestedId);
+        if (requestedConversation) await openConversation(requestedConversation);
       } catch (e) {
         console.error("Failed to load conversations", e);
       } finally {
@@ -37,7 +43,7 @@ export default function MessagesPage() {
       }
     }
     loadConversations();
-  }, []);
+  }, [searchParams]);
 
   const openConversation = async (conversation) => {
     setActiveConversation(conversation);
