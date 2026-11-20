@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, Zap, Shield, Truck, Layers, Box, Satellite, Sun, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
-import { listMarketplaceProvidersApi, listMarketplaceListingsApi, createDealApi } from "../../lib/api";
+import { listMarketplaceListingsApi, createMarketplaceOrderApi, createDealApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 const CATEGORIES = [
@@ -27,7 +27,10 @@ const ICONS = {
 };
 
 export default function MarketplacePage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [providers, setProviders] = useState([]);
+  const [orderingId, setOrderingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -42,7 +45,7 @@ export default function MarketplacePage() {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await listMarketplaceProvidersApi();
+        const res = await listMarketplaceListingsApi({ limit: 50 });
         setProviders(res.items || res.data?.items || res.providers || res.data || res);
       } catch (e) {
         setError(e.message);
@@ -56,6 +59,33 @@ export default function MarketplacePage() {
   const filteredProviders = activeCategory === "all"
     ? providers
     : providers.filter(p => p.category?.toLowerCase() === activeCategory);
+
+  const handleOrder = async (listing) => {
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(`/listings/${listing.id}`)}`);
+      return;
+    }
+    if (orderingId) return;
+    setOrderingId(listing.id);
+    setError(null);
+    try {
+      const order = await createMarketplaceOrderApi({
+        asset_id: listing.id,
+        allocation: "Requested through marketplace",
+        lease_amount: listing.price_monthly,
+      });
+      const deal = await createDealApi({
+        order_id: order.id,
+        payment_method: "visa",
+        amount: listing.price_monthly || 0,
+      });
+      navigate(`/checkout/${deal.id}`);
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Unable to start this order.");
+    } finally {
+      setOrderingId(null);
+    }
+  };
 
   const handleImageClick = (images, index) => {
     setGalleryImages(images);
@@ -137,18 +167,22 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Provider Cards Grid */}
+      {error && <div role="alert" className="rounded-lg border border-gold/40 bg-surface p-4 text-sm text-gold">{error}</div>}
+
+      {/* Marketplace listings */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredProviders.map(provider => (
           <ProviderCard
             key={provider.id}
             provider={provider}
-            onChat={() => {}}
-            onOrder={() => {}}
-            onView={() => {}}
+            onChat={() => navigate("/messages")}
+            onOrder={() => handleOrder(provider)}
+            ordering={orderingId === provider.id}
+            onView={() => navigate(`/listings/${provider.id}`)}
             onImageClick={handleImageClick}
           />
         ))}
+        {!filteredProviders.length && <div className="col-span-full rounded-xl border border-border p-8 text-center text-white/60">No infrastructure listings match this category yet.</div>}
       </div>
 
       {/* Gallery Modal */}
@@ -183,7 +217,7 @@ export default function MarketplacePage() {
   );
 }
 
-function ProviderCard({ provider, onChat, onOrder, onView, onImageClick }) {
+function ProviderCard({ provider, onChat, onOrder, onView, ordering }) {
   const images = provider.images || [
     "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800",
@@ -195,7 +229,7 @@ function ProviderCard({ provider, onChat, onOrder, onView, onImageClick }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-12 h-12 rounded-lg bg-surface-2 border border-gold/40 text-gold font-serif font-bold text-lg flex items-center justify-center shrink-0">
-              {provider.name?.slice(0,2).toUpperCase() || "SC"}
+              {(provider.provider_name || provider.name || "AL").slice(0,2).toUpperCase()}
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
@@ -204,15 +238,15 @@ function ProviderCard({ provider, onChat, onOrder, onView, onImageClick }) {
               </div>
               <div className="flex items-center gap-1 text-white/60 text-sm">
                 <MapPin className="w-3.5 h-3.5" />
-                <span className="truncate">{provider.location || provider.provider_location}</span>
+                <span className="truncate">{provider.location || provider.provider_location || "Location not provided"}</span>
               </div>
             </div>
           </div>
-          <Pill variant="gold" className="shrink-0">{provider.status || "ONLINE"}</Pill>
+          <Pill variant="gold" className="shrink-0">{provider.status || "available"}</Pill>
         </div>
-        <p className="text-sm text-white/70 line-clamp-2">{provider.description || "Verified infrastructure listing"}</p>
+        <p className="text-sm text-white/70 line-clamp-2">{provider.description || `${provider.kind || "Infrastructure"} listing by ${provider.provider_name || "provider"}`}</p>
         <div className="flex items-center gap-1.5 flex-wrap">
-          {(provider.tags || ["Tier-3 Micro-DC", "64x H100 SXM5"]).slice(0, 2).map((tag, i) => (
+          {(provider.tags || [provider.category, provider.kind]).filter(Boolean).slice(0, 2).map((tag, i) => (
             <Pill key={i} variant="white" className="truncate max-w-full">{tag}</Pill>
           ))}
         </div>
@@ -222,9 +256,9 @@ function ProviderCard({ provider, onChat, onOrder, onView, onImageClick }) {
           <MessageSquare className="w-4 h-4 mr-1" />
           <span className="truncate">Chat</span>
         </Button>
-        <Button size="sm" className="py-2 px-1" onClick={onOrder}>
+        <Button size="sm" className="py-2 px-1" onClick={onOrder} disabled={ordering || provider.status !== "available"}>
           <ShoppingCart className="w-4 h-4 mr-1" />
-          <span className="truncate">Order</span>
+          <span className="truncate">{ordering ? "Starting..." : "Order"}</span>
         </Button>
         <Button variant="ghost" size="sm" className="py-2 px-1" onClick={onView}>
           <span className="truncate">View</span>

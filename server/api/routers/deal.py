@@ -4,9 +4,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
-from api.dependencies import get_current_provider_profile
+from api.dependencies import get_current_user
+from repositories import provider_profile as provider_repo
 from schemas.provider import DealCreateRequest, DealResponse, DealSignRequest
 from services import deal as svc
+from core.db import get_db
+from fastapi import HTTPException
 
 router = APIRouter(prefix="/api", tags=["deals"])
 
@@ -15,16 +18,18 @@ router = APIRouter(prefix="/api", tags=["deals"])
 async def create_deal(
     response: Response,
     body: DealCreateRequest,
-    profile: dict = Depends(get_current_provider_profile),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Create a deal for an order owned by the current provider."""
     response.headers["Cache-Control"] = "no-store"
+    profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
     return await svc.create_deal(
         order_id=body.order_id,
         payment_method=body.payment_method,
         amount=float(body.amount),
-        provider_id=profile["id"],
+        provider_id=profile["id"] if profile else None,
+        client_id=current_user["id"],
         session=db,
     )
 
@@ -33,12 +38,13 @@ async def create_deal(
 async def get_deal(
     response: Response,
     deal_id: int,
-    profile: dict = Depends(get_current_provider_profile),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Retrieve a deal whose order belongs to the current provider."""
     response.headers["Cache-Control"] = "private, max-age=30"
-    return await svc.get_deal(deal_id=deal_id, provider_id=profile["id"], session=db)
+    profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
+    return await svc.get_deal(deal_id=deal_id, provider_id=profile["id"] if profile else None, client_id=current_user["id"], session=db)
 
 
 @router.post("/deals/{deal_id}/sign", response_model=DealResponse)
@@ -46,7 +52,7 @@ async def sign_deal(
     response: Response,
     deal_id: int,
     body: DealSignRequest,
-    profile: dict = Depends(get_current_provider_profile),
+    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Sign a deal whose order belongs to the current provider."""
@@ -54,6 +60,7 @@ async def sign_deal(
     return await svc.sign_deal(
         deal_id=deal_id,
         signature=body.signature,
-        provider_id=profile["id"],
+        provider_id=(await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db) or {}).get("id"),
+        client_id=current_user["id"],
         session=db,
     )

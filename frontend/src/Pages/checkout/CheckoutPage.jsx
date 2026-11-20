@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button, Card, Input, Modal, Skeleton, SkeletonText } from "../../components/ui";
-import { getDealApi, getMarketplaceListingApi } from "../../lib/api";
+import { getDealApi, getMarketplaceListingApi, signDealApi } from "../../lib/api";
 
 const STEPS = [
   { id: "payment", label: "1. Payment", short: "Pay" },
@@ -74,9 +74,9 @@ export default function CheckoutPage() {
   const handleComplete = async () => {
     setActionLoading(true);
     try {
-      // In real app, call signDealApi
-      await new Promise(r => setTimeout(r, 1000));
-      navigate("/provider/orders", { state: { success: true } });
+      if (!deal?.id || !signature) throw new Error("A deal and signature are required to complete checkout.");
+      await signDealApi(deal.id, signature);
+      setCurrentStep(STEPS.length - 1);
     } catch (e) {
       console.error("Checkout failed", e);
     } finally {

@@ -13,11 +13,12 @@ async def create_deal(
     order_id: int,
     payment_method: str,
     amount: float,
-    provider_id: int,
+    provider_id: int | None = None,
+    client_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Create a deal for an order owned by the provider."""
-    order = await order_repo.get_order_by_id(order_id, provider_id=provider_id, session=session)
+    """Create a deal for an order owned by the authenticated buyer or provider."""
+    order = await order_repo.get_order_by_id(order_id, provider_id=provider_id, client_id=client_id, session=session)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -39,17 +40,18 @@ async def create_deal(
 
 async def get_deal(
     deal_id: int,
-    provider_id: int,
+    provider_id: int | None = None,
+    client_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Get a deal by ID, ensuring the linked order belongs to the provider."""
+    """Get a deal by ID, ensuring the linked order belongs to the buyer or provider."""
     deal = await deal_repo.get_deal_by_id(deal_id, session=session)
     if not deal:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
-    order = await order_repo.get_order_by_id(deal["order_id"], provider_id=provider_id, session=session)
+    order = await order_repo.get_order_by_id(deal["order_id"], provider_id=provider_id, client_id=client_id, session=session)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -61,10 +63,11 @@ async def get_deal(
 async def sign_deal(
     deal_id: int,
     signature: str,
-    provider_id: int,
+    provider_id: int | None = None,
+    client_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Sign a deal, ensuring the linked order belongs to the provider."""
+    """Sign a deal, ensuring the linked order belongs to the buyer or provider."""
     deal = await deal_repo.get_deal_by_id(deal_id, session=session)
     if not deal:
         raise HTTPException(

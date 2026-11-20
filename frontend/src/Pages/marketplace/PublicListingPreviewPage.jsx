@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2, MessageSquare, ShoppingCart, CheckCircle, Shield, Truck } from "lucide-react";
 import { Button, Card, StatusPill, Modal, Pill } from "../../components/ui";
-import { getMarketplaceListingApi, getMarketplaceProviderApi, createDealApi } from "../../lib/api";
+import { getMarketplaceListingApi, createMarketplaceOrderApi, createDealApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function PublicListingPreviewPage() {
@@ -22,7 +22,7 @@ export default function PublicListingPreviewPage() {
       try {
         const [listingRes, providerRes] = await Promise.all([
           getMarketplaceListingApi(id),
-          getMarketplaceProviderApi(id).catch(() => null),
+          Promise.resolve(null),
         ]);
         setListing(listingRes.data || listingRes.listing || listingRes);
         setProvider(providerRes?.data || providerRes?.provider || providerRes);
@@ -37,15 +37,24 @@ export default function PublicListingPreviewPage() {
 
   const handleOrder = async () => {
     if (!user) {
-      window.location.href = `/login?redirect=/listings/${id}`;
+      window.location.href = `/login?redirect=${encodeURIComponent(`/listings/${id}`)}`;
       return;
     }
     setDealLoading(true);
     try {
-      const res = await createDealApi({ listingId: id, buyerId: user.id });
-      window.location.href = `/checkout/${res.dealId || res.id}`;
+      const order = await createMarketplaceOrderApi({
+        asset_id: Number(id),
+        allocation: "Requested through marketplace",
+        lease_amount: listing.price_monthly,
+      });
+      const deal = await createDealApi({
+        order_id: order.id,
+        payment_method: "visa",
+        amount: listing.price_monthly || 0,
+      });
+      window.location.href = `/checkout/${deal.id}`;
     } catch (e) {
-      console.error("Failed to create deal", e);
+      setError(e.response?.data?.detail || e.message || "Unable to start this order.");
     } finally {
       setDealLoading(false);
     }
@@ -92,7 +101,7 @@ export default function PublicListingPreviewPage() {
           </Button>
           <Button onClick={handleOrder} disabled={dealLoading}>
             <ShoppingCart className="w-4 h-4 mr-1" />
-            {dealLoading ? "Creating Deal..." : "Order Now"}
+            {dealLoading ? "Starting order..." : "Order Now"}
           </Button>
         </div>
       </div>

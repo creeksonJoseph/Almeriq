@@ -20,6 +20,11 @@ export async function getMarketplaceListingApi(id) {
   return res.data;
 }
 
+export async function createMarketplaceOrderApi(payload) {
+  const res = await apiClient.post("/marketplace/orders", payload);
+  return res.data;
+}
+
 export async function searchMarketplaceApi(query, params = {}) {
   const res = await apiClient.get("/marketplace/search", { params: { q: query, ...params } });
   return res.data;
