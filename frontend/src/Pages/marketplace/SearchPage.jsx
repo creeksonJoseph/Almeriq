@@ -253,7 +253,7 @@ function SearchResultCard({ result, onChat, onOrder, onView, ordering }) {
       </div>
       <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-border">
         <Button variant="ghost" size="sm" className="py-2 px-1" onClick={onChat}><MessageSquare className="w-4 h-4 mr-1" /><span className="truncate">Chat</span></Button>
-        <Button size="sm" className="py-2 px-1" onClick={onOrder} disabled={ordering || result.status !== "available"}><ShoppingCart className="w-4 h-4 mr-1" /><span className="truncate">{ordering ? "Starting..." : "Order"}</span></Button>
+        <Button size="sm" className="py-2 px-1" onClick={onOrder} disabled={ordering || result.status !== "available" || !(Number(result.price_monthly) > 0)}><ShoppingCart className="w-4 h-4 mr-1" /><span className="truncate">{ordering ? "Starting..." : "Order"}</span></Button>
         <Button variant="ghost" size="sm" className="py-2 px-1" onClick={onView}><span className="truncate">View</span><ChevronRight className="w-4 h-4 ml-1" /></Button>
       </div>
     </Card>
