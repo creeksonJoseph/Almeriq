@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
+import { Send, ChevronLeft, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
 import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listConversationsApi, listMessagesApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
@@ -106,9 +106,6 @@ export default function MessagesPage() {
           <p className="text-sm text-white/70">Conversations with providers and clients</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Search className="w-4 h-4 mr-1" /> Search
-          </Button>
           {totalUnread > 0 && (
             <Pill variant="gold" className="text-xs">{totalUnread} unread</Pill>
           )}
@@ -241,9 +238,6 @@ function ChatView({ conversation, messages, onSend, messageForm, sending, messag
       {/* Composer */}
       <form onSubmit={onSend} className="p-4 border-t border-border bg-surface shrink-0">
         <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" className="p-2">
-            <Paperclip className="w-4 h-4" />
-          </Button>
           <Input
             {...messageForm.register("content")}
             placeholder="Type a message..."
