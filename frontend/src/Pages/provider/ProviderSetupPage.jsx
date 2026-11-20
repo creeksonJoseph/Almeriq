@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, Save, Eye, MapPin, Building2, Server, Globe, Users } from "lucide-react";
 import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../../components/ui";
-import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi, listAssetsApi, createAssetApi, updateAssetApi } from "../../lib/api";
+import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi, listAssetsApi, createAssetApi, updateAssetApi, deleteAssetApi } from "../../lib/api";
 
 const COVERAGE_REGIONS = [
   "Africa",
@@ -71,7 +71,7 @@ export default function ProviderSetupPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
+  const [pendingDeletions, setPendingDeletions] = useState([]);
 
   const methods = useForm({
     resolver: zodResolver(z.object({
@@ -184,11 +184,12 @@ export default function ProviderSetupPage() {
       });
       await updateCoverageRegionsApi(data.coverage.regions.map(region => coverageToApi[region] || region));
       const toNum = (v) => (v != null && v !== "" && !isNaN(Number(v)) ? Number(v) : null);
-      const saveAsset = async (asset, kind) => {
+      const saveAsset = async (asset, kind, index, fieldPath) => {
         const payload = {
           name: asset.name,
           category: asset.category,
           kind,
+          client_asset_id: asset.client_asset_id,
           quantity_capacity: toNum(kind === "physical" ? asset.quantity : asset.capacity),
           price_monthly: toNum(asset.rate),
           specs: {
@@ -198,13 +199,26 @@ export default function ProviderSetupPage() {
             rate: asset.rate || undefined,
           },
         };
-        if (asset.id) return updateAssetApi(asset.id, payload);
-        return createAssetApi(payload);
+        let saved;
+        if (asset.id) {
+          saved = await updateAssetApi(asset.id, payload);
+        } else {
+          saved = await createAssetApi(payload);
+          if (saved?.id) methods.setValue(`${fieldPath}.${index}.id`, saved.id);
+          if (saved?.client_asset_id) methods.setValue(`${fieldPath}.${index}.client_asset_id`, saved.client_asset_id);
+        }
+        return saved;
       };
       await Promise.all([
-        ...data.physicalAssets.map(a => saveAsset(a, "physical")),
-        ...data.digitalAssets.map(a => saveAsset(a, "digital")),
+        ...data.physicalAssets.map((a, i) => saveAsset(a, "physical", i, "physicalAssets")),
+        ...data.digitalAssets.map((a, i) => saveAsset(a, "digital", i, "digitalAssets")),
       ]);
+      // delete pending
+      const deleted = [];
+      for (const id of pendingDeletions) {
+        try { await deleteAssetApi(id); deleted.push(id); } catch (e) { console.error(e); }
+      }
+      setPendingDeletions(prev => prev.filter(id => !deleted.includes(id)));
     } catch (e) {
       console.error("Save failed", e);
       alert("Some draft data failed to save.");
@@ -240,11 +254,12 @@ export default function ProviderSetupPage() {
       });
       await updateCoverageRegionsApi(allData.coverage.regions.map(region => coverageToApi[region] || region));
       const toNum = (v) => (v != null && v !== "" && !isNaN(Number(v)) ? Number(v) : null);
-      const saveAsset = async (asset, kind) => {
+      const saveAsset = async (asset, kind, index, fieldPath) => {
         const payload = {
           name: asset.name,
           category: asset.category,
           kind,
+          client_asset_id: asset.client_asset_id,
           quantity_capacity: toNum(kind === "physical" ? asset.quantity : asset.capacity),
           price_monthly: toNum(asset.rate),
           specs: {
@@ -254,15 +269,29 @@ export default function ProviderSetupPage() {
             rate: asset.rate || undefined,
           },
         };
+        let saved;
         if (asset.id) {
-          return updateAssetApi(asset.id, payload);
+          saved = await updateAssetApi(asset.id, payload);
+        } else {
+          saved = await createAssetApi(payload);
+          if (saved?.id) {
+            methods.setValue(`${fieldPath}.${index}.id`, saved.id);
+          }
+          if (saved?.client_asset_id) {
+            methods.setValue(`${fieldPath}.${index}.client_asset_id`, saved.client_asset_id);
+          }
         }
-        return createAssetApi(payload);
+        return saved;
       };
       await Promise.all([
-        ...allData.physicalAssets.map(a => saveAsset(a, "physical")),
-        ...allData.digitalAssets.map(a => saveAsset(a, "digital")),
+        ...allData.physicalAssets.map((a, i) => saveAsset(a, "physical", i, "physicalAssets")),
+        ...allData.digitalAssets.map((a, i) => saveAsset(a, "digital", i, "digitalAssets")),
       ]);
+      const deleted = [];
+      for (const id of pendingDeletions) {
+        try { await deleteAssetApi(id); deleted.push(id); } catch (e) { console.error(e); }
+      }
+      setPendingDeletions(prev => prev.filter(id => !deleted.includes(id)));
       navigate("/provider/dashboard");
     } catch (e) {
       console.error("Complete failed", e);
@@ -507,7 +536,7 @@ export default function ProviderSetupPage() {
                           <span className="text-xs font-semibold text-text uppercase tracking-wider">Physical asset {index + 1}</span>
                           <span className="text-[10px] text-gold bg-gold/10 border border-gold/30 px-2 py-0.5 rounded">Active Draft</span>
                         </div>
-                        <button type="button" onClick={() => removePhysicalAsset(index)} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
+                        <button type="button" onClick={() => { const a = physicalAssets[index]; if (a?.id) setPendingDeletions(p => [...p, a.id]); removePhysicalAsset(index); }} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
                           <X className="w-3.5 h-3.5" /> Remove
                         </button>
                       </div>
@@ -546,7 +575,7 @@ export default function ProviderSetupPage() {
                     </div>
                   ))}
 
-                  <button type="button" onClick={() => addPhysicalAsset({ name: "", category: "", quantity: "", availability: "", rate: "" })} className="w-full tap-target border border-dashed border-border hover:border-gold text-white/60 hover:text-gold rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                  <button type="button" onClick={() => addPhysicalAsset({ name: "", category: "", quantity: "", availability: "", rate: "", client_asset_id: crypto.randomUUID() })} className="w-full tap-target border border-dashed border-border hover:border-gold text-white/60 hover:text-gold rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                     Add physical asset
                   </button>
@@ -574,7 +603,7 @@ export default function ProviderSetupPage() {
                           <span className="w-2 h-2 rounded-full bg-gold"></span>
                           <span className="text-xs font-semibold text-text uppercase tracking-wider">Digital asset {index + 1}</span>
                         </div>
-                        <button type="button" onClick={() => removeDigitalAsset(index)} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
+                        <button type="button" onClick={() => { const a = digitalAssets[index]; if (a?.id) setPendingDeletions(p => [...p, a.id]); removeDigitalAsset(index); }} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
                           <X className="w-3.5 h-3.5" /> Remove
                         </button>
                       </div>
@@ -608,7 +637,7 @@ export default function ProviderSetupPage() {
                     </div>
                   ))}
 
-                  <button type="button" onClick={() => addDigitalAsset({ name: "", category: "", capacity: "", rate: "" })} className="w-full tap-target border border-dashed border-border hover:border-gold text-white/60 hover:text-gold rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                  <button type="button" onClick={() => addDigitalAsset({ name: "", category: "", capacity: "", rate: "", client_asset_id: crypto.randomUUID() })} className="w-full tap-target border border-dashed border-border hover:border-gold text-white/60 hover:text-gold rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                     Add digital asset
                   </button>

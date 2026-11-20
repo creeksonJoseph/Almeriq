@@ -22,6 +22,7 @@ async def create_asset(
     status: str = "available",
     telemetry_url: str | None = None,
     is_active: bool = True,
+    client_asset_id: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
     """Create a new asset."""
@@ -38,6 +39,7 @@ async def create_asset(
         status=status,
         telemetry_url=telemetry_url,
         is_active=is_active,
+        client_asset_id=client_asset_id,
     )
 
     if session is not None:
@@ -52,7 +54,21 @@ async def create_asset(
         return asset.to_dict()
 
 
-async def get_asset_by_id(
+async def get_asset_by_client_id(
+    provider_id: int,
+    client_asset_id: str,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    stmt = select(Asset).where(
+        Asset.provider_id == provider_id,
+        Asset.client_asset_id == client_asset_id,
+    ).limit(1)
+    if session is not None:
+        asset = await session.scalar(stmt)
+        return asset.to_dict() if asset else None
+    async with async_session_factory() as s:
+        asset = await s.scalar(stmt)
+        return asset.to_dict() if asset else None
     asset_id: int,
     provider_id: int | None = None,
     session: AsyncSession | None = None,

@@ -20,6 +20,7 @@ async def create_asset(
     quantity_capacity: int | None = None,
     status: str = "available",
     telemetry_url: str | None = None,
+    client_asset_id: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
     """Create a new asset for a provider."""
@@ -31,25 +32,33 @@ async def create_asset(
             detail="Provider profile not found",
         )
 
-    # Idempotency: reuse existing asset with same name+kind to avoid duplicates on retry
-    existing, _ = await asset_repo.list_assets(provider_id=provider_id, kind=kind, limit=1000, session=session)
-    for a in existing:
-        if a.get("name") == name:
-            return a
+    if client_asset_id:
+        existing = await asset_repo.get_asset_by_client_id(provider_id, client_asset_id, session=session)
+        if existing:
+            return existing
 
-    return await asset_repo.create_asset(
-        provider_id=provider_id,
-        name=name,
-        category=category,
-        kind=kind,
-        description=description,
-        specs=specs,
-        price_monthly=price_monthly,
-        quantity_capacity=quantity_capacity,
-        status=status,
-        telemetry_url=telemetry_url,
-        session=session,
-    )
+    try:
+        return await asset_repo.create_asset(
+            provider_id=provider_id,
+            name=name,
+            category=category,
+            kind=kind,
+            description=description,
+            specs=specs,
+            price_monthly=price_monthly,
+            quantity_capacity=quantity_capacity,
+            status=status,
+            telemetry_url=telemetry_url,
+            client_asset_id=client_asset_id,
+            session=session,
+        )
+    except Exception as exc:
+        # Handle unique constraint race: retry fetch
+        if client_asset_id:
+            existing = await asset_repo.get_asset_by_client_id(provider_id, client_asset_id, session=session)
+            if existing:
+                return existing
+        raise exc
 
 
 async def get_asset(
