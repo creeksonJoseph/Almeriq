@@ -5,6 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import order as order_repo
 from repositories import order_event as order_event_repo
+from repositories import provider_profile as provider_repo
+from repositories import notification as notification_repo
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ async def create_order(
     """Create a new order for a provider's asset."""
     import uuid
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    return await order_repo.create_order(
+    order = await order_repo.create_order(
         order_id=order_id,
         client_id=client_id,
         provider_id=provider_id,
@@ -46,6 +48,17 @@ async def create_order(
         lease_amount=lease_amount,
         session=session,
     )
+    provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
+    if provider:
+        await notification_repo.create_notification(
+            user_id=provider["user_id"],
+            type="order",
+            title="New order request",
+            body=f"Order {order_id} has been submitted for your listing.",
+            link=f"/provider/orders/{order['id']}",
+            session=session,
+        )
+    return order
 
 
 async def get_order(
