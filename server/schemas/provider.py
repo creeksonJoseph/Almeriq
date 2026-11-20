@@ -44,7 +44,6 @@ class AssetBase(BaseModel):
     client_asset_id: Optional[str] = Field(default=None, max_length=64)
     description: Optional[str] = None
     specs: Optional[dict] = None
-    media: List[dict] = Field(default_factory=list)
     price_monthly: Optional[Decimal] = Field(default=None, ge=0)
     quantity_capacity: Optional[int] = Field(default=None, ge=0)
     telemetry_url: Optional[str] = None
@@ -87,6 +86,7 @@ class AssetUpdateRequest(BaseModel):
 
 
 class AssetResponse(AssetBase):
+    media: List[dict] = Field(default_factory=list)
     id: int
     provider_id: int
     status: str
