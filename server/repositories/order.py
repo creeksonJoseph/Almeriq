@@ -128,7 +128,7 @@ async def list_orders(
 ) -> tuple[list[dict], int]:
     """List orders with optional filters."""
     stmt = (
-        select(Order, User, Asset, ProviderProfile)
+        select(Order, User, Asset, ProviderProfile, Deal)
         .join(User, Order.client_id == User.id)
         .join(Asset, Order.asset_id == Asset.id)
         .join(ProviderProfile, Order.provider_id == ProviderProfile.id)
