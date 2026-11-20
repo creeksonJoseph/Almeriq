@@ -74,6 +74,7 @@ export {
   getMarketplaceProviderApi,
   listMarketplaceListingsApi,
   getMarketplaceListingApi,
+  createMarketplaceOrderApi,
   searchMarketplaceApi,
 } from "./api/marketplace";
 
