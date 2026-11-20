@@ -41,7 +41,7 @@ export default function SearchPage() {
     async function loadCategories() {
       try {
         const res = await listMarketplaceProvidersApi({ limit: 8 });
-        setProviders(res.items || res.data?.items || res.providers || res.data || res);
+        setProviders(res.items || res.providers || []);
       } catch (e) {
         console.error("Failed to load categories", e);
       }
@@ -56,7 +56,7 @@ export default function SearchPage() {
     setError(null);
     try {
       const res = await searchMarketplaceApi(watchQuery, { category: activeCategory !== "all" ? activeCategory : undefined });
-      setResults(res.items || res.data?.items || res.results || res.data || res);
+      setResults(res.items || res.results || []);
     } catch (e) {
       setError(e.message);
     } finally {
