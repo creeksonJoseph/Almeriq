@@ -30,7 +30,7 @@ export default function ProviderDispatchPage() {
       });
       navigate(`/provider/orders/${id}`);
     } catch (e) {
-      setError(e.message || "Unable to dispatch order");
+      setError(e.response?.data?.detail || e.message || "Unable to dispatch order");
     } finally {
       setSaving(false);
     }
@@ -42,7 +42,7 @@ export default function ProviderDispatchPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="font-serif text-3xl font-semibold text-text">Dispatch order</h1>
-        <p className="text-sm text-white/60 mt-2">Add the shipment details before marking this order as shipped.</p>
+        <p className="text-sm text-white/60 mt-2">{order?.status === "confirmed" ? "Add the shipment details before marking this order as shipped." : "Only confirmed orders can be dispatched."}</p>
       </div>
       {order && <Card className="p-5"><p className="font-medium text-text">{order.asset_name || order.assetName || "Order"} </p><p className="text-sm text-white/60 mt-1">{order.order_id || order.id}</p></Card>}
       <Card className="p-6">
@@ -52,7 +52,7 @@ export default function ProviderDispatchPage() {
           {error && <p className="text-sm text-red-400">{error}</p>}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="ghost" className="bg-[#1a1b21] !border-0" onClick={() => navigate(`/provider/orders/${id}`)}>Cancel</Button>
-            <Button type="submit" disabled={saving}>{saving ? "Dispatching..." : "Dispatch order"}</Button>
+            <Button type="submit" disabled={saving || order?.status !== "confirmed"}>{saving ? "Dispatching..." : "Dispatch order"}</Button>
           </div>
         </form>
       </Card>
