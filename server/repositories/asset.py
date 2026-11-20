@@ -69,6 +69,9 @@ async def get_asset_by_client_id(
     async with async_session_factory() as s:
         asset = await s.scalar(stmt)
         return asset.to_dict() if asset else None
+
+
+async def get_asset_by_id(
     asset_id: int,
     provider_id: int | None = None,
     session: AsyncSession | None = None,

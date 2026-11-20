@@ -35,29 +35,74 @@ async def create_asset(
     if client_asset_id:
         existing = await asset_repo.get_asset_by_client_id(provider_id, client_asset_id, session=session)
         if existing:
+            # update latest data
+            if existing.get("id"):
+                return await asset_repo.update_asset(
+                    asset_id=existing["id"],
+                    provider_id=provider_id,
+                    name=name,
+                    category=category,
+                    kind=kind,
+                    description=description,
+                    specs=specs,
+                    price_monthly=price_monthly,
+                    quantity_capacity=quantity_capacity,
+                    status=status,
+                    telemetry_url=telemetry_url,
+                    session=session,
+                )
             return existing
 
     try:
-        return await asset_repo.create_asset(
-            provider_id=provider_id,
-            name=name,
-            category=category,
-            kind=kind,
-            description=description,
-            specs=specs,
-            price_monthly=price_monthly,
-            quantity_capacity=quantity_capacity,
-            status=status,
-            telemetry_url=telemetry_url,
-            client_asset_id=client_asset_id,
-            session=session,
-        )
+        if session is not None:
+            async with session.begin_nested():
+                return await asset_repo.create_asset(
+                    provider_id=provider_id,
+                    name=name,
+                    category=category,
+                    kind=kind,
+                    description=description,
+                    specs=specs,
+                    price_monthly=price_monthly,
+                    quantity_capacity=quantity_capacity,
+                    status=status,
+                    telemetry_url=telemetry_url,
+                    client_asset_id=client_asset_id,
+                    session=session,
+                )
+        else:
+            return await asset_repo.create_asset(
+                provider_id=provider_id,
+                name=name,
+                category=category,
+                kind=kind,
+                description=description,
+                specs=specs,
+                price_monthly=price_monthly,
+                quantity_capacity=quantity_capacity,
+                status=status,
+                telemetry_url=telemetry_url,
+                client_asset_id=client_asset_id,
+                session=None,
+            )
     except Exception as exc:
-        # Handle unique constraint race: retry fetch
         if client_asset_id:
             existing = await asset_repo.get_asset_by_client_id(provider_id, client_asset_id, session=session)
             if existing:
-                return existing
+                return await asset_repo.update_asset(
+                    asset_id=existing["id"],
+                    provider_id=provider_id,
+                    name=name,
+                    category=category,
+                    kind=kind,
+                    description=description,
+                    specs=specs,
+                    price_monthly=price_monthly,
+                    quantity_capacity=quantity_capacity,
+                    status=status,
+                    telemetry_url=telemetry_url,
+                    session=session,
+                )
         raise exc
 
 

@@ -215,10 +215,15 @@ export default function ProviderSetupPage() {
       ]);
       // delete pending
       const deleted = [];
+      const failed = [];
       for (const id of pendingDeletions) {
-        try { await deleteAssetApi(id); deleted.push(id); } catch (e) { console.error(e); }
+        try { await deleteAssetApi(id); deleted.push(id); }
+        catch (e) { failed.push(id); console.error(e); }
       }
       setPendingDeletions(prev => prev.filter(id => !deleted.includes(id)));
+      if (failed.length) {
+        alert("Some assets could not be deleted. Draft partially saved.");
+      }
     } catch (e) {
       console.error("Save failed", e);
       alert("Some draft data failed to save.");
@@ -288,10 +293,16 @@ export default function ProviderSetupPage() {
         ...allData.digitalAssets.map((a, i) => saveAsset(a, "digital", i, "digitalAssets")),
       ]);
       const deleted = [];
+      const failed = [];
       for (const id of pendingDeletions) {
-        try { await deleteAssetApi(id); deleted.push(id); } catch (e) { console.error(e); }
+        try { await deleteAssetApi(id); deleted.push(id); }
+        catch (e) { failed.push(id); console.error(e); }
       }
       setPendingDeletions(prev => prev.filter(id => !deleted.includes(id)));
+      if (failed.length) {
+        alert("Some assets could not be deleted. Please retry.");
+        return;
+      }
       navigate("/provider/dashboard");
     } catch (e) {
       console.error("Complete failed", e);
@@ -543,7 +554,7 @@ export default function ProviderSetupPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Asset Name</label>
-                          <Input placeholder="e.g. Caterpillar 336 Next-Gen Excavator with GNSS" {...methods.register(`physicalAssets.${index}.name`)} />
+                          <Input placeholder="e.g. Caterpillar 336 Next-Gen Excavator with GNSS" error={methods.formState.errors?.physicalAssets?.[index]?.name?.message} {...methods.register(`physicalAssets.${index}.name`)} />
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Category</label>
@@ -610,7 +621,7 @@ export default function ProviderSetupPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Asset Name</label>
-                          <Input placeholder="e.g. 64x NVIDIA H100 SXM5 SuperPOD Cluster" {...methods.register(`digitalAssets.${index}.name`)} />
+                          <Input placeholder="e.g. 64x NVIDIA H100 SXM5 SuperPOD Cluster" error={methods.formState.errors?.digitalAssets?.[index]?.name?.message} {...methods.register(`digitalAssets.${index}.name`)} />
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Category</label>
