@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Response, status
-from schemas.provider import MarketplaceListingDetailResponse, MarketplaceListingListResponse, OrderCreateRequest, OrderResponse
+from schemas.provider import MarketplaceCheckoutRequest, MarketplaceListingDetailResponse, MarketplaceListingListResponse, OrderCreateRequest, OrderResponse
 from api.dependencies import get_current_user
 from core.db import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from services import order as order_service
+from services import deal as deal_service
 from services import marketplace as svc
 
 router = APIRouter(prefix="/api", tags=["marketplace"])
@@ -36,6 +37,56 @@ async def create_marketplace_order(
         lease_amount=body.lease_amount if body.lease_amount is not None else listing.get("price_monthly"),
         session=db,
     )
+
+
+@router.post("/marketplace/checkout", status_code=status.HTTP_201_CREATED)
+async def create_marketplace_checkout(
+    body: MarketplaceCheckoutRequest,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Create a marketplace order and its deal in one database transaction."""
+    from fastapi import HTTPException
+
+    listing = await svc.get_marketplace_listing(body.asset_id)
+    if not listing or listing.get("status") != "available":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Listing is not available",
+        )
+    if listing.get("provider_id") is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Listing provider not found",
+        )
+    if listing.get("price_monthly") is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="This listing does not have a price and cannot be checked out.",
+        )
+
+    # The listing price is authoritative; never trust a client-submitted lease amount.
+    order = await order_service.create_order(
+        provider_id=listing["provider_id"],
+        client_id=current_user["id"],
+        asset_id=body.asset_id,
+        allocation=body.allocation,
+        lease_amount=listing["price_monthly"],
+        session=db,
+    )
+    deal = await deal_service.create_deal(
+        order_id=order["id"],
+        payment_method=body.payment_method,
+        amount=float(listing["price_monthly"]),
+        client_id=current_user["id"],
+        session=db,
+    )
+
+    # get_db commits only after this handler returns. Any failure above rolls
+    # back both the order and deal, preventing orphaned marketplace orders.
+    response.headers["Cache-Control"] = "no-store"
+    return {"order": order, "deal": deal}
 
 
 @router.get("/marketplace/listings", response_model=MarketplaceListingListResponse)
