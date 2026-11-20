@@ -228,6 +228,16 @@ async def test_valid_status_transitions(session):
     await session.commit()
     assert o["status"] == "confirmed"
 
+    # waybill must be uploaded before shipping
+    await order_service.upload_waybill(
+        order["id"], provider_id,
+        waybill_url="https://cdn.example.com/wb_transition.pdf",
+        tracking_number="WB-TRANS-001",
+        actor_id=provider_id,
+        session=session,
+    )
+    await session.commit()
+
     o = await order_service.update_order_status(
         order["id"], provider_id, "shipped", actor_id=provider_id, session=session,
     )
@@ -422,6 +432,14 @@ async def test_end_to_end_buyer_provider_lifecycle(session):
     assert waybill["waybill_url"] == "https://cdn.example.com/waybill_e2e.pdf"
     assert waybill["tracking_number"] == "WB-E2E-001"
 
+    # 5b. Provider marks the order as shipped (requires waybill, already uploaded).
+    o = await order_service.update_order_status(
+        order["id"], provider_id, "shipped", actor_id=provider_id, session=session,
+    )
+    await session.commit()
+    assert o["status"] == "shipped"
+
+    # 5c. Provider marks the order as completed (dispatch finalized).
     o = await order_service.update_order_status(
         order["id"], provider_id, "completed", actor_id=provider_id, session=session,
     )

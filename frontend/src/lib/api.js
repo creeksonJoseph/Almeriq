@@ -76,6 +76,7 @@ export {
   getMarketplaceProviderApi,
   listMarketplaceListingsApi,
   getMarketplaceListingApi,
+  createMarketplaceCheckoutApi,
   createMarketplaceOrderApi,
   searchMarketplaceApi,
 } from "./api/marketplace";
@@ -86,6 +87,7 @@ export {
   confirmOrderApi,
   declineOrderApi,
   shipOrderApi,
+  dispatchOrderApi,
   updateOrderStatusApi,
   uploadWaybillApi,
   getWaybillApi,
