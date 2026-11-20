@@ -11,12 +11,12 @@ export async function getMarketplaceProviderApi(id) {
 }
 
 export async function listMarketplaceListingsApi(params = {}) {
-  const res = await apiClient.get("/marketplace/listings", { params });
+  const res = await apiClient.get("/api/marketplace/listings", { params });
   return res.data;
 }
 
 export async function getMarketplaceListingApi(id) {
-  const res = await apiClient.get(`/marketplace/listings/${id}`);
+  const res = await apiClient.get(`/api/marketplace/listings/${id}`);
   return res.data;
 }
 
