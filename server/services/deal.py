@@ -63,6 +63,8 @@ async def get_deal(
 async def sign_deal(
     deal_id: int,
     signature: str,
+    payment_method: str | None = None,
+    amount: float | None = None,
     provider_id: int | None = None,
     client_id: int | None = None,
     session: AsyncSession | None = None,
@@ -80,7 +82,7 @@ async def sign_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
-    updated = await deal_repo.sign_deal(deal_id, signature, session=session)
+    updated = await deal_repo.sign_deal(deal_id, signature, payment_method=payment_method, amount=amount, session=session)
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
