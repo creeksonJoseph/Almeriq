@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button, Card, Input, Modal, Skeleton, SkeletonText } from "../../components/ui";
-import { getDealApi, getMarketplaceListingApi, signDealApi } from "../../lib/api";
+import { getDealApi, signDealApi } from "../../lib/api";
 
 const STEPS = [
   { id: "payment", label: "1. Payment", short: "Pay" },
@@ -32,7 +32,6 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [deal, setDeal] = useState(null);
-  const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [signature, setSignature] = useState("");
@@ -48,12 +47,11 @@ export default function CheckoutPage() {
     async function loadData() {
       setLoading(true);
       try {
-        const [dealRes, listingRes] = await Promise.all([
-          getDealApi(orderId),
-          getMarketplaceListingApi(orderId).catch(() => null),
-        ]);
-        setDeal(dealRes.data || dealRes.deal || dealRes);
-        setListing(listingRes?.data || listingRes?.listing || listingRes);
+        const dealRes = await getDealApi(orderId);
+        const loadedDeal = dealRes.data || dealRes.deal || dealRes;
+        setDeal(loadedDeal);
+        amountForm.setValue("amount", String(loadedDeal.amount ?? "0.00"));
+        paymentForm.setValue("method", loadedDeal.payment_method || "visa");
       } catch (e) {
         console.error("Failed to load checkout data", e);
       } finally {
@@ -61,7 +59,7 @@ export default function CheckoutPage() {
       }
     }
     loadData();
-  }, [orderId]);
+  }, [orderId, amountForm, paymentForm]);
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) setCurrentStep(c => c + 1);
@@ -104,9 +102,9 @@ export default function CheckoutPage() {
     );
   }
 
-  const dealAmount = deal?.amount || listing?.price || "5000";
-  const providerName = deal?.providerName || listing?.providerName || "Sim's Company";
-  const assetName = deal?.assetName || listing?.name || "Tier-3 Micro-DC & 64x H100";
+  const dealAmount = deal?.amount ?? "0.00";
+  const providerName = deal?.provider_name || "Infrastructure provider";
+  const assetName = deal?.asset_name || "Selected infrastructure listing";
 
   return (
     <div className="min-h-screen bg-bg/80 backdrop-blur-md flex items-end md:items-center justify-center p-0 md:p-6">
