@@ -200,6 +200,10 @@ class OrderCreateRequest(BaseModel):
     lease_amount: Optional[Decimal] = Field(default=None, ge=0)
 
 
+class MarketplaceCheckoutRequest(OrderCreateRequest):
+    payment_method: str = Field(default="visa", max_length=50)
+
+
 class OrderStatusUpdateRequest(BaseModel):
     status: str = Field(..., max_length=30)
 
