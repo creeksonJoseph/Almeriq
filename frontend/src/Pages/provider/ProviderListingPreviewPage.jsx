@@ -148,18 +148,18 @@ export default function ProviderListingPreviewPage() {
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Availability</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.availability || "—"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.status || "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Telemetry</span>
                 <span className="flex items-center gap-1.5 text-gold font-medium text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
-                  {asset.telemetry_status || "Not provided"}
+                  {asset.telemetry_url ? "URL provided" : "Not provided"}
                 </span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
-                <span className="text-white/40 block uppercase text-[9px] tracking-wider">Escrow</span>
-                <span className="font-semibold text-text font-serif text-sm">Bonded Ready</span>
+                <span className="text-white/40 block uppercase text-[9px] tracking-wider">Media files</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.media?.length || 0}</span>
               </div>
             </div>
           </Card>
