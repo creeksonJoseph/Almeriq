@@ -60,6 +60,19 @@ export default function ProviderAssetPage() {
     }
   };
 
+  const removeMedia = async (item) => {
+    if (!editing || mediaBusy) return;
+    setMediaBusy(true);
+    setError("");
+    try {
+      const updated = await deleteAssetMediaApi(id, item.public_id);
+      setForm(current => ({ ...current, media: updated.media || [] }));
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Unable to remove media");
+    } finally {
+      setMediaBusy(false);
+    }
+  };
   if (loading) {
     return <div className="max-w-2xl mx-auto"><SkeletonText lines={8} /></div>;
   }
@@ -114,7 +127,25 @@ export default function ProviderAssetPage() {
               <textarea value={form.description} onChange={updateField("description")} rows={6} className="alq-input !border-[#282a2f] focus:!border-[#f2ca50] resize-y" />
             </div>
           </div>
-          {error && <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
+          <div className="space-y-3 border-t border-[#282a2f] pt-6">
+            <div>
+              <h2 className="text-sm font-semibold text-white">Listing photos and videos</h2>
+              <p className="mt-1 text-xs text-white/55">Upload up to 10 files. Images: JPG, PNG, WebP or AVIF (10 MB each). Videos: MP4, WebM or MOV (100 MB each). Files are stored in Cloudinary.</p>
+            </div>
+            {Array.isArray(form.media) && form.media.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {form.media.map((item) => (
+                  <div key={item.public_id} className="overflow-hidden rounded-lg border border-[#282a2f] bg-[#0c0e13]">
+                    {item.resource_type === "video" ? <video src={item.url} controls className="aspect-video w-full object-cover" /> : <img src={item.url} alt="Listing media" className="aspect-video w-full object-cover" />}
+                    <button type="button" disabled={mediaBusy} onClick={() => removeMedia(item)} className="w-full px-2 py-2 text-xs text-red-300 hover:bg-red-500/10 disabled:opacity-50">Remove</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime" onChange={(event) => setSelectedFiles(Array.from(event.target.files || []))} className="block w-full rounded-lg border border-[#282a2f] bg-[#0c0e13] p-3 text-sm text-white file:mr-3 file:rounded-md file:border-0 file:bg-[#f2ca50] file:px-3 file:py-2 file:font-semibold file:text-[#111318]" />
+            {selectedFiles.length > 0 && <p className="text-xs text-white/65">{selectedFiles.length} file(s) selected: {selectedFiles.map(file => file.name).join(", ")}</p>}
+          </div>
+          {error && <p role="alert" className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
           <div className="flex flex-col-reverse justify-end gap-3 border-t border-[#282a2f] pt-6 sm:flex-row">
             <Button type="button" variant="ghost" className="bg-[#1a1b21] !border-0" onClick={() => navigate("/provider/listings")}>Cancel</Button>
             <Button
