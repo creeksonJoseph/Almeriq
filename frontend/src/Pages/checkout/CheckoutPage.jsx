@@ -220,7 +220,7 @@ export default function CheckoutPage() {
           {/* Step 5: Complete */}
           {currentStep === 4 && (
             <CompleteStep
-              orderId={orderId}
+              orderId={deal?.order_id || orderId}
               providerName={providerName}
               amount={watchAmount === "custom" ? watchCustomAmount : watchAmount}
               formatAmount={formatAmount}
@@ -262,7 +262,7 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
       </div>
       <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-2 border border-border text-xs font-mono text-white/60">
         <Lock className="w-4 h-4 text-gold" />
-        <span>PCI-DSS Tier-1 certified node. Zero card details stored in plaintext.</span>
+        <span>Demo only. No real payment details are requested or stored.</span>
       </div>
       <Button className="w-full h-12" onClick={onNext} disabled={loading}>
         <span>Continue</span>
@@ -277,7 +277,7 @@ function AmountStep({ form, presets, dealAmount, onBack, onNext, loading, format
     <div className="space-y-6" id="step-frame-2">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">ENTER AMOUNT (USD)</span>
-        <span className="text-label-caps text-gold">TIER-3 ALLOCATION</span>
+        <span className="text-label-caps text-gold">DEAL AMOUNT</span>
       </div>
       <div className="flex flex-col gap-2">
         <div className="relative flex items-center w-full">
@@ -350,7 +350,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
     <div className="space-y-6" id="step-frame-3">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">CONFIRM LEASE AGREEMENT</span>
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30 text-label-caps text-[10px]"><Lock className="w-3 h-3" /> MULTI-SIG ESCROW</span>
+        <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30 text-label-caps text-[10px]"><Lock className="w-3 h-3" /> SIMULATED DEAL</span>
       </div>
       <Card className="p-5 space-y-4">
         <div className="flex items-start justify-between pb-3 border-b border-border">
@@ -359,14 +359,14 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
             <div className="flex items-center justify-end gap-1.5 font-serif text-sm text-text">
               {providerName} <span className="text-gold">✓</span>
             </div>
-            <div className="text-xs font-mono text-white/60">Beijing, China · Dun #82-194-0912</div>
+            <div className="text-xs font-mono text-white/60">Provider details are available on the listing</div>
           </div>
         </div>
         <div className="flex items-start justify-between pb-3 border-b border-border">
           <span className="text-label-caps text-white/60">ALLOCATED ASSET</span>
           <div className="text-right">
             <div className="font-mono text-sm text-text">{assetName}</div>
-            <div className="text-xs font-mono text-gold">64x H100 SXM5 GPU Cluster</div>
+            <div className="text-xs font-mono text-gold">Requested infrastructure allocation</div>
           </div>
         </div>
         <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -431,7 +431,7 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
     <div className="space-y-6" id="step-frame-4">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">SIGN DEAL — DRAW YOUR SIGNATURE</span>
-        <span className="text-label-caps text-gold">CRYPTOGRAPHIC BINDING</span>
+        <span className="text-label-caps text-gold">SIGNATURE RECORD</span>
       </div>
       <div className="relative w-full h-44 rounded-xl bg-bg border-2 border-dashed border-border flex flex-col justify-between p-4 overflow-hidden group">
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
@@ -445,8 +445,8 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
           style={{ cursor: "crosshair" }}
         />
         <div className="relative z-10 flex items-center justify-between w-full">
-          <span className="text-label-caps text-[10px] text-white/60 tracking-wider">PRIMARY AUTHORIZED SIGNATORY</span>
-          <span className="text-label-caps text-[10px] text-gold font-mono">HASH: 9A4F...E810</span>
+          <span className="text-label-caps text-[10px] text-white/60 tracking-wider">DEAL SIGNATORY</span>
+          <span className="text-label-caps text-[10px] text-gold font-mono">SIGNATURE PREVIEW</span>
         </div>
         <div className="relative z-10 flex items-center justify-between w-full pt-2">
           <Button variant="ghost" size="sm" onClick={() => { const canvas = canvasRef.current; if (canvas) { canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height); onSignatureChange(""); } }}>
