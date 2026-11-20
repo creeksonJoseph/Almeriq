@@ -232,6 +232,12 @@ class OrderResponse(OrderBase):
     client_id: int
     provider_id: int
     asset_id: int
+    client_name: Optional[str] = None
+    client_email: Optional[str] = None
+    asset_name: Optional[str] = None
+    asset_category: Optional[str] = None
+    asset_details: Optional[str] = None
+    provider_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
