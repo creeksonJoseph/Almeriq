@@ -88,7 +88,7 @@ export default function CheckoutPage() {
       if (!deal?.id || !signature) throw new Error("A deal and signature are required to complete checkout.");
       if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter an amount greater than zero.");
       const updatedDeal = await signDealApi(deal.id, signature, { payment_method: watchMethod, amount });
-      setDeal(updatedDeal.data || updatedDeal.deal || updatedDeal);
+      setDeal(previous => ({ ...previous, ...(updatedDeal.data || updatedDeal.deal || updatedDeal) }));
       setCurrentStep(STEPS.length - 1);
     } catch (e) {
       setActionError(e.response?.data?.detail || e.message || "Unable to save the deal.");
@@ -235,7 +235,7 @@ export default function CheckoutPage() {
               providerName={providerName}
               amount={watchAmount === "custom" ? watchCustomAmount : watchAmount}
               formatAmount={formatAmount}
-              onBack={handleBack}
+              onDone={() => navigate("/marketplace")}
             />
           )}
         </div>
@@ -249,7 +249,7 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
     <div className="space-y-6" id="step-frame-1">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">CHOOSE PAYMENT METHOD</span>
-        <span className="flex items-center gap-1 text-xs font-mono text-gold"><span className="w-1.5 h-1.5 rounded-full bg-gold"></span> 256-BIT TLS VAULT</span>
+        <span className="flex items-center gap-1 text-xs font-mono text-gold"><span className="w-1.5 h-1.5 rounded-full bg-gold"></span> SIMULATION</span>
       </div>
       <div className="grid grid-cols-2 gap-3.5">
         {methods.map(method => (
@@ -403,7 +403,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
       </Card>
       <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-border text-xs font-mono text-white/60">
         <Shield className="w-4 h-4 text-gold" />
-        <span>The selected terms will be recorded on the deal. No escrow contract is deployed by this demo. <code className="text-text">0x8892...B39F</code></span>
+        <span>The selected terms will be recorded on the deal. No escrow contract is deployed by this demo. <code className="text-text"></code></span>
       </div>
       <div className="grid grid-cols-2 gap-3 pt-2">
         <Button variant="ghost" className="h-12" onClick={onBack} disabled={loading}>
@@ -478,7 +478,7 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
   );
 }
 
-function CompleteStep({ orderId, providerName, amount, formatAmount, onBack }) {
+function CompleteStep({ orderId, providerName, amount, formatAmount, onDone }) {
   return (
     <div className="space-y-6 text-center py-4" id="step-frame-5">
       <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-4">
@@ -491,15 +491,15 @@ function CompleteStep({ orderId, providerName, amount, formatAmount, onBack }) {
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="font-medium text-text">{providerName}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">${formatAmount(amount)}</span></div>
-          <div className="flex justify-between"><span className="text-white/60">Escrow</span><span className="font-mono text-gold">Not processed</span></div>
+          <div className="flex justify-between"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">simulated</span></div>
         </div>
       </Card>
       <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-gold/30 text-gold text-sm">
         <Shield className="w-5 h-5 shrink-0" />
         <span>This demo records the deal in the application database. Payment processing and escrow integration are not connected.</span>
       </div>
-      <Button className="w-full h-12" onClick={onBack}>
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Orders
+      <Button className="w-full h-12" onClick={onDone}>
+        <ArrowLeft className="w-4 h-4 mr-1" /> Return to marketplace
       </Button>
     </div>
   );
