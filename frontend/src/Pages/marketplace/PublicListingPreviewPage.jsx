@@ -94,9 +94,9 @@ export default function PublicListingPreviewPage() {
           <Button variant="ghost" onClick={async () => { try { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied"); } catch { setShareMessage("Copy this page URL from your browser address bar."); } }}>
             <Share2 className="w-4 h-4 mr-1" /> Share
           </Button>
-          <Button onClick={handleOrder} disabled={dealLoading}>
+          <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)}>
             <ShoppingCart className="w-4 h-4 mr-1" />
-            {dealLoading ? "Starting order..." : "Order Now"}
+            {dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order Now" : "Price unavailable"}
           </Button>
         </div>
       </div>
