@@ -129,7 +129,7 @@ export default function PublicListingPreviewPage() {
           <Card className="p-5">
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-xl bg-surface border border-gold/40 text-gold-soft font-serif font-bold text-xl flex items-center justify-center shrink-0 shadow-sm">
-                {provider?.name?.slice(0,2).toUpperCase() || listing.provider_name?.slice(0,2).toUpperCase() || "AL"}
+                {listing.provider_name?.slice(0,2).toUpperCase() || "AL"}
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -137,7 +137,7 @@ export default function PublicListingPreviewPage() {
                   {(provider?.verified || listing.provider_verified) && <span className="text-gold" aria-label="Verified">✓</span>}
                   <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">{listing.provider_location || "Location not provided"}</span>
                 </div>
-                <p className="text-sm text-white/60 mt-1">{provider?.description || listing.description || "Infrastructure provider"}</p>
+                <p className="text-sm text-white/60 mt-1">{listing.description || "Infrastructure provider"}</p>
               </div>
             </div>
           </Card>
@@ -234,7 +234,7 @@ export default function PublicListingPreviewPage() {
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center" onClick={() => setGalleryOpen(false)}>
           <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
             <div className="aspect-video bg-black rounded-xl overflow-hidden">
-              {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}}
+              {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}
             </div>
             {media.length > 1 && (
               <>
@@ -250,7 +250,7 @@ export default function PublicListingPreviewPage() {
             <div className="flex justify-center gap-2 p-4">
               {media.map((item, i) => (
                 <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
-                  {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}}
+                  {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}
                 </button>
               ))}
             </div>
