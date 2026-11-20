@@ -238,6 +238,12 @@ class OrderResponse(OrderBase):
     asset_category: Optional[str] = None
     asset_details: Optional[str] = None
     provider_name: Optional[str] = None
+    provider_location: Optional[str] = None
+    asset_telemetry_url: Optional[str] = None
+    deal_id: Optional[int] = None
+    payment_method: Optional[str] = None
+    payment_status: str = "not_started"
+    deal_amount: Optional[float] = None
     created_at: datetime
     updated_at: datetime
 
