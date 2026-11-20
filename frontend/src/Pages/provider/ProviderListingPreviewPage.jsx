@@ -82,12 +82,11 @@ export default function ProviderListingPreviewPage() {
       {/* Main Image Gallery */}
       <div className="relative">
         <div className="aspect-video w-full rounded-xl overflow-hidden bg-surface-2 border border-border">
-          <img
-            src={activeMedia?.url}
-            alt={`${asset.name} - Image ${galleryIndex + 1}`}
-            className="w-full h-full object-cover cursor-zoom-in"
-            onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }}
-          />
+          {activeMedia?.resource_type === "video"
+            ? <video src={activeMedia.url} controls className="w-full h-full object-cover" />
+            : activeMedia
+              ? <img src={activeMedia.url} alt={asset.name} className="w-full h-full object-cover cursor-zoom-in" onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }} />
+              : <div className="flex h-full items-center justify-center text-sm text-white/45">No photos or videos uploaded yet.</div>}
         </div>
         {media.length > 1 && (
           <div className="flex justify-center gap-2 mt-3">
