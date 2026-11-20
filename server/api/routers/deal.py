@@ -19,14 +19,14 @@ async def create_deal(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Create a deal for an order owned by the current provider."""
+    """Create a deal for an order owned by the authenticated buyer."""
     response.headers["Cache-Control"] = "no-store"
-    profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
+    # A buyer does not need a provider profile. The order already stores the
+    # listing's provider_id, so authorization must be based on client_id.
     return await svc.create_deal(
         order_id=body.order_id,
         payment_method=body.payment_method,
         amount=float(body.amount),
-        provider_id=profile["id"] if profile else None,
         client_id=current_user["id"],
         session=db,
     )
@@ -39,10 +39,15 @@ async def get_deal(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Retrieve a deal whose order belongs to the current provider."""
+    """Retrieve a deal for either the order's buyer or its actual provider."""
     response.headers["Cache-Control"] = "private, max-age=30"
     profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
-    return await svc.get_deal(deal_id=deal_id, provider_id=profile["id"] if profile else None, client_id=None if profile else current_user["id"], session=db)
+    return await svc.get_deal(
+        deal_id=deal_id,
+        provider_id=profile["id"] if profile else None,
+        client_id=current_user["id"],
+        session=db,
+    )
 
 
 @router.post("/deals/{deal_id}/sign", response_model=DealResponse)
@@ -53,7 +58,7 @@ async def sign_deal(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Sign a deal whose order belongs to the current provider."""
+    """Sign a deal for either the order's buyer or its actual provider."""
     response.headers["Cache-Control"] = "no-store"
     profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
     return await svc.sign_deal(
@@ -62,6 +67,6 @@ async def sign_deal(
         payment_method=body.payment_method,
         amount=float(body.amount) if body.amount is not None else None,
         provider_id=profile["id"] if profile else None,
-        client_id=None if profile else current_user["id"],
+        client_id=current_user["id"],
         session=db,
     )
