@@ -284,6 +284,8 @@ class DealSignRequest(BaseModel):
 class DealResponse(BaseModel):
     id: int
     order_id: int
+    provider_name: Optional[str] = None
+    asset_name: Optional[str] = None
     payment_method: Optional[str]
     payment_status: str = "simulated"
     amount: Optional[float]
