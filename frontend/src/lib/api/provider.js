@@ -33,7 +33,7 @@ export async function updateAssetApi(id, payload) {
 export async function uploadAssetMediaApi(id, files) {
   const formData = new FormData();
   files.forEach(file => formData.append("files", file));
-  const res = await apiClient.post(`/api/provider/assets/${id}/media`, formData);
+  const res = await apiClient.post(`/api/provider/assets/${id}/media`, formData, { headers: { "Content-Type": "multipart/form-data" } });
   return res.data;
 }
 
