@@ -20,7 +20,7 @@ class Asset(Base):
     kind: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     specs: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    media: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    media: Mapped[Optional[list]] = mapped_column(JSON, nullable=True, default=list)
     price_monthly: Mapped[Optional[float]] = mapped_column(Numeric(12, 2), nullable=True)
     quantity_capacity: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(Text, nullable=False, default="available")
