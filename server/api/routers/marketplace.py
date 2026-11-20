@@ -60,7 +60,7 @@ async def create_marketplace_checkout(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Listing provider not found",
         )
-    if listing.get("price_monthly") is None:
+    if listing.get("price_monthly") is None or float(listing["price_monthly"]) <= 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="This listing does not have a price and cannot be checked out.",
