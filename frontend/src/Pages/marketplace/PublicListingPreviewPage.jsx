@@ -21,10 +21,7 @@ export default function PublicListingPreviewPage() {
     async function loadListing() {
       setLoading(true);
       try {
-        const [listingRes, providerRes] = await Promise.all([
-          getMarketplaceListingApi(id),
-          Promise.resolve(null),
-        ]);
+        const listingRes = await getMarketplaceListingApi(id);
         setListing(listingRes.data || listingRes.listing || listingRes);
 
       } catch (e) {
@@ -134,7 +131,7 @@ export default function PublicListingPreviewPage() {
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-serif text-lg font-semibold text-text">{listing.provider_name || "Infrastructure provider"}</h2>
-                  {(provider?.verified || listing.provider_verified) && <span className="text-gold" aria-label="Verified">✓</span>}
+                  {(listing.provider_verified) && <span className="text-gold" aria-label="Verified">✓</span>}
                   <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">{listing.provider_location || "Location not provided"}</span>
                 </div>
                 <p className="text-sm text-white/60 mt-1">{listing.description || "Infrastructure provider"}</p>
