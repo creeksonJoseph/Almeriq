@@ -11,6 +11,12 @@ from services import conversation as svc
 router = APIRouter(prefix="/api", tags=["conversations"])
 
 
+@router.post("/conversations/with-provider/{provider_id}")
+async def start_provider_conversation(provider_id: int, response: Response, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.start_provider_conversation(provider_id=provider_id, user_id=current_user["id"], session=db)
+
+
 @router.get("/conversations", response_model=ConversationListResponse)
 async def list_conversations(
     response: Response,
