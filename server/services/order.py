@@ -49,6 +49,13 @@ async def create_order(
         lease_amount=lease_amount,
         session=session,
     )
+    await order_event_repo.create_order_event(
+        order_id=order["id"],
+        event_type="created",
+        actor_id=client_id,
+        note="Order submitted from the marketplace.",
+        session=session,
+    )
     provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
     if provider and provider["user_id"] != client_id:
         await notification_repo.create_notification(
