@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock } from "lucide-react";
 import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../../components/ui";
 import { getOrderApi, getWaybillApi, updateOrderStatusApi } from "../../lib/api";
 
 export default function ProviderOrderDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [waybill, setWaybill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [waybillOpen, setWaybillOpen] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     async function loadOrder() {
@@ -19,7 +21,7 @@ export default function ProviderOrderDetailPage() {
         const res = await getOrderApi(id);
         setOrder(res.data || res.order || res);
       } catch (e) {
-        console.error("Failed to load order", e);
+        setActionError(e.response?.data?.detail || e.message || "Failed to load order.");
       } finally {
         setLoading(false);
       }
@@ -29,6 +31,7 @@ export default function ProviderOrderDetailPage() {
 
   const handleAction = async (action) => {
     setActionLoading(action);
+    setActionError("");
     try {
       if (action === "confirm") await updateOrderStatusApi(id, "confirmed");
       else if (action === "decline") await updateOrderStatusApi(id, "declined");
@@ -36,19 +39,20 @@ export default function ProviderOrderDetailPage() {
       const res = await getOrderApi(id);
       setOrder(res.data || res.order || res);
     } catch (e) {
-      console.error("Action failed", e);
+      setActionError(e.response?.data?.detail || e.message || "Order action failed.");
     } finally {
       setActionLoading(null);
     }
   };
 
   const loadWaybill = async () => {
+    setActionError("");
     try {
       const res = await getWaybillApi(id);
       setWaybill(res.data || res.waybill || res);
       setWaybillOpen(true);
     } catch (e) {
-      console.error("Failed to load waybill", e);
+      setActionError(e.response?.data?.detail || e.message || "Failed to load waybill.");
     }
   };
 
@@ -66,7 +70,7 @@ export default function ProviderOrderDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[50vh] text-center">
         <p className="text-gold">Order not found</p>
-<Button variant="ghost" className="mt-4" onClick={() => window.history.back()}>
+<Button variant="ghost" className="mt-4" onClick={() => navigate("/provider/orders")}>
   Back to Orders
 </Button>
       </div>
@@ -173,6 +177,8 @@ export default function ProviderOrderDetailPage() {
         </Card>
       </div>
 
+      {actionError && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{actionError}</p>}
+
       {/* Actions */}
       <Card className="p-5">
         <h3 className="text-label-caps text-white/60 uppercase tracking-wider mb-4">ACTIONS</h3>
@@ -188,7 +194,7 @@ export default function ProviderOrderDetailPage() {
             </>
           )}
           {order.status?.toLowerCase() === "confirmed" && (
-            <Button onClick={() => window.location.assign(`/provider/orders/${id}/dispatch`)} disabled={actionLoading === "ship"}>
+            <Button onClick={() => navigate(`/provider/orders/${id}/dispatch`)} disabled={actionLoading === "ship"}>
               <Truck className="w-4 h-4 mr-1" /> Initiate Dispatch
             </Button>
           )}
