@@ -65,6 +65,8 @@ export {
   createAssetApi,
   updateAssetApi,
   deleteAssetApi,
+  uploadAssetMediaApi,
+  deleteAssetMediaApi,
   listCoverageRegionsApi,
   updateCoverageRegionsApi,
 } from "./api/provider";
