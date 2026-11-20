@@ -115,10 +115,9 @@ export default function ProviderOrdersPage() {
           }}>
             Export CSV
           </Button>
-          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" onClick={() => {
+          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" disabled={!orders.some(order => order.status?.toLowerCase() === "confirmed")} onClick={() => {
             const nextOrder = orders.find(order => order.status?.toLowerCase() === "confirmed");
             if (nextOrder) navigate(`/provider/orders/${nextOrder.id}/dispatch`);
-            else setError("There are no confirmed orders ready for dispatch.");
           }}>
             Manual Dispatch
           </Button>
