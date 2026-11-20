@@ -34,7 +34,7 @@ async def create_marketplace_order(
         client_id=current_user["id"],
         asset_id=body.asset_id,
         allocation=body.allocation,
-        lease_amount=body.lease_amount if body.lease_amount is not None else listing.get("price_monthly"),
+        lease_amount=listing.get("price_monthly"),
         session=db,
     )
 
