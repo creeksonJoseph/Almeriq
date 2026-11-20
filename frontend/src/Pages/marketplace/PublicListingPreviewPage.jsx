@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2, MessageSquare, ShoppingCart, CheckCircle, Shield, Truck } from "lucide-react";
 import { Button, Card, StatusPill, Modal, Pill } from "../../components/ui";
-import { getMarketplaceListingApi, createMarketplaceOrderApi, createDealApi } from "../../lib/api";
+import { getMarketplaceListingApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function PublicListingPreviewPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [listing, setListing] = useState(null);
-  const [provider, setProvider] = useState(null);
+  const [shareMessage, setShareMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function PublicListingPreviewPage() {
           Promise.resolve(null),
         ]);
         setListing(listingRes.data || listingRes.listing || listingRes);
-        setProvider(providerRes?.data || providerRes?.provider || providerRes);
+
       } catch (e) {
         setError(e.message);
       } finally {
@@ -37,7 +38,7 @@ export default function PublicListingPreviewPage() {
 
   const handleOrder = async () => {
     if (!user) {
-      window.location.href = `/login?redirect=${encodeURIComponent(`/listings/${id}`)}`;
+      navigate(`/login?redirect=${encodeURIComponent(`/listings/${id}`)}`);
       return;
     }
     setDealLoading(true);
@@ -52,7 +53,7 @@ export default function PublicListingPreviewPage() {
         payment_method: "visa",
         amount: listing.price_monthly || 0,
       });
-      window.location.href = `/checkout/${deal.id}`;
+      navigate(`/checkout/${deal.id}`);
     } catch (e) {
       setError(e.response?.data?.detail || e.message || "Unable to start this order.");
     } finally {
@@ -93,7 +94,7 @@ export default function PublicListingPreviewPage() {
           <h1 className="font-serif text-3xl font-semibold text-text leading-tight">{listing.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost">
+          <Button variant="ghost" onClick={async () => { try { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied"); } catch { setShareMessage("Copy this page URL from your browser address bar."); } }}>
             <Share2 className="w-4 h-4 mr-1" /> Share
           </Button>
           <Button onClick={handleOrder} disabled={dealLoading}>
@@ -132,7 +133,7 @@ export default function PublicListingPreviewPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="font-serif text-lg font-semibold text-text">{provider?.name || listing.provider_name || "Infrastructure provider"}</h2>
+                  <h2 className="font-serif text-lg font-semibold text-text">{listing.provider_name || "Infrastructure provider"}</h2>
                   {(provider?.verified || listing.provider_verified) && <span className="text-gold" aria-label="Verified">✓</span>}
                   <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">{listing.provider_location || "Location not provided"}</span>
                 </div>
@@ -206,7 +207,7 @@ export default function PublicListingPreviewPage() {
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{listing.provider_name || "Infrastructure provider"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{listing.type || "Digital Infrastructure"}</span></div>
+              <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{listing.kind || "Not specified"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{listing.category}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{listing.provider_location || "Location not provided"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${Number(listing.price_monthly || 0).toLocaleString()}/mo</span></div>
@@ -221,7 +222,7 @@ export default function PublicListingPreviewPage() {
           </Card>
 
           <Card className="p-5 text-center border border-border bg-surface">
-            <Link to={`/messages?provider=${listing.provider_id}`} className="text-gold hover:underline flex items-center justify-center gap-1">
+            <button type="button" onClick={async () => { if (!user) { navigate(`/login?redirect=${encodeURIComponent(`/listings/${id}`)}`); return; } try { const conversation = await startProviderConversationApi(listing.provider_id); navigate(`/messages?conversation=${conversation.id}`); } catch (e) { setError(e.response?.data?.detail || e.message || "Unable to start conversation."); } }} className="text-gold hover:underline flex items-center justify-center gap-1">
               <MessageSquare className="w-4 h-4" /> Chat with Provider
             </Link>
           </Card>
@@ -237,10 +238,10 @@ export default function PublicListingPreviewPage() {
             </div>
             {media.length > 1 && (
               <>
-                <button onClick={() => setGalleryIndex(i => (i - 1 + media.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
+                <button onClick={() => setGalleryIndex(i => (i - 1 + media.length) % media.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
                   <ChevronLeft className="w-6 h-6" />
                 </button>
-                <button onClick={() => setGalleryIndex(i => (i + 1) % images.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
+                <button onClick={() => setGalleryIndex(i => (i + 1) % media.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
                   <ChevronRight className="w-6 h-6" />
                 </button>
               </>
