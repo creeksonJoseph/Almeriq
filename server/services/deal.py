@@ -5,6 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import deal as deal_repo
 from repositories import order as order_repo
+from repositories import asset as asset_repo
+from repositories import provider_profile as provider_repo
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,10 @@ async def get_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
+    provider = await provider_repo.get_provider_profile_by_id(order["provider_id"], session=session)
+    asset = await asset_repo.get_asset_by_id(order["asset_id"], session=session)
+    deal["provider_name"] = (provider or {}).get("company_name") or (provider or {}).get("trading_name")
+    deal["asset_name"] = (asset or {}).get("name")
     return deal
 
 
