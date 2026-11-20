@@ -25,7 +25,12 @@ export default function AlertsPage() {
       setLoading(true);
       try {
         const res = await listNotificationsApi();
-        setNotifications(res.data || res.notifications || res);
+        setNotifications((res.items || res.notifications || []).map(n => ({
+          ...n,
+          message: n.body,
+          time: n.created_at ? new Date(n.created_at).toLocaleString() : "",
+          actionUrl: n.link,
+        })));
       } catch (e) {
         setError(e.message);
       } finally {
@@ -124,6 +129,7 @@ export default function AlertsPage() {
       </div>
 
       {/* Notification List */}
+      {error && <div role="alert" className="rounded-lg border border-gold/40 bg-surface p-3 text-sm text-gold">{error}</div>}
       <div className="space-y-3">
         {filteredNotifications.length === 0 ? (
           <Card className="p-8 text-center">
