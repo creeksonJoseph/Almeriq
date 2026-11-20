@@ -159,42 +159,37 @@ export default function ProviderOrderDetailPage() {
             </div>
             <div>
               <span className="font-semibold text-text">{order.clientName}</span>
-              <div className="text-sm text-white/60">{order.clientVenture || "—"}</div>
+              
             </div>
           </div>
           <div className="pt-3 border-t border-border space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <span className="text-sm font-medium text-text">{order.assetName}</span>
-                <div className="text-xs text-white/60">{order.assetSpecs || "CAT 336 Next-Gen Excavator · 6-mo operational lease"}</div>
+                <div className="text-xs text-white/60">{order.assetDetails || "No asset description provided."}</div>
               </div>
               <span className="font-mono font-semibold text-gold shrink-0">${order.amount}/mo</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><span className="text-white/60">Allocation:</span> <span className="font-mono text-text ml-2">{order.allocation || "3x 36-ton units"}</span></div>
-              <div><span className="text-white/60">Location:</span> <span className="font-mono text-text ml-2">{order.location || "Yard Bay 12"}</span></div>
-              <div><span className="text-white/60">Telemetry:</span> <span className="flex items-center gap-1 text-gold font-medium ml-2"><span className="w-1.5 h-1.5 rounded-full bg-gold"></span> Active</span></div>
-              <div><span className="text-white/60">Escrow:</span> <span className="font-mono text-text ml-2">{order.escrowId || "0x8892...B39F"}</span></div>
+              <div><span className="text-white/60">Allocation:</span> <span className="font-mono text-text ml-2">{order.allocation || "Not specified"}</span></div>
+              <div><span className="text-white/60">Location:</span> <span className="font-mono text-text ml-2">{order.providerLocation || "Not provided"}</span></div>
+              <div><span className="text-white/60">Telemetry:</span> {order.telemetryUrl ? <a href={order.telemetryUrl} target="_blank" rel="noreferrer" className="ml-2 text-gold hover:underline">Open telemetry</a> : <span className="ml-2 text-white/60">Not provided</span>}</div>
+              
             </div>
           </div>
         </Card>
 
         {/* Financial Summary */}
         <Card className="p-5 space-y-4">
-          <h3 className="text-label-caps text-white/60 uppercase tracking-wider">FINANCIAL SUMMARY</h3>
+          <h3 className="text-label-caps text-white/60 uppercase tracking-wider">ORDER VALUE & PAYMENT STATUS</h3>
           <div className="space-y-3 bg-surface-2 p-4 rounded-lg border border-border">
             <div className="flex justify-between text-sm"><span className="text-white/60">Monthly Lease Rate</span><span className="font-mono text-gold">${order.amount}/mo</span></div>
-            {order.duration && <div className="flex justify-between text-sm"><span className="text-white/60">Lease Duration</span><span className="font-mono text-text">{order.duration}</span></div>}
-            {order.escrowAmount && <div className="flex justify-between text-sm"><span className="text-white/60">Escrow Deposit</span><span className="font-mono text-gold">${order.escrowAmount}</span></div>}
-            {order.amount && <div className="flex justify-between text-sm"><span className="text-white/60">Platform Fee (2%)</span><span className="font-mono text-white/60">${(order.amount * 0.02).toLocaleString()}/mo</span></div>}
-            <div className="border-t border-border pt-3 flex justify-between">
-              <span className="font-semibold text-text">Total Commitment</span>
-              <span className="font-serif text-xl font-semibold text-gold">{order.amount && order.duration && order.escrowAmount ? `$${((order.amount * Number(order.duration) || 0) + Number(order.escrowAmount)).toLocaleString()}` : "—"}</span>
-            </div>
+            <div className="flex justify-between text-sm"><span className="text-white/60">Payment method</span><span className="font-mono text-text">{order.paymentMethod || "Not selected"}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">{order.paymentStatus || "not_started"}</span></div>
           </div>
           <div className="flex items-center gap-3 p-3 bg-surface-2 rounded-lg border border-border text-sm text-white/60">
             <Shield className="w-5 h-5 text-gold shrink-0" />
-            <span>Escrow and delivery details are shown from the order record.</span>
+            <span>This order is stored in the database. No payment has been collected and no escrow is active.</span>
           </div>
         </Card>
       </div>
