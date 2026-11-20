@@ -329,7 +329,7 @@ function AmountStep({ form, presets, dealAmount, onBack, onNext, loading, format
         <div className="flex flex-col gap-1">
           <span className="font-serif text-sm font-semibold text-text">ALIMERIQ Multi-Sig Protocol</span>
           <p className="text-xs font-mono text-white/70 leading-relaxed">
-            Funds held in 100% bonded ALIMERIQ multi-sig escrow until equipment dispatch confirmation and telemetry handshake at node <span className="text-gold">#BJ-H100-NODE09</span>.
+            This is a simulated checkout. No funds are collected or held. The selected payment method is recorded for the deal.
           </p>
         </div>
       </div>
@@ -382,8 +382,8 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
         </div>
         <div className="flex items-baseline justify-between pt-1">
           <div>
-            <span className="text-label-caps text-white/60">TOTAL ESCROW DEPOSIT</span>
-            <div className="text-xs font-mono text-gold">Zero upfront gas fee</div>
+            <span className="text-label-caps text-white/60">SIMULATED DEAL AMOUNT</span>
+            <div className="text-xs font-mono text-gold">No payment is processed in this demo</div>
           </div>
           <div className="font-serif text-2xl font-bold text-gold">
             ${formatAmount(amount)} <span className="text-label-caps text-white/60">USD</span>
@@ -392,7 +392,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
       </Card>
       <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-border text-xs font-mono text-white/60">
         <Shield className="w-4 h-4 text-gold" />
-        <span>Contract will lock into ALIMERIQ bonded pool under node contract <code className="text-text">0x8892...B39F</code></span>
+        <span>The selected terms will be recorded on the deal. No escrow contract is deployed by this demo. <code className="text-text">0x8892...B39F</code></span>
       </div>
       <div className="grid grid-cols-2 gap-3 pt-2">
         <Button variant="ghost" className="h-12" onClick={onBack} disabled={loading}>
@@ -474,18 +474,18 @@ function CompleteStep({ orderId, providerName, amount, formatAmount, onBack }) {
         <Check className="w-8 h-8 text-gold" />
       </div>
       <h2 className="font-serif text-2xl font-semibold text-text">Deal Completed</h2>
-      <p className="text-white/70">Your order has been confirmed and escrow has been funded.</p>
+      <p className="text-white/70">Your deal details and signature have been saved. No payment has been collected.</p>
       <Card className="p-4 text-left">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="font-medium text-text">{providerName}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">${formatAmount(amount)}</span></div>
-          <div className="flex justify-between"><span className="text-white/60">Escrow</span><span className="font-mono text-gold">Locked and Bonded</span></div>
+          <div className="flex justify-between"><span className="text-white/60">Escrow</span><span className="font-mono text-gold">Not processed</span></div>
         </div>
       </Card>
       <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-gold/30 text-gold text-sm">
         <Shield className="w-5 h-5 shrink-0" />
-        <span>Contract recorded on ALIMERIQ ledger. You will receive dispatch notifications via email and in-app alerts.</span>
+        <span>This demo records the deal in the application database. Payment processing and escrow integration are not connected.</span>
       </div>
       <Button className="w-full h-12" onClick={onBack}>
         <ArrowLeft className="w-4 h-4 mr-1" /> Back to Orders
