@@ -2,9 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
 import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
-import { listConversationsApi, getConversationApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
+import { listConversationsApi, listMessagesApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function MessagesPage() {
+  const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -20,7 +22,14 @@ export default function MessagesPage() {
       setLoading(true);
       try {
         const res = await listConversationsApi();
-        setConversations(res.data || res.conversations || res);
+        const items = res.items || res.conversations || [];
+        setConversations(items.map(conv => ({
+          ...conv,
+          otherParty: { name: conv.other_participant?.full_name || conv.other_participant?.email || "User" },
+          lastMessage: conv.last_message?.body || "",
+          time: conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "",
+          unread: conv.unread_count || 0,
+        })));
       } catch (e) {
         console.error("Failed to load conversations", e);
       } finally {
@@ -34,14 +43,15 @@ export default function MessagesPage() {
     setActiveConversation(conversation);
     setMobileDrawerOpen(true);
     try {
-      const res = await getConversationApi(conversation.id);
-      setMessages((res.data || res.messages || res).map(message => ({
+      const res = await listMessagesApi(conversation.id);
+      setMessages((res.items || res.messages || []).map(message => ({
         ...message,
         content: message.content || message.body || "",
-        own: message.own ?? Boolean(message.sender_id && message.sender_id === conversation.user_id),
+        own: message.sender_id === user?.id,
+        senderName: message.sender?.full_name || message.sender?.email,
         time: message.time || message.created_at,
       })));
-      if (!conversation.read) await markMessagesReadApi(conversation.id);
+      if (conversation.unread > 0) await markMessagesReadApi(conversation.id);
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, unread: 0 } : c));
     } catch (e) {
       console.error("Failed to load messages", e);
