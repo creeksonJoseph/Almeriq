@@ -113,6 +113,13 @@ async def update_order_status(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Order cannot transition from {order['status']} to {new_status}",
         )
+    if new_status == "shipped":
+        events = await order_event_repo.list_order_events(order_id, session=session)
+        if not any(event["event_type"] == "waybill_uploaded" for event in events):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Upload a waybill before marking this order as shipped",
+            )
 
     order = await order_repo.update_order_status(
         order_id, provider_id, new_status, session=session
