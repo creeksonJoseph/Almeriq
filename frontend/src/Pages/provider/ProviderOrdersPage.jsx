@@ -49,7 +49,7 @@ export default function ProviderOrdersPage() {
   }, [activeTab]);
 
   const filteredOrders = orders.filter(o =>
-    o.id?.toLowerCase().includes(search.toLowerCase()) ||
+    String(o.order_id || o.id || "").toLowerCase().includes(search.toLowerCase()) ||
     o.clientName?.toLowerCase().includes(search.toLowerCase()) ||
     o.assetName?.toLowerCase().includes(search.toLowerCase())
   );
@@ -62,9 +62,15 @@ export default function ProviderOrdersPage() {
     { value: "completed", label: "Completed", count: orders.filter(o => o.status?.toLowerCase() === "completed").length },
   ], [orders]);
 
-  const openDrawer = (order) => {
+  const openDrawer = async (order) => {
     setSelectedOrder(order);
     setDrawerOpen(true);
+    try {
+      const detail = await getOrderApi(order.id);
+      setSelectedOrder(detail.data || detail.order || detail);
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Unable to load order details.");
+    }
   };
 
   if (loading) {
@@ -286,7 +292,7 @@ function OrderDetailDrawer({ order, navigate }) {
       <div className="flex items-start justify-between pb-4 border-b border-[#282a2f]">
         <div>
           <div className="flex items-center gap-2 font-mono font-bold text-[#ffffff]">
-            <span>{order.id}</span>
+            <span>{order.order_id || order.id}</span>
             <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.variant === "gold" ? "bg-[#f2ca50]" : "bg-[#f2ca50]"}`}></span>
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -295,7 +301,7 @@ function OrderDetailDrawer({ order, navigate }) {
             </div>
             <div>
               <span className="font-medium text-[#ffffff]">{order.clientName || "—"}</span>
-              <div className="text-xs font-mono text-[#ffffff]/60">{order.ventureInfo || "—"}</div>
+              
             </div>
           </div>
         </div>
@@ -317,6 +323,10 @@ function OrderDetailDrawer({ order, navigate }) {
           <span className="text-[#ffffff]/60">Lease Amount:</span>
           <span className="font-mono font-bold text-[#f2ca50]">${(order.amount || order.lease_amount || 0).toLocaleString()}/mo</span>
         </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-[#ffffff]/60">Payment status:</span>
+          <span className="font-mono text-[#f2ca50]">{order.paymentStatus || "not_started"}</span>
+        </div>
       </div>
 
       {/* Timeline / Events */}
@@ -331,8 +341,9 @@ function OrderDetailDrawer({ order, navigate }) {
                   {i < timelineEvents.length - 1 && <div className="absolute left-0.5 top-2 w-0.5 h-full bg-[#282a2f]"></div>}
                 </div>
                 <div className="flex-1">
-                  <div className={`font-medium text-sm ${item.status === "current" ? "text-[#f2ca50]" : item.status === "completed" ? "text-[#ffffff]" : "text-[#ffffff]/60"}`}>{item.event}</div>
-                  <div className={`text-xs font-mono ${item.status === "completed" ? "text-[#ffffff]/60" : "text-[#ffffff]/40"}`}>{item.time}</div>
+                  <div className={`font-medium text-sm ${item.status === "current" ? "text-[#f2ca50]" : item.status === "completed" ? "text-[#ffffff]" : "text-[#ffffff]/60"}`}>{(item.event_type || "update").replaceAll("_", " ")}</div>
+                  <div className={`text-xs font-mono ${item.status === "completed" ? "text-[#ffffff]/60" : "text-[#ffffff]/40"}`}>{item.note || ""}</div>
+                  <time className="text-xs font-mono text-[#ffffff]/40">{item.created_at ? new Date(item.created_at).toLocaleString() : "Time not available"}</time>
                 </div>
               </div>
             ))
