@@ -11,6 +11,16 @@ from repositories import provider_profile as provider_repo
 logger = logging.getLogger(__name__)
 
 
+async def _get_participant_order(order_id: int, provider_id: int | None, client_id: int | None, session: AsyncSession | None) -> dict | None:
+    if provider_id is not None:
+        order = await order_repo.get_order_by_id(order_id, provider_id=provider_id, session=session)
+        if order:
+            return order
+    if client_id is not None:
+        return await order_repo.get_order_by_id(order_id, client_id=client_id, session=session)
+    return None
+
+
 async def create_deal(
     order_id: int,
     payment_method: str,
@@ -20,7 +30,7 @@ async def create_deal(
     session: AsyncSession | None = None,
 ) -> dict:
     """Create a deal for an order owned by the authenticated buyer or provider."""
-    order = await order_repo.get_order_by_id(order_id, provider_id=provider_id, client_id=client_id, session=session)
+    order = await _get_participant_order(order_id, provider_id, client_id, session)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -53,7 +63,7 @@ async def get_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
-    order = await order_repo.get_order_by_id(deal["order_id"], provider_id=provider_id, client_id=client_id, session=session)
+    order = await _get_participant_order(deal["order_id"], provider_id, client_id, session)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
