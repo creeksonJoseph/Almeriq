@@ -6,11 +6,11 @@ export async function listNotificationsApi(params = {}) {
 }
 
 export async function markNotificationReadApi(id) {
-  const res = await apiClient.post(`/notifications/${id}/read`);
+  const res = await apiClient.patch(`/notifications/${id}/read`);
   return res.data;
 }
 
 export async function markAllNotificationsReadApi() {
-  const res = await apiClient.post("/notifications/read-all");
+  const res = await apiClient.patch("/notifications/read-all");
   return res.data;
 }
