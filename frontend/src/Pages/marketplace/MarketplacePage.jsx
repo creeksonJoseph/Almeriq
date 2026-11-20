@@ -211,7 +211,9 @@ export default function MarketplacePage() {
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center" onClick={() => setGalleryOpen(false)}>
           <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
             <div className="aspect-video bg-black rounded-xl overflow-hidden">
-              <img src={galleryImages[galleryIndex]} alt="" className="w-full h-full object-contain" />
+              {galleryImages[galleryIndex]?.resource_type === "video"
+                ? <video src={galleryImages[galleryIndex].url} controls className="w-full h-full object-contain" />
+                : <img src={galleryImages[galleryIndex]?.url} alt="" className="w-full h-full object-contain" />}
             </div>
             {galleryImages.length > 1 && (
               <>
@@ -225,9 +227,9 @@ export default function MarketplacePage() {
             )}
             <button onClick={() => setGalleryOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Close">✕</button>
             <div className="flex justify-center gap-2 p-4">
-              {galleryImages.map((img, i) => (
-                <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+              {galleryImages.map((item, i) => (
+                <button key={item.public_id || i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
+                  {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}
                 </button>
               ))}
             </div>
