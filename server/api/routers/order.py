@@ -81,7 +81,7 @@ async def update_order_status(
         order_id=order_id,
         provider_id=profile["id"],
         new_status=body.status,
-        actor_id=profile["id"],
+        actor_id=profile["user_id"],
         session=db,
     )
 
@@ -112,6 +112,6 @@ async def upload_waybill(
         provider_id=profile["id"],
         waybill_url=body.waybill_url,
         tracking_number=body.tracking_number,
-        actor_id=profile["id"],
+        actor_id=profile["user_id"],
         session=db,
     )
