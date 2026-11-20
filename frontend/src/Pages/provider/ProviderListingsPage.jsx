@@ -62,7 +62,7 @@ const ProviderListingsPage = () => {
     const matchesStatus = filter.status === "all" || a.status?.toLowerCase() === filter.status;
     const matchesSearch = a.name?.toLowerCase().includes(watchSearch.toLowerCase()) ||
       a.category?.toLowerCase().includes(watchSearch.toLowerCase()) ||
-      a.serial?.toLowerCase().includes(watchSearch.toLowerCase());
+      a.client_asset_id?.toLowerCase().includes(watchSearch.toLowerCase()) || JSON.stringify(a.specs || {}).toLowerCase().includes(watchSearch.toLowerCase());
     return matchesCategory && matchesStatus && matchesSearch;
   });
 
@@ -206,7 +206,7 @@ const ProviderListingsPage = () => {
           assets={filteredAssets}
           onDelete={confirmDelete}
           onDuplicate={handleDuplicate}
-          onClearFilters={() => setFilter({ category: "all", status: "all", search: "" })}
+          onClearFilters={() => { setFilter({ category: "all", status: "all", search: "" }); searchForm.reset({ search: "" }); }}
         />
       </div>
 
