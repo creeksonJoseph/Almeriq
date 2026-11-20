@@ -212,7 +212,7 @@ export default function ProviderListingPreviewPage() {
               <button onClick={() => setGalleryIndex(i => (i - 1 + media.length) % media.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
                 <ChevronLeft className="w-6 h-6" />
               </button>
-              <button onClick={() => setGalleryIndex(i => (i + 1) % images.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
+              <button onClick={() => setGalleryIndex(i => (i + 1) % media.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
                 <ChevronRight className="w-6 h-6" />
               </button>
             </>
