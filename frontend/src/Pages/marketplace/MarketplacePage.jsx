@@ -37,6 +37,8 @@ export default function MarketplacePage() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({ location: "", kind: "all", minPrice: "", maxPrice: "" });
 
   const searchForm = useForm({ defaultValues: { query: "" } });
   const watchQuery = searchForm.watch("query");
@@ -64,9 +66,17 @@ export default function MarketplacePage() {
     containers: ["container", "edge"],
     solar: ["solar", "renewable"],
   };
-  const filteredProviders = activeCategory === "all"
-    ? providers
-    : providers.filter(p => (categoryTerms[activeCategory] || [activeCategory]).some(term => (p.category || "").toLowerCase().includes(term)));
+  const filteredProviders = providers.filter(provider => {
+    const categoryMatch = activeCategory === "all" || (categoryTerms[activeCategory] || [activeCategory]).some(term => (provider.category || "").toLowerCase().includes(term));
+    const query = watchQuery.trim().toLowerCase();
+    const searchMatch = !query || [provider.name, provider.provider_name, provider.category, provider.description, provider.provider_location].some(value => String(value || "").toLowerCase().includes(query));
+    const locationMatch = !advancedFilters.location || (provider.provider_location || "").toLowerCase().includes(advancedFilters.location.toLowerCase());
+    const kindMatch = advancedFilters.kind === "all" || provider.kind === advancedFilters.kind;
+    const price = Number(provider.price_monthly || 0);
+    const minMatch = advancedFilters.minPrice === "" || price >= Number(advancedFilters.minPrice);
+    const maxMatch = advancedFilters.maxPrice === "" || price <= Number(advancedFilters.maxPrice);
+    return categoryMatch && searchMatch && locationMatch && kindMatch && minMatch && maxMatch;
+  });
 
   const handleOrder = async (listing) => {
     if (!user) {
@@ -164,6 +174,34 @@ export default function MarketplacePage() {
           </div>
         </div>
       </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
+          <input {...searchForm.register("query")} placeholder="Search listings, categories or providers" className="alq-input w-full pl-10" aria-label="Search marketplace listings" />
+        </div>
+        <Button type="button" variant="ghost" onClick={() => setFiltersOpen(open => !open)} className="shrink-0">
+          <Filter className="mr-2 h-4 w-4" /> {filtersOpen ? "Hide filters" : "Advanced filters"}
+        </Button>
+      </div>
+      {filtersOpen && (
+        <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="space-y-1 text-xs text-white/60">Provider location
+            <input value={advancedFilters.location} onChange={e => setAdvancedFilters(current => ({ ...current, location: e.target.value }))} className="alq-input w-full" placeholder="e.g. Nairobi" />
+          </label>
+          <label className="space-y-1 text-xs text-white/60">Asset type
+            <select value={advancedFilters.kind} onChange={e => setAdvancedFilters(current => ({ ...current, kind: e.target.value }))} className="alq-input w-full">
+              <option value="all">All types</option><option value="physical">Physical</option><option value="digital">Digital</option>
+            </select>
+          </label>
+          <label className="space-y-1 text-xs text-white/60">Minimum monthly price
+            <input type="number" min="0" value={advancedFilters.minPrice} onChange={e => setAdvancedFilters(current => ({ ...current, minPrice: e.target.value }))} className="alq-input w-full" placeholder="No minimum" />
+          </label>
+          <label className="space-y-1 text-xs text-white/60">Maximum monthly price
+            <input type="number" min="0" value={advancedFilters.maxPrice} onChange={e => setAdvancedFilters(current => ({ ...current, maxPrice: e.target.value }))} className="alq-input w-full" placeholder="No maximum" />
+          </label>
+        </div>
+      )}
 
       {/* Horizontal Scroll Filter Chips */}
       <div className="w-full pb-6">
@@ -273,7 +311,8 @@ function ProviderCard({ provider, onChat, onOrder, onView, ordering }) {
           </div>
           <Pill variant="gold" className="shrink-0">{provider.status || "available"}</Pill>
         </div>
-        <p className="text-sm text-white/70 line-clamp-2">{provider.description || `${provider.kind || "Infrastructure"} listing by ${provider.provider_name || "provider"}`}</p>
+        <p className="text-sm text-white/70 line-clamp-2">{provider.description || "No description provided."}</p>
+        <div className="font-serif text-xl font-semibold text-gold">{provider.price_monthly != null ? "$" + Number(provider.price_monthly).toLocaleString() + "/mo" : "Price on request"}</div>
         <div className="flex items-center gap-1.5 flex-wrap">
           {(provider.tags || [provider.category, provider.kind]).filter(Boolean).slice(0, 2).map((tag, i) => (
             <Pill key={i} variant="white" className="truncate max-w-full">{tag}</Pill>
