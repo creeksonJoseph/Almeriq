@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { MoreVertical, Trash2, Edit, Activity, ExternalLink } from "lucide-react";
 import { Button, Card, Link as LinkComp, StatusPill } from "./ui";
 
-export function AssetCard({ asset, onDelete }) {
+export function AssetCard({ asset, onDelete, onDuplicate }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const statusConfig = {
@@ -31,14 +31,14 @@ export function AssetCard({ asset, onDelete }) {
             </button>
             {popoverOpen && (
               <div className="absolute right-0 top-9 w-44 bg-surface-2 border border-border rounded-lg p-1.5 shadow-2xl z-30 text-xs">
-                <Link to={`/provider/listings/${asset.id}/preview`} className="block px-2.5 py-1.5 text-white/60 hover:text-text hover:bg-surface rounded flex items-center gap-2" onClick={() => setPopoverOpen(false)}>
+                <Link to={`/provider/listings/${asset.id}/edit`} className="block px-2.5 py-1.5 text-white/60 hover:text-text hover:bg-surface rounded flex items-center gap-2" onClick={() => setPopoverOpen(false)}>
                   <Edit className="w-3.5 h-3.5" />
                   <span>Edit</span>
                 </Link>
-                <Link to={`/provider/listings/${asset.id}/preview`} className="block px-2.5 py-1.5 text-white/60 hover:text-text hover:bg-surface rounded flex items-center gap-2" onClick={() => setPopoverOpen(false)}>
+                <button type="button" onClick={() => { setPopoverOpen(false); onDuplicate(asset); }} className="w-full px-2.5 py-1.5 text-left text-white/60 hover:text-text hover:bg-surface rounded flex items-center gap-2">
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span>Duplicate spec</span>
-                </Link>
+                </button>
                 <div className="my-1 border-t border-border"></div>
                 <button
                   onClick={() => { setPopoverOpen(false); onDelete(asset.id); }}
@@ -52,29 +52,29 @@ export function AssetCard({ asset, onDelete }) {
           </div>
         </div>
         <div className="text-[11px] font-mono uppercase tracking-wider text-white/60 mb-1">
-          {asset.type === "digital" ? "HIGH-PERFORMANCE AI COMPUTE" : "HEAVY EXCAVATION and EARTHMOVING"}
+          {asset.kind === "digital" ? "HIGH-PERFORMANCE AI COMPUTE" : "HEAVY EXCAVATION and EARTHMOVING"}
         </div>
         <h3 className="font-serif text-lg font-semibold text-text mb-2 leading-snug">{asset.name}</h3>
         <p className="text-xs text-white/60 font-mono mb-4">{asset.description || asset.specs || "No description"}</p>
       </div>
       <div className="pt-4 border-t border-border mt-2">
         <div className="flex items-baseline gap-1.5 mb-4">
-          <span className="font-serif text-2xl font-semibold text-gold">${asset.rate || "0"}</span>
+          <span className="font-serif text-2xl font-semibold text-gold">${asset.price_monthly ?? "0"}</span>
           <span className="text-xs text-white/60">/ month</span>
         </div>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Link to={`/provider/listings/${asset.id}/preview`}>
+            <Link to={`/provider/listings/${asset.id}/edit`}>
               <Button variant="ghost" size="sm" className="px-3.5 py-1.5">Edit</Button>
             </Link>
-            <button className="p-1.5 rounded-lg border border-border hover:border-gold text-white/60 hover:text-text transition-colors">
+            <Link to={`/provider/listings/${asset.id}/preview`} className="p-1.5 rounded-lg border border-border hover:border-gold text-white/60 hover:text-text transition-colors" aria-label="Preview listing">
               <ExternalLink className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
-          <a href="#" className="text-xs font-mono text-white/60 hover:text-gold flex items-center gap-1 transition-colors">
+          {asset.telemetry_url ? <a href={asset.telemetry_url} target="_blank" rel="noreferrer" className="text-xs font-mono text-white/60 hover:text-gold flex items-center gap-1 transition-colors">
             <span>Telemetry</span>
             <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          </a> : <span className="text-xs font-mono text-white/40">No telemetry URL</span>}
         </div>
       </div>
     </Card>
