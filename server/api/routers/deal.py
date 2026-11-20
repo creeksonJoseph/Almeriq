@@ -42,7 +42,7 @@ async def get_deal(
     """Retrieve a deal whose order belongs to the current provider."""
     response.headers["Cache-Control"] = "private, max-age=30"
     profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
-    return await svc.get_deal(deal_id=deal_id, provider_id=profile["id"] if profile else None, client_id=current_user["id"], session=db)
+    return await svc.get_deal(deal_id=deal_id, provider_id=profile["id"] if profile else None, client_id=None if profile else current_user["id"], session=db)
 
 
 @router.post("/deals/{deal_id}/sign", response_model=DealResponse)
