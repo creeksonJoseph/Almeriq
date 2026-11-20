@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2, MessageSquare, ShoppingCart, CheckCircle, Shield, Truck } from "lucide-react";
-import { Button, Card, StatusPill, Modal, Pill } from "../../components/ui";
+import { Button, Card, StatusPill, Modal, Pill, Skeleton, SkeletonText } from "../../components/ui";
 import { getMarketplaceListingApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
