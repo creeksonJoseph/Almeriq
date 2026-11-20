@@ -47,6 +47,11 @@ export async function updateOrderStatusApi(id, status) {
   return normalizeOrder(res.data);
 }
 
+export async function dispatchOrderApi(id, payload) {
+  const res = await apiClient.post(`/api/provider/orders/${id}/dispatch`, payload);
+  return normalizeOrder(res.data);
+}
+
 export async function uploadWaybillApi(id, payload) {
   const res = await apiClient.post(`/api/provider/orders/${id}/waybill`, payload);
   return res.data;
