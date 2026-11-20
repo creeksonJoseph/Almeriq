@@ -11,10 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import StaticPool
 
 from api.routers import marketplace as marketplace_router
+from api.routers import order as order_router
 from models.base import Base
 from models.order import Order
+from models.order_event import OrderEvent
+from models.notification import Notification
 from repositories.user import create_user
-from schemas.provider import MarketplaceCheckoutRequest
+from schemas.provider import MarketplaceCheckoutRequest, OrderStatusUpdateRequest, WaybillUploadRequest
 from services.asset import create_asset
 from services.provider import create_or_update_provider_profile
 
@@ -126,3 +129,101 @@ async def test_marketplace_checkout_rolls_back_order_when_deal_creation_fails(se
     await session.rollback()
     remaining_order = await session.scalar(select(Order).where(Order.client_id == buyer["id"]))
     assert remaining_order is None
+
+
+@pytest.mark.asyncio
+async def test_provider_can_confirm_and_dispatch_order_with_audited_events(session, monkeypatch):
+    buyer, provider, asset = await _checkout_fixture(session)
+
+    async def get_listing(asset_id: int):
+        return {
+            "id": asset["id"],
+            "provider_id": provider["id"],
+            "status": "available",
+            "price_monthly": 250.0,
+        }
+
+    monkeypatch.setattr(marketplace_router.svc, "get_marketplace_listing", get_listing)
+    checkout = await marketplace_router.create_marketplace_checkout(
+        body=MarketplaceCheckoutRequest(asset_id=asset["id"]),
+        response=Response(),
+        current_user={"id": buyer["id"]},
+        db=session,
+    )
+    order_id = checkout["order"]["id"]
+
+    confirmed = await order_router.update_order_status(
+        response=Response(),
+        order_id=order_id,
+        body=OrderStatusUpdateRequest(status="confirmed"),
+        profile=provider,
+        db=session,
+    )
+    assert confirmed["status"] == "confirmed"
+
+    dispatched = await order_router.dispatch_order(
+        response=Response(),
+        order_id=order_id,
+        body=WaybillUploadRequest(
+            waybill_url="https://example.com/waybills/test-order",
+            tracking_number="TRACK-123",
+        ),
+        profile=provider,
+        db=session,
+    )
+    assert dispatched["status"] == "shipped"
+    await session.commit()
+
+    events = list((await session.scalars(
+        select(OrderEvent).where(OrderEvent.order_id == order_id).order_by(OrderEvent.id)
+    )).all())
+    assert [event.event_type for event in events] == [
+        "created",
+        "status_changed",
+        "waybill_uploaded",
+        "status_changed",
+    ]
+    assert events[1].actor_id == provider["user_id"]
+    assert events[2].actor_id == provider["user_id"]
+    assert events[3].actor_id == provider["user_id"]
+
+    buyer_notifications = list((await session.scalars(
+        select(Notification).where(Notification.user_id == buyer["id"])
+    )).all())
+    assert any("confirmed" in item.body for item in buyer_notifications)
+    assert any("shipped" in item.body for item in buyer_notifications)
+
+
+@pytest.mark.asyncio
+async def test_provider_cannot_skip_or_reverse_order_statuses(session, monkeypatch):
+    buyer, provider, asset = await _checkout_fixture(session)
+
+    async def get_listing(asset_id: int):
+        return {
+            "id": asset["id"],
+            "provider_id": provider["id"],
+            "status": "available",
+            "price_monthly": 250.0,
+        }
+
+    monkeypatch.setattr(marketplace_router.svc, "get_marketplace_listing", get_listing)
+    checkout = await marketplace_router.create_marketplace_checkout(
+        body=MarketplaceCheckoutRequest(asset_id=asset["id"]),
+        response=Response(),
+        current_user={"id": buyer["id"]},
+        db=session,
+    )
+    order_id = checkout["order"]["id"]
+
+    with pytest.raises(Exception) as error:
+        await order_router.update_order_status(
+            response=Response(),
+            order_id=order_id,
+            body=OrderStatusUpdateRequest(status="completed"),
+            profile=provider,
+            db=session,
+        )
+    assert getattr(error.value, "status_code", None) == 409
+    await session.rollback()
+    order = await session.scalar(select(Order).where(Order.id == order_id))
+    assert order.status == "pending_review"
