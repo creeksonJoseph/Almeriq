@@ -108,12 +108,12 @@ export default function ProviderSetupPage() {
             type: profile.provider_type || "COMPANY",
             about: profile.about || "",
           });
-          if (profile.assets?.physical) {
-            profile.assets.physical.forEach(a => addPhysicalAsset(a));
-          }
-          if (profile.assets?.digital) {
-            profile.assets.digital.forEach(a => addDigitalAsset(a));
-          }
+      if (profile.assets?.physical) {
+        methods.setValue("physicalAssets", profile.assets.physical);
+      }
+      if (profile.assets?.digital) {
+        methods.setValue("digitalAssets", profile.assets.digital);
+      }
           const coverage = await listCoverageRegionsApi();
           methods.setValue("coverage.regions", (coverage.items || []).map(item => coverageFromApi[item.region] || item.region));
         }
@@ -127,13 +127,28 @@ export default function ProviderSetupPage() {
   }, [methods, addPhysicalAsset, addDigitalAsset]);
 
   const nextStep = async () => {
-    const stepSchema = STEPS[currentStep].schema;
-    const stepData = methods.getValues(STEPS[currentStep].id);
-    const result = stepSchema.safeParse(stepData);
+    const step = STEPS[currentStep];
+    let stepData;
+    let schema = step.schema;
+    if (step.id === "physical") {
+      stepData = methods.getValues("physicalAssets");
+      schema = z.array(physicalAssetSchema);
+    } else if (step.id === "digital") {
+      stepData = methods.getValues("digitalAssets");
+      schema = z.array(digitalAssetSchema);
+    } else {
+      stepData = methods.getValues(step.id);
+    }
+    const result = schema.safeParse(stepData);
     if (!result.success) {
-      Object.entries(result.error.flatten().fieldErrors).forEach(([field, errors]) => {
-        methods.setError(STEPS[currentStep].id + "." + field, { message: errors[0] });
-      });
+      if (step.id === "physical" || step.id === "digital") {
+        // mark array errors generically
+        methods.setError(step.id, { message: "Invalid assets" });
+      } else {
+        Object.entries(result.error.flatten().fieldErrors).forEach(([field, errors]) => {
+          methods.setError(step.id + "." + field, { message: errors[0] });
+        });
+      }
       return;
     }
     if (currentStep < STEPS.length - 1) setCurrentStep(c => c + 1);

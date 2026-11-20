@@ -31,6 +31,12 @@ async def create_asset(
             detail="Provider profile not found",
         )
 
+    # Idempotency: reuse existing asset with same name+kind to avoid duplicates on retry
+    existing, _ = await asset_repo.list_assets(provider_id=provider_id, kind=kind, limit=1000, session=session)
+    for a in existing:
+        if a.get("name") == name:
+            return a
+
     return await asset_repo.create_asset(
         provider_id=provider_id,
         name=name,
