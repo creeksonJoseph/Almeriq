@@ -153,19 +153,15 @@ export default function ProviderSetupPage() {
     }
     const result = schema.safeParse(stepData);
     if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      // For arrays, fieldErrors keys are indices
-      Object.entries(fieldErrors).forEach(([idx, errs]) => {
-        if (typeof errs === "object" && errs !== null) {
-          Object.entries(errs).forEach(([field, msgs]) => {
-            methods.setError(`${step.id === "physical" ? "physicalAssets" : "digitalAssets"}.${idx}.${field}`, { message: Array.isArray(msgs) ? msgs[0] : msgs });
-          });
-        }
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join(".");
+        const fieldName = step.id === "physical"
+          ? path.replace(/^/, "physicalAssets.")
+          : step.id === "digital"
+          ? path.replace(/^/, "digitalAssets.")
+          : `${step.id}.${path}`;
+        methods.setError(fieldName, { message: issue.message });
       });
-      // fallback generic
-      if (Object.keys(fieldErrors).length === 0) {
-        methods.setError(step.id, { message: "Invalid assets" });
-      }
       return;
     }
     if (currentStep < STEPS.length - 1) setCurrentStep(c => c + 1);
@@ -187,8 +183,31 @@ export default function ProviderSetupPage() {
         engagement_preferences: data.preferences?.engagement,
       });
       await updateCoverageRegionsApi(data.coverage.regions.map(region => coverageToApi[region] || region));
+      const toNum = (v) => (v != null && v !== "" && !isNaN(Number(v)) ? Number(v) : null);
+      const saveAsset = async (asset, kind) => {
+        const payload = {
+          name: asset.name,
+          category: asset.category,
+          kind,
+          quantity_capacity: toNum(kind === "physical" ? asset.quantity : asset.capacity),
+          price_monthly: toNum(asset.rate),
+          specs: {
+            quantity: asset.quantity || undefined,
+            capacity: asset.capacity || undefined,
+            availability: asset.availability || undefined,
+            rate: asset.rate || undefined,
+          },
+        };
+        if (asset.id) return updateAssetApi(asset.id, payload);
+        return createAssetApi(payload);
+      };
+      await Promise.all([
+        ...data.physicalAssets.map(a => saveAsset(a, "physical")),
+        ...data.digitalAssets.map(a => saveAsset(a, "digital")),
+      ]);
     } catch (e) {
       console.error("Save failed", e);
+      alert("Some draft data failed to save.");
     } finally {
       setSaving(false);
     }
@@ -205,6 +224,9 @@ export default function ProviderSetupPage() {
     });
     const result = finalSchema.safeParse(allData);
     if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        methods.setError(issue.path.join("."), { message: issue.message });
+      });
       return;
     }
     setSaving(true);
