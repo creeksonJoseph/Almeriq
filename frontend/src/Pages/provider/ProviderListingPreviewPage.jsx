@@ -205,9 +205,9 @@ export default function ProviderListingPreviewPage() {
       <Modal open={galleryOpen} onClose={() => setGalleryOpen(false)} ariaLabel="Image gallery" className="max-w-4xl p-0">
         <div className="relative">
           <div className="aspect-video w-full bg-black">
-            <img src={images[galleryIndex]} alt="" className="w-full h-full object-contain" />
+            {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}
           </div>
-          {images.length > 1 && (
+          {media.length > 1 && (
             <>
               <button onClick={() => setGalleryIndex(i => (i - 1 + images.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
                 <ChevronLeft className="w-6 h-6" />
@@ -221,7 +221,7 @@ export default function ProviderListingPreviewPage() {
             <X className="w-6 h-6" />
           </button>
           <div className="flex justify-center gap-2 p-4 bg-black/50">
-            {images.map((img, i) => (
+            {media.map((item, i) => (
               <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
                 {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}
               </button>
