@@ -113,7 +113,7 @@ export default function ProviderDashboardPage() {
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Open Orders</span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orders?.length || 0}</div>
+            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orders?.filter(order => !["completed", "declined"].includes(order.status?.toLowerCase())).length || 0}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
               <span>{pendingOrders} awaiting review</span>
             </div>
