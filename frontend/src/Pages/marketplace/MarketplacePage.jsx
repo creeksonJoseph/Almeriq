@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Filter, MapPin, Zap, Shield, Truck, Layers, Box, Satellite, Sun, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
-import { listMarketplaceListingsApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
+import { listMarketplaceListingsApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 const CATEGORIES = [
@@ -87,17 +87,15 @@ export default function MarketplacePage() {
     setOrderingId(listing.id);
     setError(null);
     try {
-      const order = await createMarketplaceOrderApi({
+      const checkout = await createMarketplaceCheckoutApi({
         asset_id: listing.id,
         allocation: "Requested through marketplace",
-        lease_amount: listing.price_monthly,
-      });
-      const deal = await createDealApi({
-        order_id: order.id,
         payment_method: "visa",
-        amount: listing.price_monthly || 0,
       });
-      navigate(`/checkout/${deal.id}`);
+      if (!checkout?.deal?.id) {
+        throw new Error("The order was created but checkout could not be started. Please contact support before retrying.");
+      }
+      navigate(`/checkout/${checkout.deal.id}`);
     } catch (e) {
       setError(e.response?.data?.detail || e.message || "Unable to start this order.");
     } finally {
