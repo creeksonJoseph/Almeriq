@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
@@ -29,31 +29,204 @@ vi.mock("../../lib/api", () => ({
 import * as api from "../../lib/api";
 import ProviderSetupPage from "./ProviderSetupPage.jsx";
 
-describe("ProviderSetupPage", () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    vi.mocked(api.getProviderProfileApi).mockResolvedValue(null);
-    vi.mocked(api.listCoverageRegionsApi).mockResolvedValue({ items: [] });
-    vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
+const setup = () => {
+  window.alert = vi.fn();
+  const all = [
+    api.getProviderProfileApi,
+    api.updateProviderProfileApi,
+    api.listCoverageRegionsApi,
+    api.updateCoverageRegionsApi,
+    api.listAssetsApi,
+    api.createAssetApi,
+    api.updateAssetApi,
+    api.deleteAssetApi,
+  ];
+  all.forEach((fn) => vi.mocked(fn).mockReset());
+  vi.mocked(api.getProviderProfileApi).mockResolvedValue(null);
+  vi.mocked(api.listCoverageRegionsApi).mockResolvedValue({ items: [] });
+  vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
+  return render(
+    <MemoryRouter>
+      <ProviderSetupPage />
+    </MemoryRouter>
+  );
+};
+
+const advanceToPhysical = async () => {
+  await waitFor(() => {
+    expect(screen.getByPlaceholderText(/terraBore/i)).toBeInTheDocument();
+  });
+  fireEvent.change(screen.getByPlaceholderText(/terraBore/i), {
+    target: { value: "Test Provider Co" },
+  });
+  fireEvent.change(screen.getByPlaceholderText(/austin/i), {
+    target: { value: "Austin, United States" },
+  });
+  fireEvent.click(screen.getAllByText(/company/i)[0]);
+  fireEvent.click(screen.getAllByText(/continue/i)[0]);
+  await waitFor(() => {
+    expect(screen.getByText(/add physical asset/i)).toBeInTheDocument();
+  });
+};
+
+const clickSaveDraft = () => {
+  const buttons = screen.getAllByText(/save draft/i);
+  fireEvent.click(buttons[buttons.length - 1]);
+};
+
+describe("ProviderSetupPage asset behavior", () => {
+  it("sends client_asset_id when saving a physical asset draft", async () => {
+    setup();
+    vi.mocked(api.createAssetApi).mockResolvedValue({
+      id: 7,
+      client_asset_id: "cid-123",
+      name: "Excavator",
+    });
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+    fireEvent.click(screen.getByText(/add physical asset/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/caterpillar/i), {
+      target: { value: "CAT 336" },
+    });
+    clickSaveDraft();
+
+    await waitFor(() => {
+      expect(api.createAssetApi).toHaveBeenCalled();
+    });
+    const payload = api.createAssetApi.mock.calls[0][0];
+    expect(payload.kind).toBe("physical");
+    expect(payload.client_asset_id).toBeDefined();
+    expect(typeof payload.client_asset_id).toBe("string");
   });
 
-  it("renders the provider setup page", async () => {
-    render(
-      <MemoryRouter>
-        <ProviderSetupPage />
-      </MemoryRouter>
-    );
-    await screen.findByText(/infrastructure provider profile/i);
+  it("updates the existing asset on repeat draft save instead of duplicating", async () => {
+    setup();
+    vi.mocked(api.createAssetApi).mockResolvedValue({
+      id: 7,
+      client_asset_id: "cid-dup",
+      name: "Excavator",
+    });
+    vi.mocked(api.updateAssetApi).mockResolvedValue({ id: 7 });
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+    fireEvent.click(screen.getByText(/add physical asset/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/caterpillar/i), {
+      target: { value: "CAT 336" },
+    });
+    clickSaveDraft();
+    await waitFor(() => expect(api.createAssetApi).toHaveBeenCalledTimes(1));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    clickSaveDraft();
+    await waitFor(() => {
+      expect(api.updateAssetApi).toHaveBeenCalled();
+    });
+    expect(api.updateAssetApi.mock.calls[0][0]).toBe(7);
   });
 
-  it("retains created asset id in form state", async () => {
-    vi.mocked(api.createAssetApi).mockResolvedValue({ id: 42, client_asset_id: "cid-9" });
-    render(
-      <MemoryRouter>
-        <ProviderSetupPage />
-      </MemoryRouter>
-    );
-    // Just confirm page renders with api wired
-    await screen.findByText(/infrastructure provider profile/i);
+  it("displays category validation error beside the category select", async () => {
+    setup();
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+    fireEvent.click(screen.getByText(/add physical asset/i));
+
+    clickSaveDraft();
+
+    await waitFor(() => {
+      expect(screen.getByText(/category is required/i)).toBeInTheDocument();
+    });
+  });
+
+  it("surfaces deletion failure during save and keeps asset pending", async () => {
+    setup();
+    vi.mocked(api.deleteAssetApi).mockRejectedValue(new Error("delete failed"));
+    vi.mocked(api.createAssetApi).mockResolvedValue({
+      id: 3,
+      client_asset_id: "cid-del",
+      name: "Existing",
+    });
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+    fireEvent.click(screen.getByText(/add physical asset/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/caterpillar/i), {
+      target: { value: "Existing Asset" },
+    });
+    clickSaveDraft();
+    await waitFor(() => expect(api.createAssetApi).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByText(/remove/i));
+    // saving retries the pending deletion; failure is surfaced via alert
+    clickSaveDraft();
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        expect.stringContaining("could not be deleted")
+      );
+    });
+  });
+
+  it("keeps failed deletions pending and retries on next save draft", async () => {
+    setup();
+    vi.mocked(api.deleteAssetApi).mockRejectedValue(new Error("delete failed"));
+    vi.mocked(api.createAssetApi).mockResolvedValue({
+      id: 5,
+      client_asset_id: "cid-retry",
+      name: "Retry Asset",
+    });
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+    fireEvent.click(screen.getByText(/add physical asset/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/caterpillar/i), {
+      target: { value: "Retry Asset" },
+    });
+    clickSaveDraft();
+    await waitFor(() => expect(api.createAssetApi).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByText(/remove/i));
+    // removing only tracks the pending deletion; saving triggers the API call
+    clickSaveDraft();
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        expect.stringContaining("could not be deleted")
+      );
+    });
+
+    // retry the pending deletion on the next save draft
+    vi.mocked(api.deleteAssetApi).mockResolvedValue({});
+    clickSaveDraft();
+    await waitFor(() => expect(api.deleteAssetApi).toHaveBeenCalledTimes(2));
+  });
+
+  it("does not report partial asset-save failures as complete success", async () => {
+    setup();
+    vi.mocked(api.createAssetApi).mockRejectedValue(new Error("save failed"));
+    vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
+    vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+
+    await advanceToPhysical();
+    fireEvent.click(screen.getByText(/add physical asset/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/caterpillar/i), {
+      target: { value: "Failing Asset" },
+    });
+    clickSaveDraft();
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        expect.stringContaining("failed to save")
+      );
+    });
   });
 });
