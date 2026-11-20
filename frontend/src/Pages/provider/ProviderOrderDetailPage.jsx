@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock, Shield } from "lucide-react";
+import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock } from "lucide-react";
 import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../../components/ui";
 import { getOrderApi, getWaybillApi, updateOrderStatusApi } from "../../lib/api";
-
-const STATUS_STEPS = [
-  { key: "created", label: "Order Created", icon: FileText },
-  { key: "escrow", label: "Escrow Funded", icon: Shield },
-  { key: "review", label: "Provider Review", icon: AlertCircle },
-  { key: "confirmed", label: "Confirmed & Contracted", icon: CheckCircle },
-  { key: "dispatched", label: "Dispatched", icon: Truck },
-  { key: "delivered", label: "Delivered & Verified", icon: CheckCircle },
-];
 
 export default function ProviderOrderDetailPage() {
   const { id } = useParams();
@@ -90,7 +81,7 @@ export default function ProviderOrderDetailPage() {
     declined: { variant: "gold", label: "Declined", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
   }[order.status?.toLowerCase()] || { variant: "gold", label: "Pending Review", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" };
 
-  const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === (order.currentStep || "review"));
+  const timeline = [...(order.events || [])].reverse();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -105,7 +96,7 @@ export default function ProviderOrderDetailPage() {
               <span className={`w-2 h-2 rounded-full ${statusConfig.color.replace("text-", "bg-")}`}></span>
               {statusConfig.label}
             </span>
-            <span className="text-white/60 text-sm">Escrow: {order.escrowStatus || "Funded"}</span>
+            <span className="text-white/60 text-sm">Payment: {order.paymentStatus || "not_started"}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -118,36 +109,24 @@ export default function ProviderOrderDetailPage() {
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Actual order event history */}
       <Card className="p-5">
         <h3 className="text-label-caps text-white/60 uppercase tracking-wider mb-4">ORDER TIMELINE</h3>
-        <div className="space-y-4">
-          {STATUS_STEPS.map((step, i) => {
-            const isCompleted = i < currentStepIndex;
-            const isCurrent = i === currentStepIndex;
-            const isFuture = i > currentStepIndex;
-            const stepData = order.timeline?.[step.key];
-            return (
-              <div key={step.key} className="flex items-start gap-3 relative">
-                <div className="relative flex-shrink-0 w-6">
-                  <div className={`w-2 h-2 rounded-full relative z-10 ${isCompleted ? "bg-gold" : isCurrent ? "bg-gold animate-pulse" : "bg-border"}`}></div>
-                  {i < STATUS_STEPS.length - 1 && <div className="absolute left-0.5 top-2 w-0.5 h-full bg-border"></div>}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <step.icon className={`w-4 h-4 shrink-0 ${isCompleted ? "text-gold" : isCurrent ? "text-gold" : "text-white/60"}`} />
-                    <span className={`font-medium text-sm ${isCompleted ? "text-text" : isCurrent ? "text-gold" : "text-white/60"}`}>{step.label}</span>
-                  </div>
-                  <div className={`text-label-caps text-[10px] ml-6 ${isCompleted ? "text-white/60" : isCurrent ? "text-gold/70" : "text-white/40"}`}>
-                    {stepData ? stepData.time : isFuture ? "—" : "Processing..."}
-                  </div>
+        {timeline.length === 0 ? <p className="text-sm text-white/50">No order events have been recorded yet.</p> : (
+          <div className="space-y-4">
+            {timeline.map((event) => (
+              <div key={event.id} className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-gold" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-text">{(event.event_type || "update").replaceAll("_", " ")}</div>
+                  {event.note && <p className="mt-1 text-sm text-white/60">{event.note}</p>}
+                  <time className="mt-1 block text-xs text-white/40">{event.created_at ? new Date(event.created_at).toLocaleString() : "Time not available"}</time>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
-
       {/* Order Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Client & Asset */}
