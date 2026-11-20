@@ -58,6 +58,8 @@ async def sign_deal(
     return await svc.sign_deal(
         deal_id=deal_id,
         signature=body.signature,
+        payment_method=body.payment_method,
+        amount=float(body.amount) if body.amount is not None else None,
         provider_id=(await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db) or {}).get("id"),
         client_id=current_user["id"],
         session=db,
