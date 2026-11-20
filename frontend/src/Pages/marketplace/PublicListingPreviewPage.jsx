@@ -221,7 +221,7 @@ export default function PublicListingPreviewPage() {
           <Card className="p-5 text-center border border-border bg-surface">
             <button type="button" onClick={async () => { if (!user) { navigate(`/login?redirect=${encodeURIComponent(`/listings/${id}`)}`); return; } try { const conversation = await startProviderConversationApi(listing.provider_id); navigate(`/messages?conversation=${conversation.id}`); } catch (e) { setError(e.response?.data?.detail || e.message || "Unable to start conversation."); } }} className="text-gold hover:underline flex items-center justify-center gap-1">
               <MessageSquare className="w-4 h-4" /> Chat with Provider
-            </Link>
+            </button>
           </Card>
         </div>
       </div>
