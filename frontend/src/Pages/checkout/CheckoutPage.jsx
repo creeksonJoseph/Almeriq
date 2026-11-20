@@ -14,10 +14,10 @@ const STEPS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: "visa", name: "Visa", icon: CreditCard, details: "Ending in •••• 4821", default: true },
-  { id: "mastercard", name: "Mastercard", icon: CreditCard, details: "Corporate & Fleet" },
-  { id: "paypal", name: "PayPal", icon: CreditCard, details: "Automated billing" },
-  { id: "mpesa", name: "M-Pesa", icon: Smartphone, details: "Mobile Escrow Rail" },
+  { id: "visa", name: "Visa", icon: CreditCard, details: "Demo selection only — no charge", default: true },
+  { id: "mastercard", name: "Mastercard", icon: CreditCard, details: "Demo selection only — no charge" },
+  { id: "paypal", name: "PayPal", icon: CreditCard, details: "Demo selection only — no charge" },
+  { id: "mpesa", name: "M-Pesa", icon: Smartphone, details: "Demo selection only — no charge" },
 ];
 
 const AMOUNT_PRESETS = [
@@ -33,6 +33,8 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [deal, setDeal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [signature, setSignature] = useState("");
   const [canvasRef, setCanvasRef] = useState(null);
@@ -53,7 +55,7 @@ export default function CheckoutPage() {
         amountForm.setValue("amount", String(loadedDeal.amount ?? "0.00"));
         paymentForm.setValue("method", loadedDeal.payment_method || "visa");
       } catch (e) {
-        console.error("Failed to load checkout data", e);
+        setLoadError(e.response?.data?.detail || e.message || "Unable to load this deal.");
       } finally {
         setLoading(false);
       }
@@ -62,6 +64,15 @@ export default function CheckoutPage() {
   }, [orderId, amountForm, paymentForm]);
 
   const handleNext = () => {
+    setActionError("");
+    if (currentStep === 1) {
+      const rawAmount = watchAmount === "custom" ? watchCustomAmount : watchAmount;
+      const parsedAmount = Number(rawAmount);
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        setActionError("Enter an amount greater than zero to continue.");
+        return;
+      }
+    }
     if (currentStep < STEPS.length - 1) setCurrentStep(c => c + 1);
   };
 
@@ -71,12 +82,16 @@ export default function CheckoutPage() {
 
   const handleComplete = async () => {
     setActionLoading(true);
+    setActionError("");
     try {
+      const amount = Number(watchAmount === "custom" ? watchCustomAmount : watchAmount);
       if (!deal?.id || !signature) throw new Error("A deal and signature are required to complete checkout.");
-      await signDealApi(deal.id, signature, { payment_method: watchMethod, amount: Number(watchAmount === "custom" ? watchCustomAmount : watchAmount) });
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter an amount greater than zero.");
+      const updatedDeal = await signDealApi(deal.id, signature, { payment_method: watchMethod, amount });
+      setDeal(updatedDeal.data || updatedDeal.deal || updatedDeal);
       setCurrentStep(STEPS.length - 1);
     } catch (e) {
-      console.error("Checkout failed", e);
+      setActionError(e.response?.data?.detail || e.message || "Unable to save the deal.");
     } finally {
       setActionLoading(false);
     }
@@ -149,24 +164,11 @@ export default function CheckoutPage() {
               Step {currentStep + 1} of {STEPS.length} — {STEPS[currentStep].label.split(". ")[1]}
             </div>
           </div>
-
-          {/* Quick Switch Bar */}
-          <div className="flex items-center gap-1.5 pt-2 pb-1 overflow-x-auto border-t border-border/20">
-            <span className="text-label-caps text-[10px] text-white/60 shrink-0 pr-1">TEST VIEW:</span>
-            {STEPS.map((step, i) => (
-              <button
-                key={step.id}
-                onClick={() => setCurrentStep(i)}
-                className={`px-2 py-0.5 rounded text-label-caps text-[10px] shrink-0 ${i === currentStep ? "bg-gold/20 text-gold font-bold" : "bg-surface text-white/60 hover:text-text hover:bg-surface-2"}`}
-              >
-                {step.short}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-6">
+          {actionError && <div role="alert" className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{actionError}</div>}
           {/* Step 1: Payment Method */}
           {currentStep === 0 && (
             <PaymentStep
