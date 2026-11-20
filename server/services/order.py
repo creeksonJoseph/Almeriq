@@ -86,6 +86,29 @@ async def get_order(
     return order
 
 
+_VALID_ORDER_STATUS_TRANSITIONS: dict[str, set[str]] = {
+    "pending_review": {"confirmed", "declined"},
+    "confirmed": {"shipped", "completed"},
+    "shipped": {"completed"},
+    # terminal states: no outgoing transitions
+    "declined": set(),
+    "completed": set(),
+}
+
+
+def _validate_status_transition(current_status: str, new_status: str) -> None:
+    """Reject invalid order status transitions."""
+    allowed = _VALID_ORDER_STATUS_TRANSITIONS.get(current_status, set())
+    if new_status not in allowed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Invalid status transition from '{current_status}' to '{new_status}'. "
+                f"Allowed: {', '.join(sorted(allowed)) or 'none (terminal state)'}"
+            ),
+        )
+
+
 async def update_order_status(
     order_id: int,
     provider_id: int,
@@ -102,7 +125,6 @@ async def update_order_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found",
         )
-
     allowed_transitions = {
         "pending_review": {"confirmed", "declined"},
         "confirmed": {"shipped"},
@@ -120,7 +142,6 @@ async def update_order_status(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Upload a waybill before marking this order as shipped",
             )
-
     order = await order_repo.update_order_status(
         order_id, provider_id, new_status, session=session
     )

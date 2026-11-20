@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, MapPin, Zap, Shield, Truck, Layers, Box, Satellite, Sun, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
+import { Search, Filter, MapPin, Zap, Shield, ChevronLeft, ChevronRight, MessageSquare, ShoppingCart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
 import { listMarketplaceListingsApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
@@ -276,7 +276,7 @@ export default function MarketplacePage() {
   );
 }
 
-function ProviderCard({ provider, onChat, onOrder, onView, ordering }) {
+function ProviderCard({ provider, onChat, onOrder, onView, ordering, onImageClick }) {
   const media = provider.media || [];
   const cover = media[0];
 

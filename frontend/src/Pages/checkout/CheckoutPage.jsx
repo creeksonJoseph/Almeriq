@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { ChevronLeft, ChevronRight, Check, X, Loader2, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
-import { Button, Card, Input, Modal, Skeleton, SkeletonText } from "../../components/ui";
+import { ChevronRight, Check, X, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { getDealApi, signDealApi } from "../../lib/api";
 
 const STEPS = [
@@ -37,7 +37,7 @@ export default function CheckoutPage() {
   const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [signature, setSignature] = useState("");
-  const [canvasRef, setCanvasRef] = useState(null);
+    const [, setCanvasRef] = useState(null);
 
   const paymentForm = useForm({ defaultValues: { method: "visa" } });
   const amountForm = useForm({ defaultValues: { amount: "5000.00", customAmount: "" } });
@@ -126,7 +126,6 @@ export default function CheckoutPage() {
     );
   }
 
-  const dealAmount = deal?.amount ?? "0.00";
   const providerName = deal?.provider_name || "Infrastructure provider";
   const assetName = deal?.asset_name || "Selected infrastructure listing";
 
@@ -194,7 +193,6 @@ export default function CheckoutPage() {
             <AmountStep
               form={amountForm}
               presets={AMOUNT_PRESETS}
-              dealAmount={dealAmount}
               onBack={handleBack}
               onNext={handleNext}
               loading={actionLoading}
@@ -283,7 +281,7 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
   );
 }
 
-function AmountStep({ form, presets, dealAmount, onBack, onNext, loading, formatAmount }) {
+function AmountStep({ form, presets, onBack, onNext, loading, formatAmount }) {
   return (
     <div className="space-y-6" id="step-frame-2">
       <div className="flex items-center justify-between">

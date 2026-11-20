@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock } from "lucide-react";
-import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
+import { Truck, CheckCircle, XCircle, Shield } from "lucide-react";
+import { Button, Card, Drawer, SkeletonText, SkeletonCard } from "../../components/ui";
 import { getOrderApi, getWaybillApi, updateOrderStatusApi } from "../../lib/api";
 
 export default function ProviderOrderDetailPage() {
