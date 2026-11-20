@@ -1,7 +1,8 @@
 """services/asset.py - Business logic for assets."""
 from __future__ import annotations
 import logging
-from fastapi import HTTPException, status
+from fastapi import HTTPException
+import fastapi
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import asset as asset_repo
 from repositories import provider_profile as provider_repo
@@ -28,7 +29,7 @@ async def create_asset(
     provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
     if not provider:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Provider profile not found",
         )
 
@@ -115,7 +116,7 @@ async def get_asset(
     asset = await asset_repo.get_asset_by_id(asset_id, provider_id, session=session)
     if not asset:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Asset not found",
         )
     return asset
@@ -173,7 +174,7 @@ async def update_asset(
     )
     if not asset:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Asset not found",
         )
     return asset
@@ -188,7 +189,7 @@ async def delete_asset(
     deleted = await asset_repo.delete_asset(asset_id, provider_id, session=session)
     if not deleted:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Asset not found",
         )
 
