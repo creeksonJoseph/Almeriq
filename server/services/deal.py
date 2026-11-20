@@ -92,7 +92,7 @@ async def sign_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
-    order = await order_repo.get_order_by_id(deal["order_id"], provider_id=provider_id, client_id=client_id, session=session)
+    order = await _get_participant_order(deal["order_id"], provider_id, client_id, session)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
