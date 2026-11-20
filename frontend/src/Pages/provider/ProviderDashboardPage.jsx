@@ -68,11 +68,11 @@ export default function ProviderDashboardPage() {
   }
 
   const companyName = profile?.company_name || profile?.trading_name || profile?.name || "your provider account";
-  const activeListings = assets?.length || 0;
+  const activeListings = assets?.filter(asset => asset.is_active).length || 0;
   const pendingOrders = orders?.filter(o => o.status?.toLowerCase() === "pending_review").length || 0;
-  const totalRevenue = orders?.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0) || 0;
+  const totalRequestedValue = orders?.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0) || 0;
   const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
-  const highPriorityEnquiries = conversations?.filter(c => c.priority === "high" && c.unread_count > 0).length || 0;
+  
 
   return (
     <div className={`min-h-screen bg-[#0c0e13] text-[#ffffff] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-10`}>
@@ -128,7 +128,7 @@ export default function ProviderDashboardPage() {
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{unreadEnquiries}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
-              <span>{highPriorityEnquiries} high priority</span>
+              <span>Unread conversations</span>
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
@@ -136,10 +136,10 @@ export default function ProviderDashboardPage() {
 
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Revenue This Month</span>
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Total Requested Value</span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">${totalRevenue.toLocaleString()}</div>
+            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">${totalRequestedValue.toLocaleString()}</div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
