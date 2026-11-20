@@ -10,7 +10,7 @@ export async function getDealApi(id) {
   return res.data;
 }
 
-export async function signDealApi(id, signature) {
-  const res = await apiClient.post(`/deals/${id}/sign`, { signature });
+export async function signDealApi(id, signature, terms = {}) {
+  const res = await apiClient.post(`/deals/${id}/sign`, { signature, ...terms });
   return res.data;
 }
