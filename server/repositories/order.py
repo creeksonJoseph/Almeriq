@@ -9,12 +9,13 @@ from models.order import Order
 from models.user import User
 from models.asset import Asset
 from models.provider_profile import ProviderProfile
+from models.deal import Deal
 
 logger = logging.getLogger(__name__)
 
 
 def _order_with_details(row) -> dict:
-    order, client, asset, provider = row
+    order, client, asset, provider, deal = row
     data = order.to_dict()
     data.update({
         "client_name": client.full_name or client.email,
@@ -23,6 +24,12 @@ def _order_with_details(row) -> dict:
         "asset_category": asset.category,
         "asset_details": asset.description or asset.category,
         "provider_name": provider.company_name or provider.trading_name,
+        "provider_location": provider.location,
+        "asset_telemetry_url": asset.telemetry_url,
+        "deal_id": deal.id if deal else None,
+        "payment_method": deal.payment_method if deal else None,
+        "payment_status": deal.payment_status if deal else "not_started",
+        "deal_amount": float(deal.amount) if deal and deal.amount is not None else None,
     })
     return data
 
@@ -69,10 +76,11 @@ async def get_order_by_id(
 ) -> dict | None:
     """Fetch order by id, optionally scoped to provider or client."""
     stmt = (
-        select(Order, User, Asset, ProviderProfile)
+        select(Order, User, Asset, ProviderProfile, Deal)
         .join(User, Order.client_id == User.id)
         .join(Asset, Order.asset_id == Asset.id)
         .join(ProviderProfile, Order.provider_id == ProviderProfile.id)
+        .outerjoin(Deal, Deal.order_id == Order.id)
         .where(Order.id == order_id)
     )
     if provider_id is not None:
@@ -124,6 +132,7 @@ async def list_orders(
         .join(User, Order.client_id == User.id)
         .join(Asset, Order.asset_id == Asset.id)
         .join(ProviderProfile, Order.provider_id == ProviderProfile.id)
+        .outerjoin(Deal, Deal.order_id == Order.id)
     )
     count_stmt = select(func.count()).select_from(Order)
 
