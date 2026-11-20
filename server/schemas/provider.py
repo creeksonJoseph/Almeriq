@@ -13,6 +13,7 @@ class ProviderProfileBase(BaseModel):
     provider_type: Optional[str] = Field(default=None, max_length=50)
     location: Optional[str] = Field(default=None, max_length=200)
     about: Optional[str] = Field(default=None)
+    engagement_preferences: Optional[str] = Field(default=None)
     enclave_key: Optional[str] = Field(default=None, max_length=100)
 
 
@@ -40,6 +41,7 @@ class AssetBase(BaseModel):
     name: str = Field(..., max_length=200)
     category: str = Field(..., max_length=100)
     kind: str = Field(..., max_length=20)
+    client_asset_id: Optional[str] = Field(default=None, max_length=64)
     description: Optional[str] = None
     specs: Optional[dict] = None
     price_monthly: Optional[Decimal] = Field(default=None, ge=0)

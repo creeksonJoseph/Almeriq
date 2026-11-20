@@ -14,6 +14,7 @@ class Asset(Base):
     provider_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("provider_profiles.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    client_asset_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(Text, nullable=False)
     kind: Mapped[str] = mapped_column(Text, nullable=False)
@@ -39,11 +40,13 @@ class Asset(Base):
     __table_args__ = (
         Index("idx_assets_provider_kind", "provider_id", "kind"),
         Index("idx_assets_provider_status", "provider_id", "status"),
+        Index("uq_assets_provider_client_asset", "provider_id", "client_asset_id", unique=True),
     )
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
+            "client_asset_id": self.client_asset_id,
             "provider_id": self.provider_id,
             "name": self.name,
             "category": self.category,

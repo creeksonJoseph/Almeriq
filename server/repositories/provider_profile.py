@@ -17,6 +17,7 @@ async def create_provider_profile(
     provider_type: str | None = None,
     location: str | None = None,
     about: str | None = None,
+    engagement_preferences: str | None = None,
     enclave_key: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
@@ -29,6 +30,7 @@ async def create_provider_profile(
         provider_type=provider_type,
         location=location,
         about=about,
+        engagement_preferences=engagement_preferences,
         enclave_key=enclave_key,
     )
 
@@ -83,6 +85,7 @@ async def update_provider_profile(
     provider_type: str | None = None,
     location: str | None = None,
     about: str | None = None,
+    engagement_preferences: str | None = None,
     enclave_key: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict | None:
@@ -98,6 +101,8 @@ async def update_provider_profile(
         values["location"] = location
     if about is not None:
         values["about"] = about
+    if engagement_preferences is not None:
+        values["engagement_preferences"] = engagement_preferences
     if enclave_key is not None:
         values["enclave_key"] = enclave_key
 

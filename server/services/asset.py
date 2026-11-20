@@ -1,7 +1,8 @@
 """services/asset.py - Business logic for assets."""
 from __future__ import annotations
 import logging
-from fastapi import HTTPException, status
+from fastapi import HTTPException
+import fastapi
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import asset as asset_repo
 from repositories import provider_profile as provider_repo
@@ -20,6 +21,7 @@ async def create_asset(
     quantity_capacity: int | None = None,
     status: str = "available",
     telemetry_url: str | None = None,
+    client_asset_id: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
     """Create a new asset for a provider."""
@@ -27,23 +29,82 @@ async def create_asset(
     provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
     if not provider:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Provider profile not found",
         )
 
-    return await asset_repo.create_asset(
-        provider_id=provider_id,
-        name=name,
-        category=category,
-        kind=kind,
-        description=description,
-        specs=specs,
-        price_monthly=price_monthly,
-        quantity_capacity=quantity_capacity,
-        status=status,
-        telemetry_url=telemetry_url,
-        session=session,
-    )
+    if client_asset_id:
+        existing = await asset_repo.get_asset_by_client_id(provider_id, client_asset_id, session=session)
+        if existing:
+            # update latest data
+            if existing.get("id"):
+                return await asset_repo.update_asset(
+                    asset_id=existing["id"],
+                    provider_id=provider_id,
+                    name=name,
+                    category=category,
+                    kind=kind,
+                    description=description,
+                    specs=specs,
+                    price_monthly=price_monthly,
+                    quantity_capacity=quantity_capacity,
+                    status=status,
+                    telemetry_url=telemetry_url,
+                    session=session,
+                )
+            return existing
+
+    try:
+        if session is not None:
+            async with session.begin_nested():
+                return await asset_repo.create_asset(
+                    provider_id=provider_id,
+                    name=name,
+                    category=category,
+                    kind=kind,
+                    description=description,
+                    specs=specs,
+                    price_monthly=price_monthly,
+                    quantity_capacity=quantity_capacity,
+                    status=status,
+                    telemetry_url=telemetry_url,
+                    client_asset_id=client_asset_id,
+                    session=session,
+                )
+        else:
+            return await asset_repo.create_asset(
+                provider_id=provider_id,
+                name=name,
+                category=category,
+                kind=kind,
+                description=description,
+                specs=specs,
+                price_monthly=price_monthly,
+                quantity_capacity=quantity_capacity,
+                status=status,
+                telemetry_url=telemetry_url,
+                client_asset_id=client_asset_id,
+                session=None,
+            )
+    except Exception as exc:
+        if client_asset_id:
+            existing = await asset_repo.get_asset_by_client_id(provider_id, client_asset_id, session=session)
+            if existing:
+                return await asset_repo.update_asset(
+                    asset_id=existing["id"],
+                    provider_id=provider_id,
+                    name=name,
+                    category=category,
+                    kind=kind,
+                    description=description,
+                    specs=specs,
+                    price_monthly=price_monthly,
+                    quantity_capacity=quantity_capacity,
+                    status=status,
+                    telemetry_url=telemetry_url,
+                    session=session,
+                )
+        raise exc
 
 
 async def get_asset(
@@ -55,7 +116,7 @@ async def get_asset(
     asset = await asset_repo.get_asset_by_id(asset_id, provider_id, session=session)
     if not asset:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Asset not found",
         )
     return asset
@@ -113,7 +174,7 @@ async def update_asset(
     )
     if not asset:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Asset not found",
         )
     return asset
@@ -128,7 +189,7 @@ async def delete_asset(
     deleted = await asset_repo.delete_asset(asset_id, provider_id, session=session)
     if not deleted:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=fastapi.status.HTTP_404_NOT_FOUND,
             detail="Asset not found",
         )
 
