@@ -35,7 +35,7 @@ export default function SearchPage() {
   const [sortMode, setSortMode] = useState("relevance");
   const [orderingId, setOrderingId] = useState(null);
   const [providers, setProviders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [error, setError] = useState(null);
@@ -71,6 +71,7 @@ export default function SearchPage() {
 
   const runSearch = async (query = watchQuery, category = activeCategory) => {
     setSearchLoading(true);
+    setHasSearched(true);
     setError(null);
     try {
       const items = query.trim()
@@ -91,7 +92,7 @@ export default function SearchPage() {
 
   const handleCategory = (category) => {
     setActiveCategory(category);
-    runSearch(watchQuery, category);
+    runSearch("", category);
   };
 
   const handleChat = async (result) => {
@@ -178,8 +179,10 @@ export default function SearchPage() {
         </div>
       </div>
 
+      {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
+
       {/* Results */}
-      {watchQuery || searchLoading || results.length > 0 ? (
+      {hasSearched || watchQuery || searchLoading ? (
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-serif text-xl font-semibold text-text">Results{results.length ? ` (${results.length})` : ""}</h2>
@@ -197,12 +200,12 @@ export default function SearchPage() {
           ) : results.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-white/70 mb-4">No results found for "{watchQuery}"</p>
-              <Button variant="ghost" onClick={() => { setActiveCategory("all"); searchForm.setValue("query", ""); }}>Clear filters</Button>
+              <Button variant="ghost" onClick={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setHasSearched(false); setResults([]); }}>Clear filters</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {sortedResults.map(result => (
-                <SearchResultCard key={result.id} result={result} onChat={() => handleChat(result)} onOrder={() => handleOrder(result)} ordering={orderingId === result.id} onView={() => navigate(`/listings/${result.id}`)}
+                <SearchResultCard key={result.id} result={result} onChat={() => handleChat(result)} onOrder={() => handleOrder(result)} ordering={orderingId === result.id} onView={() => navigate(`/listings/${result.id}`)} />
               ))}
             </div>
           )}
