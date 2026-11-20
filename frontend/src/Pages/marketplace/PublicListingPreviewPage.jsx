@@ -181,15 +181,15 @@ export default function PublicListingPreviewPage() {
             <div className="mt-4 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2 text-gold font-medium">
                 <CheckCircle className="w-4 h-4" />
-                <span>Multi-Sig Escrow Protected</span>
+                <span>Provider-uploaded listing</span>
               </div>
               <div className="flex items-center gap-2 text-white/60">
                 <Shield className="w-4 h-4" />
-                <span>100% Bonded Assurance</span>
+                <span>Payment simulation only</span>
               </div>
               <div className="flex items-center gap-2 text-white/60">
                 <Truck className="w-4 h-4" />
-                <span>Turnkey SLA</span>
+                <span>{media.length} media file(s)</span>
               </div>
             </div>
           </Card>
