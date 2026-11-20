@@ -74,9 +74,11 @@ export default function SearchPage() {
     setHasSearched(true);
     setError(null);
     try {
-      const items = query.trim()
-        ? ((await searchMarketplaceApi(query)).items || (await searchMarketplaceApi(query)).results || [])
-        : providers;
+      let items = providers;
+      if (query.trim()) {
+        const searchResponse = await searchMarketplaceApi(query);
+        items = searchResponse.items || searchResponse.results || [];
+      }
       setResults(filterByCategory(items, category));
     } catch (e) {
       setError(e.response?.data?.detail || e.message || "Search failed.");
