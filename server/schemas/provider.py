@@ -200,7 +200,9 @@ class OrderCreateRequest(BaseModel):
     lease_amount: Optional[Decimal] = Field(default=None, ge=0)
 
 
-class MarketplaceCheckoutRequest(OrderCreateRequest):
+class MarketplaceCheckoutRequest(BaseModel):
+    asset_id: int
+    allocation: Optional[str] = None
     payment_method: str = Field(default="visa", max_length=50)
 
 
