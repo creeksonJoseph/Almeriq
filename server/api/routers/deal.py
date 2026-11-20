@@ -27,7 +27,7 @@ async def create_deal(
         payment_method=body.payment_method,
         amount=float(body.amount),
         provider_id=profile["id"] if profile else None,
-        client_id=None if profile else current_user["id"],
+        client_id=current_user["id"],
         session=db,
     )
 
