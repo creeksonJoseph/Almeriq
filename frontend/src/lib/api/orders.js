@@ -6,6 +6,10 @@ const normalizeOrder = (order) => ({
   assetName: order.asset_name || "Asset listing",
   assetDetails: order.asset_details || order.asset_category || "",
   amount: order.lease_amount,
+  providerLocation: order.provider_location,
+  telemetryUrl: order.asset_telemetry_url,
+  paymentStatus: order.payment_status,
+  paymentMethod: order.payment_method,
 });
 
 const normalizeOrderList = (data) => ({
