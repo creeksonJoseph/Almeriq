@@ -205,11 +205,11 @@ export default function PublicListingPreviewPage() {
               <StatusPill status={listing.status?.toLowerCase() || "available"} />
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{provider?.name || listing.providerName}</span></div>
+              <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{listing.provider_name || "Infrastructure provider"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{listing.type || "Digital Infrastructure"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{listing.category}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{listing.provider_location || "Location not provided"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${listing.price}/mo</span></div>
+              <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${Number(listing.price_monthly || 0).toLocaleString()}/mo</span></div>
             </div>
             <div className="pt-3 border-t border-border">
               <div className="flex items-center gap-2 text-gold text-sm font-medium">
@@ -233,11 +233,11 @@ export default function PublicListingPreviewPage() {
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center" onClick={() => setGalleryOpen(false)}>
           <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
             <div className="aspect-video bg-black rounded-xl overflow-hidden">
-              {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}
+              {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}}
             </div>
             {media.length > 1 && (
               <>
-                <button onClick={() => setGalleryIndex(i => (i - 1 + images.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
+                <button onClick={() => setGalleryIndex(i => (i - 1 + media.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button onClick={() => setGalleryIndex(i => (i + 1) % images.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
@@ -249,7 +249,7 @@ export default function PublicListingPreviewPage() {
             <div className="flex justify-center gap-2 p-4">
               {media.map((item, i) => (
                 <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
-                  {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}
+                  {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}}
                 </button>
               ))}
             </div>
