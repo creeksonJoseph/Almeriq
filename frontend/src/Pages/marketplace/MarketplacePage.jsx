@@ -93,7 +93,7 @@ export default function MarketplacePage() {
         payment_method: "visa",
       });
       if (!checkout?.deal?.id) {
-        throw new Error("The order was created but checkout could not be started. Please contact support before retrying.");
+        throw new Error("Checkout could not be started. Please try again.");
       }
       navigate(`/checkout/${checkout.deal.id}`);
     } catch (e) {
