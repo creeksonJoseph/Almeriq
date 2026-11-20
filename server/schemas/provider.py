@@ -13,6 +13,7 @@ class ProviderProfileBase(BaseModel):
     provider_type: Optional[str] = Field(default=None, max_length=50)
     location: Optional[str] = Field(default=None, max_length=200)
     about: Optional[str] = Field(default=None)
+    engagement_preferences: Optional[str] = Field(default=None)
     enclave_key: Optional[str] = Field(default=None, max_length=100)
 
 

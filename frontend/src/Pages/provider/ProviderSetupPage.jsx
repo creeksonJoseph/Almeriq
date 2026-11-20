@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, Save, Eye, MapPin, Building2, Server, Globe, Users } from "lucide-react";
 import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../../components/ui";
-import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi, createAssetApi } from "../../lib/api";
+import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi, listAssetsApi, createAssetApi, updateAssetApi } from "../../lib/api";
 
 const COVERAGE_REGIONS = [
   "Africa",
@@ -108,15 +108,27 @@ export default function ProviderSetupPage() {
             type: profile.provider_type || "COMPANY",
             about: profile.about || "",
           });
-      if (profile.assets?.physical) {
-        methods.setValue("physicalAssets", profile.assets.physical);
-      }
-      if (profile.assets?.digital) {
-        methods.setValue("digitalAssets", profile.assets.digital);
-      }
-          const coverage = await listCoverageRegionsApi();
-          methods.setValue("coverage.regions", (coverage.items || []).map(item => coverageFromApi[item.region] || item.region));
+          methods.setValue("preferences", { engagement: profile.engagement_preferences || "" });
         }
+        const coverage = await listCoverageRegionsApi();
+        methods.setValue("coverage.regions", (coverage.items || []).map(item => coverageFromApi[item.region] || item.region));
+        const physical = await listAssetsApi({ kind: "physical" });
+        const digital = await listAssetsApi({ kind: "digital" });
+        methods.setValue("physicalAssets", (physical.items || physical || []).map(a => ({
+          id: a.id,
+          name: a.name || "",
+          category: a.category || "",
+          quantity: a.quantity_capacity != null ? String(a.quantity_capacity) : (a.specs?.quantity || ""),
+          availability: a.specs?.availability || "",
+          rate: a.price_monthly != null ? String(a.price_monthly) : (a.specs?.rate || ""),
+        })));
+        methods.setValue("digitalAssets", (digital.items || digital || []).map(a => ({
+          id: a.id,
+          name: a.name || "",
+          category: a.category || "",
+          capacity: a.quantity_capacity != null ? String(a.quantity_capacity) : (a.specs?.capacity || ""),
+          rate: a.price_monthly != null ? String(a.price_monthly) : (a.specs?.rate || ""),
+        })));
       } catch (e) {
         console.error("Failed to load profile", e);
       } finally {
@@ -141,13 +153,18 @@ export default function ProviderSetupPage() {
     }
     const result = schema.safeParse(stepData);
     if (!result.success) {
-      if (step.id === "physical" || step.id === "digital") {
-        // mark array errors generically
+      const fieldErrors = result.error.flatten().fieldErrors;
+      // For arrays, fieldErrors keys are indices
+      Object.entries(fieldErrors).forEach(([idx, errs]) => {
+        if (typeof errs === "object" && errs !== null) {
+          Object.entries(errs).forEach(([field, msgs]) => {
+            methods.setError(`${step.id === "physical" ? "physicalAssets" : "digitalAssets"}.${idx}.${field}`, { message: Array.isArray(msgs) ? msgs[0] : msgs });
+          });
+        }
+      });
+      // fallback generic
+      if (Object.keys(fieldErrors).length === 0) {
         methods.setError(step.id, { message: "Invalid assets" });
-      } else {
-        Object.entries(result.error.flatten().fieldErrors).forEach(([field, errors]) => {
-          methods.setError(step.id + "." + field, { message: errors[0] });
-        });
       }
       return;
     }
@@ -167,6 +184,7 @@ export default function ProviderSetupPage() {
         provider_type: data.info.type,
         location: data.info.location,
         about: data.info.about,
+        engagement_preferences: data.preferences?.engagement,
       });
       await updateCoverageRegionsApi(data.coverage.regions.map(region => coverageToApi[region] || region));
     } catch (e) {
@@ -196,23 +214,32 @@ export default function ProviderSetupPage() {
         provider_type: allData.info.type,
         location: allData.info.location,
         about: allData.info.about,
+        engagement_preferences: allData.preferences?.engagement,
       });
       await updateCoverageRegionsApi(allData.coverage.regions.map(region => coverageToApi[region] || region));
+      const toNum = (v) => (v != null && v !== "" && !isNaN(Number(v)) ? Number(v) : null);
+      const saveAsset = async (asset, kind) => {
+        const payload = {
+          name: asset.name,
+          category: asset.category,
+          kind,
+          quantity_capacity: toNum(kind === "physical" ? asset.quantity : asset.capacity),
+          price_monthly: toNum(asset.rate),
+          specs: {
+            quantity: asset.quantity || undefined,
+            capacity: asset.capacity || undefined,
+            availability: asset.availability || undefined,
+            rate: asset.rate || undefined,
+          },
+        };
+        if (asset.id) {
+          return updateAssetApi(asset.id, payload);
+        }
+        return createAssetApi(payload);
+      };
       await Promise.all([
-        ...allData.physicalAssets.map(asset => createAssetApi({
-          name: asset.name,
-          category: asset.category,
-          kind: "physical",
-          quantity_capacity: asset.quantity ? Number(asset.quantity) : undefined,
-          price_monthly: asset.rate ? Number(asset.rate) : undefined,
-        })),
-        ...allData.digitalAssets.map(asset => createAssetApi({
-          name: asset.name,
-          category: asset.category,
-          kind: "digital",
-          quantity_capacity: asset.capacity ? Number(asset.capacity) : undefined,
-          price_monthly: asset.rate ? Number(asset.rate) : undefined,
-        })),
+        ...allData.physicalAssets.map(a => saveAsset(a, "physical")),
+        ...allData.digitalAssets.map(a => saveAsset(a, "digital")),
       ]);
       navigate("/provider/dashboard");
     } catch (e) {

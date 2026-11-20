@@ -19,6 +19,7 @@ class ProviderProfile(Base):
     provider_type: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     location: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     about: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    engagement_preferences: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     enclave_key: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -42,6 +43,7 @@ class ProviderProfile(Base):
             "provider_type": self.provider_type,
             "location": self.location,
             "about": self.about,
+            "engagement_preferences": self.engagement_preferences,
             "verified": self.verified,
             "enclave_key": self.enclave_key,
             "created_at": self.created_at,
