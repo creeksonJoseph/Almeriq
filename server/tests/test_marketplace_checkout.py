@@ -5,7 +5,7 @@ import uuid
 from typing import AsyncGenerator
 
 import pytest
-from fastapi import Response
+from fastapi import HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
@@ -214,8 +214,9 @@ async def test_provider_cannot_skip_or_reverse_order_statuses(session, monkeypat
         db=session,
     )
     order_id = checkout["order"]["id"]
+    await session.commit()
 
-    with pytest.raises(Exception) as error:
+    with pytest.raises(HTTPException) as error:
         await order_router.update_order_status(
             response=Response(),
             order_id=order_id,
@@ -223,7 +224,7 @@ async def test_provider_cannot_skip_or_reverse_order_statuses(session, monkeypat
             profile=provider,
             db=session,
         )
-    assert getattr(error.value, "status_code", None) == 409
+    assert error.value.status_code == 409
     await session.rollback()
     order = await session.scalar(select(Order).where(Order.id == order_id))
     assert order.status == "pending_review"
