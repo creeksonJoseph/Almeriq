@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import conversation as conversation_repo
 from repositories import message as message_repo
+from repositories import provider_profile as provider_repo
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,15 @@ async def list_conversations(
     return await conversation_repo.list_user_conversations(
         user_id, limit=limit, offset=offset, session=session
     )
+
+
+async def start_provider_conversation(provider_id: int, user_id: int, session: AsyncSession | None = None) -> dict:
+    profile = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found")
+    if profile["user_id"] == user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot message your own provider account")
+    return await conversation_repo.get_or_create_conversation(user_id, profile["user_id"], session=session)
 
 
 async def get_conversation(
