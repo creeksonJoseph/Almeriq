@@ -7,6 +7,7 @@ from repositories import order as order_repo
 from repositories import order_event as order_event_repo
 from repositories import provider_profile as provider_repo
 from repositories import notification as notification_repo
+from repositories import deal as deal_repo
 
 logger = logging.getLogger(__name__)
 
@@ -102,12 +103,13 @@ async def update_order_status(
             note=f"Order status updated to {new_status}",
             session=session,
         )
+    deal = await deal_repo.get_deal_by_order_id(order["id"], session=session)
     await notification_repo.create_notification(
         user_id=order["client_id"],
         type="order",
         title="Order status updated",
         body=f"Order {order['order_id']} is now {new_status.replace('_', ' ')}.",
-        link=f"/checkout/{order['id']}",
+        link=f"/checkout/{deal['id']}" if deal else "/marketplace",
         session=session,
     )
     return order
