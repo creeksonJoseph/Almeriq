@@ -13,7 +13,7 @@ def upgrade():
     insp = inspect(bind)
     # check duplicates
     dup = bind.execute(sa.text(
-        "SELECT provider_id, client_asset_id, COUNT(*) c FROM assets WHERE client_asset_id IS NOT NULL GROUP BY provider_id, client_asset_id HAVING c > 1"
+        "SELECT provider_id, client_asset_id, COUNT(*) c FROM assets WHERE client_asset_id IS NOT NULL GROUP BY provider_id, client_asset_id HAVING COUNT(*) > 1"
     )).fetchall()
     if dup:
         raise RuntimeError(f"Duplicate client_asset_id rows exist: {dup}")
@@ -22,7 +22,8 @@ def upgrade():
         op.create_index("uq_assets_provider_client_asset", "assets", ["provider_id", "client_asset_id"], unique=True)
 
 def downgrade():
-    try:
+    bind = op.get_bind()
+    insp = inspect(bind)
+    existing = [i["name"] for i in insp.get_indexes("assets")]
+    if "uq_assets_provider_client_asset" in existing:
         op.drop_index("uq_assets_provider_client_asset", table_name="assets")
-    except Exception:
-        pass

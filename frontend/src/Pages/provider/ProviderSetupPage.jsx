@@ -566,6 +566,9 @@ export default function ProviderSetupPage() {
                             <option>Industrial Warehousing</option>
                             <option>Robotics / Field Testbed</option>
                           </select>
+                          {methods.formState.errors?.physicalAssets?.[index]?.category?.message && (
+                            <p className="mt-1 text-xs text-rose-300">{methods.formState.errors.physicalAssets[index].category.message}</p>
+                          )}
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Quantity / Capacity</label>
@@ -632,6 +635,9 @@ export default function ProviderSetupPage() {
                             <option>Dedicated Dark Fiber & Bandwidth</option>
                             <option>Edge Micro-Datacenter Racks</option>
                           </select>
+                          {methods.formState.errors?.digitalAssets?.[index]?.category?.message && (
+                            <p className="mt-1 text-xs text-rose-300">{methods.formState.errors.digitalAssets[index].category.message}</p>
+                          )}
                         </div>
                         <div className="md:col-span-2">
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Capacity / Specs</label>
