@@ -26,6 +26,6 @@ export async function createMarketplaceOrderApi(payload) {
 }
 
 export async function searchMarketplaceApi(query, params = {}) {
-  const res = await apiClient.get("/marketplace/search", { params: { q: query, ...params } });
+  const res = await apiClient.get("/search", { params: { q: query, ...params } });
   return res.data;
 }
