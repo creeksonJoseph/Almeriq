@@ -40,6 +40,7 @@ export default function ProviderAssetPage() {
     event.preventDefault();
     setSaving(true);
     setError("");
+    let createdAssetId = null;
     try {
       const payload = {
         name: form.name.trim(),
@@ -51,10 +52,12 @@ export default function ProviderAssetPage() {
       };
       const saved = editing ? await updateAssetApi(id, payload) : await createAssetApi(payload);
       const assetId = editing ? Number(id) : saved.id;
+      createdAssetId = assetId;
       if (selectedFiles.length) await uploadAssetMediaApi(assetId, selectedFiles);
       navigate("/provider/listings");
     } catch (e) {
-      setError(e.message || "Unable to save asset");
+      if (!editing && createdAssetId) navigate("/provider/listings/" + createdAssetId + "/edit", { replace: true });
+      setError(e.response?.data?.detail || e.message || "Unable to save asset");
     } finally {
       setSaving(false);
     }
