@@ -226,5 +226,26 @@ async def test_provider_cannot_skip_or_reverse_order_statuses(session, monkeypat
         )
     assert error.value.status_code == 409
     await session.rollback()
+
+    confirmed = await order_router.update_order_status(
+        response=Response(),
+        order_id=order_id,
+        body=OrderStatusUpdateRequest(status="confirmed"),
+        profile=provider,
+        db=session,
+    )
+    assert confirmed["status"] == "confirmed"
+    await session.commit()
+
+    with pytest.raises(HTTPException) as shipping_error:
+        await order_router.update_order_status(
+            response=Response(),
+            order_id=order_id,
+            body=OrderStatusUpdateRequest(status="shipped"),
+            profile=provider,
+            db=session,
+        )
+    assert shipping_error.value.status_code == 409
+    await session.rollback()
     order = await session.scalar(select(Order).where(Order.id == order_id))
-    assert order.status == "pending_review"
+    assert order.status == "confirmed"
