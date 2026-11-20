@@ -117,6 +117,15 @@ export default function CheckoutPage() {
     );
   }
 
+  if (loadError || !deal) {
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-xl flex-col items-center justify-center gap-4 p-6 text-center">
+        <p role="alert" className="text-sm text-red-300">{loadError || "This deal could not be found."}</p>
+        <Button onClick={() => navigate("/marketplace")}>Back to marketplace</Button>
+      </div>
+    );
+  }
+
   const dealAmount = deal?.amount ?? "0.00";
   const providerName = deal?.provider_name || "Infrastructure provider";
   const assetName = deal?.asset_name || "Selected infrastructure listing";
