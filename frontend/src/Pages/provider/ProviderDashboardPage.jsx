@@ -162,7 +162,7 @@ export default function ProviderDashboardPage() {
                 <StatusPill status="pending" label={`${pendingOrders} Active`} />
               </div>
               <div className="inline-flex rounded-lg bg-[#111318] p-1 gap-1">
-                <Button variant="ghost" size="sm" className="bg-[#1a1b21] text-[#f2ca50] !border-0 px-3 py-1 text-xs">All</Button>
+                <Button variant="ghost" size="sm" className="bg-[#1a1b21] text-[#f2ca50] !border-0 px-3 py-1 text-xs" onClick={() => navigate("/provider/orders")}>All</Button>
                 <Button variant="ghost" size="sm" className="bg-[#1a1b21] !border-0 px-3 py-1 text-xs" onClick={() => navigate("/provider/orders?status=pending")}>Pending Review</Button>
                 <Button variant="ghost" size="sm" className="bg-[#1a1b21] !border-0 px-3 py-1 text-xs" onClick={() => navigate("/provider/orders?status=confirmed")}>Confirmed</Button>
               </div>
