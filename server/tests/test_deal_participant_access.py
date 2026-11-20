@@ -40,11 +40,11 @@ async def _user(session: AsyncSession, role: str = "founder") -> dict:
     )
 
 
-async def _provider(session: AsyncSession) -> tuple[dict, dict]:
+async def _provider(session: AsyncSession, company_name: str = "Listing Provider") -> tuple[dict, dict]:
     user = await _user(session, role="INFRASTRUCTURE_PROVIDER")
     profile = await create_or_update_provider_profile(
         user["id"],
-        company_name="Listing Provider",
+        company_name=company_name,
         location="Nairobi",
         session=session,
     )
@@ -102,7 +102,7 @@ async def test_buyer_without_provider_profile_can_create_and_sign_deal(session):
 @pytest.mark.asyncio
 async def test_buyer_with_own_provider_profile_is_still_authorized_as_buyer(session):
     _, listing_provider = await _provider(session)
-    buyer, buyer_provider_profile = await _provider(session)
+    buyer, buyer_provider_profile = await _provider(session, company_name="Buyer Provider Co")
     order = await _order_for_buyer(session, buyer["id"], listing_provider["id"])
     await session.commit()
 
