@@ -102,6 +102,14 @@ async def update_order_status(
             note=f"Order status updated to {new_status}",
             session=session,
         )
+    await notification_repo.create_notification(
+        user_id=order["client_id"],
+        type="order",
+        title="Order status updated",
+        body=f"Order {order['order_id']} is now {new_status.replace('_', ' ')}.",
+        link=f"/checkout/{order['id']}",
+        session=session,
+    )
     return order
 
 
