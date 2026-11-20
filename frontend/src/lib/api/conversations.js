@@ -5,6 +5,11 @@ export async function listConversationsApi(params = {}) {
   return res.data;
 }
 
+export async function listMessagesApi(id, params = {}) {
+  const res = await apiClient.get(`/api/conversations/${id}/messages`, { params });
+  return res.data;
+}
+
 export async function getConversationApi(id) {
   const res = await apiClient.get(`/api/conversations/${id}`);
   return res.data;
