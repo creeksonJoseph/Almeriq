@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2, MessageSquare, ShoppingCart, CheckCircle, Shield, Truck } from "lucide-react";
 import { Button, Card, StatusPill, Modal, Pill } from "../../components/ui";
-import { getMarketplaceListingApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
+import { getMarketplaceListingApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function PublicListingPreviewPage() {
@@ -40,17 +40,15 @@ export default function PublicListingPreviewPage() {
     }
     setDealLoading(true);
     try {
-      const order = await createMarketplaceOrderApi({
+      const checkout = await createMarketplaceCheckoutApi({
         asset_id: Number(id),
         allocation: "Requested through marketplace",
-        lease_amount: listing.price_monthly,
-      });
-      const deal = await createDealApi({
-        order_id: order.id,
         payment_method: "visa",
-        amount: listing.price_monthly || 0,
       });
-      navigate(`/checkout/${deal.id}`);
+      if (!checkout?.deal?.id) {
+        throw new Error("The order was created but checkout could not be started. Please contact support before retrying.");
+      }
+      navigate(`/checkout/${checkout.deal.id}`);
     } catch (e) {
       setError(e.response?.data?.detail || e.message || "Unable to start this order.");
     } finally {
@@ -173,9 +171,9 @@ export default function PublicListingPreviewPage() {
                 <span className="text-label-caps text-white/60 uppercase tracking-wider block mb-1">RESERVE RATE</span>
                 <div className="font-serif text-2xl font-semibold text-gold">${Number(listing.price_monthly || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-sans text-white/60 font-normal">/mo</span></div>
               </div>
-              <Button onClick={handleOrder} disabled={dealLoading} className="w-full sm:w-auto h-11 px-6">
+              <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)} className="w-full sm:w-auto h-11 px-6">
                 <ShoppingCart className="w-4 h-4 mr-1" />
-                {dealLoading ? "Creating Deal..." : "Order Now"}
+                {dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order Now" : "Price unavailable"}
               </Button>
             </div>
             <div className="mt-4 flex items-center justify-between text-sm">
