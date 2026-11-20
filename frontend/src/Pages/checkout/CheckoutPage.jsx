@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { ChevronLeft, ChevronRight, Check, X, Loader2, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
-import { Button, Card, Input, Modal, Skeleton, SkeletonText } from "../../components/ui";
-import { getDealApi, getMarketplaceListingApi } from "../../lib/api";
+import { ChevronRight, Check, X, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
+import { getDealApi, signDealApi } from "../../lib/api";
 
 const STEPS = [
   { id: "payment", label: "1. Payment", short: "Pay" },
@@ -14,10 +14,10 @@ const STEPS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: "visa", name: "Visa", icon: CreditCard, details: "Ending in •••• 4821", default: true },
-  { id: "mastercard", name: "Mastercard", icon: CreditCard, details: "Corporate & Fleet" },
-  { id: "paypal", name: "PayPal", icon: CreditCard, details: "Automated billing" },
-  { id: "mpesa", name: "M-Pesa", icon: Smartphone, details: "Mobile Escrow Rail" },
+  { id: "visa", name: "Visa", icon: CreditCard, details: "Demo selection only — no charge", default: true },
+  { id: "mastercard", name: "Mastercard", icon: CreditCard, details: "Demo selection only — no charge" },
+  { id: "paypal", name: "PayPal", icon: CreditCard, details: "Demo selection only — no charge" },
+  { id: "mpesa", name: "M-Pesa", icon: Smartphone, details: "Demo selection only — no charge" },
 ];
 
 const AMOUNT_PRESETS = [
@@ -32,11 +32,12 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [deal, setDeal] = useState(null);
-  const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [signature, setSignature] = useState("");
-  const [canvasRef, setCanvasRef] = useState(null);
+    const [, setCanvasRef] = useState(null);
 
   const paymentForm = useForm({ defaultValues: { method: "visa" } });
   const amountForm = useForm({ defaultValues: { amount: "5000.00", customAmount: "" } });
@@ -48,22 +49,30 @@ export default function CheckoutPage() {
     async function loadData() {
       setLoading(true);
       try {
-        const [dealRes, listingRes] = await Promise.all([
-          getDealApi(orderId),
-          getMarketplaceListingApi(orderId).catch(() => null),
-        ]);
-        setDeal(dealRes.data || dealRes.deal || dealRes);
-        setListing(listingRes?.data || listingRes?.listing || listingRes);
+        const dealRes = await getDealApi(orderId);
+        const loadedDeal = dealRes.data || dealRes.deal || dealRes;
+        setDeal(loadedDeal);
+        amountForm.setValue("amount", String(loadedDeal.amount ?? "0.00"));
+        paymentForm.setValue("method", loadedDeal.payment_method || "visa");
       } catch (e) {
-        console.error("Failed to load checkout data", e);
+        setLoadError(e.response?.data?.detail || e.message || "Unable to load this deal.");
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, [orderId]);
+  }, [orderId, amountForm, paymentForm]);
 
   const handleNext = () => {
+    setActionError("");
+    if (currentStep === 1) {
+      const rawAmount = watchAmount === "custom" ? watchCustomAmount : watchAmount;
+      const parsedAmount = Number(rawAmount);
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        setActionError("Enter an amount greater than zero to continue.");
+        return;
+      }
+    }
     if (currentStep < STEPS.length - 1) setCurrentStep(c => c + 1);
   };
 
@@ -73,12 +82,16 @@ export default function CheckoutPage() {
 
   const handleComplete = async () => {
     setActionLoading(true);
+    setActionError("");
     try {
-      // In real app, call signDealApi
-      await new Promise(r => setTimeout(r, 1000));
-      navigate("/provider/orders", { state: { success: true } });
+      const amount = Number(watchAmount === "custom" ? watchCustomAmount : watchAmount);
+      if (!deal?.id || !signature) throw new Error("A deal and signature are required to complete checkout.");
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter an amount greater than zero.");
+      const updatedDeal = await signDealApi(deal.id, signature, { payment_method: watchMethod, amount });
+      setDeal(previous => ({ ...previous, ...(updatedDeal.data || updatedDeal.deal || updatedDeal) }));
+      setCurrentStep(STEPS.length - 1);
     } catch (e) {
-      console.error("Checkout failed", e);
+      setActionError(e.response?.data?.detail || e.message || "Unable to save the deal.");
     } finally {
       setActionLoading(false);
     }
@@ -104,9 +117,17 @@ export default function CheckoutPage() {
     );
   }
 
-  const dealAmount = deal?.amount || listing?.price || "5000";
-  const providerName = deal?.providerName || listing?.providerName || "Sim's Company";
-  const assetName = deal?.assetName || listing?.name || "Tier-3 Micro-DC & 64x H100";
+  if (loadError || !deal) {
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-xl flex-col items-center justify-center gap-4 p-6 text-center">
+        <p role="alert" className="text-sm text-red-300">{loadError || "This deal could not be found."}</p>
+        <Button onClick={() => navigate("/marketplace")}>Back to marketplace</Button>
+      </div>
+    );
+  }
+
+  const providerName = deal?.provider_name || "Infrastructure provider";
+  const assetName = deal?.asset_name || "Selected infrastructure listing";
 
   return (
     <div className="min-h-screen bg-bg/80 backdrop-blur-md flex items-end md:items-center justify-center p-0 md:p-6">
@@ -151,24 +172,11 @@ export default function CheckoutPage() {
               Step {currentStep + 1} of {STEPS.length} — {STEPS[currentStep].label.split(". ")[1]}
             </div>
           </div>
-
-          {/* Quick Switch Bar */}
-          <div className="flex items-center gap-1.5 pt-2 pb-1 overflow-x-auto border-t border-border/20">
-            <span className="text-label-caps text-[10px] text-white/60 shrink-0 pr-1">TEST VIEW:</span>
-            {STEPS.map((step, i) => (
-              <button
-                key={step.id}
-                onClick={() => setCurrentStep(i)}
-                className={`px-2 py-0.5 rounded text-label-caps text-[10px] shrink-0 ${i === currentStep ? "bg-gold/20 text-gold font-bold" : "bg-surface text-white/60 hover:text-text hover:bg-surface-2"}`}
-              >
-                {step.short}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-6">
+          {actionError && <div role="alert" className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{actionError}</div>}
           {/* Step 1: Payment Method */}
           {currentStep === 0 && (
             <PaymentStep
@@ -185,7 +193,6 @@ export default function CheckoutPage() {
             <AmountStep
               form={amountForm}
               presets={AMOUNT_PRESETS}
-              dealAmount={dealAmount}
               onBack={handleBack}
               onNext={handleNext}
               loading={actionLoading}
@@ -222,11 +229,11 @@ export default function CheckoutPage() {
           {/* Step 5: Complete */}
           {currentStep === 4 && (
             <CompleteStep
-              orderId={orderId}
+              orderId={deal?.order_id || orderId}
               providerName={providerName}
               amount={watchAmount === "custom" ? watchCustomAmount : watchAmount}
               formatAmount={formatAmount}
-              onBack={handleBack}
+              onDone={() => navigate("/marketplace")}
             />
           )}
         </div>
@@ -240,7 +247,7 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
     <div className="space-y-6" id="step-frame-1">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">CHOOSE PAYMENT METHOD</span>
-        <span className="flex items-center gap-1 text-xs font-mono text-gold"><span className="w-1.5 h-1.5 rounded-full bg-gold"></span> 256-BIT TLS VAULT</span>
+        <span className="flex items-center gap-1 text-xs font-mono text-gold"><span className="w-1.5 h-1.5 rounded-full bg-gold"></span> SIMULATION</span>
       </div>
       <div className="grid grid-cols-2 gap-3.5">
         {methods.map(method => (
@@ -264,7 +271,7 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
       </div>
       <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-2 border border-border text-xs font-mono text-white/60">
         <Lock className="w-4 h-4 text-gold" />
-        <span>PCI-DSS Tier-1 certified node. Zero card details stored in plaintext.</span>
+        <span>Demo only. No real payment details are requested or stored.</span>
       </div>
       <Button className="w-full h-12" onClick={onNext} disabled={loading}>
         <span>Continue</span>
@@ -274,12 +281,12 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
   );
 }
 
-function AmountStep({ form, presets, dealAmount, onBack, onNext, loading, formatAmount }) {
+function AmountStep({ form, presets, onBack, onNext, loading, formatAmount }) {
   return (
     <div className="space-y-6" id="step-frame-2">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">ENTER AMOUNT (USD)</span>
-        <span className="text-label-caps text-gold">TIER-3 ALLOCATION</span>
+        <span className="text-label-caps text-gold">DEAL AMOUNT</span>
       </div>
       <div className="flex flex-col gap-2">
         <div className="relative flex items-center w-full">
@@ -331,7 +338,7 @@ function AmountStep({ form, presets, dealAmount, onBack, onNext, loading, format
         <div className="flex flex-col gap-1">
           <span className="font-serif text-sm font-semibold text-text">ALIMERIQ Multi-Sig Protocol</span>
           <p className="text-xs font-mono text-white/70 leading-relaxed">
-            Funds held in 100% bonded ALIMERIQ multi-sig escrow until equipment dispatch confirmation and telemetry handshake at node <span className="text-gold">#BJ-H100-NODE09</span>.
+            This is a simulated checkout. No funds are collected or held. The selected payment method is recorded for the deal.
           </p>
         </div>
       </div>
@@ -352,7 +359,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
     <div className="space-y-6" id="step-frame-3">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">CONFIRM LEASE AGREEMENT</span>
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30 text-label-caps text-[10px]"><Lock className="w-3 h-3" /> MULTI-SIG ESCROW</span>
+        <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/30 text-label-caps text-[10px]"><Lock className="w-3 h-3" /> SIMULATED DEAL</span>
       </div>
       <Card className="p-5 space-y-4">
         <div className="flex items-start justify-between pb-3 border-b border-border">
@@ -361,14 +368,14 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
             <div className="flex items-center justify-end gap-1.5 font-serif text-sm text-text">
               {providerName} <span className="text-gold">✓</span>
             </div>
-            <div className="text-xs font-mono text-white/60">Beijing, China · Dun #82-194-0912</div>
+            <div className="text-xs font-mono text-white/60">Provider details are available on the listing</div>
           </div>
         </div>
         <div className="flex items-start justify-between pb-3 border-b border-border">
           <span className="text-label-caps text-white/60">ALLOCATED ASSET</span>
           <div className="text-right">
             <div className="font-mono text-sm text-text">{assetName}</div>
-            <div className="text-xs font-mono text-gold">64x H100 SXM5 GPU Cluster</div>
+            <div className="text-xs font-mono text-gold">Requested infrastructure allocation</div>
           </div>
         </div>
         <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -384,8 +391,8 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
         </div>
         <div className="flex items-baseline justify-between pt-1">
           <div>
-            <span className="text-label-caps text-white/60">TOTAL ESCROW DEPOSIT</span>
-            <div className="text-xs font-mono text-gold">Zero upfront gas fee</div>
+            <span className="text-label-caps text-white/60">SIMULATED DEAL AMOUNT</span>
+            <div className="text-xs font-mono text-gold">No payment is processed in this demo</div>
           </div>
           <div className="font-serif text-2xl font-bold text-gold">
             ${formatAmount(amount)} <span className="text-label-caps text-white/60">USD</span>
@@ -394,7 +401,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
       </Card>
       <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-border text-xs font-mono text-white/60">
         <Shield className="w-4 h-4 text-gold" />
-        <span>Contract will lock into ALIMERIQ bonded pool under node contract <code className="text-text">0x8892...B39F</code></span>
+        <span>The selected terms will be recorded on the deal. No escrow contract is deployed by this demo. <code className="text-text"></code></span>
       </div>
       <div className="grid grid-cols-2 gap-3 pt-2">
         <Button variant="ghost" className="h-12" onClick={onBack} disabled={loading}>
@@ -433,7 +440,7 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
     <div className="space-y-6" id="step-frame-4">
       <div className="flex items-center justify-between">
         <span className="text-label-caps text-white/60 tracking-widest">SIGN DEAL — DRAW YOUR SIGNATURE</span>
-        <span className="text-label-caps text-gold">CRYPTOGRAPHIC BINDING</span>
+        <span className="text-label-caps text-gold">SIGNATURE RECORD</span>
       </div>
       <div className="relative w-full h-44 rounded-xl bg-bg border-2 border-dashed border-border flex flex-col justify-between p-4 overflow-hidden group">
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
@@ -447,8 +454,8 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
           style={{ cursor: "crosshair" }}
         />
         <div className="relative z-10 flex items-center justify-between w-full">
-          <span className="text-label-caps text-[10px] text-white/60 tracking-wider">PRIMARY AUTHORIZED SIGNATORY</span>
-          <span className="text-label-caps text-[10px] text-gold font-mono">HASH: 9A4F...E810</span>
+          <span className="text-label-caps text-[10px] text-white/60 tracking-wider">DEAL SIGNATORY</span>
+          <span className="text-label-caps text-[10px] text-gold font-mono">SIGNATURE PREVIEW</span>
         </div>
         <div className="relative z-10 flex items-center justify-between w-full pt-2">
           <Button variant="ghost" size="sm" onClick={() => { const canvas = canvasRef.current; if (canvas) { canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height); onSignatureChange(""); } }}>
@@ -469,28 +476,28 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
   );
 }
 
-function CompleteStep({ orderId, providerName, amount, formatAmount, onBack }) {
+function CompleteStep({ orderId, providerName, amount, formatAmount, onDone }) {
   return (
     <div className="space-y-6 text-center py-4" id="step-frame-5">
       <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-4">
         <Check className="w-8 h-8 text-gold" />
       </div>
       <h2 className="font-serif text-2xl font-semibold text-text">Deal Completed</h2>
-      <p className="text-white/70">Your order has been confirmed and escrow has been funded.</p>
+      <p className="text-white/70">Your deal details and signature have been saved. No payment has been collected.</p>
       <Card className="p-4 text-left">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="font-medium text-text">{providerName}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">${formatAmount(amount)}</span></div>
-          <div className="flex justify-between"><span className="text-white/60">Escrow</span><span className="font-mono text-gold">Locked and Bonded</span></div>
+          <div className="flex justify-between"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">simulated</span></div>
         </div>
       </Card>
       <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-gold/30 text-gold text-sm">
         <Shield className="w-5 h-5 shrink-0" />
-        <span>Contract recorded on ALIMERIQ ledger. You will receive dispatch notifications via email and in-app alerts.</span>
+        <span>This demo records the deal in the application database. Payment processing and escrow integration are not connected.</span>
       </div>
-      <Button className="w-full h-12" onClick={onBack}>
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Orders
+      <Button className="w-full h-12" onClick={onDone}>
+        <ArrowLeft className="w-4 h-4 mr-1" /> Return to marketplace
       </Button>
     </div>
   );

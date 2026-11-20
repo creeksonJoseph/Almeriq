@@ -81,7 +81,34 @@ async def update_order_status(
         order_id=order_id,
         provider_id=profile["id"],
         new_status=body.status,
-        actor_id=profile["id"],
+        actor_id=profile["user_id"],
+        session=db,
+    )
+
+
+@router.post("/provider/orders/{order_id}/dispatch", response_model=OrderResponse)
+async def dispatch_order(
+    response: Response,
+    order_id: int,
+    body: WaybillUploadRequest,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Record shipment details and move a confirmed order to shipped atomically."""
+    response.headers["Cache-Control"] = "no-store"
+    await svc.upload_waybill(
+        order_id=order_id,
+        provider_id=profile["id"],
+        waybill_url=body.waybill_url,
+        tracking_number=body.tracking_number,
+        actor_id=profile["user_id"],
+        session=db,
+    )
+    return await svc.update_order_status(
+        order_id=order_id,
+        provider_id=profile["id"],
+        new_status="shipped",
+        actor_id=profile["user_id"],
         session=db,
     )
 
@@ -112,6 +139,6 @@ async def upload_waybill(
         provider_id=profile["id"],
         waybill_url=body.waybill_url,
         tracking_number=body.tracking_number,
-        actor_id=profile["id"],
+        actor_id=profile["user_id"],
         session=db,
     )

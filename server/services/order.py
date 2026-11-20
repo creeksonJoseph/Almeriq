@@ -5,6 +5,9 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import order as order_repo
 from repositories import order_event as order_event_repo
+from repositories import provider_profile as provider_repo
+from repositories import notification as notification_repo
+from repositories import deal as deal_repo
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +40,7 @@ async def create_order(
     """Create a new order for a provider's asset."""
     import uuid
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-    return await order_repo.create_order(
+    order = await order_repo.create_order(
         order_id=order_id,
         client_id=client_id,
         provider_id=provider_id,
@@ -46,6 +49,24 @@ async def create_order(
         lease_amount=lease_amount,
         session=session,
     )
+    await order_event_repo.create_order_event(
+        order_id=order["id"],
+        event_type="created",
+        actor_id=client_id,
+        note="Order submitted from the marketplace.",
+        session=session,
+    )
+    provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
+    if provider and provider["user_id"] != client_id:
+        await notification_repo.create_notification(
+            user_id=provider["user_id"],
+            type="order",
+            title="New order request",
+            body=f"Order {order_id} has been submitted for your listing.",
+            link=f"/provider/orders/{order['id']}",
+            session=session,
+        )
+    return order
 
 
 async def get_order(
@@ -65,6 +86,29 @@ async def get_order(
     return order
 
 
+_VALID_ORDER_STATUS_TRANSITIONS: dict[str, set[str]] = {
+    "pending_review": {"confirmed", "declined"},
+    "confirmed": {"shipped", "completed"},
+    "shipped": {"completed"},
+    # terminal states: no outgoing transitions
+    "declined": set(),
+    "completed": set(),
+}
+
+
+def _validate_status_transition(current_status: str, new_status: str) -> None:
+    """Reject invalid order status transitions."""
+    allowed = _VALID_ORDER_STATUS_TRANSITIONS.get(current_status, set())
+    if new_status not in allowed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Invalid status transition from '{current_status}' to '{new_status}'. "
+                f"Allowed: {', '.join(sorted(allowed)) or 'none (terminal state)'}"
+            ),
+        )
+
+
 async def update_order_status(
     order_id: int,
     provider_id: int,
@@ -72,7 +116,32 @@ async def update_order_status(
     actor_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Update an order's status (ownership check) and record an event."""
+    """Update an order's status using the supported provider workflow."""
+    order = await order_repo.get_order_by_id(
+        order_id, provider_id=provider_id, session=session
+    )
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found",
+        )
+    allowed_transitions = {
+        "pending_review": {"confirmed", "declined"},
+        "confirmed": {"shipped"},
+        "shipped": {"completed"},
+    }
+    if new_status not in allowed_transitions.get(order["status"], set()):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Order cannot transition from {order['status']} to {new_status}",
+        )
+    if new_status == "shipped":
+        events = await order_event_repo.list_order_events(order_id, session=session)
+        if not any(event["event_type"] == "waybill_uploaded" for event in events):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Upload a waybill before marking this order as shipped",
+            )
     order = await order_repo.update_order_status(
         order_id, provider_id, new_status, session=session
     )
@@ -89,6 +158,15 @@ async def update_order_status(
             note=f"Order status updated to {new_status}",
             session=session,
         )
+    deal = await deal_repo.get_deal_by_order_id(order["id"], session=session)
+    await notification_repo.create_notification(
+        user_id=order["client_id"],
+        type="order",
+        title="Order status updated",
+        body=f"Order {order['order_id']} is now {new_status.replace('_', ' ')}.",
+        link=f"/checkout/{deal['id']}" if deal else "/marketplace",
+        session=session,
+    )
     return order
 
 
@@ -106,6 +184,11 @@ async def upload_waybill(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found",
+        )
+    if order["status"] != "confirmed":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A waybill can only be uploaded for a confirmed order",
         )
     note = f"Waybill uploaded: {waybill_url}"
     if tracking_number:

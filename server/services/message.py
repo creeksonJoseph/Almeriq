@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import conversation as conversation_repo
 from repositories import message as message_repo
+from repositories import notification as notification_repo
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,19 @@ async def create_message(
         )
     message = await message_repo.create_message(
         conversation_id, sender_id, body, session=session
+    )
+    recipient_id = (
+        conversation["participant_b_id"]
+        if conversation["participant_a_id"] == sender_id
+        else conversation["participant_a_id"]
+    )
+    await notification_repo.create_notification(
+        user_id=recipient_id,
+        type="message",
+        title="New message",
+        body=body[:180],
+        link=f"/messages?conversation={conversation_id}",
+        session=session,
     )
     await conversation_repo.update_conversation_timestamp(conversation_id, session=session)
     return message

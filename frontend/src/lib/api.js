@@ -65,6 +65,8 @@ export {
   createAssetApi,
   updateAssetApi,
   deleteAssetApi,
+  uploadAssetMediaApi,
+  deleteAssetMediaApi,
   listCoverageRegionsApi,
   updateCoverageRegionsApi,
 } from "./api/provider";
@@ -74,6 +76,8 @@ export {
   getMarketplaceProviderApi,
   listMarketplaceListingsApi,
   getMarketplaceListingApi,
+  createMarketplaceCheckoutApi,
+  createMarketplaceOrderApi,
   searchMarketplaceApi,
 } from "./api/marketplace";
 
@@ -83,6 +87,7 @@ export {
   confirmOrderApi,
   declineOrderApi,
   shipOrderApi,
+  dispatchOrderApi,
   updateOrderStatusApi,
   uploadWaybillApi,
   getWaybillApi,
@@ -96,7 +101,9 @@ export {
 
 export {
   listConversationsApi,
+  startProviderConversationApi,
   getConversationApi,
+  listMessagesApi,
   sendMessageApi,
   markMessagesReadApi,
 } from "./api/conversations";

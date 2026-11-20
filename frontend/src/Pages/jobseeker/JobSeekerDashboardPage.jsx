@@ -10,9 +10,11 @@ export default function JobSeekerDashboardPage() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await apiClient.get("/job-seeker/profile");
+        const { data } = await apiClient.get("/api/job-seeker/profile");
         setProfile(data);
-      } catch (e) {}
+      } catch {
+        // A missing profile is expected for a first-time job seeker.
+      }
     })();
   }, []);
 

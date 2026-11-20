@@ -4,7 +4,7 @@
  * JWT lives exclusively in HttpOnly cookies set by the backend.
  * JS never touches the token, eliminating XSS token theft.
  */
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import {
   getMeApi,
   loginApi,

@@ -7,6 +7,7 @@ from core.db import get_db
 from api.dependencies import get_current_user
 from schemas.provider import NotificationListResponse, NotificationResponse
 from services import notification as svc
+from fastapi import HTTPException, status
 
 router = APIRouter(prefix="/api", tags=["notifications"])
 
@@ -26,6 +27,15 @@ async def list_notifications(
         session=db,
     )
     return {"items": items, "unread_count": unread_count}
+
+
+@router.patch("/notifications/{notification_id}/read", response_model=NotificationResponse)
+async def mark_notification_read(notification_id: int, response: Response, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    notification = await svc.mark_notification_read(notification_id, current_user["id"], session=db)
+    if not notification:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
+    return notification
 
 
 @router.patch("/notifications/read-all")

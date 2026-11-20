@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "./ui";
 import { AssetCard } from "./AssetCard";
 
-export function AssetGrid({ assets, onDelete, onClearFilters }) {
+export function AssetGrid({ assets, onDelete, onDuplicate, onClearFilters }) {
   if (assets.length === 0) {
     return (
       <div className="col-span-full text-center py-12">
@@ -14,9 +14,9 @@ export function AssetGrid({ assets, onDelete, onClearFilters }) {
     );
   }
   return (
-    <div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
       {assets.map(asset => (
-        <AssetCard key={asset.id} asset={asset} onDelete={onDelete} />
+        <AssetCard key={asset.id} asset={asset} onDelete={onDelete} onDuplicate={onDuplicate} />
       ))}
     </div>
   );

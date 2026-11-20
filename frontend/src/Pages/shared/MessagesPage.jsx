@@ -1,10 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Send, Search, ChevronLeft, Paperclip, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
+import { Send, ChevronLeft, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
 import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
-import { listConversationsApi, getConversationApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
+import { listConversationsApi, listMessagesApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function MessagesPage() {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -20,7 +24,18 @@ export default function MessagesPage() {
       setLoading(true);
       try {
         const res = await listConversationsApi();
-        setConversations(res.data || res.conversations || res);
+        const items = res.items || res.conversations || [];
+        const normalized = items.map(conv => ({
+          ...conv,
+          otherParty: { name: conv.other_participant?.full_name || conv.other_participant?.email || "User" },
+          lastMessage: conv.last_message?.body || "",
+          time: conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "",
+          unread: conv.unread_count || 0,
+        }));
+        setConversations(normalized);
+        const requestedId = Number(searchParams.get("conversation"));
+        const requestedConversation = normalized.find(conv => conv.id === requestedId);
+        if (requestedConversation) await openConversation(requestedConversation);
       } catch (e) {
         console.error("Failed to load conversations", e);
       } finally {
@@ -28,20 +43,21 @@ export default function MessagesPage() {
       }
     }
     loadConversations();
-  }, []);
+  }, [searchParams]);
 
   const openConversation = async (conversation) => {
     setActiveConversation(conversation);
     setMobileDrawerOpen(true);
     try {
-      const res = await getConversationApi(conversation.id);
-      setMessages((res.data || res.messages || res).map(message => ({
+      const res = await listMessagesApi(conversation.id);
+      setMessages((res.items || res.messages || []).map(message => ({
         ...message,
         content: message.content || message.body || "",
-        own: message.own ?? Boolean(message.sender_id && message.sender_id === conversation.user_id),
+        own: message.sender_id === user?.id,
+        senderName: message.sender?.full_name || message.sender?.email,
         time: message.time || message.created_at,
       })));
-      if (!conversation.read) await markMessagesReadApi(conversation.id);
+      if (conversation.unread > 0) await markMessagesReadApi(conversation.id);
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, unread: 0 } : c));
     } catch (e) {
       console.error("Failed to load messages", e);
@@ -90,9 +106,6 @@ export default function MessagesPage() {
           <p className="text-sm text-white/70">Conversations with providers and clients</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Search className="w-4 h-4 mr-1" /> Search
-          </Button>
           {totalUnread > 0 && (
             <Pill variant="gold" className="text-xs">{totalUnread} unread</Pill>
           )}
@@ -225,9 +238,6 @@ function ChatView({ conversation, messages, onSend, messageForm, sending, messag
       {/* Composer */}
       <form onSubmit={onSend} className="p-4 border-t border-border bg-surface shrink-0">
         <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" className="p-2">
-            <Paperclip className="w-4 h-4" />
-          </Button>
           <Input
             {...messageForm.register("content")}
             placeholder="Type a message..."

@@ -294,7 +294,7 @@ async def get_public_asset_detail(
         stmt = (
             select(Asset, ProviderProfile)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.id == asset_id, Asset.is_active == True)
+            .where(Asset.id == asset_id, Asset.is_active == True, ProviderProfile.verified == True)
         )
         result = await s.execute(stmt)
         row = result.first()
