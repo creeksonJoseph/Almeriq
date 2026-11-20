@@ -7,13 +7,13 @@ import { listMarketplaceListingsApi, createMarketplaceOrderApi, createDealApi, s
 import { useAuth } from "../../context/AuthContext";
 
 const CATEGORIES = [
-  { id: "all", label: "All", icon: "LayoutDashboard", count: 142 },
-  { id: "trucks", label: "Trucks", icon: "Truck", count: 28 },
-  { id: "satellites", label: "Satellites", icon: "Satellite", count: 12 },
-  { id: "generators", label: "Generators", icon: "Zap", count: 18 },
-  { id: "excavators", label: "Excavators", icon: "Box", count: 22 },
-  { id: "containers", label: "Containers", icon: "Package", count: 15 },
-  { id: "solar", label: "Solar Arrays", icon: "Sun", count: 9 },
+  { id: "all", label: "All", icon: "LayoutDashboard" },
+  { id: "trucks", label: "Trucks", icon: "Truck" },
+  { id: "satellites", label: "Satellites", icon: "Satellite" },
+  { id: "generators", label: "Generators", icon: "Zap" },
+  { id: "excavators", label: "Excavators", icon: "Box" },
+  { id: "containers", label: "Containers", icon: "Package" },
+  { id: "solar", label: "Solar Arrays", icon: "Sun" },
 ];
 
 const ICONS = {
@@ -145,21 +145,21 @@ export default function MarketplacePage() {
             <span className="text-gold">🌐</span>
             <div className="flex flex-col">
               <span className="text-label-caps text-[10px] text-white/60 leading-tight">ACTIVE FLEET</span>
-              <span className="text-label-caps text-text font-semibold">{providers.reduce((sum, p) => sum + (p.nodeCount || 0), 1420)} Nodes</span>
+              <span className="text-label-caps text-text font-semibold">{providers.length} Listings</span>
             </div>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-border">
             <Shield className="w-4 h-4 text-gold" />
             <div className="flex flex-col">
-              <span className="text-label-caps text-[10px] text-white/60 leading-tight">ESCROW POOL</span>
-              <span className="text-label-caps text-text font-semibold">99.8% Assurance</span>
+              <span className="text-label-caps text-[10px] text-white/60 leading-tight">CHECKOUT</span>
+              <span className="text-label-caps text-text font-semibold">Simulated</span>
             </div>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-border">
             <Zap className="w-4 h-4 text-gold" />
             <div className="flex flex-col">
               <span className="text-label-caps text-[10px] text-white/60 leading-tight">ROUTING</span>
-              <span className="text-label-caps text-text font-semibold">Turnkey SLA</span>
+              <span className="text-label-caps text-text font-semibold">Provider media</span>
             </div>
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function MarketplacePage() {
             >
               <span className="text-lg">{ICONS[cat.icon] || "📦"}</span>
               <span className="hidden sm:inline">{cat.label}</span>
-              <span className="px-1.5 py-0.2 rounded bg-surface text-[10px] font-mono">{cat.count}</span>
+              <span className="px-1.5 py-0.2 rounded bg-surface text-[10px] font-mono">{cat.id === "all" ? providers.length : providers.filter(p => (categoryTerms[cat.id] || [cat.id]).some(term => (p.category || "").toLowerCase().includes(term))).length}</span>
             </Button>
           ))}
           <div className="h-4 w-px bg-border shrink-0 mx-1"></div>
@@ -239,14 +239,20 @@ export default function MarketplacePage() {
 }
 
 function ProviderCard({ provider, onChat, onOrder, onView, ordering }) {
-  const images = provider.images || [
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800",
-  ];
+  const media = provider.media || [];
+  const cover = media[0];
 
   return (
     <Card className="flex flex-col justify-between p-5 hover:border-gold/60 transition-colors group">
       <div className="flex flex-col gap-3.5">
+        {cover && (
+          <button type="button" className="relative aspect-video w-full overflow-hidden rounded-lg bg-surface-2 text-left" onClick={() => onImageClick(media, 0)} aria-label="Open listing media gallery">
+            {cover.resource_type === "video"
+              ? <video src={cover.url} className="h-full w-full object-cover" muted playsInline />
+              : <img src={cover.url} alt={provider.name || provider.provider_name || "Infrastructure listing"} className="h-full w-full object-cover" />}
+            {media.length > 1 && <span className="absolute bottom-2 right-2 rounded bg-black/75 px-2 py-1 text-xs text-white">+{media.length - 1} media</span>}
+          </button>
+        )}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-12 h-12 rounded-lg bg-surface-2 border border-gold/40 text-gold font-serif font-bold text-lg flex items-center justify-center shrink-0">
