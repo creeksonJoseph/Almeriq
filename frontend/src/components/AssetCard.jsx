@@ -52,14 +52,14 @@ export function AssetCard({ asset, onDelete, onDuplicate }) {
           </div>
         </div>
         <div className="text-[11px] font-mono uppercase tracking-wider text-white/60 mb-1">
-          {asset.kind === "digital" ? "HIGH-PERFORMANCE AI COMPUTE" : "HEAVY EXCAVATION and EARTHMOVING"}
+          {asset.category ? asset.category.toUpperCase() : asset.kind.toUpperCase() + " INFRASTRUCTURE"}
         </div>
         <h3 className="font-serif text-lg font-semibold text-text mb-2 leading-snug">{asset.name}</h3>
         <p className="text-xs text-white/60 font-mono mb-4">{asset.description || asset.specs || "No description"}</p>
       </div>
       <div className="pt-4 border-t border-border mt-2">
         <div className="flex items-baseline gap-1.5 mb-4">
-          <span className="font-serif text-2xl font-semibold text-gold">${asset.price_monthly ?? "0"}</span>
+          <span className="font-serif text-2xl font-semibold text-gold">{asset.price_monthly != null ? "$" + Number(asset.price_monthly).toLocaleString() : "Price on request"}</span>
           <span className="text-xs text-white/60">/ month</span>
         </div>
         <div className="flex items-center justify-between gap-2">
