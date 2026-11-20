@@ -116,14 +116,13 @@ async def upload_asset_media(
 @router.delete("/provider/assets/{asset_id}/media", response_model=AssetResponse)
 async def delete_asset_media(
     asset_id: int,
+    response: Response,
     public_id: str = Query(..., min_length=1, max_length=255),
-    response: Response = None,
     profile: dict = Depends(get_current_provider_profile),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Delete one Cloudinary media object from an owned listing."""
-    if response is not None:
-        response.headers["Cache-Control"] = "no-store"
+    response.headers["Cache-Control"] = "no-store"
     return await media_svc.delete_asset_media(
         asset_id=asset_id,
         provider_id=profile["id"],
