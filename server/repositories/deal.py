@@ -71,6 +71,8 @@ async def get_deal_by_order_id(
 async def sign_deal(
     deal_id: int,
     signature: str,
+    payment_method: str | None = None,
+    amount: float | None = None,
     session: AsyncSession | None = None,
 ) -> dict | None:
     """Sign a deal with signature data URL."""
@@ -79,7 +81,7 @@ async def sign_deal(
     stmt = (
         update(Deal)
         .where(Deal.id == deal_id)
-        .values(signature=signature, signed_at=datetime.now(timezone.utc))
+        .values(**{**({"payment_method": payment_method} if payment_method is not None else {}), **({"amount": amount} if amount is not None else {}), "signature": signature, "signed_at": datetime.now(timezone.utc)})
         .returning(Deal)
     )
 
