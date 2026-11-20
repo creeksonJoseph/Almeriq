@@ -239,7 +239,11 @@ describe("ProviderSetupPage asset behavior", () => {
   });
 
   it("does not navigate to /provider/dashboard when pending deletion fails", async () => {
-    setup();
+    // Set all mocks before render so useEffect loads the existing asset
+    window.alert = vi.fn();
+    navigateMock.mockClear();
+    vi.mocked(api.getProviderProfileApi).mockResolvedValue(null);
+    vi.mocked(api.listCoverageRegionsApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({
       items: [
         {
@@ -252,14 +256,15 @@ describe("ProviderSetupPage asset behavior", () => {
         },
       ],
     });
-    vi.mocked(api.deleteAssetApi).mockRejectedValue(new Error("delete failed"));
     vi.mocked(api.createAssetApi).mockResolvedValue({});
     vi.mocked(api.updateAssetApi).mockResolvedValue({});
     vi.mocked(api.updateProviderProfileApi).mockResolvedValue({});
     vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
+    vi.mocked(api.deleteAssetApi).mockRejectedValue(new Error("delete failed"));
+
+    render(<MemoryRouter><ProviderSetupPage /></MemoryRouter>);
 
     await advanceToPhysical();
-
     // The pre-existing asset (id 3) is loaded with a remove button.
     fireEvent.click(screen.getAllByText(/remove/i)[0]);
     // confirm the asset entered pending deletions (delete API not yet called)
@@ -284,9 +289,9 @@ describe("ProviderSetupPage asset behavior", () => {
     fireEvent.click(screen.getByText(/complete setup/i));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    // Deletion was attempted with the asset's form id.
+    // Deletion was attempted with the asset's backend id (3).
     await waitFor(() => expect(api.deleteAssetApi).toHaveBeenCalledTimes(1));
-    expect(typeof api.deleteAssetApi.mock.calls[0][0]).toBe("string");
+    expect(api.deleteAssetApi).toHaveBeenCalledWith(3);
     // Failure is surfaced to the user.
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith(

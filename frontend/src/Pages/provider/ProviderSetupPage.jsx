@@ -547,7 +547,7 @@ export default function ProviderSetupPage() {
                           <span className="text-xs font-semibold text-text uppercase tracking-wider">Physical asset {index + 1}</span>
                           <span className="text-[10px] text-gold bg-gold/10 border border-gold/30 px-2 py-0.5 rounded">Active Draft</span>
                         </div>
-                        <button type="button" onClick={() => { const a = physicalAssets[index]; if (a?.id) setPendingDeletions(p => [...p, a.id]); removePhysicalAsset(index); }} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
+                        <button type="button" onClick={() => { const allAssets = methods.getValues("physicalAssets"); const a = allAssets[index]; if (a?.id) setPendingDeletions(p => [...p, a.id]); removePhysicalAsset(index); }} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
                           <X className="w-3.5 h-3.5" /> Remove
                         </button>
                       </div>
@@ -617,7 +617,7 @@ export default function ProviderSetupPage() {
                           <span className="w-2 h-2 rounded-full bg-gold"></span>
                           <span className="text-xs font-semibold text-text uppercase tracking-wider">Digital asset {index + 1}</span>
                         </div>
-                        <button type="button" onClick={() => { const a = digitalAssets[index]; if (a?.id) setPendingDeletions(p => [...p, a.id]); removeDigitalAsset(index); }} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
+                        <button type="button" onClick={() => { const allAssets = methods.getValues("digitalAssets"); const a = allAssets[index]; if (a?.id) setPendingDeletions(p => [...p, a.id]); removeDigitalAsset(index); }} className="text-xs text-gold hover:text-gold/80 font-medium transition-colors flex items-center gap-1">
                           <X className="w-3.5 h-3.5" /> Remove
                         </button>
                       </div>
