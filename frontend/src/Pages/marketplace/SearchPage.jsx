@@ -75,7 +75,7 @@ export default function SearchPage() {
     setError(null);
     try {
       const items = query.trim()
-        ? (await searchMarketplaceApi(query)).items || []
+        ? ((await searchMarketplaceApi(query)).items || (await searchMarketplaceApi(query)).results || [])
         : providers;
       setResults(filterByCategory(items, category));
     } catch (e) {
@@ -275,7 +275,7 @@ function FeaturedProviderCard({ provider }) {
       </div>
       <p className="text-sm text-white/70 line-clamp-2 mb-3">{provider.description || "Verified infrastructure listing"}</p>
       <div className="flex items-center gap-2 mt-auto">
-        <Pill variant="gold">{provider.status || "ONLINE"}</Pill>
+        <Pill variant="gold">{provider.status || "available"}</Pill>
         <span className="text-xs font-mono text-white/60">{provider.category || provider.kind || "Infrastructure"}</span>
       </div>
     </Card>
