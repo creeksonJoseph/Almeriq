@@ -55,12 +55,13 @@ async def sign_deal(
 ) -> dict:
     """Sign a deal whose order belongs to the current provider."""
     response.headers["Cache-Control"] = "no-store"
+    profile = await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db)
     return await svc.sign_deal(
         deal_id=deal_id,
         signature=body.signature,
         payment_method=body.payment_method,
         amount=float(body.amount) if body.amount is not None else None,
-        provider_id=(await provider_repo.get_provider_profile_by_user_id(current_user["id"], session=db) or {}).get("id"),
-        client_id=current_user["id"],
+        provider_id=profile["id"] if profile else None,
+        client_id=None if profile else current_user["id"],
         session=db,
     )
