@@ -127,15 +127,15 @@ export default function PublicListingPreviewPage() {
           <Card className="p-5">
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-xl bg-surface border border-gold/40 text-gold-soft font-serif font-bold text-xl flex items-center justify-center shrink-0 shadow-sm">
-                {provider?.name?.slice(0,2).toUpperCase() || listing.providerName?.slice(0,2).toUpperCase() || "SC"}
+                {provider?.name?.slice(0,2).toUpperCase() || listing.provider_name?.slice(0,2).toUpperCase() || "AL"}
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="font-serif text-lg font-semibold text-text">{provider?.name || listing.providerName || "Sim's Company"}</h2>
-                  {provider?.verified && <span className="text-gold" aria-label="Verified">✓</span>}
-                  <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">DUNS #82-194-0912</span>
+                  <h2 className="font-serif text-lg font-semibold text-text">{provider?.name || listing.provider_name || "Infrastructure provider"}</h2>
+                  {(provider?.verified || listing.provider_verified) && <span className="text-gold" aria-label="Verified">✓</span>}
+                  <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">{listing.provider_location || "Location not provided"}</span>
                 </div>
-                <p className="text-sm text-white/60 mt-1">{provider?.description || "Turnkey Tier-3 modular edge datacenters and 64x H100 GPU clusters with bonded optical interconnection for APAC ventures."}</p>
+                <p className="text-sm text-white/60 mt-1">{provider?.description || listing.description || "Infrastructure provider"}</p>
               </div>
             </div>
           </Card>
@@ -146,7 +146,7 @@ export default function PublicListingPreviewPage() {
               <span className="text-label-caps text-white/60 uppercase tracking-wider">ABOUT THIS LISTING</span>
               <span className="text-[10px] text-white/40 uppercase font-mono tracking-wider">SPEC 4.2</span>
             </div>
-            <p className="text-base text-white/60 leading-relaxed">{listing.description || "Tier-3 Modular Edge Datacenter & 64x NVIDIA H100 SXM5 Tensor Core Cluster. Haidian District, Beijing, CN."}</p>
+            <p className="text-base text-white/60 leading-relaxed">{listing.description || "No additional listing description provided."}</p>
           </Card>
 
           {/* Specs */}
@@ -154,12 +154,10 @@ export default function PublicListingPreviewPage() {
             <span className="text-label-caps text-white/60 uppercase tracking-wider block mb-4">SPECIFICATIONS</span>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Category", value: listing.category || "Tier-3 Micro-DC" },
-                { label: "Compute", value: listing.compute || "64x H100 SXM5 GPU Cluster" },
-                { label: "Location", value: listing.location || "Beijing, China" },
-                { label: "Network", value: listing.network || "Bonded Optical Interconnect" },
-                { label: "Power", value: listing.power || "120 kW Peak N+1 Redundant" },
-                { label: "Availability", value: listing.availability || "Immediate Deployment" },
+                { label: "Category", value: listing.category },
+                { label: "Type", value: listing.kind },
+                { label: "Location", value: listing.provider_location || "Not provided" },
+                { label: "Availability", value: listing.status },
               ].map((spec, i) => (
                 <div key={i} className="bg-surface border border-border rounded-lg p-3">
                   <span className="text-white/40 block uppercase text-[9px] tracking-wider">{spec.label}</span>
@@ -174,7 +172,7 @@ export default function PublicListingPreviewPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="text-label-caps text-white/60 uppercase tracking-wider block mb-1">RESERVE RATE</span>
-                <div className="font-serif text-2xl font-semibold text-gold">${listing.price || "5,000.00"}<span className="text-sm font-sans text-white/60 font-normal">/mo</span></div>
+                <div className="font-serif text-2xl font-semibold text-gold">${Number(listing.price_monthly || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-sans text-white/60 font-normal">/mo</span></div>
               </div>
               <Button onClick={handleOrder} disabled={dealLoading} className="w-full sm:w-auto h-11 px-6">
                 <ShoppingCart className="w-4 h-4 mr-1" />
