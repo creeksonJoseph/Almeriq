@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Input, SkeletonText } from "../../components/ui";
-import { createAssetApi, getAssetApi, updateAssetApi } from "../../lib/api";
+import { createAssetApi, getAssetApi, updateAssetApi, uploadAssetMediaApi, deleteAssetMediaApi } from "../../lib/api";
 
 const EMPTY_ASSET = {
   name: "",
@@ -10,6 +10,7 @@ const EMPTY_ASSET = {
   description: "",
   price_monthly: "",
   quantity_capacity: "",
+  media: [],
 };
 
 export default function ProviderAssetPage() {
@@ -20,6 +21,8 @@ export default function ProviderAssetPage() {
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [mediaBusy, setMediaBusy] = useState(false);
 
   useEffect(() => {
     if (!editing) return;
@@ -46,8 +49,9 @@ export default function ProviderAssetPage() {
         price_monthly: form.price_monthly === "" ? undefined : Number(form.price_monthly),
         quantity_capacity: form.quantity_capacity === "" ? undefined : Number(form.quantity_capacity),
       };
-      if (editing) await updateAssetApi(id, payload);
-      else await createAssetApi(payload);
+      const saved = editing ? await updateAssetApi(id, payload) : await createAssetApi(payload);
+      const assetId = editing ? Number(id) : saved.id;
+      if (selectedFiles.length) await uploadAssetMediaApi(assetId, selectedFiles);
       navigate("/provider/listings");
     } catch (e) {
       setError(e.message || "Unable to save asset");
