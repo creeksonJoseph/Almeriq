@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Check, ChevronRight, Filter, Loader2 } from "lucide-react";
+import { Bell, Check, ChevronRight, Loader2 } from "lucide-react";
 import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
 
@@ -96,9 +96,6 @@ export default function AlertsPage() {
           <p className="text-white/70 mt-1">Notifications, order updates, and system messages</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost">
-            <Filter className="w-4 h-4 mr-1" /> Filter
-          </Button>
           {unreadCount > 0 && (
             <Button onClick={handleMarkAllRead} disabled={markAllLoading}>
               <Check className="w-4 h-4 mr-1" />
