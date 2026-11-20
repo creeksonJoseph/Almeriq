@@ -218,19 +218,31 @@ export default function ProviderOrderDetailPage() {
         className="md:w-[520px]"
       >
         <div className="space-y-4">
-          {waybill ? (
-            <>
-              {waybill.trackingNumber && <div className="font-mono text-sm text-gold">{waybill.trackingNumber}</div>}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {waybill.carrier && <div><span className="text-white/60">Carrier:</span> <span className="font-mono ml-2">{waybill.carrier}</span></div>}
-                {waybill.status && <div><span className="text-white/60">Status:</span> <span className="font-mono ml-2 text-gold">{waybill.status}</span></div>}
-                {waybill.pickupTime && <div><span className="text-white/60">Pickup:</span> <span className="font-mono ml-2">{waybill.pickupTime}</span></div>}
-                {waybill.eta && <div><span className="text-white/60">Est. Delivery:</span> <span className="font-mono ml-2">{waybill.eta}</span></div>}
-                {waybill.route && <div className="col-span-2"><span className="text-white/60">Route:</span> <span className="font-mono ml-2 block">{waybill.route}</span></div>}
-                {waybill.gps && <div className="col-span-2"><span className="text-white/60">GPS:</span> <span className="font-mono ml-2 block text-gold">{waybill.gps}</span></div>}
+          {waybill?.waybill_url ? (
+            <div className="space-y-4">
+              {waybill.tracking_number && (
+                <div>
+                  <span className="block text-xs uppercase tracking-wider text-white/50">Tracking number</span>
+                  <span className="font-mono text-sm text-gold">{waybill.tracking_number}</span>
+                </div>
+              )}
+              <div>
+                <span className="block text-xs uppercase tracking-wider text-white/50">Uploaded waybill</span>
+                <a href={waybill.waybill_url} target="_blank" rel="noreferrer" className="break-all text-sm text-gold hover:underline">
+                  {waybill.waybill_url}
+                </a>
               </div>
-              <Button className="w-full bg-[#1a1b21] !border-0" variant="ghost" onClick={() => window.print()}>Download Waybill PDF</Button>
-            </>
+              {waybill.uploaded_at && (
+                <div className="text-xs text-white/50">
+                  Uploaded {new Date(waybill.uploaded_at).toLocaleString()}
+                </div>
+              )}
+              <Button className="w-full bg-[#1a1b21] !border-0" variant="ghost" onClick={() => window.open(waybill.waybill_url, "_blank", "noopener,noreferrer")}>
+                Open Waybill
+              </Button>
+            </div>
+          ) : waybill ? (
+            <div className="flex items-center justify-center h-32 text-sm text-white/60">No waybill has been uploaded yet.</div>
           ) : (
             <div className="flex items-center justify-center h-32 text-white/60">Loading waybill...</div>
           )}
