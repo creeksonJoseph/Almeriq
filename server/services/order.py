@@ -49,7 +49,7 @@ async def create_order(
         session=session,
     )
     provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
-    if provider:
+    if provider and provider["user_id"] != client_id:
         await notification_repo.create_notification(
             user_id=provider["user_id"],
             type="order",
