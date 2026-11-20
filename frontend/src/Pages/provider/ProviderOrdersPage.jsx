@@ -115,7 +115,11 @@ export default function ProviderOrdersPage() {
           }}>
             Export CSV
           </Button>
-          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" onClick={() => navigate("/provider/orders?status=confirmed")}>
+          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" onClick={() => {
+            const nextOrder = orders.find(order => order.status?.toLowerCase() === "confirmed");
+            if (nextOrder) navigate(`/provider/orders/${nextOrder.id}/dispatch`);
+            else setError("There are no confirmed orders ready for dispatch.");
+          }}>
             Manual Dispatch
           </Button>
         </div>
@@ -126,7 +130,7 @@ export default function ProviderOrdersPage() {
         <KPICard label="Total Orders" value={orders.length} icon="Receipt" />
         <KPICard label="Pending Review" value={orders.filter(o => o.status?.toLowerCase() === "pending_review").length} icon="AlertCircle" highlight />
         <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status?.toLowerCase() === "shipped").length} icon="Truck" />
-        <KPICard label="Escrow Volume" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} icon="Lock" />
+        <KPICard label="Total Order Value" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} icon="Lock" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
