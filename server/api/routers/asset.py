@@ -1,12 +1,13 @@
 """api/routers/asset.py - Provider asset endpoints."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, File, Query, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
 from api.dependencies import get_current_provider_profile
 from schemas.provider import AssetCreateRequest, AssetListResponse, AssetResponse, AssetUpdateRequest
 from services import asset as svc
+from services import asset_media as media_svc
 
 router = APIRouter(prefix="/api", tags=["assets"])
 
@@ -87,3 +88,45 @@ async def delete_asset(
     """Delete an asset owned by the current provider."""
     response.headers["Cache-Control"] = "no-store"
     await svc.delete_asset(asset_id=asset_id, provider_id=profile["id"], session=db)
+
+
+
+@router.post("/provider/assets/{asset_id}/media", response_model=AssetResponse)
+async def upload_asset_media(
+    asset_id: int,
+    response: Response,
+    files: list[UploadFile] = File(...),
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Upload listing images/videos to Cloudinary and persist their metadata."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return await media_svc.upload_asset_media(
+            asset_id=asset_id,
+            provider_id=profile["id"],
+            files=files,
+            session=db,
+        )
+    finally:
+        for file in files:
+            await file.close()
+
+
+@router.delete("/provider/assets/{asset_id}/media", response_model=AssetResponse)
+async def delete_asset_media(
+    asset_id: int,
+    public_id: str = Query(..., min_length=1, max_length=255),
+    response: Response = None,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Delete one Cloudinary media object from an owned listing."""
+    if response is not None:
+        response.headers["Cache-Control"] = "no-store"
+    return await media_svc.delete_asset_media(
+        asset_id=asset_id,
+        provider_id=profile["id"],
+        public_id=public_id,
+        session=db,
+    )
