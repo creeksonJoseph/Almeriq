@@ -8,8 +8,6 @@ from api.dependencies import get_current_user
 from repositories import provider_profile as provider_repo
 from schemas.provider import DealCreateRequest, DealResponse, DealSignRequest
 from services import deal as svc
-from core.db import get_db
-from fastapi import HTTPException
 
 router = APIRouter(prefix="/api", tags=["deals"])
 
@@ -29,7 +27,7 @@ async def create_deal(
         payment_method=body.payment_method,
         amount=float(body.amount),
         provider_id=profile["id"] if profile else None,
-        client_id=current_user["id"],
+        client_id=None if profile else current_user["id"],
         session=db,
     )
 
