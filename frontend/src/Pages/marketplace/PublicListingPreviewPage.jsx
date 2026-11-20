@@ -60,11 +60,8 @@ export default function PublicListingPreviewPage() {
     }
   };
 
-  const images = listing?.images || [
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800",
-    "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800",
-  ];
+  const media = listing?.media || [];
+  const activeMedia = media[galleryIndex];
 
   if (loading) {
     return (
@@ -109,11 +106,15 @@ export default function PublicListingPreviewPage() {
       {/* Image Gallery */}
       <div className="relative">
         <div className="aspect-video w-full rounded-xl overflow-hidden bg-surface-2 border border-border">
-          <img src={images[galleryIndex]} alt={`${listing.name} - Image ${galleryIndex + 1}`} className="w-full h-full object-cover cursor-zoom-in" onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }} />
+          {activeMedia?.resource_type === "video"
+            ? <video src={activeMedia.url} controls className="w-full h-full object-cover" />
+            : activeMedia
+              ? <img src={activeMedia.url} alt={listing.name} className="w-full h-full object-cover cursor-zoom-in" onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }} />
+              : <div className="flex h-full items-center justify-center text-sm text-white/45">No photos or videos have been added to this listing.</div>}
         </div>
-        {images.length > 1 && (
+        {media.length > 1 && (
           <div className="flex justify-center gap-2 mt-3">
-            {images.map((_, i) => (
+            {media.map((item, i) => (
               <button key={i} onClick={() => setGalleryIndex(i)} className={`w-2 h-2 rounded-full transition-all ${i === galleryIndex ? "bg-gold w-6" : "bg-border hover:bg-gold/50"}`} aria-label={`View image ${i + 1}`} />
             ))}
           </div>
@@ -207,20 +208,20 @@ export default function PublicListingPreviewPage() {
               <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{provider?.name || listing.providerName}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{listing.type || "Digital Infrastructure"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{listing.category}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{listing.location}</span></div>
+              <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{listing.provider_location || "Location not provided"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${listing.price}/mo</span></div>
             </div>
             <div className="pt-3 border-t border-border">
               <div className="flex items-center gap-2 text-gold text-sm font-medium">
                 <span className="w-2 h-2 rounded-full bg-gold"></span>
-                Escrow Qualified
+                Simulated checkout
               </div>
-              <div className="text-xs text-white/60 mt-1">Instant Booking Available</div>
+              <div className="text-xs text-white/60 mt-1">No payment is collected by this demo.</div>
             </div>
           </Card>
 
           <Card className="p-5 text-center border border-border bg-surface">
-            <Link to={`/messages?provider=${provider?.id || listing.providerId}`} className="text-gold hover:underline flex items-center justify-center gap-1">
+            <Link to={`/messages?provider=${listing.provider_id}`} className="text-gold hover:underline flex items-center justify-center gap-1">
               <MessageSquare className="w-4 h-4" /> Chat with Provider
             </Link>
           </Card>
@@ -232,9 +233,9 @@ export default function PublicListingPreviewPage() {
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center" onClick={() => setGalleryOpen(false)}>
           <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
             <div className="aspect-video bg-black rounded-xl overflow-hidden">
-              <img src={images[galleryIndex]} alt="" className="w-full h-full object-contain" />
+              {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}
             </div>
-            {images.length > 1 && (
+            {media.length > 1 && (
               <>
                 <button onClick={() => setGalleryIndex(i => (i - 1 + images.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
                   <ChevronLeft className="w-6 h-6" />
@@ -246,9 +247,9 @@ export default function PublicListingPreviewPage() {
             )}
             <button onClick={() => setGalleryOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Close">✕</button>
             <div className="flex justify-center gap-2 p-4">
-              {images.map((img, i) => (
+              {media.map((item, i) => (
                 <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}
                 </button>
               ))}
             </div>
