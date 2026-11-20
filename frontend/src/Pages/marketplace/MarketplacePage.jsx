@@ -324,7 +324,7 @@ function ProviderCard({ provider, onChat, onOrder, onView, ordering }) {
           <MessageSquare className="w-4 h-4 mr-1" />
           <span className="truncate">Chat</span>
         </Button>
-        <Button size="sm" className="py-2 px-1" onClick={onOrder} disabled={ordering || provider.status !== "available"}>
+        <Button size="sm" className="py-2 px-1" onClick={onOrder} disabled={ordering || provider.status !== "available" || !(Number(provider.price_monthly) > 0)}>
           <ShoppingCart className="w-4 h-4 mr-1" />
           <span className="truncate">{ordering ? "Starting..." : "Order"}</span>
         </Button>
