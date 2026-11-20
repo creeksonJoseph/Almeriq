@@ -97,6 +97,7 @@ export {
 
 export {
   listConversationsApi,
+  startProviderConversationApi,
   getConversationApi,
   listMessagesApi,
   sendMessageApi,
