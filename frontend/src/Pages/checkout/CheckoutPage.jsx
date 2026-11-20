@@ -73,7 +73,7 @@ export default function CheckoutPage() {
     setActionLoading(true);
     try {
       if (!deal?.id || !signature) throw new Error("A deal and signature are required to complete checkout.");
-      await signDealApi(deal.id, signature);
+      await signDealApi(deal.id, signature, { payment_method: watchMethod, amount: Number(watchAmount === "custom" ? watchCustomAmount : watchAmount) });
       setCurrentStep(STEPS.length - 1);
     } catch (e) {
       console.error("Checkout failed", e);
