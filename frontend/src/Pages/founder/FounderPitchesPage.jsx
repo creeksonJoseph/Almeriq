@@ -111,7 +111,7 @@ export default function FounderPitchesPage() {
           {requests.length === 0 ? <Card className="p-6 text-sm text-white/50">No investors have expressed interest yet.</Card> : requests.map((request) => {
             const pitch = pitches.find((item) => item.id === request.pitch_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">Investor #{request.investor_id}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p><p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
+              <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">{request.investor_name || `Investor #${request.investor_id}`}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p><p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
               {request.status === "pending" && <div className="flex gap-2"><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></div>}
             </Card>;
           })}
