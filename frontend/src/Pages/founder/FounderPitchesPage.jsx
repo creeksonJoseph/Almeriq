@@ -10,7 +10,7 @@ const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", l
 export default function FounderPitchesPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const pageView = location.pathname.includes("/investors") ? "investors" : "pitches";
+  const pageView = location.pathname.includes("/investors") ? "investors" : location.pathname.includes("/updates") ? "updates" : "pitches";
   const [pitches, setPitches] = useState([]);
   const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
@@ -140,11 +140,11 @@ export default function FounderPitchesPage() {
   return (
     <main className="min-h-screen bg-bg px-4 py-10 text-text">
       <div className="mx-auto max-w-5xl space-y-6">
-        <nav aria-label="Fundraising" className="flex flex-wrap gap-2 border-b border-border pb-3">{[["pitches","Pitch management","/founder/fundraising/pitches"],["investors","Investor interest","/founder/fundraising/investors"]].map(([key,label,path]) => <Button key={key} size="sm" variant={pageView === key ? "primary" : "ghost"} onClick={() => navigate(path)}>{label}</Button>)}</nav>
+        <nav aria-label="Fundraising" className="flex flex-wrap gap-2 border-b border-border pb-3">{[["pitches","Pitch management","/founder/fundraising/pitches"],["investors","Investor interest","/founder/fundraising/investors"],["updates","Investor updates","/founder/fundraising/updates"]].map(([key,label,path]) => <Button key={key} size="sm" variant={pageView === key ? "primary" : "ghost"} onClick={() => navigate(path)}>{label}</Button>)}</nav>
         <header><p className="text-xs uppercase tracking-widest text-gold">Founder workspace</p><h1 className="mt-2 font-serif text-3xl">Fundraising pitches</h1><p className="mt-2 text-sm text-white/60">Publish a concise startup profile for investors to discover.</p></header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
-        {pageView === "pitches" && (
+        {pageView === "updates" && (
         <Card className="space-y-4 p-6">
           <div><h2 className="font-serif text-xl">Draft an investor update</h2><p className="mt-1 text-sm text-white/55">Generate an editable monthly update from details you provide. Missing metrics will not be invented.</p></div>
           <div className="grid gap-3 sm:grid-cols-2">
