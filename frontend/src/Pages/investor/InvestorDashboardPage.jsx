@@ -205,7 +205,7 @@ export default function InvestorDashboardPage() {
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
         {!profile?.firm_name && <Card className="border border-[#C9A15A]/20 bg-[#C9A15A]/5 p-4 text-sm text-white/70">Complete your investor profile so founders can understand your investment focus.</Card>}
-        {pageView === "portfolio" && (
+        {["overview", "portfolio", "analytics"].includes(pageView) && (
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Portfolio overview</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
