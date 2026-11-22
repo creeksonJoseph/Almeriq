@@ -344,30 +344,15 @@ async def update_application_status(
 
 async def create_or_update_job_seeker_profile(
     user_id: int,
-    headline: str | None = None,
-    bio: str | None = None,
-    location: str | None = None,
-    skills: list[str] | None = None,
-    experience_years: int | None = None,
-    resume_url: str | None = None,
-    portfolio_url: str | None = None,
-    is_active: bool = True,
     session: AsyncSession | None = None,
+    **values,
 ) -> dict:
     """Create or update a job seeker profile."""
     return await seeker_repo.create_or_update_job_seeker_profile(
         user_id=user_id,
-        headline=headline,
-        bio=bio,
-        location=location,
-        skills=skills,
-        experience_years=experience_years,
-        resume_url=resume_url,
-        portfolio_url=portfolio_url,
-        is_active=is_active,
         session=session,
+        **values,
     )
-
 
 async def get_job_seeker_profile(
     user_id: int,
