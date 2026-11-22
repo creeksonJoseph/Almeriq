@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import get_current_user
 from core.db import get_db
 from services import investor as svc
-from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate
+from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate, StartupPitchCreateRequest, StartupPitchUpdateRequest
 
 router = APIRouter(prefix="/api", tags=["investor"])
 
@@ -48,7 +48,7 @@ async def update_profile(
 
 @router.post("/founder/pitches", status_code=status.HTTP_201_CREATED)
 async def create_pitch(
-    body: dict,
+    body: StartupPitchCreateRequest,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -56,7 +56,7 @@ async def create_pitch(
     return await svc.create_startup_pitch(
         founder_id=founder_id,
         session=db,
-        **body,
+        **body.model_dump(),
     )
 
 
@@ -91,7 +91,7 @@ async def get_pitch(
 async def update_pitch(
     response: Response,
     pitch_id: int,
-    body: dict,
+    body: StartupPitchUpdateRequest,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -101,7 +101,7 @@ async def update_pitch(
         pitch_id=pitch_id,
         founder_id=founder_id,
         session=db,
-        **body,
+        **body.model_dump(exclude_unset=True),
     )
 
 
