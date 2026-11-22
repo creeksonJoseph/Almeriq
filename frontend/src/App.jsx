@@ -50,6 +50,7 @@ const VenturesPage = lazyWithRetry(() => import("./Pages/founder/VenturesPage"))
 const FounderValidationPage = lazyWithRetry(() => import("./Pages/founder/FounderValidationPage"));
 const FounderProductPage = lazyWithRetry(() => import("./Pages/founder/FounderProductPage"));
 const FounderLegalPage = lazyWithRetry(() => import("./Pages/founder/FounderLegalPage"));
+const FounderPitchesPage = lazyWithRetry(() => import("./Pages/founder/FounderPitchesPage"));
 
 // Admin routes
 const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/admin/AdminWaitlistPage"));
@@ -177,6 +178,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <FounderProductPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/founder/pitches"
+                  element={
+                    <ProtectedRoute>
+                      <FounderPitchesPage />
                     </ProtectedRoute>
                   }
                 />
