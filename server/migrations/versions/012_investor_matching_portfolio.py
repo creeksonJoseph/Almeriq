@@ -31,6 +31,10 @@ def upgrade() -> None:
         sa.Column("time_commitment", sa.Text(), nullable=True),
         sa.Column("contact_preference", sa.Text(), nullable=True),
         sa.Column("contact_formats_json", sa.Text(), nullable=False, server_default="[]"),
+        sa.Column("preferred_payment_methods_json", sa.Text(), nullable=False, server_default='["visa"]'),
+        sa.Column("notify_deal_updates", sa.Boolean(), nullable=False, server_default=sa.true()),
+        sa.Column("notify_valuation_changes", sa.Boolean(), nullable=False, server_default=sa.true()),
+        sa.Column("notify_messages", sa.Boolean(), nullable=False, server_default=sa.true()),
     ]
     for column in investor_columns:
         op.add_column("investor_profiles", column)
@@ -64,5 +68,5 @@ def downgrade() -> None:
         op.drop_column("investments", name)
     for name in ("documents_json", "team_summary", "traction", "financials_url", "pitch_deck_url", "website_url", "target_check_size", "location"):
         op.drop_column("startup_pitches", name)
-    for name in ("contact_formats_json", "contact_preference", "time_commitment", "assets_under_management", "exits", "companies_backed", "notable_investments", "verification_url", "years_investing", "target_return_percent", "accreditation_status", "value_add", "track_record", "lead_follow_preference", "check_size_max", "check_size_min", "geographies_json", "preferred_stages_json", "preferred_sectors_json", "investor_type"):
+    for name in ("notify_messages", "notify_valuation_changes", "notify_deal_updates", "preferred_payment_methods_json", "contact_formats_json", "contact_preference", "time_commitment", "assets_under_management", "exits", "companies_backed", "notable_investments", "verification_url", "years_investing", "target_return_percent", "accreditation_status", "value_add", "track_record", "lead_follow_preference", "check_size_max", "check_size_min", "geographies_json", "preferred_stages_json", "preferred_sectors_json", "investor_type"):
         op.drop_column("investor_profiles", name)
