@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { applyToJobApi, listJobsApi, listMyJobApplicationsApi, getJobSeekerProfileApi } from "../../lib/api/job";
+import { applyToJobApi, listJobsApi, listMyJobApplicationsApi, getJobSeekerProfileApi, withdrawJobApplicationApi } from "../../lib/api/job";
 import { Button, Card, Input } from "../../components/ui";
 
 const STATUS_STYLES = {
@@ -19,6 +19,8 @@ export default function JobSeekerJobsPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [applyingId, setApplyingId] = useState(null);
+  const [withdrawingId, setWithdrawingId] = useState(null);
+  const [coverLetters, setCoverLetters] = useState({});
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -64,7 +66,7 @@ export default function JobSeekerJobsPage() {
     setError("");
     setNotice("");
     try {
-      await applyToJobApi(job.id, { resume_url: profile?.resume_url || null });
+      await applyToJobApi(job.id, { resume_url: profile?.resume_url || null, cover_letter: coverLetters[job.id]?.trim() || null });
       setNotice(`Application submitted for ${job.title}.`);
       await load();
     } catch (requestError) {
@@ -72,6 +74,17 @@ export default function JobSeekerJobsPage() {
     } finally {
       setApplyingId(null);
     }
+  };
+
+  const withdraw = async (application) => {
+    setWithdrawingId(application.id); setError(""); setNotice("");
+    try {
+      const updated = await withdrawJobApplicationApi(application.id);
+      setApplications((items) => items.map((item) => item.id === application.id ? updated : item));
+      setNotice("Your application has been withdrawn.");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to withdraw this application.");
+    } finally { setWithdrawingId(null); }
   };
 
   return (
@@ -112,6 +125,7 @@ export default function JobSeekerJobsPage() {
                   <p className="whitespace-pre-line text-sm leading-6 text-white/70">{job.description}</p>
                   {job.requirements && <div><p className="text-xs font-semibold uppercase tracking-wider text-white/40">Requirements</p><p className="mt-1 whitespace-pre-line text-sm text-white/60">{job.requirements}</p></div>}
                   {(job.salary_min != null || job.salary_max != null) && <p className="text-sm text-white/60">Salary range: {job.salary_min ?? "—"} – {job.salary_max ?? "—"}</p>}
+                  {!appliedJobIds.has(job.id) && <label className="block space-y-2"><span className="text-xs text-white/50">Cover letter (optional)</span><textarea value={coverLetters[job.id] || ""} onChange={(event) => setCoverLetters((items) => ({ ...items, [job.id]: event.target.value }))} rows={3} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Briefly explain why you're a good fit." /></label>}
                   <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">
                     <span className="text-xs text-white/40">Job #{job.id}</span>
                     {appliedJobIds.has(job.id) ?
@@ -130,8 +144,8 @@ export default function JobSeekerJobsPage() {
             <Card className="divide-y divide-border p-0">
               {applications.map((application) => (
                 <div key={application.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                  <div><p className="font-medium">Job #{application.job_posting_id}</p><p className="mt-1 text-xs text-white/45">Applied {application.applied_at ? new Date(application.applied_at).toLocaleDateString() : "recently"}</p></div>
-                  <span className={`rounded-full border px-3 py-1 text-xs capitalize ${STATUS_STYLES[application.status] || STATUS_STYLES.pending}`}>{application.status}</span>
+                  <div><p className="font-medium">{jobs.find((job) => job.id === application.job_posting_id)?.title || `Job #${application.job_posting_id}`}</p><p className="mt-1 text-xs text-white/45">Applied {application.applied_at ? new Date(application.applied_at).toLocaleDateString() : "recently"}</p></div>
+                  <div className="flex items-center gap-2"><span className={`rounded-full border px-3 py-1 text-xs capitalize ${STATUS_STYLES[application.status] || STATUS_STYLES.pending}`}>{application.status}</span>{["pending", "reviewed"].includes(application.status) && <Button size="sm" variant="ghost" disabled={withdrawingId === application.id} onClick={() => withdraw(application)}>{withdrawingId === application.id ? "Withdrawing…" : "Withdraw"}</Button>}</div>
                 </div>
               ))}
             </Card>
