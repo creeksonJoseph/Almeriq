@@ -106,6 +106,7 @@ export {
   listMessagesApi,
   sendMessageApi,
   markMessagesReadApi,
+  startAdvisoryConversationApi,
 } from "./api/conversations";
 
 export {
@@ -137,9 +138,6 @@ export {
   listInvestorStartupsApi,
   getInvestorStartupApi,
   createInvestmentApi,
-  getInvestmentApi,
-  signInvestmentApi,
-  completeInvestmentApi,
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
 } from "./api/investor";
