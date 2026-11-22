@@ -11,8 +11,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
-from api.dependencies import get_current_user, get_db
+from api.dependencies import get_current_user
 from api.errors import catch_all_handler, http_exception_handler
+from core import db as core_db
 from api.routers import deal as deal_router
 from api.routers import marketplace as marketplace_router
 from api.routers import order as order_router
@@ -322,22 +323,22 @@ async def http_client(tmp_path) -> AsyncGenerator[dict, None]:
     app.add_exception_handler(HTTPException, http_exception_handler)
     app.add_exception_handler(Exception, catch_all_handler)
 
-    async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
-        async with factory() as session:
-            try:
-                yield session
-                await session.commit()
-            except Exception:
-                await session.rollback()
-                raise
+    # Patch the production async_session_factory so the actual production
+    # get_db dependency (with its commit/rollback logic) runs against this
+    # isolated test database. We do NOT override get_db or duplicate its
+    # commit/rollback logic here.
+    original_session_factory = core_db.async_session_factory
+    core_db.async_session_factory = factory
 
     async def override_get_current_user(request: Request) -> dict:
         return {"id": buyer_id, "email": buyer["email"], "role": buyer["role"]}
 
-    app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://testserver",
+    ) as ac:
         yield {
             "client": ac,
             "buyer_id": buyer_id,
@@ -347,6 +348,7 @@ async def http_client(tmp_path) -> AsyncGenerator[dict, None]:
         }
 
     app.dependency_overrides.clear()
+    core_db.async_session_factory = original_session_factory
     await engine.dispose()
 
 
@@ -424,19 +426,13 @@ async def test_http_checkout_rolls_back_both_order_and_deal(http_client, monkeyp
     monkeypatch.setattr(marketplace_router.svc, "get_marketplace_listing", get_listing)
     monkeypatch.setattr(marketplace_router.deal_service, "create_deal", fail_deal_creation)
 
-    resp = None
-    try:
-        resp = await client.post(
-            "/api/marketplace/checkout",
-            json=await _checkout_payload(asset_id),
-        )
-    except RuntimeError:
-        # The exception escapes the route (the app converts unexpected errors to
-        # a 500 in production via catch_all_handler). Either way the request
-        # fails, which is what we assert below.
-        pass
-
-    assert resp is None or resp.status_code != 200, "checkout should have failed"
+    # The simulated unexpected deal-creation failure must surface as a 500
+    # (not be silently swallowed or returned as some other non-200 status).
+    resp = await client.post(
+        "/api/marketplace/checkout",
+        json=await _checkout_payload(asset_id),
+    )
+    assert resp.status_code == 500, f"expected 500, got {resp.status_code}: {resp.text}"
 
     # Neither order nor deal may remain persisted (get_db rolled back the
     # failed request, so no orphaned order or deal is left behind).
