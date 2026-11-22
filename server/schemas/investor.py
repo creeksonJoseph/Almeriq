@@ -189,6 +189,22 @@ class InvestorPortfolioUpdateRequest(BaseModel):
     investment_date: Optional[date] = None
     notes: Optional[str] = Field(default=None, max_length=3000)
     risk_level: Optional[str] = Field(default=None)
+    payment_method: Optional[str] = Field(default=None, max_length=30)
+    signature_data: Optional[str] = Field(default=None, max_length=250000)
+
+    @field_validator("payment_method")
+    @classmethod
+    def validate_deal_payment_method(cls, value):
+        if value is not None and value not in {"paypal", "mastercard", "visa", "mpesa"}:
+            raise ValueError("Choose a supported demo payment method")
+        return value
+
+    @field_validator("signature_data")
+    @classmethod
+    def validate_signature_data(cls, value):
+        if value is not None and not value.startswith("data:image/png;base64,"):
+            raise ValueError("Signature must be a PNG data URL")
+        return value
 
     @field_validator("risk_level")
     @classmethod
