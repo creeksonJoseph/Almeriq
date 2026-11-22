@@ -1,5 +1,5 @@
 from __future__ import annotations
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class InvestorProfileResponse(BaseModel):
@@ -22,3 +22,11 @@ class InvestmentResponse(BaseModel):
     investor_id: int
     pitch_id: int
     status: str = "pending"
+
+
+class InvestorProfileUpdateRequest(BaseModel):
+    firm_name: Optional[str] = Field(default=None, max_length=200)
+    investment_focus: Optional[str] = Field(default=None, max_length=500)
+    check_size: Optional[str] = Field(default=None, max_length=100)
+    location: Optional[str] = Field(default=None, max_length=200)
+    about: Optional[str] = Field(default=None, max_length=3000)
