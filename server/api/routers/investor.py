@@ -124,6 +124,16 @@ async def delete_pitch(
     )
 
 
+@router.get("/investor/startups/{pitch_id}")
+async def get_investor_startup(
+    pitch_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    _require_role(current_user, "investor")
+    return await svc.get_investor_pitch(pitch_id, session=db)
+
+
 @router.get("/investor/startups")
 @router.get("/investor/pitches")
 async def list_investor_pitches(
