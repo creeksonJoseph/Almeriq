@@ -61,3 +61,24 @@ async def update_investment_status(investment_id: int, status_value: str, sessio
         await db.commit()
         await db.refresh(item)
         return item.to_dict()
+
+
+async def update_investor_portfolio(
+    investment_id: int,
+    investor_id: int,
+    values: dict,
+    session: AsyncSession,
+) -> dict | None:
+    item = await session.scalar(select(Investment).where(
+        Investment.id == investment_id,
+        Investment.investor_id == investor_id,
+    ))
+    if item is None:
+        return None
+    for key in ("investment_amount", "current_value", "ownership_percent", "investment_date", "notes"):
+        if key in values:
+            setattr(item, key, values[key])
+    if values.get("investment_amount") is not None:
+        item.status = "invested"
+    await session.flush()
+    return item.to_dict()
