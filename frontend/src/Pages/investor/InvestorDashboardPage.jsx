@@ -18,7 +18,7 @@ export default function InvestorDashboardPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [editingInvestment, setEditingInvestment] = useState(null);
-  const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "" });
+  const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium" });
 
   const load = async () => {
     setLoading(true);
@@ -62,6 +62,7 @@ export default function InvestorDashboardPage() {
         ownership_percent: portfolioForm.ownership_percent === "" ? null : Number(portfolioForm.ownership_percent),
         investment_date: portfolioForm.investment_date || null,
         notes: portfolioForm.notes.trim() || null,
+        risk_level: portfolioForm.risk_level,
       });
       setRequests((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item));
       setEditingInvestment(null);
@@ -79,6 +80,7 @@ export default function InvestorDashboardPage() {
       ownership_percent: request.ownership_percent ?? "",
       investment_date: request.investment_date || "",
       notes: request.notes || "",
+      risk_level: request.risk_level || "medium",
     });
   };
 
@@ -110,6 +112,8 @@ export default function InvestorDashboardPage() {
     return groups;
   }, {});
   const maxStageExposure = Math.max(1, ...Object.values(stageExposure));
+  const riskExposure = investedItems.reduce((groups, item) => { const level = ["low", "medium", "high"].includes(item.risk_level) ? item.risk_level : "unclassified"; groups[level] = (groups[level] || 0) + Number(item.investment_amount || 0); return groups; }, {});
+  const riskTotal = Object.values(riskExposure).reduce((sum, amount) => sum + amount, 0);
   const visibleStartups = startups.filter((pitch) =>
     [pitch.title, pitch.summary, pitch.sector, pitch.stage, pitch.location]
       .filter(Boolean)
