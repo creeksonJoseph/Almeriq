@@ -58,6 +58,13 @@ class InvestorProfileUpdateRequest(BaseModel):
     accreditation_status: Optional[str] = Field(default=None, max_length=80)
     target_return_percent: Optional[float] = Field(default=None, ge=-100, le=1000)
 
+    @field_validator("verification_url")
+    @classmethod
+    def validate_verification_url(cls, value):
+        if value is not None and not value.startswith(("https://", "http://")):
+            raise ValueError("Verification links must use http or https")
+        return value
+
     @field_validator("lead_follow_preference")
     @classmethod
     def validate_lead_follow(cls, value):
