@@ -125,6 +125,7 @@ class StartupPitchUpdateRequest(BaseModel):
     stage: Optional[str] = Field(default=None, max_length=80)
     ask_amount: Optional[float] = Field(default=None, ge=0)
     location: Optional[str] = Field(default=None, max_length=200)
+    target_check_size: Optional[float] = Field(default=None, ge=0)
     website_url: Optional[str] = Field(default=None, max_length=1000)
     pitch_deck_url: Optional[str] = Field(default=None, max_length=1000)
     financials_url: Optional[str] = Field(default=None, max_length=1000)
