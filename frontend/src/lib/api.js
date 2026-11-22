@@ -144,3 +144,13 @@ export {
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
 } from "./api/investor";
+export {
+  discoverTalentApi,
+  getTalentProfileApi,
+  inviteTalentApi,
+  listFounderTeamInvitationsApi,
+  listTeamMembersApi,
+  removeTeamMemberApi,
+  listMyTeamInvitationsApi,
+  respondToTeamInvitationApi,
+} from "./api/team";
