@@ -18,7 +18,7 @@ export default function InvestorProfilePage() {
     getInvestorProfileApi().then((profile) => {
       if (active && profile) setForm({ ...EMPTY, ...profile });
     }).catch((err) => {
-      if (active) setError(err.message || "Unable to load your profile.");
+      if (active && err.status !== 404) setError(err.message || "Unable to load your profile.");
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
