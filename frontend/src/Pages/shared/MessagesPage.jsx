@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Send, ChevronLeft, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
-import { Button, Card, Input, Pill, Avatar, SkeletonText } from "../../components/ui";
+import { Button, Input, Pill, Avatar, SkeletonText } from "../../components/ui";
 import { listConversationsApi, listMessagesApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
