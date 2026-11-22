@@ -49,6 +49,12 @@ export function getJobApi(jobId) {
   );
 }
 
+export function listMyJobsApi(params = {}) {
+  return request("Failed to load your job postings", () =>
+    apiClient.get("/api/jobs/mine", { params }),
+  );
+}
+
 // ── Employer job management ──────────────────────────────────────────────────
 
 export function createJobApi(payload) {
