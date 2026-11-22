@@ -161,10 +161,51 @@ async def update_my_application(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Update the status of one of the current user's applications."""
+    """Allow an applicant to withdraw their own application."""
     response.headers["Cache-Control"] = "no-store"
     return await svc.update_application_status(
         application_id=application_id,
+        applicant_id=current_user["id"],
+        status_value=body.status,
+        session=db,
+    )
+
+
+@router.get("/jobs/{job_id}/applications", response_model=JobApplicationListResponse)
+async def list_job_applications(
+    response: Response,
+    job_id: int,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """List applications for a job owned by the authenticated provider."""
+    response.headers["Cache-Control"] = "private, max-age=30"
+    posting = await svc.get_job_posting(job_id=job_id, session=db)
+    if posting["provider_id"] != profile["id"]:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Not the owner of this job posting")
+    items = await svc.list_applications_for_job(job_posting_id=job_id, session=db)
+    return {"items": items, "total": len(items)}
+
+
+@router.patch(
+    "/jobs/{job_id}/applications/{application_id}",
+    response_model=JobApplicationResponse,
+)
+async def review_job_application(
+    response: Response,
+    job_id: int,
+    application_id: int,
+    body: JobApplicationUpdateRequest,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Allow the owner of a job posting to review its applications."""
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.update_application_status(
+        application_id=application_id,
+        job_posting_id=job_id,
+        provider_id=profile["id"],
         status_value=body.status,
         session=db,
     )
