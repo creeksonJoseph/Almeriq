@@ -20,7 +20,8 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "team-talent", label: "Discover Talent", path: "/founder/team/talent", icon: UserRound },
   { key: "team-members", label: "Team Members", path: "/founder/team/members", icon: Users },
   { key: "team-invitations", label: "Team Invitations", path: "/founder/team/invitations", icon: Mail },
-  { key: "fundraising", label: "Fundraising", path: "/founder/pitches", icon: TrendingUp },
+  { key: "fundraising-pitches", label: "Pitch Management", path: "/founder/fundraising/pitches", icon: TrendingUp },
+  { key: "fundraising-investors", label: "Investor Interest", path: "/founder/fundraising/investors", icon: Building2 },
   { key: "orders", label: "My Orders", path: "/founder/orders", icon: Package },
   { key: "experts", label: "Find Experts", path: "/founder/experts", icon: UserRound },
 ];
