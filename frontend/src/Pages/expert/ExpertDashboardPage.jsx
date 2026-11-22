@@ -40,7 +40,7 @@ export default function ExpertDashboardPage() {
     setBusyId(id); setError(""); setNotice("");
     try {
       const { data } = await apiClient.patch(`/api/expert/requests/${id}`, { status });
-      setRequests((items) => items.map((item) => item.id === id ? data : item));
+      setRequests((items) => items.map((item) => item.id === id ? { ...item, ...data } : item));
       setNotice(`Request updated to ${status}.`);
     } catch (err) { setError(err.response?.data?.detail || "Unable to update request."); }
     finally { setBusyId(null); }
