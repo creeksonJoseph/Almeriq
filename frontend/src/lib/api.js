@@ -143,6 +143,7 @@ export {
   createInvestmentApi,
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
+  updateInvestorPortfolioApi,
 } from "./api/investor";
 export {
   discoverTalentApi,
