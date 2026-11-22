@@ -18,43 +18,6 @@ import {
 import BrandLogo from "./BrandLogo";
 import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
 
-export const WORKSPACE_NAV = [
-  { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
-];
-
-export const FOUNDER_STUDIO_NAV = [
-  { key: "ventures", label: "Saved Ventures", path: "/founder/ventures", icon: BookOpen },
-  { key: "intake", label: "Share New Idea", path: "/founder/intake?mode=new", icon: Lightbulb },
-  { key: "validation", label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
-  { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
-  { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
-  { key: "hiring", label: "Hiring", path: "/jobs/manage", icon: Building2 },
-];
-
-export const JOB_SEEKER_NAV = [
-  { key: "jobseeker-dashboard", label: "Job Seeker Dashboard", path: "/job-seeker/dashboard", icon: Home },
-  { key: "jobseeker-jobs", label: "Find Jobs", path: "/job-seeker/jobs", icon: Building2 },
-  { key: "jobseeker-setup", label: "My Profile", path: "/job-seeker/setup", icon: Settings },
-];
-
-export const INVESTOR_NAV = [
-  { key: "investor-dashboard", label: "Investor Dashboard", path: "/dashboard", icon: TrendingUp },
-  { key: "investor-profile", label: "Investor Profile", path: "/investor/profile", icon: UserRound },
-  { key: "investor-pitches", label: "Startup Pitches", path: "/investor/pitches", icon: Building2 },
-];
-
-export const EXPERT_NAV = [
-  { key: "expert-dashboard", label: "Expert Dashboard", path: "/dashboard", icon: ShieldCheck },
-  { key: "expert-profile", label: "Expert Profile", path: "/expert/profile", icon: UserRound },
-];
-
-export const PROVIDER_NAV = [
-  { key: "provider-dashboard", label: "Provider Dashboard", path: "/provider/dashboard", icon: Home },
-  { key: "provider-listings", label: "My Listings", path: "/provider/listings", icon: Boxes },
-  { key: "provider-orders", label: "Orders", path: "/provider/orders", icon: Scale },
-  { key: "provider-jobs", label: "Hiring", path: "/jobs/manage", icon: Building2 },
-];
-
 export default function AppSidebar({
   user,
   collapsed,
