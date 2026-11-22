@@ -36,6 +36,16 @@ async def create_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found",
         )
+    if payment_method not in {"visa", "mastercard", "paypal", "mpesa"}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Unsupported simulated payment method.",
+        )
+    if amount <= 0 or round(float(amount), 2) != round(float(order.get("lease_amount") or 0), 2):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Deal amount must match the marketplace order price.",
+        )
     existing = await deal_repo.get_deal_by_order_id(order_id, session=session)
     if existing:
         raise HTTPException(
