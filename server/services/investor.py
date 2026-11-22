@@ -217,7 +217,15 @@ async def get_investor_request(investment_id: int, investor_id: int, session: As
 
 async def list_founder_requests(founder_id: int, session: AsyncSession | None = None) -> list[dict]:
     from repositories import investment as investment_repo
-    return await investment_repo.list_investments(founder_id=founder_id, session=session)
+    items = await investment_repo.list_investments(founder_id=founder_id, session=session)
+    for item in items:
+        investor_profile = await profile_repo.get_investor_profile_by_user_id(
+            item["investor_id"], session=session
+        )
+        item["investor_name"] = (
+            investor_profile.get("firm_name") if investor_profile else None
+        ) or f"Investor #{item['investor_id']}"
+    return items
 
 
 async def update_founder_request(
