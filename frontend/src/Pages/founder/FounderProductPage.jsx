@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   RefreshCw,
   Copy,
@@ -26,9 +27,10 @@ const PRODUCT_TOOLS = [
 ];
 
 export default function FounderProductPage() {
+  const location = useLocation();
   const { showToast } = useToast();
   const { activeVenture } = useActiveIdea();
-  const [activeTab, setActiveTab] = useState("product_brief");
+  const [activeTab, setActiveTab] = useState(() => PRODUCT_TOOLS.some((tool) => tool.id === location.state?.autoSelectTool) ? location.state.autoSelectTool : "product_brief");
   const [brief, setBrief] = useState({
     idea: "",
     customer: "",
