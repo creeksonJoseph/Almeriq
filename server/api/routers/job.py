@@ -76,7 +76,7 @@ async def update_job(
     response: Response,
     job_id: int,
     body: JobPostingUpdateRequest,
-    profile: dict = Depends(get_current_provider_profile),
+    owner: dict = Depends(get_current_job_owner),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Update a job posting owned by the current provider."""
@@ -94,7 +94,7 @@ async def update_job(
 async def delete_job(
     response: Response,
     job_id: int,
-    profile: dict = Depends(get_current_provider_profile),
+    owner: dict = Depends(get_current_job_owner),
     db: AsyncSession = Depends(get_db),
 ) -> None:
     """Delete a job posting owned by the current provider."""
@@ -175,7 +175,7 @@ async def update_my_application(
 async def list_job_applications(
     response: Response,
     job_id: int,
-    profile: dict = Depends(get_current_provider_profile),
+    owner: dict = Depends(get_current_job_owner),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """List applications for a job owned by the authenticated provider."""
@@ -197,7 +197,7 @@ async def review_job_application(
     job_id: int,
     application_id: int,
     body: JobApplicationUpdateRequest,
-    profile: dict = Depends(get_current_provider_profile),
+    owner: dict = Depends(get_current_job_owner),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Allow the owner of a job posting to review its applications."""
