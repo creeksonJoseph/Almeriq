@@ -221,6 +221,14 @@ async def upsert_investor_profile(
     **values,
 ) -> dict:
     """Create or update the authenticated investor's public profile."""
+    existing = await profile_repo.get_investor_profile_by_user_id(user_id, session=session) or {}
+    minimum = values.get("check_size_min", existing.get("check_size_min"))
+    maximum = values.get("check_size_max", existing.get("check_size_max"))
+    if minimum is not None and maximum is not None and float(minimum) > float(maximum):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Minimum check size cannot exceed maximum check size",
+        )
     return await profile_repo.upsert_investor_profile(
         user_id=user_id,
         session=session,
