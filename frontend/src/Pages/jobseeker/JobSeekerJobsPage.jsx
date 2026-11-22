@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { applyToJobApi, listJobsApi, listMyJobApplicationsApi, getJobSeekerProfileApi, withdrawJobApplicationApi } from "../../lib/api/job";
 import { Button, Card, Input } from "../../components/ui";
 
@@ -13,6 +13,8 @@ const STATUS_STYLES = {
 
 export default function JobSeekerJobsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageView = location.pathname.endsWith("/applications") ? "applications" : "jobs";
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -114,6 +116,7 @@ export default function JobSeekerJobsPage() {
   return (
     <main className="min-h-screen bg-bg px-4 py-8 text-text">
       <div className="mx-auto max-w-6xl space-y-8">
+        <nav aria-label="Job seeker workspace" className="flex flex-wrap gap-2 border-b border-border pb-3">{[["jobs","Find jobs","/job-seeker/jobs"],["applications","My applications","/job-seeker/applications"]].map(([key,label,path]) => <Button key={key} size="sm" variant={pageView === key ? "primary" : "ghost"} onClick={() => navigate(path)}>{label}</Button>)}</nav>
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-gold">Talent workspace</p>
@@ -132,7 +135,10 @@ export default function JobSeekerJobsPage() {
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
 
-        {recommendedJobs.length > 0 && <section className="space-y-3"><div><h2 className="font-serif text-2xl">Recommended for you</h2><p className="mt-1 text-sm text-white/50">Based on your skills and saved job preferences.</p></div><div className="grid gap-3 md:grid-cols-3">{recommendedJobs.map((job) => <Card key={job.id} className="space-y-2 p-4"><div className="flex items-start justify-between gap-2"><h3 className="font-medium">{job.title}</h3><span className="text-xs text-gold">{job.match_score}%</span></div><p className="text-xs text-white/45">{job.location || "Location not specified"}</p><p className="text-xs text-white/55">{job.match_reasons.join(" · ")}</p><Button size="sm" disabled={appliedJobIds.has(job.id) || applyingId === job.id} onClick={() => apply(job)}>{appliedJobIds.has(job.id) ? "Applied" : "Apply now"}</Button></Card>)}</div></section>}
+        {recommendedJobs.length > 0 && {pageView === "jobs" && (
+        <section className="space-y-3"><div><h2 className="font-serif text-2xl">Recommended for you</h2><p className="mt-1 text-sm text-white/50">Based on your skills and saved job preferences.</p></div><div className="grid gap-3 md:grid-cols-3">{recommendedJobs.map((job) => <Card key={job.id} className="space-y-2 p-4"><div className="flex items-start justify-between gap-2"><h3 className="font-medium">{job.title}</h3><span className="text-xs text-gold">{job.match_score}%</span></div><p className="text-xs text-white/45">{job.location || "Location not specified"}</p><p className="text-xs text-white/55">{job.match_reasons.join(" · ")}</p><Button size="sm" disabled={appliedJobIds.has(job.id) || applyingId === job.id} onClick={() => apply(job)}>{appliedJobIds.has(job.id) ? "Applied" : "Apply now"}</Button></Card>)}</div></section>}
+        
+        )}
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 className="font-serif text-2xl">Open positions</h2><p className="mt-1 text-sm text-white/50">Search by title, skills, location or description.</p></div>
@@ -163,6 +169,7 @@ export default function JobSeekerJobsPage() {
           }
         </section>
 
+        {pageView === "applications" && (
         <section className="space-y-4">
           <div><h2 className="font-serif text-2xl">My applications</h2><p className="mt-1 text-sm text-white/50">Keep track of where each application stands.</p></div>
           {applications.length === 0 ? <Card className="p-6 text-sm text-white/55">You have not applied to any roles yet.</Card> :
@@ -176,6 +183,7 @@ export default function JobSeekerJobsPage() {
             </Card>
           }
         </section>
+        )}
       </div>
     </main>
   );
