@@ -62,6 +62,7 @@ from api.routers.job import router as job_router
 from api.routers.investor import router as investor_router
 from api.routers.startup_pitch import router as startup_pitch_router
 from api.routers.expert import router as expert_router
+from api.routers.team import router as team_router
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s - %(message)s")
 
@@ -191,6 +192,7 @@ app.include_router(job_router)
 app.include_router(investor_router)
 app.include_router(startup_pitch_router)
 app.include_router(expert_router)
+app.include_router(team_router)
 
 # ── Error Handling Pipeline (§16) ─────────────────────────────────────────────
 # Order matters: more specific handlers first, catch-all last.
