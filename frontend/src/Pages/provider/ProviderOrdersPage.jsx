@@ -37,7 +37,7 @@ export default function ProviderOrdersPage() {
     async function loadOrders() {
       setLoading(true);
       try {
-        const res = await listOrdersApi({ status: activeTab !== "all" ? activeTab === "pending" ? "pending_review" : activeTab : undefined });
+        const res = await listOrdersApi();
         setOrders(res?.items || res.data?.items || res.data || res.orders || res);
       } catch (e) {
         setError(e.message);
@@ -48,11 +48,16 @@ export default function ProviderOrdersPage() {
     loadOrders();
   }, [activeTab]);
 
-  const filteredOrders = orders.filter(o =>
-    String(o.order_id || o.id || "").toLowerCase().includes(search.toLowerCase()) ||
-    o.clientName?.toLowerCase().includes(search.toLowerCase()) ||
-    o.assetName?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredOrders = orders.filter((order) => {
+    const statusMatches = activeTab === "all" ||
+      (activeTab === "pending" ? order.status?.toLowerCase() === "pending_review" : order.status?.toLowerCase() === activeTab);
+    const query = search.toLowerCase();
+    const searchMatches = !query ||
+      String(order.order_id || order.id || "").toLowerCase().includes(query) ||
+      order.clientName?.toLowerCase().includes(query) ||
+      order.assetName?.toLowerCase().includes(query);
+    return statusMatches && searchMatches;
+  });
 
   const statusTabs = useMemo(() => [
     { value: "all", label: "All", count: orders.length },
