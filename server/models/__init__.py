@@ -23,6 +23,8 @@ from .investment import Investment
 from .job_posting import JobPosting
 from .job_application import JobApplication
 from .job_seeker_profile import JobSeekerProfile
+from .expert_profile import ExpertProfile
+from .advisory_request import AdvisoryRequest
 
 __all__ = [
     "Base", "User", "Waitlist",
@@ -31,5 +33,5 @@ __all__ = [
     "ProviderProfile", "Asset", "CoverageRegion", "Order", "OrderEvent",
     "Deal", "Conversation", "Message", "Notification",
     "InvestorProfile", "StartupPitch", "Investment",
-    "JobPosting", "JobApplication", "JobSeekerProfile",
+    "JobPosting", "JobApplication", "JobSeekerProfile", "ExpertProfile", "AdvisoryRequest",
 ]
