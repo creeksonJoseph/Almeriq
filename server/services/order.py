@@ -111,19 +111,6 @@ async def get_order(
 
 
 
-def _validate_status_transition(current_status: str, new_status: str) -> None:
-    """Reject invalid order status transitions."""
-    allowed = _VALID_ORDER_STATUS_TRANSITIONS.get(current_status, set())
-    if new_status not in allowed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"Invalid status transition from '{current_status}' to '{new_status}'. "
-                f"Allowed: {', '.join(sorted(allowed)) or 'none (terminal state)'}"
-            ),
-        )
-
-
 async def update_order_status(
     order_id: int,
     provider_id: int,
