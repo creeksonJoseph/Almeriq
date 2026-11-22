@@ -83,3 +83,11 @@ export async function getInvestorPortfolioItemApi(id) {
     throw apiErr(e, "Failed to load portfolio item");
   }
 }
+export async function updateInvestorPortfolioApi(id, payload) {
+  try {
+    const { data } = await apiClient.patch(`/api/investor/portfolio/${id}`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Failed to update portfolio tracking");
+  }
+}
