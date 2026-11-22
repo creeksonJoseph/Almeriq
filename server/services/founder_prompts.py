@@ -69,10 +69,26 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
         return f"Create a Results & Changes framework for {idea}. Return JSON with: key_metrics_to_track (array of strings), expected_feedback_themes (array of strings), pivot_or_persevere_criteria (array of strings)."
 
     if tool_key == "investor_update":
-        return f"Monthly investor update for {idea}. Return JSON with: subject, highlights, lowlights, kpis, asks, full_email."
+        context = payload.extra_params if isinstance(payload.extra_params, dict) else {}
+        return (
+            f"Draft a clear monthly investor update for this company: {idea}.\\n"
+            f"Founder-provided facts and metrics: {json.dumps(context, ensure_ascii=False)}\\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\\n"
+            "Do not invent numbers, milestones, customer names, revenue, or progress. If information is missing, mark it as [Add details] or leave the section out. "
+            "Separate wins from challenges and make asks specific. Return JSON with: subject (string), highlights (array of strings), "
+            "lowlights (array of strings), kpis (array of objects with metric, value, period), asks (array of strings), full_email (complete editable email draft)."
+        )
 
     if tool_key == "job_post":
-        return f"Job posting for {idea}. Return JSON with: title, role_summary, responsibilities, requirements, why_join_us."
+        context = payload.extra_params if isinstance(payload.extra_params, dict) else {}
+        return (
+            f"Draft a job post for this role: {idea}.\\n"
+            f"Founder-provided role details: {json.dumps(context, ensure_ascii=False)}\\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\\n"
+            "Do not invent salary, benefits, company facts, qualifications, or working arrangements. Use [Add details] where needed. "
+            "Return JSON with: title (string), role_summary (string), responsibilities (array of strings), "
+            "requirements (array of strings), why_join_us (string)."
+        )
 
     if tool_key == "market_analysis":
         return (
