@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
-from api.dependencies import get_current_provider_profile
+from api.dependencies import get_current_provider_profile, get_current_user
 from schemas.provider import (
     OrderCreateRequest,
     OrderDetailResponse,
@@ -17,6 +17,39 @@ from schemas.provider import (
 from services import order as svc
 
 router = APIRouter(prefix="/api", tags=["orders"])
+
+def _require_founder(current_user: dict) -> int:
+    from fastapi import HTTPException
+    if str(current_user.get("role", "")).lower() != "founder":
+        raise HTTPException(status_code=403, detail="Founder account required")
+    return int(current_user["id"])
+
+
+@router.get("/client/orders", response_model=OrderListResponse)
+async def list_client_orders(
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """List orders placed by the current founder."""
+    client_id = _require_founder(current_user)
+    response.headers["Cache-Control"] = "private, no-store"
+    items, total = await svc.list_client_orders(client_id=client_id, session=db)
+    return {"items": items, "total": total}
+
+
+@router.get("/client/orders/{order_id}", response_model=OrderDetailResponse)
+async def get_client_order(
+    response: Response,
+    order_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Retrieve one order placed by the current founder."""
+    client_id = _require_founder(current_user)
+    response.headers["Cache-Control"] = "private, no-store"
+    return await svc.get_client_order(order_id=order_id, client_id=client_id, session=db)
+
 
 
 @router.post("/provider/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
