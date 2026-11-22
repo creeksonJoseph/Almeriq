@@ -1,23 +1,20 @@
-import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Home,
-  Lightbulb,
-  BookOpen,
-  CheckCircle2,
-  Boxes,
-  Scale,
-  Send,
   Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
   X,
   ShieldCheck,
-  TrendingUp,
-  UserRound,
-  Building2,
 } from "lucide-react";
+import {
+  WORKSPACE_NAV,
+  FOUNDER_STUDIO_NAV,
+  JOB_SEEKER_NAV,
+  INVESTOR_NAV,
+  EXPERT_NAV,
+  PROVIDER_NAV,
+} from "./sidebarNavigation";
 import BrandLogo from "./BrandLogo";
 import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
 
@@ -65,7 +62,6 @@ export default function AppSidebar({
   mobileOpen,
   onCloseMobile,
   onLogout,
-  onRestartOnboarding,
 }) {
   const location = useLocation();
   const navigate = useNavigate();
