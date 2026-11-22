@@ -978,6 +978,7 @@ export default function FounderLegalPage() {
               <p className="mt-2 text-sm font-normal text-white leading-relaxed max-w-3xl">
                 Simple, standard agreements to protect your code, keep your ideas confidential, divide equity fairly among co-founders, and take early investment.
               </p>
+              <p className="mt-3 max-w-3xl rounded border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-5 text-amber-100/80">These are general starting points, not legal advice or ready-to-sign documents. Have a qualified lawyer adapt them to your company, country, and actual deal before use.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
