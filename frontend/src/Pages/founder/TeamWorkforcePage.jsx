@@ -90,7 +90,7 @@ export default function TeamWorkforcePage() {
               <div className="flex flex-wrap gap-1.5">{(person.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-md border border-border px-2 py-1 text-xs text-white/65">{skill}</span>)}</div>
               {person.match_reasons?.length > 0 && <p className="text-xs text-emerald-200/80">{person.match_reasons.join(" · ")}</p>}
               <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                {person.portfolio_url && <a className="text-sm text-gold underline" href={person.portfolio_url} target="_blank" rel="noreferrer">Portfolio</a>}
+                <Button size="sm" variant="ghost" onClick={() => navigate(`/founder/talent/${person.user_id}`)}>View profile</Button>{person.portfolio_url && <a className="text-sm text-gold underline" href={person.portfolio_url} target="_blank" rel="noreferrer">Portfolio</a>
                 <Button size="sm" disabled={alreadyInvited || alreadyMember || busyId === person.user_id} onClick={() => invite(person)}>{alreadyMember ? "Already on team" : alreadyInvited ? "Invited" : busyId === person.user_id ? "Sending…" : "Invite to team"}</Button>
               </div>
             </Card>;
