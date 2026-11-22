@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 async def create_job_posting(
-    provider_id: int | None = None,
-    founder_user_id: int | None = None,
     title: str,
     description: str,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
     location: str | None = None,
     role_type: str | None = None,
     salary_min: Optional[float] = None,
