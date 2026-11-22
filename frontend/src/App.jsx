@@ -251,6 +251,10 @@ function App() {
                   element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
                 />
                 <Route
+                  path="/founder/fundraising/updates"
+                  element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
+                />
+                <Route
                   path="/founder/legal"
                   element={<Navigate to="/founder/legal/guide" replace />}
                 />
