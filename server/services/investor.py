@@ -344,6 +344,15 @@ async def list_founder_requests(founder_id: int, session: AsyncSession | None = 
                 "track_record": investor_profile.get("track_record"),
                 "value_add": investor_profile.get("value_add"),
                 "accreditation_status": investor_profile.get("accreditation_status"),
+                "years_investing": investor_profile.get("years_investing"),
+                "verification_url": investor_profile.get("verification_url"),
+                "notable_investments": investor_profile.get("notable_investments"),
+                "companies_backed": investor_profile.get("companies_backed"),
+                "exits": investor_profile.get("exits"),
+                "assets_under_management": investor_profile.get("assets_under_management"),
+                "time_commitment": investor_profile.get("time_commitment"),
+                "contact_preference": investor_profile.get("contact_preference"),
+                "contact_formats": investor_profile.get("contact_formats", []),
             }
             if investor_profile else None
         )
