@@ -430,6 +430,16 @@ function App() {
                   }
                 />
                 <Route
+                  path="/job-seeker/applications"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerJobsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/job-seeker/setup"
                   element={
                     <ProtectedRoute>
