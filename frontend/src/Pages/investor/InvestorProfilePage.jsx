@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import { getInvestorProfileApi, updateInvestorProfileApi } from "../../lib/api";
 
-const EMPTY = { firm_name: "", investment_focus: "", check_size: "", location: "", about: "", investor_type: "", preferred_sectors: [], preferred_stages: [], geographies: [], check_size_min: "", check_size_max: "", lead_follow_preference: "either", track_record: "", value_add: "", accreditation_status: "" };
+const EMPTY = { firm_name: "", investment_focus: "", check_size: "", location: "", about: "", investor_type: "", preferred_sectors: [], preferred_stages: [], geographies: [], check_size_min: "", check_size_max: "", lead_follow_preference: "either", track_record: "", value_add: "", accreditation_status: "", target_return_percent: "" };
 
 export default function InvestorProfilePage() {
   const navigate = useNavigate();
@@ -48,6 +48,7 @@ export default function InvestorProfilePage() {
         track_record: form.track_record.trim() || null,
         value_add: form.value_add.trim() || null,
         accreditation_status: form.accreditation_status || null,
+        target_return_percent: form.target_return_percent === "" ? null : Number(form.target_return_percent),
       });
       setForm({ ...EMPTY, ...profile, preferred_sectors: profile.preferred_sectors || [], preferred_stages: profile.preferred_stages || [], geographies: profile.geographies || [] });
       setSaved(true);
@@ -82,6 +83,7 @@ export default function InvestorProfilePage() {
             <label className="block space-y-2"><span className="text-sm">Track record</span><textarea name="track_record" value={form.track_record || ""} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm" placeholder="Relevant investments, exits or experience." /></label>
             <label className="block space-y-2"><span className="text-sm">Value you bring to founders</span><textarea name="value_add" value={form.value_add || ""} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm" placeholder="Introductions, hiring, product, operations, go-to-market…" /></label>
             <label className="block space-y-2"><span className="text-sm">Accreditation status (self-reported)</span><select name="accreditation_status" value={form.accreditation_status || ""} onChange={update} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm"><option value="">Not provided</option><option value="accredited">Accredited</option><option value="not_accredited">Not accredited</option><option value="not_applicable">Not applicable</option></select></label>
+            <label className="block space-y-2"><span className="text-sm">Illustrative annual return assumption (%)</span><Input name="target_return_percent" type="number" min="-100" max="1000" step="0.1" value={form.target_return_percent ?? ""} onChange={update} placeholder="Optional; used only for a 12-month projection" /></label>
             <label className="block space-y-2"><span className="text-sm">About</span><textarea name="about" value={form.about || ""} onChange={update} rows={4} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm outline-none focus:border-[#C9A15A]" placeholder="Your investment thesis and what you offer founders." /></label>
             <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : "Save profile"}</Button></div>
           </form>
