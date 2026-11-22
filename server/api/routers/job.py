@@ -197,6 +197,7 @@ async def list_job_applications(
     response.headers["Cache-Control"] = "private, max-age=30"
     posting = await svc.get_job_posting(job_id=job_id, session=db)
     if posting["provider_id"] != owner["provider_id"] or posting["founder_user_id"] != owner["founder_user_id"]:
+        # Exactly one owner column is populated; comparing both values is intentional.
         from fastapi import HTTPException
         raise HTTPException(status_code=403, detail="Not the owner of this job posting")
     items = await svc.list_applications_for_job(job_posting_id=job_id, session=db)
