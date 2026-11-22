@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
-  createInvestmentApi, updateInvestorPortfolioApi,
+  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi,
 } from "../../lib/api";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
 
@@ -17,6 +17,7 @@ export default function InvestorDashboardPage() {
   const [startupQuery, setStartupQuery] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState(null);
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium" });
 
@@ -32,7 +33,7 @@ export default function InvestorDashboardPage() {
         listInvestorStartupsApi(),
         listInvestorPortfolioApi(),
       ]);
-      setProfile(profileResult);
+      setProfile(profileResult ? { preferred_payment_methods: ["visa"], notify_deal_updates: true, notify_valuation_changes: true, notify_messages: true, ...profileResult } : null);
       setStartups(startupResult?.items || []);
       setRequests(requestResult?.items || []);
     } catch (err) {
@@ -41,6 +42,23 @@ export default function InvestorDashboardPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const saveSettings = async () => {
+    if (!profile) return;
+    setSettingsSaving(true); setError(""); setNotice("");
+    try {
+      const updated = await updateInvestorProfileApi({
+        preferred_payment_methods: profile.preferred_payment_methods || [],
+        notify_deal_updates: Boolean(profile.notify_deal_updates),
+        notify_valuation_changes: Boolean(profile.notify_valuation_changes),
+        notify_messages: Boolean(profile.notify_messages),
+      });
+      setProfile((current) => ({ ...current, ...updated }));
+      setNotice("Investor preferences saved.");
+    } catch (err) {
+      setError(err.message || "Unable to save investor preferences.");
+    } finally { setSettingsSaving(false); }
+  };
 
   const openConversation = async (investmentId) => {
     try {
@@ -144,6 +162,17 @@ export default function InvestorDashboardPage() {
           {Object.keys(stageExposure).length > 0 && <Card className="p-4"><h3 className="font-medium">Portfolio stage exposure</h3><div className="mt-3 space-y-2">{Object.entries(stageExposure).map(([stage, amount]) => <div key={stage} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="text-white/65">{stage}</span><span>{amount.toLocaleString()}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#C9A15A]" style={{ width: (amount / maxStageExposure * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Stage exposure is a simple portfolio breakdown, not a formal risk rating.</p></Card>}
           {investedItems.length > 0 && <Card className="p-4"><h3 className="font-medium">Risk distribution</h3><div className="mt-3 space-y-2">{["low", "medium", "high", "unclassified"].filter((level) => riskExposure[level]).map((level) => <div key={level} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="capitalize text-white/65">{level}</span><span>{riskTotal > 0 ? (riskExposure[level] / riskTotal * 100).toFixed(0) : 0}% · {riskExposure[level].toLocaleString()}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-[#C9A15A]" style={{ width: (riskExposure[level] / Math.max(1, riskTotal) * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Based on your own risk labels for each portfolio entry; Almeriq does not assess investment risk.</p></Card>}
           <p className="text-xs text-white/40">Portfolio figures are manually recorded by you. Almeriq does not process or verify investment transfers.</p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="font-serif text-xl">Investor settings</h2>
+          <Card className="space-y-4 border border-white/10 bg-white/2 p-5">
+            <div><h3 className="text-sm font-medium">Preferred payment methods</h3><p className="mt-1 text-xs text-white/45">Preferences only. Almeriq does not store card, bank or mobile-money credentials.</p>
+              <div className="mt-3 flex flex-wrap gap-4 text-sm">{[["paypal","PayPal"],["mastercard","Mastercard"],["visa","Visa"],["mpesa","M-Pesa"]].map(([value,label]) => <label key={value} className="flex items-center gap-2"><input type="checkbox" checked={(profile?.preferred_payment_methods || []).includes(value)} onChange={(event) => setProfile((current) => ({ ...current, preferred_payment_methods: event.target.checked ? [...(current?.preferred_payment_methods || []), value] : (current?.preferred_payment_methods || []).filter((method) => method !== value) }))} />{label}</label>)}</div>
+            </div>
+            <div className="border-t border-white/10 pt-4"><h3 className="text-sm font-medium">Notifications</h3><div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">{[["notify_deal_updates","Deal updates"],["notify_valuation_changes","Valuation changes"],["notify_messages","Messages"]].map(([key,label]) => <label key={key} className="flex items-center gap-2"><input type="checkbox" checked={Boolean(profile?.[key])} onChange={(event) => setProfile((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}</div></div>
+            <div className="flex justify-end"><Button disabled={settingsSaving || !profile} onClick={saveSettings}>{settingsSaving ? "Saving…" : "Save preferences"}</Button></div>
+          </Card>
         </section>
 
         <section className="space-y-3">
