@@ -431,8 +431,8 @@ function CompleteStep({ orderId, providerName, amount, formatAmount, onDone }) {
       <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-4">
         <Check className="w-8 h-8 text-gold" />
       </div>
-      <h2 className="font-serif text-2xl font-semibold text-text">Deal Completed</h2>
-      <p className="text-white/70">Your deal details and signature have been saved. No payment has been collected.</p>
+      <h2 className="font-serif text-2xl font-semibold text-text">Deal details saved</h2>
+      <p className="text-white/70">Your demo deal record and signature have been saved. The provider still needs to review and confirm the order. No payment has been collected.</p>
       <Card className="p-4 text-left">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
