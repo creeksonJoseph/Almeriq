@@ -49,4 +49,8 @@ async def update_request(request_id: int, expert_id: int, status_value: str, ses
         raise HTTPException(status_code=404, detail="Advisory request not found")
     if item["status"] in {"declined", "completed"}:
         raise HTTPException(status_code=409, detail="This advisory request is already closed")
+    if status_value in {"accepted", "declined"} and item["status"] != "pending":
+        raise HTTPException(status_code=409, detail="Only pending requests can be accepted or declined")
+    if status_value == "completed" and item["status"] != "accepted":
+        raise HTTPException(status_code=409, detail="Only accepted engagements can be completed")
     return await request_repo.update_advisory_request_status(request_id, status_value, session=session)
