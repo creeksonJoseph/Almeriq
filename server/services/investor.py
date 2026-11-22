@@ -225,6 +225,17 @@ async def list_founder_requests(founder_id: int, session: AsyncSession | None = 
         item["investor_name"] = (
             investor_profile.get("firm_name") if investor_profile else None
         ) or f"Investor #{item['investor_id']}"
+        # Only the founder who owns the pitch can reach this response; include
+        # the investor's public profile so the pipeline is useful for triage.
+        item["investor_profile"] = (
+            {
+                "investment_focus": investor_profile.get("investment_focus"),
+                "check_size": investor_profile.get("check_size"),
+                "location": investor_profile.get("location"),
+                "about": investor_profile.get("about"),
+            }
+            if investor_profile else None
+        )
     return items
 
 
