@@ -7,7 +7,6 @@ from repositories import order as order_repo
 from repositories import order_event as order_event_repo
 from repositories import provider_profile as provider_repo
 from repositories import notification as notification_repo
-from repositories import deal as deal_repo
 
 logger = logging.getLogger(__name__)
 
@@ -110,15 +109,6 @@ async def get_order(
     order["events"] = events
     return order
 
-
-_VALID_ORDER_STATUS_TRANSITIONS: dict[str, set[str]] = {
-    "pending_review": {"confirmed", "declined"},
-    "confirmed": {"shipped", "completed"},
-    "shipped": {"completed"},
-    # terminal states: no outgoing transitions
-    "declined": set(),
-    "completed": set(),
-}
 
 
 def _validate_status_transition(current_status: str, new_status: str) -> None:
