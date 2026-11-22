@@ -186,9 +186,9 @@ function App() {
                 <Route
                   path="/founder/experts"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <ExpertDiscoveryPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
@@ -202,9 +202,9 @@ function App() {
                 <Route
                   path="/founder/pitches"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <FounderPitchesPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
