@@ -180,6 +180,8 @@ async def create_investment_request(
     pitch = await pitch_repo.get_startup_pitch(pitch_id, session=session)
     if not pitch:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    if pitch["founder_id"] == investor_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot express interest in your own startup pitch")
     if amount is not None and amount < 0:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Amount must be non-negative")
     existing = await investment_repo.list_investments(investor_id=investor_id, session=session)
