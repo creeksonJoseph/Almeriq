@@ -15,10 +15,19 @@ VALID_STATUSES = {"pending", "reviewed", "accepted", "rejected", "withdrawn"}
 VALID_ROLE_TYPES = {"full_time", "part_time", "contract", "freelance", "internship"}
 
 
+def _owns_posting(posting: dict, *, provider_id: int | None = None, founder_user_id: int | None = None) -> bool:
+    if provider_id is not None:
+        return posting.get("provider_id") == provider_id and posting.get("founder_user_id") is None
+    if founder_user_id is not None:
+        return posting.get("founder_user_id") == founder_user_id and posting.get("provider_id") is None
+    return False
+
+
+
 # ── Job postings ────────────────────────────────────────────────────────────
 
 async def create_job_posting(
-    provider_id: int,
+    provider_id: int | None,
     title: str,
     description: str,
     location: str | None = None,
@@ -28,9 +37,12 @@ async def create_job_posting(
     requirements: str | None = None,
     is_active: bool = True,
     session: AsyncSession | None = None,
+    founder_user_id: int | None = None,
 ) -> dict:
-    """Create a job posting for a provider profile."""
-    provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session)
+    """Create a job posting for exactly one authorized owner."""
+    if (provider_id is None) == (founder_user_id is None):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A job posting must have exactly one owner")
+    provider = await provider_repo.get_provider_profile_by_id(provider_id, session=session) if provider_id is not None else True
     if not provider:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -48,6 +60,7 @@ async def create_job_posting(
         )
     return await job_repo.create_job_posting(
         provider_id=provider_id,
+        founder_user_id=founder_user_id,
         title=title,
         description=description,
         location=location,
@@ -87,7 +100,8 @@ async def list_job_postings(
 
 async def update_job_posting(
     job_id: int,
-    provider_id: int,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
     session: AsyncSession | None = None,
     **values,
 ) -> dict:
@@ -98,7 +112,7 @@ async def update_job_posting(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job posting not found",
         )
-    if posting["provider_id"] != provider_id:
+    if not _owns_posting(posting, provider_id=provider_id, founder_user_id=founder_user_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not the owner of this job posting",
@@ -125,7 +139,7 @@ async def update_job_posting(
     return updated
 
 
-async def delete_job_posting(job_id: int, provider_id: int, session: AsyncSession | None = None) -> None:
+async def delete_job_posting(job_id: int, provider_id: int | None = None, founder_user_id: int | None = None, session: AsyncSession | None = None) -> None:
     """Delete a job posting, only if owned by the provider."""
     posting = await job_repo.get_job_posting_by_id(job_id, session=session)
     if not posting:
@@ -233,6 +247,7 @@ async def update_application_status(
     status_value: str,
     applicant_id: int | None = None,
     provider_id: int | None = None,
+    founder_user_id: int | None = None,
     job_posting_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
@@ -257,7 +272,7 @@ async def update_application_status(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Applicants may only withdraw their own applications",
             )
-    elif provider_id is not None and job_posting_id is not None:
+    elif (provider_id is not None or founder_user_id is not None) and job_posting_id is not None:
         if application["job_posting_id"] != job_posting_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -266,7 +281,7 @@ async def update_application_status(
         posting = await job_repo.get_job_posting_by_id(
             job_posting_id, session=session
         )
-        if not posting or posting["provider_id"] != provider_id:
+        if not posting or not _owns_posting(posting, provider_id=provider_id, founder_user_id=founder_user_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not the owner of this job posting",
