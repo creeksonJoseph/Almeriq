@@ -31,6 +31,7 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "validation", label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
   { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
+  { key: "hiring", label: "Hiring", path: "/jobs/manage", icon: Building2 },
 ];
 
 export const JOB_SEEKER_NAV = [
@@ -54,6 +55,7 @@ export const PROVIDER_NAV = [
   { key: "provider-dashboard", label: "Provider Dashboard", path: "/provider/dashboard", icon: Home },
   { key: "provider-listings", label: "My Listings", path: "/provider/listings", icon: Boxes },
   { key: "provider-orders", label: "Orders", path: "/provider/orders", icon: Scale },
+  { key: "provider-jobs", label: "Hiring", path: "/jobs/manage", icon: Building2 },
 ];
 
 export default function AppSidebar({
