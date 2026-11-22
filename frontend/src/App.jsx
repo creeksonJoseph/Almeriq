@@ -399,6 +399,26 @@ function App() {
                   />
                 ))}
                 <Route
+                  path="/investor/startups/:pitchId"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorDashboardPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/investor/deals/:dealId"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorDashboardPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/investor/profile"
                   element={
                     <ProtectedRoute>
