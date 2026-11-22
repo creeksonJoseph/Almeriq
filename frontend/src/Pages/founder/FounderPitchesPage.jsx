@@ -141,6 +141,19 @@ export default function FounderPitchesPage() {
         <header><p className="text-xs uppercase tracking-widest text-gold">Founder workspace</p><h1 className="mt-2 font-serif text-3xl">Fundraising pitches</h1><p className="mt-2 text-sm text-white/60">Publish a concise startup profile for investors to discover.</p></header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
+        <Card className="space-y-4 p-6">
+          <div><h2 className="font-serif text-xl">Draft an investor update</h2><p className="mt-1 text-sm text-white/55">Generate an editable monthly update from details you provide. Missing metrics will not be invented.</p></div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="space-y-1 text-sm"><span>Startup</span><select value={updatePitchId} onChange={(event) => setUpdatePitchId(event.target.value)} className="w-full rounded-lg border border-border bg-surface-2 p-3"><option value="">Choose a pitch</option>{pitches.map((pitch) => <option key={pitch.id} value={pitch.id}>{pitch.title}</option>)}</select></label>
+            <label className="space-y-1 text-sm"><span>Update period</span><Input value={updatePeriod} onChange={(event) => setUpdatePeriod(event.target.value)} placeholder="e.g. November 2026" /></label>
+          </div>
+          <label className="block space-y-1 text-sm"><span>Highlights / progress</span><textarea value={updateHighlights} onChange={(event) => setUpdateHighlights(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Wins, product milestones, customer progress…" /></label>
+          <label className="block space-y-1 text-sm"><span>Challenges / lowlights</span><textarea value={updateChallenges} onChange={(event) => setUpdateChallenges(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="What did not go as planned?" /></label>
+          <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
+          <label className="block space-y-1 text-sm"><span>What you need from investors</span><textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
+          <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
+          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
+        </Card>
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
           <form onSubmit={submit} className="space-y-4">
