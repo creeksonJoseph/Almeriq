@@ -60,7 +60,7 @@ export default function ExpertProfilePage() {
         <Card className="border border-white/10 bg-white/2 p-6">
           <form onSubmit={submit} className="space-y-5">
             {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
-            {saved && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">Profile saved and listed in expert discovery.</p>}
+            {saved && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">Profile saved.</p>}
             <label className="block space-y-2"><span className="text-sm">Professional headline</span><Input name="headline" value={form.headline || ""} onChange={update} placeholder="e.g. Fintech and payments advisor" /></label>
             <label className="block space-y-2"><span className="text-sm">About your experience</span><textarea name="bio" value={form.bio || ""} onChange={update} rows={5} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm outline-none focus:border-[#C9A15A]" placeholder="Your background, achievements and how you help founders." /></label>
             <label className="block space-y-2"><span className="text-sm">Areas of expertise</span><Input name="expertise" value={form.expertise || ""} onChange={update} placeholder="Product strategy, fundraising, cloud infrastructure" /><span className="text-xs text-white/40">Separate areas with commas.</span></label>
