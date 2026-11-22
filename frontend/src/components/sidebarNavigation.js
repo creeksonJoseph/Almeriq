@@ -27,15 +27,13 @@ export const JOB_SEEKER_NAV = [
 ];
 
 export const INVESTOR_NAV = [
-  { key: "investor-dashboard", label: "Investor Dashboard", path: "/dashboard", icon: TrendingUp },
+  { key: "investor-dashboard", label: "Startup Discovery & Pipeline", path: "/dashboard", icon: TrendingUp },
   { key: "investor-profile", label: "Investor Profile", path: "/investor/profile", icon: UserRound },
-  { key: "investor-pitches", label: "Discover Startups", path: "/investor/dashboard", icon: Building2 },
 ];
 
 export const EXPERT_NAV = [
   { key: "expert-dashboard", label: "Expert Dashboard", path: "/dashboard", icon: ShieldCheck },
   { key: "expert-profile", label: "Expert Profile", path: "/expert/profile", icon: UserRound },
-  { key: "expert-requests", label: "Advisory Requests", path: "/dashboard", icon: Building2 },
 ];
 
 export const PROVIDER_NAV = [
