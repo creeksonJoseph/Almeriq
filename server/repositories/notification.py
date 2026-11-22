@@ -5,6 +5,7 @@ from sqlalchemy import select, update, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.notification import Notification
+from models.investor_profile import InvestorProfile
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +18,25 @@ async def create_notification(
     link: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Create a new notification."""
+    """Create a notification unless the recipient opted out of this investor alert type."""
     logger.info(f"[REPO-CREATE-NOTIFICATION] Starting: user_id={user_id}, type={type}")
+    preference_field = {
+        "investment": "notify_deal_updates",
+        "deal": "notify_deal_updates",
+        "message": "notify_messages",
+        "valuation": "notify_valuation_changes",
+    }.get(type)
+    if preference_field:
+        preference_column = getattr(InvestorProfile, preference_field)
+        preference_stmt = select(preference_column).where(InvestorProfile.user_id == user_id).limit(1)
+        if session is not None:
+            enabled = await session.scalar(preference_stmt)
+        else:
+            async with async_session_factory() as preference_db:
+                enabled = await preference_db.scalar(preference_stmt)
+        if enabled is False:
+            logger.info("Notification suppressed by recipient preference", extra={"user_id": user_id, "type": type})
+            return {}
     notification = Notification(
         user_id=user_id,
         type=type,
