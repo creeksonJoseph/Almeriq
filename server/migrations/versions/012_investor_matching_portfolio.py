@@ -28,6 +28,7 @@ def upgrade() -> None:
 
     pitch_columns = [
         sa.Column("location", sa.Text(), nullable=True),
+        sa.Column("target_check_size", sa.Numeric(12, 2), nullable=True),
         sa.Column("website_url", sa.Text(), nullable=True),
         sa.Column("pitch_deck_url", sa.Text(), nullable=True),
         sa.Column("financials_url", sa.Text(), nullable=True),
@@ -52,7 +53,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     for name in ("notes", "investment_date", "ownership_percent", "current_value", "investment_amount"):
         op.drop_column("investments", name)
-    for name in ("documents_json", "team_summary", "traction", "financials_url", "pitch_deck_url", "website_url", "location"):
+    for name in ("documents_json", "team_summary", "traction", "financials_url", "pitch_deck_url", "website_url", "target_check_size", "location"):
         op.drop_column("startup_pitches", name)
     for name in ("target_return_percent", "accreditation_status", "value_add", "track_record", "lead_follow_preference", "check_size_max", "check_size_min", "geographies_json", "preferred_stages_json", "preferred_sectors_json", "investor_type"):
         op.drop_column("investor_profiles", name)
