@@ -325,6 +325,11 @@ async def update_application_status(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Applicants may only withdraw their own applications",
             )
+        if application["status"] not in {"pending", "reviewed"}:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Only pending or reviewed applications can be withdrawn",
+            )
     elif (provider_id is not None or founder_user_id is not None) and job_posting_id is not None:
         if application["job_posting_id"] != job_posting_id:
             raise HTTPException(
@@ -339,10 +344,14 @@ async def update_application_status(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not the owner of this job posting",
             )
-        if status_value not in {"reviewed", "accepted", "rejected"}:
+        allowed_transitions = {
+            "pending": {"reviewed", "accepted", "rejected"},
+            "reviewed": {"accepted", "rejected"},
+        }
+        if status_value not in allowed_transitions.get(application["status"], set()):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Employers may set status to reviewed, accepted, or rejected",
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Application cannot transition from {application['status']} to {status_value}",
             )
     else:
         raise HTTPException(
