@@ -374,6 +374,19 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/settings"].map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={
+                      <ProtectedRoute>
+                        <RoleRoute allowedRoles={["investor"]}>
+                          <InvestorDashboardPage />
+                        </RoleRoute>
+                      </ProtectedRoute>
+                    }
+                  />
+                ))}
                 <Route
                   path="/investor/profile"
                   element={
