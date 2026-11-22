@@ -97,6 +97,8 @@ class JobApplicationResponse(JobApplicationBase):
     id: int
     job_posting_id: int
     applicant_id: int
+    applicant_name: Optional[str] = None
+    applicant_profile: Optional[dict] = None
     status: str
     applied_at: datetime
     created_at: datetime
