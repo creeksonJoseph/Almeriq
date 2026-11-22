@@ -34,6 +34,10 @@ class InvestorProfileResponse(BaseModel):
     time_commitment: Optional[str] = None
     contact_preference: Optional[str] = None
     contact_formats: list[str] = Field(default_factory=list)
+    preferred_payment_methods: list[str] = Field(default_factory=lambda: ["visa"])
+    notify_deal_updates: bool = True
+    notify_valuation_changes: bool = True
+    notify_messages: bool = True
 
 
 class StartupPitchResponse(BaseModel):
@@ -75,6 +79,10 @@ class InvestorProfileUpdateRequest(BaseModel):
     time_commitment: Optional[str] = Field(default=None, max_length=100)
     contact_preference: Optional[str] = Field(default=None, max_length=100)
     contact_formats: Optional[list[str]] = Field(default=None, max_length=10)
+    preferred_payment_methods: Optional[list[str]] = Field(default=None, max_length=4)
+    notify_deal_updates: Optional[bool] = None
+    notify_valuation_changes: Optional[bool] = None
+    notify_messages: Optional[bool] = None
 
     @field_validator("verification_url")
     @classmethod
