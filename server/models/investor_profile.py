@@ -28,6 +28,7 @@ class InvestorProfile(Base):
     track_record: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     value_add: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     accreditation_status: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    target_return_percent: Mapped[Optional[float]] = mapped_column(Numeric(7, 4), nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
@@ -49,6 +50,6 @@ class InvestorProfile(Base):
             "check_size_min": self.check_size_min, "check_size_max": self.check_size_max,
             "lead_follow_preference": self.lead_follow_preference,
             "track_record": self.track_record, "value_add": self.value_add,
-            "accreditation_status": self.accreditation_status, "verified": self.verified,
+            "accreditation_status": self.accreditation_status, "target_return_percent": self.target_return_percent, "verified": self.verified,
             "created_at": self.created_at, "updated_at": self.updated_at,
         }
