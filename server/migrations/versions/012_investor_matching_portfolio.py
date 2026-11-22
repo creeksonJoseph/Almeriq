@@ -22,6 +22,15 @@ def upgrade() -> None:
         sa.Column("value_add", sa.Text(), nullable=True),
         sa.Column("accreditation_status", sa.Text(), nullable=True),
         sa.Column("target_return_percent", sa.Numeric(7, 4), nullable=True),
+        sa.Column("years_investing", sa.Integer(), nullable=True),
+        sa.Column("verification_url", sa.Text(), nullable=True),
+        sa.Column("notable_investments", sa.Text(), nullable=True),
+        sa.Column("companies_backed", sa.Integer(), nullable=True),
+        sa.Column("exits", sa.Integer(), nullable=True),
+        sa.Column("assets_under_management", sa.Text(), nullable=True),
+        sa.Column("time_commitment", sa.Text(), nullable=True),
+        sa.Column("contact_preference", sa.Text(), nullable=True),
+        sa.Column("contact_formats_json", sa.Text(), nullable=False, server_default="[]"),
     ]
     for column in investor_columns:
         op.add_column("investor_profiles", column)
@@ -55,5 +64,5 @@ def downgrade() -> None:
         op.drop_column("investments", name)
     for name in ("documents_json", "team_summary", "traction", "financials_url", "pitch_deck_url", "website_url", "target_check_size", "location"):
         op.drop_column("startup_pitches", name)
-    for name in ("target_return_percent", "accreditation_status", "value_add", "track_record", "lead_follow_preference", "check_size_max", "check_size_min", "geographies_json", "preferred_stages_json", "preferred_sectors_json", "investor_type"):
+    for name in ("contact_formats_json", "contact_preference", "time_commitment", "assets_under_management", "exits", "companies_backed", "notable_investments", "verification_url", "years_investing", "target_return_percent", "accreditation_status", "value_add", "track_record", "lead_follow_preference", "check_size_max", "check_size_min", "geographies_json", "preferred_stages_json", "preferred_sectors_json", "investor_type"):
         op.drop_column("investor_profiles", name)
