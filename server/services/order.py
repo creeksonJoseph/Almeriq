@@ -183,7 +183,6 @@ async def update_order_status(
             note=f"Order status updated to {new_status}",
             session=session,
         )
-    deal = await deal_repo.get_deal_by_order_id(order["id"], session=session)
     await notification_repo.create_notification(
         user_id=order["client_id"],
         type="order",
