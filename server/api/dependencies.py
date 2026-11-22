@@ -88,3 +88,28 @@ async def get_current_provider_profile(
             detail="Provider profile not found. Complete provider onboarding first.",
         )
     return profile
+
+
+
+async def get_current_job_owner(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    """Resolve the authenticated founder or provider as a job-posting owner."""
+    role = current_user.get("role")
+    if role == "founder":
+        return {"provider_id": None, "founder_user_id": int(current_user["id"])}
+    if role == "INFRASTRUCTURE_PROVIDER":
+        profile = await provider_repo.get_provider_profile_by_user_id(
+            current_user["id"], session=db
+        )
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Provider profile not found. Complete provider onboarding first.",
+            )
+        return {"provider_id": int(profile["id"]), "founder_user_id": None}
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Founder or infrastructure provider account required.",
+    )
