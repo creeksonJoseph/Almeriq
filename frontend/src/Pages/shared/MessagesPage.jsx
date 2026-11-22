@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Send, ChevronLeft, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
-import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
+import { Send, ChevronLeft, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
+import { Button, Card, Input, Pill, Avatar, SkeletonText } from "../../components/ui";
 import { listConversationsApi, listMessagesApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -15,6 +15,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [error, setError] = useState("");
 
   const messageForm = useForm({ defaultValues: { content: "" } });
   const messagesEndRef = useRef(null);
@@ -37,7 +38,7 @@ export default function MessagesPage() {
         const requestedConversation = normalized.find(conv => conv.id === requestedId);
         if (requestedConversation) await openConversation(requestedConversation);
       } catch (e) {
-        console.error("Failed to load conversations", e);
+        setError(e.response?.data?.detail || e.message || "Failed to load conversations.");
       } finally {
         setLoading(false);
       }
@@ -60,7 +61,7 @@ export default function MessagesPage() {
       if (conversation.unread > 0) await markMessagesReadApi(conversation.id);
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, unread: 0 } : c));
     } catch (e) {
-      console.error("Failed to load messages", e);
+      setError(e.response?.data?.detail || e.message || "Failed to load messages.");
     }
   };
 
@@ -71,13 +72,14 @@ export default function MessagesPage() {
     if (!data.content.trim()) return;
     setSending(true);
     try {
+      setError("");
       const res = await sendMessageApi(activeConversation.id, data.content);
       const message = res.data || res.message || res;
       setMessages(prev => [...prev, { ...message, content: message.content || message.body || data.content, own: true, time: message.time || message.created_at || "now" }]);
       messageForm.reset();
       setConversations(prev => prev.map(c => c.id === activeConversation.id ? { ...c, lastMessage: data.content, time: "now" } : c));
     } catch (e) {
-      console.error("Failed to send message", e);
+      setError(e.response?.data?.detail || e.message || "Failed to send message.");
     } finally {
       setSending(false);
     }
@@ -103,7 +105,7 @@ export default function MessagesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-border shrink-0">
         <div>
           <h1 className="font-serif text-xl font-semibold text-text">Messages</h1>
-          <p className="text-sm text-white/70">Conversations with providers and clients</p>
+          <p className="text-sm text-white/70">Conversations across your Almeriq workspace</p>
         </div>
         <div className="flex items-center gap-2">
           {totalUnread > 0 && (
@@ -111,6 +113,8 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
+
+      {error && <p role="alert" className="mx-4 mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
 
       {/* Conversation List + Chat View */}
       <div className="flex-1 flex overflow-hidden">
@@ -178,7 +182,6 @@ export default function MessagesPage() {
 }
 
 function ConversationItem({ conversation, active, onClick }) {
-  const avatarText = conversation.otherParty?.name?.split(' ').map(w => w[0]).join('') || "AD";
   return (
     <button
       onClick={onClick}
