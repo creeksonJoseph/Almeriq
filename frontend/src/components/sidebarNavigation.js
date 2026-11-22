@@ -15,6 +15,7 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
   { key: "hiring", label: "Hiring", path: "/jobs/manage", icon: Building2 },
   { key: "fundraising", label: "Fundraising", path: "/founder/pitches", icon: TrendingUp },
+  { key: "experts", label: "Find Experts", path: "/founder/experts", icon: UserRound },
 ];
 
 export const JOB_SEEKER_NAV = [
@@ -32,6 +33,7 @@ export const INVESTOR_NAV = [
 export const EXPERT_NAV = [
   { key: "expert-dashboard", label: "Expert Dashboard", path: "/dashboard", icon: ShieldCheck },
   { key: "expert-profile", label: "Expert Profile", path: "/expert/profile", icon: UserRound },
+  { key: "expert-requests", label: "Advisory Requests", path: "/dashboard", icon: Building2 },
 ];
 
 export const PROVIDER_NAV = [
