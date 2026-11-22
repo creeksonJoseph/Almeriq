@@ -371,6 +371,16 @@ function App() {
                 />
 
                 <Route
+                  path="/jobs/manage/new"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["founder", "INFRASTRUCTURE_PROVIDER"]}>
+                        <EmployerJobsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/jobs/manage"
                   element={
                     <ProtectedRoute>
