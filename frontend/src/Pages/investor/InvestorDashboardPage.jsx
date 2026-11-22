@@ -35,6 +35,7 @@ export default function InvestorDashboardPage() {
         listInvestorPortfolioApi(),
       ]);
       setProfile(profileResult ? { preferred_payment_methods: ["visa"], notify_deal_updates: true, notify_valuation_changes: true, notify_messages: true, ...profileResult } : null);
+      setPortfolioForm((current) => ({ ...current, payment_method: profileResult?.preferred_payment_methods?.[0] || "visa" }));
       setStartups(startupResult?.items || []);
       setRequests(requestResult?.items || []);
     } catch (err) {
