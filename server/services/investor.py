@@ -147,3 +147,16 @@ async def list_all_pitches(
     )
     total = await pitch_repo.count_startup_pitches(session=session)
     return {"items": items, "total": total}
+
+
+async def upsert_investor_profile(
+    user_id: int,
+    session: AsyncSession | None = None,
+    **values,
+) -> dict:
+    """Create or update the authenticated investor's public profile."""
+    return await profile_repo.upsert_investor_profile(
+        user_id=user_id,
+        session=session,
+        **values,
+    )
