@@ -301,6 +301,8 @@ async def update_investor_portfolio(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
     if item["status"] not in {"accepted", "in_discussion", "invested"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Record an investment only after the founder accepts or opens discussion")
+    if not values.get("payment_method") or not values.get("signature_data"):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A demo payment method and drawn signature are required to confirm this deal record")
     was_invested = item["status"] == "invested"
     updated = await investment_repo.update_investor_portfolio(investment_id, investor_id, values, session=session)
     if not updated:
