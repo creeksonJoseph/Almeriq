@@ -38,6 +38,10 @@ class InvestorProfile(Base):
     time_commitment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     contact_preference: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     contact_formats_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="[]")
+    preferred_payment_methods_json: Mapped[str] = mapped_column(Text, nullable=False, default='["visa"]', server_default='["visa"]')
+    notify_deal_updates: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
+    notify_valuation_changes: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
+    notify_messages: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
@@ -64,6 +68,10 @@ class InvestorProfile(Base):
             "notable_investments": self.notable_investments, "companies_backed": self.companies_backed,
             "exits": self.exits, "assets_under_management": self.assets_under_management,
             "time_commitment": self.time_commitment, "contact_preference": self.contact_preference,
-            "contact_formats": decode(self.contact_formats_json), "verified": self.verified,
+            "contact_formats": decode(self.contact_formats_json),
+            "preferred_payment_methods": decode(self.preferred_payment_methods_json),
+            "notify_deal_updates": self.notify_deal_updates,
+            "notify_valuation_changes": self.notify_valuation_changes,
+            "notify_messages": self.notify_messages, "verified": self.verified,
             "created_at": self.created_at, "updated_at": self.updated_at,
         }
