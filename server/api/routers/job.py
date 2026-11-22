@@ -191,7 +191,7 @@ async def update_my_application(
     response.headers["Cache-Control"] = "no-store"
     return await svc.update_application_status(
         application_id=application_id,
-        applicant_id=current_user["id"],
+        applicant_id=applicant_id,
         status_value=body.status,
         session=db,
     )
