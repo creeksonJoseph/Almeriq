@@ -14,6 +14,7 @@ const EMPTY_JOB = { title: "", description: "", location: "", role_type: "full_t
 export default function EmployerJobsPage() {
   const [jobs, setJobs] = useState([]);
   const [form, setForm] = useState(EMPTY_JOB);
+  const [editingJobId, setEditingJobId] = useState(null);
   const [applications, setApplications] = useState({});
   const [expandedJob, setExpandedJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,7 @@ export default function EmployerJobsPage() {
       return;
     }
     try {
-      await createJobApi({
+      const payload = {
         title: form.title.trim(),
         description: form.description.trim(),
         location: form.location.trim() || null,
@@ -58,16 +59,42 @@ export default function EmployerJobsPage() {
         requirements: form.requirements.trim() || null,
         salary_min: min,
         salary_max: max,
-        is_active: true,
-      });
+      };
+      if (editingJobId) {
+        await updateJobApi(editingJobId, payload);
+        setNotice("Your job posting has been updated.");
+      } else {
+        await createJobApi({ ...payload, is_active: true });
+        setNotice("Your job posting is live.");
+      }
       setForm(EMPTY_JOB);
-      setNotice("Your job posting is live.");
+      setEditingJobId(null);
       await loadJobs();
     } catch (requestError) {
       setError(requestError.message || "Unable to publish this job.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const editJob = (job) => {
+    setEditingJobId(job.id);
+    setForm({
+      title: job.title || "",
+      description: job.description || "",
+      location: job.location || "",
+      role_type: job.role_type || "full_time",
+      requirements: job.requirements || "",
+      salary_min: job.salary_min ?? "",
+      salary_max: job.salary_max ?? "",
+    });
+    setError(""); setNotice("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingJobId(null);
+    setForm(EMPTY_JOB);
   };
 
   const toggleJob = async (job) => {
@@ -134,7 +161,7 @@ export default function EmployerJobsPage() {
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
 
         <Card className="p-6">
-          <h2 className="font-serif text-xl">Create a job posting</h2>
+          <h2 className="font-serif text-xl">{editingJobId ? "Edit job posting" : "Create a job posting"}</h2>
           <form onSubmit={submitJob} className="mt-5 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2 text-sm"><span>Job title</span><Input name="title" required maxLength={200} value={form.title} onChange={updateField} placeholder="e.g. Backend Engineer" /></label>
@@ -149,7 +176,7 @@ export default function EmployerJobsPage() {
               <label className="space-y-2 text-sm"><span>Minimum salary</span><Input name="salary_min" type="number" min="0" step="0.01" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
               <label className="space-y-2 text-sm"><span>Maximum salary</span><Input name="salary_max" type="number" min="0" step="0.01" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
             </div>
-            <div className="flex justify-end"><Button type="submit" disabled={saving || !form.title.trim() || !form.description.trim()}>{saving ? "Publishing…" : "Publish job"}</Button></div>
+            <div className="flex justify-end gap-2">{editingJobId && <Button type="button" variant="ghost" onClick={cancelEdit}>Cancel edit</Button>}<Button type="submit" disabled={saving || !form.title.trim() || !form.description.trim()}>{saving ? "Saving…" : editingJobId ? "Save changes" : "Publish job"}</Button></div>
           </form>
         </Card>
 
@@ -162,7 +189,7 @@ export default function EmployerJobsPage() {
                 <Card key={job.id} className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div><div className="flex flex-wrap items-center gap-2"><h3 className="text-lg font-semibold">{job.title}</h3><span className={`rounded-full border px-2.5 py-1 text-xs ${job.is_active ? "border-emerald-500/30 text-emerald-200" : "border-white/15 text-white/45"}`}>{job.is_active ? "Open" : "Closed"}</span></div><p className="mt-1 text-sm text-white/50">{job.location || "Location not specified"} · {job.role_type?.replaceAll("_", " ")}</p><p className="mt-3 line-clamp-2 text-sm text-white/65">{job.description}</p></div>
-                    <div className="flex flex-wrap gap-2"><Button size="sm" variant="ghost" onClick={() => toggleJob(job)}>{job.is_active ? "Close role" : "Reopen role"}</Button><Button size="sm" variant="ghost" onClick={() => toggleApplications(job.id)}>Applications</Button><Button size="sm" variant="ghost" onClick={() => removeJob(job)}>Delete</Button></div>
+                    <div className="flex flex-wrap gap-2"><Button size="sm" variant="ghost" onClick={() => editJob(job)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => toggleJob(job)}>{job.is_active ? "Close role" : "Reopen role"}</Button><Button size="sm" variant="ghost" onClick={() => toggleApplications(job.id)}>Applications</Button><Button size="sm" variant="ghost" onClick={() => removeJob(job)}>Delete</Button></div>
                   </div>
                   {expandedJob === job.id && <div className="mt-5 border-t border-border pt-4"><h4 className="mb-3 text-sm font-semibold">Applications</h4>{!applications[job.id] ? <p className="text-sm text-white/45">Loading applications…</p> : applications[job.id].length === 0 ? <p className="text-sm text-white/45">No applications yet.</p> : <div className="space-y-3">{applications[job.id].map((application) => <div key={application.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"><div><p className="text-sm font-medium">{application.applicant_name || `Applicant #${application.applicant_id}`}</p><p className="mt-1 text-xs text-white/45">Status: {application.status}</p>{application.applicant_profile?.headline && <p className="mt-1 text-xs text-gold">{application.applicant_profile.headline}</p>}{application.applicant_profile?.bio && <p className="mt-2 max-w-2xl text-sm text-white/60">{application.applicant_profile.bio}</p>}{application.applicant_profile?.skills?.length > 0 && <p className="mt-2 text-xs text-white/50">Skills: {application.applicant_profile.skills.join(", ")}</p>}{application.cover_letter && <p className="mt-2 max-w-2xl text-sm text-white/60">{application.cover_letter}</p>}{(application.resume_url || application.applicant_profile?.resume_url) && <a href={application.resume_url || application.applicant_profile.resume_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-gold underline">View resume</a>}{application.applicant_profile?.portfolio_url && <a href={application.applicant_profile.portfolio_url} target="_blank" rel="noreferrer" className="ml-3 mt-2 inline-block text-xs text-gold underline">Portfolio</a>}</div><div className="flex gap-2">{application.status === "pending" && <Button size="sm" variant="ghost" onClick={() => reviewApplication(job.id, application.id, "reviewed")}>Mark reviewed</Button>}{["pending", "reviewed"].includes(application.status) && <Button size="sm" onClick={() => reviewApplication(job.id, application.id, "accepted")}>Accept</Button>}{["pending", "reviewed"].includes(application.status) && <Button size="sm" variant="ghost" onClick={() => reviewApplication(job.id, application.id, "rejected")}>Reject</Button>}</div></div>)}</div>}</div>}
                 </Card>
