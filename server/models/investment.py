@@ -21,6 +21,9 @@ class Investment(Base):
     investment_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     risk_level: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    payment_method: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    signature_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    deal_confirmed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -30,5 +33,7 @@ class Investment(Base):
             "amount": self.amount, "status": self.status,
             "investment_amount": self.investment_amount, "current_value": self.current_value,
             "ownership_percent": self.ownership_percent, "investment_date": self.investment_date,
-            "notes": self.notes, "risk_level": self.risk_level, "created_at": self.created_at, "updated_at": self.updated_at,
+            "notes": self.notes, "risk_level": self.risk_level, "payment_method": self.payment_method,
+            "signature_data": self.signature_data, "deal_confirmed_at": self.deal_confirmed_at,
+            "created_at": self.created_at, "updated_at": self.updated_at,
         }
