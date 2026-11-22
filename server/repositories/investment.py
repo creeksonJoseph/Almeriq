@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
@@ -75,10 +76,12 @@ async def update_investor_portfolio(
     ))
     if item is None:
         return None
-    for key in ("investment_amount", "current_value", "ownership_percent", "investment_date", "notes", "risk_level"):
+    for key in ("investment_amount", "current_value", "ownership_percent", "investment_date", "notes", "risk_level", "payment_method", "signature_data", "deal_confirmed_at"):
         if key in values:
             setattr(item, key, values[key])
     if values.get("investment_amount") is not None:
         item.status = "invested"
+    if values.get("signature_data") and values.get("payment_method"):
+        item.deal_confirmed_at = datetime.now(timezone.utc)
     await session.flush()
     return item.to_dict()
