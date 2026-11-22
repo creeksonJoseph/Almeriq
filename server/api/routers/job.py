@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
-from api.dependencies import get_current_user, get_current_provider_profile
+from api.dependencies import get_current_user, get_current_job_owner
 from schemas.job import (
     JobApplicationCreateRequest,
     JobApplicationListResponse,
@@ -59,13 +59,13 @@ async def get_job(
 async def create_job(
     response: Response,
     body: JobPostingCreateRequest,
-    profile: dict = Depends(get_current_provider_profile),
+    owner: dict = Depends(get_current_job_owner),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Create a new job posting for the current provider."""
     response.headers["Cache-Control"] = "no-store"
     return await svc.create_job_posting(
-        provider_id=profile["id"],
+        **owner,
         session=db,
         **body.model_dump(),
     )
@@ -84,7 +84,7 @@ async def update_job(
     data = body.model_dump(exclude_unset=True)
     return await svc.update_job_posting(
         job_id=job_id,
-        provider_id=profile["id"],
+        **owner,
         session=db,
         **data,
     )
@@ -99,7 +99,7 @@ async def delete_job(
 ) -> None:
     """Delete a job posting owned by the current provider."""
     response.headers["Cache-Control"] = "no-store"
-    await svc.delete_job_posting(job_id=job_id, provider_id=profile["id"], session=db)
+    await svc.delete_job_posting(job_id=job_id, **owner, session=db)
 
 
 # ── Job applications ────────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ async def list_job_applications(
     """List applications for a job owned by the authenticated provider."""
     response.headers["Cache-Control"] = "private, max-age=30"
     posting = await svc.get_job_posting(job_id=job_id, session=db)
-    if posting["provider_id"] != profile["id"]:
+    if posting["provider_id"] != owner["provider_id"] or posting["founder_user_id"] != owner["founder_user_id"]:
         from fastapi import HTTPException
         raise HTTPException(status_code=403, detail="Not the owner of this job posting")
     items = await svc.list_applications_for_job(job_posting_id=job_id, session=db)
@@ -205,7 +205,7 @@ async def review_job_application(
     return await svc.update_application_status(
         application_id=application_id,
         job_posting_id=job_id,
-        provider_id=profile["id"],
+        **owner,
         status_value=body.status,
         session=db,
     )
