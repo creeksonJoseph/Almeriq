@@ -107,6 +107,7 @@ export {
   sendMessageApi,
   markMessagesReadApi,
   startAdvisoryConversationApi,
+  startInvestmentConversationApi,
 } from "./api/conversations";
 
 export {
