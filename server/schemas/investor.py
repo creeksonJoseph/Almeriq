@@ -30,3 +30,12 @@ class InvestorProfileUpdateRequest(BaseModel):
     check_size: Optional[str] = Field(default=None, max_length=100)
     location: Optional[str] = Field(default=None, max_length=200)
     about: Optional[str] = Field(default=None, max_length=3000)
+
+
+class InvestmentRequestCreate(BaseModel):
+    pitch_id: int = Field(gt=0)
+    amount: Optional[float] = Field(default=None, ge=0)
+
+
+class InvestmentRequestStatusUpdate(BaseModel):
+    status: str
