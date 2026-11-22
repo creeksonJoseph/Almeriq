@@ -20,13 +20,6 @@ const PAYMENT_METHODS = [
   { id: "mpesa", name: "M-Pesa", icon: Smartphone, details: "Demo selection only — no charge" },
 ];
 
-const AMOUNT_PRESETS = [
-  { value: "1000.00", label: "$1,000" },
-  { value: "5000.00", label: "$5,000", default: true },
-  { value: "14500.00", label: "$14,500" },
-  { value: "custom", label: "Custom" },
-];
-
 export default function CheckoutPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
@@ -40,10 +33,9 @@ export default function CheckoutPage() {
     const [, setCanvasRef] = useState(null);
 
   const paymentForm = useForm({ defaultValues: { method: "visa" } });
-  const amountForm = useForm({ defaultValues: { amount: "5000.00", customAmount: "" } });
+  const amountForm = useForm({ defaultValues: { amount: "0.00" } });
   const watchMethod = paymentForm.watch("method");
   const watchAmount = amountForm.watch("amount");
-  const watchCustomAmount = amountForm.watch("customAmount");
 
   useEffect(() => {
     async function loadData() {
@@ -66,10 +58,9 @@ export default function CheckoutPage() {
   const handleNext = () => {
     setActionError("");
     if (currentStep === 1) {
-      const rawAmount = watchAmount === "custom" ? watchCustomAmount : watchAmount;
-      const parsedAmount = Number(rawAmount);
-      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-        setActionError("Enter an amount greater than zero to continue.");
+      const parsedAmount = Number(watchAmount);
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0 || Math.round(parsedAmount * 100) !== Math.round(Number(deal?.amount || 0) * 100)) {
+        setActionError("The amount is fixed by the marketplace listing and cannot be changed.");
         return;
       }
     }
@@ -84,7 +75,7 @@ export default function CheckoutPage() {
     setActionLoading(true);
     setActionError("");
     try {
-      const amount = Number(watchAmount === "custom" ? watchCustomAmount : watchAmount);
+      const amount = Number(watchAmount);
       if (!deal?.id || !signature) throw new Error("A deal and signature are required to complete checkout.");
       if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter an amount greater than zero.");
       const updatedDeal = await signDealApi(deal.id, signature, { payment_method: watchMethod, amount });
@@ -98,7 +89,7 @@ export default function CheckoutPage() {
   };
 
   const formatAmount = (val) => {
-    const num = parseFloat(val.replace(/,/g, "")) || 0;
+    const num = Number(String(val ?? "0").replace(/,/g, "")) || 0;
     return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
@@ -191,8 +182,7 @@ export default function CheckoutPage() {
           {/* Step 2: Amount */}
           {currentStep === 1 && (
             <AmountStep
-              form={amountForm}
-              presets={AMOUNT_PRESETS}
+              amount={deal.amount}
               onBack={handleBack}
               onNext={handleNext}
               loading={actionLoading}
@@ -206,7 +196,7 @@ export default function CheckoutPage() {
               providerName={providerName}
               assetName={assetName}
               paymentMethod={PAYMENT_METHODS.find(m => m.id === watchMethod) || PAYMENT_METHODS[0]}
-              amount={watchAmount === "custom" ? watchCustomAmount : watchAmount}
+              amount={watchAmount}
               formatAmount={formatAmount}
               onBack={handleBack}
               onNext={handleNext}
@@ -281,73 +271,32 @@ function PaymentStep({ methods, selectedMethod, onSelect, onNext, loading }) {
   );
 }
 
-function AmountStep({ form, presets, onBack, onNext, loading, formatAmount }) {
+function AmountStep({ amount, onBack, onNext, loading, formatAmount }) {
   return (
     <div className="space-y-6" id="step-frame-2">
       <div className="flex items-center justify-between">
-        <span className="text-label-caps text-white/60 tracking-widest">ENTER AMOUNT (USD)</span>
-        <span className="text-label-caps text-gold">DEAL AMOUNT</span>
+        <span className="text-label-caps text-white/60 tracking-widest">LISTING PRICE</span>
+        <span className="text-label-caps text-gold">FIXED AMOUNT</span>
       </div>
-      <div className="flex flex-col gap-2">
-        <div className="relative flex items-center w-full">
-          <span className="absolute left-5 font-serif text-2xl text-gold">$</span>
-          <input
-            type="text"
-            className="w-full h-20 bg-surface-2 border-2 border-gold rounded-xl pl-12 pr-6 font-mono text-3xl font-bold text-text placeholder:text-white/40 focus:outline-none"
-            placeholder="0.00"
-            value={formatAmount(form.watch("customAmount") || form.watch("amount"))}
-            onChange={e => {
-              const val = e.target.value.replace(/[^0-9.]/g, "");
-              if (form.watch("amount") === "custom") form.setValue("customAmount", val);
-              else form.setValue("amount", val);
-            }}
-          />
-        </div>
-        <div className="flex items-center justify-between px-1 text-label-caps text-[10px] text-white/60">
-          <span>MIN: $500.00</span>
-          <span>ESCROW CAP: $250,000.00</span>
-        </div>
+      <div className="rounded-xl border-2 border-gold bg-surface-2 px-5 py-6 text-center">
+        <p className="font-mono text-3xl font-bold text-gold">${formatAmount(amount)}</p>
+        <p className="mt-2 text-xs text-white/50">Monthly lease amount set by the provider's listing</p>
       </div>
-      <div className="grid grid-cols-4 gap-2">
-        {presets.map(preset => (
-          <button
-            key={preset.value}
-            type="button"
-            onClick={() => {
-              if (preset.value === "custom") {
-                form.setValue("amount", "custom");
-                form.setValue("customAmount", "");
-                setTimeout(() => document.querySelector('input[placeholder="0.00"]')?.focus(), 0);
-              } else {
-                form.setValue("amount", preset.value);
-                form.setValue("customAmount", "");
-              }
-            }}
-            className={`h-10 rounded-lg font-mono text-sm transition-all ${
-              (form.watch("amount") === preset.value || (preset.value === "custom" && form.watch("amount") === "custom"))
-                ? "bg-gold/15 border-2 border-gold text-gold font-bold"
-                : "bg-surface-2 border-border text-text hover:border-gold"
-            }`}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
-      <div className="p-4 rounded-xl bg-surface-2 border border-border flex items-start gap-3">
-        <Shield className="w-5 h-5 text-gold mt-0.5 shrink-0" />
+      <div className="rounded-xl border border-border bg-surface-2 p-4 flex items-start gap-3">
+        <Shield className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
         <div className="flex flex-col gap-1">
-          <span className="font-serif text-sm font-semibold text-text">ALIMERIQ Multi-Sig Protocol</span>
-          <p className="text-xs font-mono text-white/70 leading-relaxed">
-            This is a simulated checkout. No funds are collected or held. The selected payment method is recorded for the deal.
+          <span className="font-serif text-sm font-semibold text-text">Simulated checkout</span>
+          <p className="text-xs font-mono leading-relaxed text-white/70">
+            The listing price cannot be changed here. No funds are collected or held; the payment method and signature are recorded for this demo deal only.
           </p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 pt-2">
         <Button variant="ghost" className="h-12" onClick={onBack} disabled={loading}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back
         </Button>
         <Button className="h-12" onClick={onNext} disabled={loading}>
-          Continue <ArrowRight className="w-4 h-4" />
+          Continue <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
