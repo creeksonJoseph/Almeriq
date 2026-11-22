@@ -14,6 +14,13 @@ async def create_startup_pitch(
     sector: str | None = None,
     stage: str | None = None,
     ask_amount: float | None = None,
+    location: str | None = None,
+    website_url: str | None = None,
+    pitch_deck_url: str | None = None,
+    financials_url: str | None = None,
+    traction: str | None = None,
+    team_summary: str | None = None,
+    documents: list[dict] | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
     pitch = StartupPitch(
@@ -23,6 +30,13 @@ async def create_startup_pitch(
         sector=sector,
         stage=stage,
         ask_amount=ask_amount,
+        location=location,
+        website_url=website_url,
+        pitch_deck_url=pitch_deck_url,
+        financials_url=financials_url,
+        traction=traction,
+        team_summary=team_summary,
+        documents_json=__import__("json").dumps(documents or []),
     )
     if session is not None:
         session.add(pitch)
@@ -90,8 +104,8 @@ async def update_startup_pitch(
     session: AsyncSession | None = None,
     **values,
 ) -> dict | None:
-    allowed = {"title", "summary", "sector", "stage", "ask_amount"}
-    updates = {key: value for key, value in values.items() if key in allowed}
+    allowed = {"title", "summary", "sector", "stage", "ask_amount", "location", "website_url", "pitch_deck_url", "financials_url", "traction", "team_summary", "documents"}
+    updates = {("documents_json" if key == "documents" else key): (__import__("json").dumps(value or []) if key == "documents" else value) for key, value in values.items() if key in allowed}
     if not updates:
         return await get_startup_pitch(pitch_id, founder_id, session)
     stmt = (
