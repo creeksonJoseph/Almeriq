@@ -25,6 +25,15 @@ class InvestorProfileResponse(BaseModel):
     accreditation_status: Optional[str] = None
     target_return_percent: Optional[float] = None
     verified: bool = False
+    years_investing: Optional[int] = None
+    verification_url: Optional[str] = None
+    notable_investments: Optional[str] = None
+    companies_backed: Optional[int] = None
+    exits: Optional[int] = None
+    assets_under_management: Optional[str] = None
+    time_commitment: Optional[str] = None
+    contact_preference: Optional[str] = None
+    contact_formats: list[str] = Field(default_factory=list)
 
 
 class StartupPitchResponse(BaseModel):
@@ -57,6 +66,15 @@ class InvestorProfileUpdateRequest(BaseModel):
     value_add: Optional[str] = Field(default=None, max_length=3000)
     accreditation_status: Optional[str] = Field(default=None, max_length=80)
     target_return_percent: Optional[float] = Field(default=None, ge=-100, le=1000)
+    years_investing: Optional[int] = Field(default=None, ge=0, le=100)
+    verification_url: Optional[str] = Field(default=None, max_length=1000)
+    notable_investments: Optional[str] = Field(default=None, max_length=3000)
+    companies_backed: Optional[int] = Field(default=None, ge=0, le=100000)
+    exits: Optional[int] = Field(default=None, ge=0, le=100000)
+    assets_under_management: Optional[str] = Field(default=None, max_length=120)
+    time_commitment: Optional[str] = Field(default=None, max_length=100)
+    contact_preference: Optional[str] = Field(default=None, max_length=100)
+    contact_formats: Optional[list[str]] = Field(default=None, max_length=10)
 
     @field_validator("verification_url")
     @classmethod
