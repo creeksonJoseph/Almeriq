@@ -275,7 +275,7 @@ export default function InvestorDashboardPage() {
         {pageView === "deals" && (
         <section className="space-y-3">
           <div><h2 className="font-serif text-xl">Your deals & conversations</h2><p className="mt-1 text-sm text-white/50">Each request becomes a shared workspace once the founder responds.</p></div>
-          {requests.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">You haven't expressed interest in a startup yet.</Card> : requests.map((request) => {
+          {requests.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">You haven't expressed interest in a startup yet.</Card> : requests.filter((request) => !params.dealId || request.id === Number(params.dealId)).map((request) => {
             const pitch = request.pitch || startups.find((item) => item.id === request.pitch_id);
             const confirmed = Boolean(request.deal_confirmed_at && request.signature_data);
             return <Card key={request.id} className="space-y-3 border border-white/10 bg-white/2 p-4">
