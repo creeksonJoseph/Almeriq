@@ -31,6 +31,7 @@ export const FOUNDER_STUDIO_NAV = [
 export const JOB_SEEKER_NAV = [
   { key: "jobseeker-dashboard", label: "Job Seeker Dashboard", path: "/job-seeker/dashboard", icon: Home },
   { key: "jobseeker-jobs", label: "Find Jobs", path: "/job-seeker/jobs", icon: Building2 },
+  { key: "jobseeker-applications", label: "My Applications", path: "/job-seeker/applications", icon: BookOpen },
   { key: "jobseeker-setup", label: "My Profile", path: "/job-seeker/setup", icon: Settings },
   { key: "jobseeker-invitations", label: "Team Invitations", path: "/job-seeker/invitations", icon: Mail },
 ];
