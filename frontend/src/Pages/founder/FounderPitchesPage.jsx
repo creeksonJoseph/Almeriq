@@ -4,13 +4,14 @@ import { apiClient } from "../../lib/client";
 import { Button, Card, Input } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
 
-const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "" };
+const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
 
 export default function FounderPitchesPage() {
   const navigate = useNavigate();
   const [pitches, setPitches] = useState([]);
   const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
+  const [documentsText, setDocumentsText] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,7 +36,7 @@ export default function FounderPitchesPage() {
   useEffect(() => { load(); }, []);
 
   const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
-  const reset = () => { setForm(EMPTY); setEditingId(null); };
+  const reset = () => { setForm(EMPTY); setDocumentsText(""); setEditingId(null); };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -44,7 +45,18 @@ export default function FounderPitchesPage() {
     if (!form.title.trim() || (amount !== null && (!Number.isFinite(amount) || amount < 0))) {
       setError("Enter a pitch title and a valid non-negative funding ask."); setSaving(false); return;
     }
-    const payload = { title: form.title.trim(), summary: form.summary.trim() || null, sector: form.sector.trim() || null, stage: form.stage.trim() || null, ask_amount: amount };
+    const documents = documentsText.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+      const [title, ...urlParts] = line.split("|");
+      return { title: title.trim(), url: urlParts.join("|").trim() };
+    }).filter((item) => item.title && item.url);
+    const payload = {
+      title: form.title.trim(), summary: form.summary.trim() || null,
+      sector: form.sector.trim() || null, stage: form.stage.trim() || null, ask_amount: amount,
+      location: form.location.trim() || null, website_url: form.website_url.trim() || null,
+      pitch_deck_url: form.pitch_deck_url.trim() || null, financials_url: form.financials_url.trim() || null,
+      traction: form.traction.trim() || null, team_summary: form.team_summary.trim() || null,
+      documents,
+    };
     try {
       if (editingId) await apiClient.put(`/api/founder/pitches/${editingId}`, payload);
       else await apiClient.post("/api/founder/pitches", payload);
@@ -56,7 +68,8 @@ export default function FounderPitchesPage() {
 
   const edit = (pitch) => {
     setEditingId(pitch.id);
-    setForm({ title: pitch.title || "", summary: pitch.summary || "", sector: pitch.sector || "", stage: pitch.stage || "", ask_amount: pitch.ask_amount ?? "" });
+    setForm({ ...EMPTY, title: pitch.title || "", summary: pitch.summary || "", sector: pitch.sector || "", stage: pitch.stage || "", ask_amount: pitch.ask_amount ?? "", location: pitch.location || "", website_url: pitch.website_url || "", pitch_deck_url: pitch.pitch_deck_url || "", financials_url: pitch.financials_url || "", traction: pitch.traction || "", team_summary: pitch.team_summary || "" });
+    setDocumentsText((pitch.documents || []).map((item) => item.title + " | " + item.url).join("\n"));
     setNotice(""); setError("");
   };
 
@@ -105,8 +118,17 @@ export default function FounderPitchesPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block space-y-2"><span className="text-sm">Sector</span><Input name="sector" value={form.sector} onChange={update} placeholder="Fintech" /></label>
               <label className="block space-y-2"><span className="text-sm">Stage</span><Input name="stage" value={form.stage} onChange={update} placeholder="Pre-seed" /></label>
-              <label className="block space-y-2"><span className="text-sm">Funding ask</span><Input name="ask_amount" value={form.ask_amount} onChange={update} placeholder="Optional amount" /></label>
+              <label className="block space-y-2"><span className="text-sm">Funding ask</span><Input name="ask_amount" type="number" min="0" step="0.01" value={form.ask_amount} onChange={update} placeholder="Optional amount" /></label>
             </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block space-y-2"><span className="text-sm">Location / market</span><Input name="location" value={form.location} onChange={update} placeholder="Nairobi, Kenya / East Africa" /></label>
+              <label className="block space-y-2"><span className="text-sm">Website</span><Input name="website_url" value={form.website_url} onChange={update} placeholder="https://…" /></label>
+              <label className="block space-y-2"><span className="text-sm">Pitch deck URL</span><Input name="pitch_deck_url" value={form.pitch_deck_url} onChange={update} placeholder="https://…" /></label>
+              <label className="block space-y-2"><span className="text-sm">Financials / data room URL</span><Input name="financials_url" value={form.financials_url} onChange={update} placeholder="https://…" /></label>
+            </div>
+            <label className="block space-y-2"><span className="text-sm">Traction</span><textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
+            <label className="block space-y-2"><span className="text-sm">Team summary</span><textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
+            <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
             <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Update pitch" : "Publish pitch"}</Button></div>
           </form>
         </Card>
