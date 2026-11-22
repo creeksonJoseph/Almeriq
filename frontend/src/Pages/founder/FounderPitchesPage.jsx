@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "../../lib/client";
 import { Button, Card, Input } from "../../components/ui";
+import { startInvestmentConversationApi } from "../../lib/api/conversations";
 
 const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "" };
 
 export default function FounderPitchesPage() {
+  const navigate = useNavigate();
   const [pitches, setPitches] = useState([]);
   const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
@@ -55,6 +58,15 @@ export default function FounderPitchesPage() {
     setEditingId(pitch.id);
     setForm({ title: pitch.title || "", summary: pitch.summary || "", sector: pitch.sector || "", stage: pitch.stage || "", ask_amount: pitch.ask_amount ?? "" });
     setNotice(""); setError("");
+  };
+
+  const openConversation = async (requestId) => {
+    try {
+      const conversation = await startInvestmentConversationApi(requestId);
+      navigate(`/messages?conversation=${conversation.id}`);
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || "Unable to open this conversation.");
+    }
   };
 
   const updateRequest = async (requestId, status) => {
@@ -112,7 +124,7 @@ export default function FounderPitchesPage() {
             const pitch = pitches.find((item) => item.id === request.pitch_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">{request.investor_name || `Investor #${request.investor_id}`}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p><p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
-              {request.status === "pending" && <div className="flex gap-2"><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></div>}
+              <div className="flex flex-wrap gap-2">{request.status === "pending" && <><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></>}{["accepted", "in_discussion"].includes(request.status) && <Button size="sm" variant="ghost" onClick={() => openConversation(request.id)}>Message investor</Button>}</div>
             </Card>;
           })}
         </section>
