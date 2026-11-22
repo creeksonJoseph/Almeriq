@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import get_current_user
 from core.db import get_db
 from services import investor as svc
+from schemas.investor import InvestorProfileUpdateRequest
 
 router = APIRouter(prefix="/api", tags=["investor"])
 
@@ -26,6 +27,20 @@ async def get_profile(
 ):
     user_id = _require_role(current_user, "investor")
     return await svc.get_investor_profile(user_id=user_id, session=db)
+
+
+@router.put("/investor/profile")
+async def update_profile(
+    body: InvestorProfileUpdateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    user_id = _require_role(current_user, "investor")
+    return await svc.upsert_investor_profile(
+        user_id=user_id,
+        session=db,
+        **body.model_dump(exclude_unset=True),
+    )
 
 
 # Founder-owned startup pitches
@@ -109,6 +124,7 @@ async def delete_pitch(
     )
 
 
+@router.get("/investor/startups")
 @router.get("/investor/pitches")
 async def list_investor_pitches(
     response: Response,
