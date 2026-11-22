@@ -14,7 +14,6 @@ from schemas.job import (
     JobPostingListResponse,
     JobPostingResponse,
     JobPostingUpdateRequest,
-    JobSeekerProfileCreateRequest,
     JobSeekerProfileResponse,
     JobSeekerProfileUpdateRequest,
 )
