@@ -1,7 +1,7 @@
 """schemas/job.py - Pydantic models for the jobs domain."""
 from __future__ import annotations
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -121,6 +121,11 @@ class JobSeekerProfileBase(BaseModel):
     experience_years: Optional[int] = Field(default=None, ge=0)
     resume_url: Optional[str] = Field(default=None, max_length=500)
     portfolio_url: Optional[str] = Field(default=None, max_length=500)
+    experience: Optional[List[Dict[str, Any]]] = None
+    education: Optional[List[Dict[str, Any]]] = None
+    certifications: Optional[List[Dict[str, Any]]] = None
+    projects: Optional[List[Dict[str, Any]]] = None
+    preferences: Optional[Dict[str, Any]] = None
     is_active: bool = True
 
 
