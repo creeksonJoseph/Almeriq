@@ -7,6 +7,7 @@ from repositories import conversation as conversation_repo
 from repositories import message as message_repo
 from repositories import provider_profile as provider_repo
 from repositories import user as user_repo
+from repositories import advisory_request as advisory_repo
 
 logger = logging.getLogger(__name__)
 
@@ -76,3 +77,18 @@ async def mark_conversation_read(
     if not conversation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
     return await message_repo.mark_messages_read(conversation_id, user_id, session=session)
+
+
+async def start_advisory_conversation(
+    request_id: int,
+    user_id: int,
+    session: AsyncSession | None = None,
+) -> dict:
+    """Start a private conversation for an accepted advisory engagement."""
+    request = await advisory_repo.get_advisory_request(request_id, session=session)
+    if not request or user_id not in {request["founder_id"], request["expert_id"]}:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Advisory request not found")
+    if request["status"] not in {"accepted", "completed"}:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Messaging is available after the expert accepts the request")
+    other_id = request["expert_id"] if user_id == request["founder_id"] else request["founder_id"]
+    return await conversation_repo.get_or_create_conversation(user_id, other_id, session=session)
