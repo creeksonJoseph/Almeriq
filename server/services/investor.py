@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +8,6 @@ from repositories import investor_profile as profile_repo
 from repositories import startup_pitch as pitch_repo
 from repositories import notification as notification_repo
 
-logger = logging.getLogger(__name__)
 
 
 async def get_investor_profile(
