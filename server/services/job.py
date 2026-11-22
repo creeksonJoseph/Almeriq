@@ -231,23 +231,71 @@ async def list_applications_for_applicant(
 async def update_application_status(
     application_id: int,
     status_value: str,
+    applicant_id: int | None = None,
+    provider_id: int | None = None,
+    job_posting_id: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Update the status of a job application."""
-    if status_value not in VALID_STATUSES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"status must be one of: {', '.join(sorted(VALID_STATUSES))}",
-        )
-    application = await application_repo.update_application_status(
-        application_id, status_value, session=session
+    """Update an application only by its applicant (withdrawal) or job owner (review)."""
+    application = await application_repo.get_job_application_by_id(
+        application_id, session=session
     )
     if not application:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job application not found",
         )
-    return application
+
+    if applicant_id is not None:
+        if application["applicant_id"] != applicant_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not the owner of this application",
+            )
+        if status_value != "withdrawn":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Applicants may only withdraw their own applications",
+            )
+    elif provider_id is not None and job_posting_id is not None:
+        if application["job_posting_id"] != job_posting_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job application not found",
+            )
+        posting = await job_repo.get_job_posting_by_id(
+            job_posting_id, session=session
+        )
+        if not posting or posting["provider_id"] != provider_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not the owner of this job posting",
+            )
+        if status_value not in {"reviewed", "accepted", "rejected"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Employers may set status to reviewed, accepted, or rejected",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Application ownership is required",
+        )
+
+    if status_value not in VALID_STATUSES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"status must be one of: {', '.join(sorted(VALID_STATUSES))}",
+        )
+    updated = await application_repo.update_application_status(
+        application_id, status_value, session=session
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job application not found",
+        )
+    return updated
 
 
 # ── Job seeker profiles ─────────────────────────────────────────────────────
