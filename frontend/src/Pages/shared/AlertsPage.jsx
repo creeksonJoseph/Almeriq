@@ -40,16 +40,20 @@ export default function AlertsPage() {
     loadNotifications();
   }, []);
 
+  const filterTypes = { orders: "order", messages: "message", payments: "payment", system: "system" };
   const filteredNotifications = filter === "unread"
-    ? notifications.filter(n => !n.read)
-    : notifications;
+    ? notifications.filter((n) => !n.read)
+    : filter === "all"
+      ? notifications
+      : notifications.filter((n) => n.type === filterTypes[filter]);
 
   const handleMarkRead = async (id) => {
     try {
       await markNotificationReadApi(id);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setSelectedNotification((current) => current?.id === id ? { ...current, read: true } : current);
     } catch (e) {
-      console.error("Failed to mark read", e);
+      setError(e.response?.data?.detail || e.message || "Failed to mark notification as read.");
     }
   };
 
@@ -58,8 +62,9 @@ export default function AlertsPage() {
     try {
       await markAllNotificationsReadApi();
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setSelectedNotification((current) => current ? { ...current, read: true } : current);
     } catch (e) {
-      console.error("Failed to mark all read", e);
+      setError(e.response?.data?.detail || e.message || "Failed to mark notifications as read.");
     } finally {
       setMarkAllLoading(false);
     }
@@ -118,7 +123,7 @@ export default function AlertsPage() {
             {f.charAt(0).toUpperCase() + f.slice(1)}
             {f !== "all" && (
               <span className="px-1.5 py-0.2 rounded bg-surface text-[10px] font-mono">
-                {notifications.filter(n => f === "unread" ? !n.read : n.type === f).length}
+                {notifications.filter(n => f === "unread" ? !n.read : n.type === ({ orders: "order", messages: "message", payments: "payment", system: "system" }[f])).length}
               </span>
             )}
           </Button>
