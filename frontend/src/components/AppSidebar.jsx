@@ -137,8 +137,7 @@ export default function AppSidebar({
         {/* ── SCROLLABLE NAVIGATION BODY ── */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-4 no-scrollbar">
           {/* GROUP 1: Workspace Essentials */}
-          {role !== "INFRASTRUCTURE_PROVIDER" && (
-            <div>
+          <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
                   Workspace
@@ -178,8 +177,7 @@ export default function AppSidebar({
                   );
                 })}
               </div>
-            </div>
-          )}
+          </div>
 
           {/* GROUP 2: Founder Tools */}
           {role === "founder" && (
