@@ -17,6 +17,7 @@ export default function TeamWorkforcePage() {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("");
   const [location, setLocation] = useState("");
+  const [filters, setFilters] = useState({ query: "", role: "", location: "" });
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
@@ -26,7 +27,7 @@ export default function TeamWorkforcePage() {
     setLoading(true); setError("");
     try {
       const [talentResult, memberResult, invitationResult] = await Promise.all([
-        discoverTalentApi({ query: query.trim() || undefined, role: role.trim() || undefined, location: location.trim() || undefined }),
+        discoverTalentApi({ query: filters.query || undefined, role: filters.role || undefined, location: filters.location || undefined }),
         listTeamMembersApi(),
         listFounderTeamInvitationsApi(),
       ]);
@@ -36,7 +37,7 @@ export default function TeamWorkforcePage() {
     } catch (err) {
       setError(err.response?.data?.detail || err.message || "Unable to load your workforce workspace.");
     } finally { setLoading(false); }
-  }, [query, role, location]);
+  }, [filters]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -74,7 +75,7 @@ export default function TeamWorkforcePage() {
         </div>
 
         {tab === "talent" && <section className="space-y-4">
-          <form onSubmit={(event) => { event.preventDefault(); load(); }} className="grid gap-3 md:grid-cols-4">
+          <form onSubmit={(event) => { event.preventDefault(); setFilters({ query: query.trim(), role: role.trim(), location: location.trim() }); }} className="grid gap-3 md:grid-cols-4">
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, skill or keyword" />
             <Input value={role} onChange={(event) => setRole(event.target.value)} placeholder="Role (e.g. frontend engineer)" />
             <Input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Location" />
