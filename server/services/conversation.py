@@ -106,7 +106,7 @@ async def start_investment_conversation(
     pitch = await pitch_repo.get_startup_pitch(request["pitch_id"], session=session)
     if not pitch or user_id not in {request["investor_id"], pitch["founder_id"]}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investor request not found")
-    if request["status"] not in {"accepted", "in_discussion"}:
+    if request["status"] not in {"accepted", "in_discussion", "invested"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Messaging is available after the founder accepts or opens discussion")
     other_id = pitch["founder_id"] if user_id == request["investor_id"] else request["investor_id"]
     return await conversation_repo.get_or_create_conversation(user_id, other_id, session=session)
