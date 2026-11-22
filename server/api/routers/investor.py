@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import get_current_user
 from core.db import get_db
 from services import investor as svc
-from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate, StartupPitchCreateRequest, StartupPitchUpdateRequest
+from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate, StartupPitchCreateRequest, StartupPitchUpdateRequest, InvestorPortfolioUpdateRequest
 
 router = APIRouter(prefix="/api", tags=["investor"])
 
@@ -143,9 +143,10 @@ async def list_investor_pitches(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
 ):
-    _require_role(current_user, "investor")
+    investor_id = _require_role(current_user, "investor")
     response.headers["Cache-Control"] = "private, max-age=30"
     return await svc.list_all_pitches(
+        investor_id=investor_id,
         limit=limit,
         offset=offset,
         session=db,
@@ -184,6 +185,19 @@ async def get_investor_request(
 ):
     investor_id = _require_role(current_user, "investor")
     return await svc.get_investor_request(investment_id, investor_id, session=db)
+
+
+@router.patch("/investor/portfolio/{investment_id}")
+async def update_investor_portfolio(
+    investment_id: int,
+    body: InvestorPortfolioUpdateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    investor_id = _require_role(current_user, "investor")
+    return await svc.update_investor_portfolio(
+        investment_id, investor_id, body.model_dump(exclude_unset=True), session=db
+    )
 
 
 @router.get("/founder/investment-requests")
