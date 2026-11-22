@@ -29,6 +29,31 @@ async def list_orders(
     )
 
 
+async def list_client_orders(
+    client_id: int,
+    limit: int = 100,
+    offset: int = 0,
+    session: AsyncSession | None = None,
+) -> tuple[list[dict], int]:
+    """List orders placed by the authenticated marketplace buyer."""
+    return await order_repo.list_orders(
+        client_id=client_id, limit=limit, offset=offset, session=session
+    )
+
+
+async def get_client_order(
+    order_id: int,
+    client_id: int,
+    session: AsyncSession | None = None,
+) -> dict:
+    """Get one buyer-owned order with its event timeline."""
+    order = await order_repo.get_order_by_id(order_id, client_id=client_id, session=session)
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    order["events"] = await order_event_repo.list_order_events(order_id, session=session)
+    return order
+
+
 async def create_order(
     provider_id: int,
     client_id: int,
