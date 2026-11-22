@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 async def create_job_posting(
-    provider_id: int,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
     title: str,
     description: str,
     location: str | None = None,
@@ -23,9 +24,10 @@ async def create_job_posting(
     session: AsyncSession | None = None,
 ) -> dict:
     """Create a new job posting."""
-    logger.info("[REPO-CREATE-JOB] Starting for provider_id: %s", provider_id)
+    logger.info("[REPO-CREATE-JOB] Creating posting for provider_id=%s founder_user_id=%s", provider_id, founder_user_id)
     posting = JobPosting(
         provider_id=provider_id,
+        founder_user_id=founder_user_id,
         title=title,
         description=description,
         location=location,
