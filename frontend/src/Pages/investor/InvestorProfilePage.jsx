@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import { getInvestorProfileApi, updateInvestorProfileApi } from "../../lib/api";
 
-const EMPTY = { firm_name: "", investment_focus: "", check_size: "", location: "", about: "", investor_type: "", preferred_sectors: [], preferred_stages: [], geographies: [], check_size_min: "", check_size_max: "", lead_follow_preference: "either", track_record: "", value_add: "", accreditation_status: "", target_return_percent: "" };
+const EMPTY = { firm_name: "", investment_focus: "", check_size: "", location: "", about: "", investor_type: "", preferred_sectors: [], preferred_stages: [], geographies: [], check_size_min: "", check_size_max: "", lead_follow_preference: "either", track_record: "", value_add: "", accreditation_status: "", target_return_percent: "", years_investing: "", verification_url: "", notable_investments: "", companies_backed: "", exits: "", assets_under_management: "", time_commitment: "", contact_preference: "", contact_formats: [] };
 
 export default function InvestorProfilePage() {
   const navigate = useNavigate();
@@ -49,6 +49,15 @@ export default function InvestorProfilePage() {
         value_add: form.value_add.trim() || null,
         accreditation_status: form.accreditation_status || null,
         target_return_percent: form.target_return_percent === "" ? null : Number(form.target_return_percent),
+        years_investing: form.years_investing === "" ? null : Number(form.years_investing),
+        verification_url: form.verification_url.trim() || null,
+        notable_investments: form.notable_investments.trim() || null,
+        companies_backed: form.companies_backed === "" ? null : Number(form.companies_backed),
+        exits: form.exits === "" ? null : Number(form.exits),
+        assets_under_management: form.assets_under_management.trim() || null,
+        time_commitment: form.time_commitment.trim() || null,
+        contact_preference: form.contact_preference.trim() || null,
+        contact_formats: form.contact_formats,
       });
       setForm({ ...EMPTY, ...profile, preferred_sectors: profile.preferred_sectors || [], preferred_stages: profile.preferred_stages || [], geographies: profile.geographies || [] });
       setSaved(true);
