@@ -14,8 +14,6 @@ export default function InvestorDashboardPage() {
   const location = useLocation();
   const params = useParams();
   const pathname = location.pathname;
-  const activeOpportunityId = params.pitchId ? Number(params.pitchId) : selectedOpportunityId;
-  const activeDealId = params.dealId ? Number(params.dealId) : selectedDealId;
   const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : "overview";
   const [profile, setProfile] = useState(null);
   const [startups, setStartups] = useState([]);
@@ -32,6 +30,8 @@ export default function InvestorDashboardPage() {
   const [selectedDealId, setSelectedDealId] = useState(null);
   const [selectedOpportunityId, setSelectedOpportunityId] = useState(null);
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
+  const activeOpportunityId = params.pitchId ? Number(params.pitchId) : selectedOpportunityId;
+  const activeDealId = params.dealId ? Number(params.dealId) : selectedDealId;
 
   const load = async () => {
     setLoading(true);
