@@ -9,19 +9,15 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "job_postings",
-        sa.Column(
-            "founder_user_id",
-            sa.Integer(),
-            sa.ForeignKey("users.id", ondelete="CASCADE"),
-            nullable=True,
-        ),
-    )
-    op.create_index(
-        "ix_job_postings_founder_user_id", "job_postings", ["founder_user_id"]
-    )
     with op.batch_alter_table("job_postings") as batch_op:
+        batch_op.add_column(
+            sa.Column(
+                "founder_user_id",
+                sa.Integer(),
+                sa.ForeignKey("users.id", ondelete="CASCADE"),
+                nullable=True,
+            )
+        )
         batch_op.alter_column(
             "provider_id",
             existing_type=sa.Integer(),
@@ -32,6 +28,9 @@ def upgrade() -> None:
             "(provider_id IS NOT NULL AND founder_user_id IS NULL) OR "
             "(provider_id IS NULL AND founder_user_id IS NOT NULL)",
         )
+    op.create_index(
+        "ix_job_postings_founder_user_id", "job_postings", ["founder_user_id"]
+    )
 
 
 def downgrade() -> None:
