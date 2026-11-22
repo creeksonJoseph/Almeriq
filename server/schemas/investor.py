@@ -84,6 +84,14 @@ class InvestorProfileUpdateRequest(BaseModel):
     notify_valuation_changes: Optional[bool] = None
     notify_messages: Optional[bool] = None
 
+    @field_validator("preferred_payment_methods")
+    @classmethod
+    def validate_payment_methods(cls, value):
+        allowed = {"paypal", "mastercard", "visa", "mpesa"}
+        if value is not None and any(method not in allowed for method in value):
+            raise ValueError("Choose supported payment methods only")
+        return value
+
     @field_validator("verification_url")
     @classmethod
     def validate_verification_url(cls, value):
