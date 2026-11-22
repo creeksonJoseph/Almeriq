@@ -75,7 +75,7 @@ async def update_investor_portfolio(
     ))
     if item is None:
         return None
-    for key in ("investment_amount", "current_value", "ownership_percent", "investment_date", "notes"):
+    for key in ("investment_amount", "current_value", "ownership_percent", "investment_date", "notes", "risk_level"):
         if key in values:
             setattr(item, key, values[key])
     if values.get("investment_amount") is not None:
