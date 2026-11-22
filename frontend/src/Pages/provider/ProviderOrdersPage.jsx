@@ -17,6 +17,8 @@ const C = {
 
 const STATUS_CONFIG = {
   pending: { variant: "gold", label: "Pending" },
+  pending_review: { variant: "gold", label: "Pending" },
+  declined: { variant: "danger", label: "Declined" },
   confirmed: { variant: "gold", label: "Confirmed" },
   shipped: { variant: "gold", label: "Shipped" },
   completed: { variant: "gold", label: "Completed" },
