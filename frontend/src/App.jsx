@@ -72,6 +72,8 @@ const EmployerJobsPage = lazyWithRetry(() => import("./Pages/shared/EmployerJobs
 const JobSeekerJobsPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerJobsPage"));
 const JobSeekerDashboardPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerDashboardPage"));
 const JobSeekerSetupPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerSetupPage"));
+const InvestorDashboardPage = lazyWithRetry(() => import("./Pages/investor/InvestorDashboardPage"));
+const InvestorProfilePage = lazyWithRetry(() => import("./Pages/investor/InvestorProfilePage"));
 
 // Marketplace & Search
 const MarketplacePage = lazyWithRetry(() => import("./Pages/marketplace/MarketplacePage"));
@@ -290,6 +292,23 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <EmployerJobsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/investor/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <InvestorDashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/investor/profile"
+                  element={
+                    <ProtectedRoute>
+                      <InvestorProfilePage />
                     </ProtectedRoute>
                   }
                 />
