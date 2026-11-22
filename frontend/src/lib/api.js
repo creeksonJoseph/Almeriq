@@ -91,6 +91,8 @@ export {
   updateOrderStatusApi,
   uploadWaybillApi,
   getWaybillApi,
+  listClientOrdersApi,
+  getClientOrderApi,
 } from "./api/orders";
 
 export {
