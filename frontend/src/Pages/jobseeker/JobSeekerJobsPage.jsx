@@ -17,6 +17,8 @@ export default function JobSeekerJobsPage() {
   const [applications, setApplications] = useState([]);
   const [profile, setProfile] = useState(null);
   const [query, setQuery] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [applyingId, setApplyingId] = useState(null);
   const [withdrawingId, setWithdrawingId] = useState(null);
@@ -54,15 +56,15 @@ export default function JobSeekerJobsPage() {
   );
   const filteredJobs = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return jobs;
-    return jobs.filter((job) =>
-      [job.title, job.description, job.location, job.role_type, job.requirements]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(normalized),
-    );
-  }, [jobs, query]);
+    return jobs.filter((job) => {
+      const searchable = [job.title, job.description, job.location, job.role_type, job.requirements]
+        .filter(Boolean).join(" ").toLowerCase();
+      const matchesQuery = !normalized || searchable.includes(normalized);
+      const matchesLocation = !locationFilter.trim() || String(job.location || "").toLowerCase().includes(locationFilter.trim().toLowerCase());
+      const matchesType = !typeFilter || job.role_type === typeFilter;
+      return matchesQuery && matchesLocation && matchesType;
+    });
+  }, [jobs, query, locationFilter, typeFilter]);
 
   const recommendedJobs = useMemo(() => {
     if (!profile) return [];
@@ -134,7 +136,7 @@ export default function JobSeekerJobsPage() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 className="font-serif text-2xl">Open positions</h2><p className="mt-1 text-sm text-white/50">Search by title, skills, location or description.</p></div>
-            <div className="w-full sm:max-w-sm"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs…" /></div>
+            <div className="grid w-full gap-2 sm:grid-cols-3 lg:max-w-2xl"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or skills…" /><Input value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} placeholder="Filter by location…" /><select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text"><option value="">All employment types</option><option value="full_time">Full time</option><option value="part_time">Part time</option><option value="contract">Contract</option><option value="freelance">Freelance</option><option value="internship">Internship</option></select></div>
           </div>
           {loading ? <p className="py-10 text-center text-sm text-white/50">Loading opportunities…</p> :
             filteredJobs.length === 0 ? <Card className="p-8 text-center"><p className="font-medium">No matching roles found</p><p className="mt-2 text-sm text-white/50">Try another search, or check back as new roles are posted.</p></Card> :
