@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../../lib/client";
 import { Button, Card, Input } from "../../components/ui";
+import { startAdvisoryConversationApi } from "../../lib/api/conversations";
+import { useNavigate } from "react-router-dom";
 
 export default function ExpertDiscoveryPage() {
+  const navigate = useNavigate();
   const [experts, setExperts] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
@@ -16,10 +20,16 @@ export default function ExpertDiscoveryPage() {
 
   useEffect(() => {
     let active = true;
-    apiClient.get("/api/experts").then(({ data }) => {
-      if (active) setExperts(data?.items || []);
+    Promise.all([
+      apiClient.get("/api/experts"),
+      apiClient.get("/api/founder/expert-requests"),
+    ]).then(([expertResponse, requestResponse]) => {
+      if (active) {
+        setExperts(expertResponse.data?.items || []);
+        setRequests(requestResponse.data?.items || []);
+      }
     }).catch((err) => {
-      if (active) setError(err.response?.data?.detail || "Unable to load experts.");
+      if (active) setError(err.response?.data?.detail || "Unable to load expert data.");
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
@@ -28,6 +38,15 @@ export default function ExpertDiscoveryPage() {
     const haystack = [expert.headline, expert.bio, expert.location, ...(expert.expertise || [])].join(" ").toLowerCase();
     return haystack.includes(query.toLowerCase());
   });
+
+  const openConversation = async (requestId) => {
+    try {
+      const conversation = await startAdvisoryConversationApi(requestId);
+      navigate(`/messages?conversation=${conversation.id}`);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Unable to open this conversation.");
+    }
+  };
 
   const requestAdvice = async (event) => {
     event.preventDefault();
@@ -61,6 +80,16 @@ export default function ExpertDiscoveryPage() {
             <Button size="sm" onClick={() => { setSelected(expert); setError(""); setNotice(""); }}>Request advice</Button>
           </Card>
         ))}</div>}
+        <section className="space-y-3">
+          <h2 className="font-serif text-xl">Your advisory requests</h2>
+          {requests.length === 0 ? <Card className="p-5 text-sm text-white/50">You haven't contacted an expert yet.</Card> : requests.map((request) => {
+            const expert = experts.find((item) => item.user_id === request.expert_id);
+            return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+              <div><p className="font-medium">{request.subject}</p><p className="mt-1 text-xs text-white/50">{expert?.headline || `Expert #${request.expert_id}`} · <span className="capitalize">{request.status.replaceAll("_", " ")}</span></p></div>
+              {["accepted", "completed"].includes(request.status) && <Button size="sm" onClick={() => openConversation(request.id)}>Open conversation</Button>}
+            </Card>;
+          })}
+        </section>
         {selected && <Card className="border border-gold/30 p-6">
           <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">Request advice from {selected.headline || "this expert"}</h2><Button variant="ghost" onClick={() => setSelected(null)}>Close</Button></div>
           <form onSubmit={requestAdvice} className="space-y-4">
