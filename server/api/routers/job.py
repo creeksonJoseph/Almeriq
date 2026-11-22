@@ -43,6 +43,21 @@ async def list_jobs(
     )
 
 
+@router.get("/jobs/mine", response_model=JobPostingListResponse)
+async def list_my_jobs(
+    response: Response,
+    owner: dict = Depends(get_current_job_owner),
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=100, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> dict:
+    """List job postings owned by the authenticated founder or provider."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return await svc.list_my_job_postings(
+        **owner, limit=limit, offset=offset, session=db
+    )
+
+
 @router.get("/jobs/{job_id}", response_model=JobPostingResponse)
 async def get_job(
     response: Response,
