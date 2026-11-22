@@ -221,7 +221,7 @@ export default function CheckoutPage() {
             <CompleteStep
               orderId={deal?.order_id || orderId}
               providerName={providerName}
-              amount={watchAmount === "custom" ? watchCustomAmount : watchAmount}
+              amount={watchAmount}
               formatAmount={formatAmount}
               onDone={() => navigate("/marketplace")}
             />
