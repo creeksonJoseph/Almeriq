@@ -13,7 +13,7 @@ class ExpertProfileUpdate(BaseModel):
     hourly_rate: float | None = Field(default=None, ge=0)
     availability: str | None = Field(default=None, max_length=500)
     portfolio_url: str | None = Field(default=None, max_length=500)
-    is_active: bool | None = None
+    is_active: bool = True
 
 
 class AdvisoryRequestCreate(BaseModel):
