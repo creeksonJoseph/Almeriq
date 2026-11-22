@@ -263,7 +263,7 @@ export default function FounderLegalPage() {
         ...filingForm,
         company_name: filingForm.filing_type === "company" ? filingForm.company_name.trim() : null,
         entity_type: filingForm.filing_type === "company" ? filingForm.entity_type : null,
-        jurisdiction: filingForm.filing_type === "company" ? filingForm.jurisdiction.trim() : null,
+        jurisdiction: filingForm.filing_type === "company" ? (filingForm.jurisdiction.trim() || selectedCountry) : null,
         ip_title: filingForm.filing_type === "ip" ? filingForm.ip_title.trim() : null,
         ip_type: filingForm.filing_type === "ip" ? filingForm.ip_type : null,
         ip_description: filingForm.filing_type === "ip" ? filingForm.ip_description.trim() : null,
@@ -364,6 +364,10 @@ export default function FounderLegalPage() {
             >
               <FileText size={13} className={activeMode === "templates" ? "text-black" : "text-[#f2ca50]"} />
               <span>Starter Legal Templates</span>
+            </button>
+            <button type="button" onClick={() => setActiveMode("filings")} className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded transition-all cursor-pointer ${activeMode === "filings" ? "bg-[#f2ca50] text-black font-semibold shadow-sm" : "text-white hover:text-[#f2ca50]"}`}>
+              <FileText size={13} className={activeMode === "filings" ? "text-black" : "text-[#f2ca50]"} />
+              <span>My Registration Requests</span>
             </button>
           </div>
         </div>
@@ -881,6 +885,31 @@ export default function FounderLegalPage() {
         </div>
       )}
 
+        {activeMode === "filings" && (
+          <div className="grid gap-8 lg:grid-cols-2">
+            <section className="space-y-4">
+              <div><h2 className="font-serif text-2xl text-white">Start a registration request</h2><p className="mt-2 text-sm text-white/60">Submit your company or intellectual-property details for an Almeriq intake record. This is not a government filing or legal registration.</p></div>
+              <form onSubmit={submitFiling} className="space-y-4 rounded border border-white/10 bg-white/[0.02] p-5">
+                <label className="block space-y-2 text-sm"><span className="text-white/75">Request type</span><select value={filingForm.filing_type} onChange={(event) => setFilingForm((form) => ({ ...form, filing_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option value="company">Company registration guidance</option><option value="ip">Copyright / trademark guidance</option></select></label>
+                {filingForm.filing_type === "company" ? <>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Proposed company name</span><input required maxLength={200} value={filingForm.company_name} onChange={(event) => setFilingForm((form) => ({ ...form, company_name: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Entity type</span><select value={filingForm.entity_type} onChange={(event) => setFilingForm((form) => ({ ...form, entity_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option>Ltd</option><option>LLC</option><option>Corporation</option><option>Sole Proprietor</option></select></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Country / jurisdiction</span><input required maxLength={120} value={filingForm.jurisdiction} onChange={(event) => setFilingForm((form) => ({ ...form, jurisdiction: event.target.value }))} placeholder={selectedCountry} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                </> : <>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Title of work / brand</span><input required maxLength={200} value={filingForm.ip_title} onChange={(event) => setFilingForm((form) => ({ ...form, ip_title: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">What are you protecting?</span><select value={filingForm.ip_type} onChange={(event) => setFilingForm((form) => ({ ...form, ip_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option>Source Code</option><option>Logo</option><option>Company Name</option><option>Product Design</option><option>Written Content</option></select></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Description</span><textarea required maxLength={3000} rows={4} value={filingForm.ip_description} onChange={(event) => setFilingForm((form) => ({ ...form, ip_description: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                </>}
+                {filingError && <p role="alert" className="text-sm text-red-300">{filingError}</p>}
+                <button disabled={filingSaving} className="rounded bg-[#f2ca50] px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50">{filingSaving ? "Submitting…" : "Submit intake request"}</button>
+              </form>
+            </section>
+            <section className="space-y-4">
+              <div><h2 className="font-serif text-2xl text-white">Your requests</h2><p className="mt-2 text-sm text-white/60">Reference numbers and submission history for your records.</p></div>
+              {filingLoading ? <p className="text-sm text-white/50">Loading requests…</p> : filings.length === 0 ? <div className="rounded border border-white/10 p-5 text-sm text-white/50">No registration requests yet.</div> : filings.map((filing) => <article key={filing.id} className="rounded border border-white/10 bg-white/[0.02] p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-white">{filing.filing_type === "company" ? filing.company_name : filing.ip_title}</strong><span className="text-xs text-[#f2ca50]">{filing.status}</span></div><p className="mt-1 text-xs text-white/50">{filing.ref_number} · {filing.filing_type === "company" ? filing.entity_type + " · " + filing.jurisdiction : filing.ip_type}</p><p className="mt-2 text-xs text-white/40">{filing.filed_at ? new Date(filing.filed_at).toLocaleString() : ""}</p><p className="mt-2 text-xs text-amber-200/70">Almeriq intake record only — no government application has been submitted.</p></article>)}
+            </section>
+          </div>
+        )}
         {/* ── MODE 2: STARTER LEGAL TEMPLATES ── */}
         {activeMode === "templates" && (
           <div className="space-y-8">
