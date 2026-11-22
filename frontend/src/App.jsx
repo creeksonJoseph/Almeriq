@@ -7,6 +7,7 @@ import { SidebarProvider } from "./context/SidebarContext";
 import { IdeaProvider } from "./context/IdeaContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProviderRoute from "./components/ProviderRoute";
+import RoleRoute from "./components/RoleRoute";
 import FounderRoute from "./components/FounderRoute";
 import Layout from "./components/Layout";
 
@@ -196,7 +197,9 @@ function App() {
                   path="/expert/profile"
                   element={
                     <ProtectedRoute>
-                      <ExpertProfilePage />
+                      <RoleRoute allowedRoles={["expert"]}>
+                        <ExpertProfilePage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -327,7 +330,9 @@ function App() {
                   path="/jobs/manage"
                   element={
                     <ProtectedRoute>
-                      <EmployerJobsPage />
+                      <RoleRoute allowedRoles={["founder", "INFRASTRUCTURE_PROVIDER"]}>
+                        <EmployerJobsPage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -336,7 +341,9 @@ function App() {
                   path="/investor/dashboard"
                   element={
                     <ProtectedRoute>
-                      <InvestorDashboardPage />
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorDashboardPage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -344,7 +351,9 @@ function App() {
                   path="/investor/profile"
                   element={
                     <ProtectedRoute>
-                      <InvestorProfilePage />
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorProfilePage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -353,7 +362,9 @@ function App() {
                   path="/job-seeker/dashboard"
                   element={
                     <ProtectedRoute>
-                      <JobSeekerDashboardPage />
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerDashboardPage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -361,7 +372,9 @@ function App() {
                   path="/job-seeker/jobs"
                   element={
                     <ProtectedRoute>
-                      <JobSeekerJobsPage />
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerJobsPage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
@@ -369,7 +382,9 @@ function App() {
                   path="/job-seeker/setup"
                   element={
                     <ProtectedRoute>
-                      <JobSeekerSetupPage />
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerSetupPage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
