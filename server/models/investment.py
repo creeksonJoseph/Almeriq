@@ -20,6 +20,7 @@ class Investment(Base):
     ownership_percent: Mapped[Optional[float]] = mapped_column(Numeric(7, 4), nullable=True)
     investment_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    risk_level: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -29,5 +30,5 @@ class Investment(Base):
             "amount": self.amount, "status": self.status,
             "investment_amount": self.investment_amount, "current_value": self.current_value,
             "ownership_percent": self.ownership_percent, "investment_date": self.investment_date,
-            "notes": self.notes, "created_at": self.created_at, "updated_at": self.updated_at,
+            "notes": self.notes, "risk_level": self.risk_level, "created_at": self.created_at, "updated_at": self.updated_at,
         }
