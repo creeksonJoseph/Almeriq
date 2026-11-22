@@ -55,6 +55,8 @@ const FounderPitchesPage = lazyWithRetry(() => import("./Pages/founder/FounderPi
 const FounderOrdersPage = lazyWithRetry(() => import("./Pages/founder/FounderOrdersPage"));
 const ExpertDiscoveryPage = lazyWithRetry(() => import("./Pages/founder/ExpertDiscoveryPage"));
 const ExpertProfilePage = lazyWithRetry(() => import("./Pages/expert/ExpertProfilePage"));
+const TeamWorkforcePage = lazyWithRetry(() => import("./Pages/founder/TeamWorkforcePage"));
+const TeamInvitationsPage = lazyWithRetry(() => import("./Pages/jobseeker/TeamInvitationsPage"));
 
 // Admin routes
 const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/admin/AdminWaitlistPage"));
@@ -184,6 +186,14 @@ function App() {
                       <FounderProductPage />
                     </ProtectedRoute>
                   }
+                />
+                <Route
+                  path="/founder/team"
+                  element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
+                />
+                <Route
+                  path="/job-seeker/invitations"
+                  element={<ProtectedRoute><RoleRoute allowedRoles={["job_seeker"]}><TeamInvitationsPage /></RoleRoute></ProtectedRoute>}
                 />
                 <Route
                   path="/founder/experts"
