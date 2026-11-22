@@ -44,6 +44,7 @@ def downgrade() -> None:
             "Cannot downgrade: founder-owned job postings exist. "
             "Reassign or remove them before downgrading."
         )
+    op.drop_index("ix_job_postings_founder_user_id", table_name="job_postings")
     with op.batch_alter_table("job_postings") as batch_op:
         batch_op.drop_constraint(
             "ck_job_posting_exactly_one_owner", type_="check"
@@ -53,5 +54,4 @@ def downgrade() -> None:
             existing_type=sa.Integer(),
             nullable=False,
         )
-    op.drop_index("ix_job_postings_founder_user_id", table_name="job_postings")
-    op.drop_column("job_postings", "founder_user_id")
+        batch_op.drop_column("founder_user_id")
