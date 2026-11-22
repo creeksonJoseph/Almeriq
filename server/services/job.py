@@ -9,6 +9,7 @@ from repositories import job_application as application_repo
 from repositories import job_seeker_profile as seeker_repo
 from repositories import provider_profile as provider_repo
 from repositories import user as user_repo
+from repositories import notification as notification_repo
 
 logger = logging.getLogger(__name__)
 
@@ -219,13 +220,27 @@ async def create_job_application(
             detail="You have already applied to this job posting",
         )
 
-    return await application_repo.create_job_application(
+    application = await application_repo.create_job_application(
         job_posting_id=job_posting_id,
         applicant_id=applicant_id,
         cover_letter=cover_letter,
         resume_url=resume_url,
         session=session,
     )
+    employer_user_id = posting.get("founder_user_id")
+    if posting.get("provider_id") is not None:
+        provider = await provider_repo.get_provider_profile_by_id(posting["provider_id"], session=session)
+        employer_user_id = provider.get("user_id") if provider else None
+    if employer_user_id is not None and employer_user_id != applicant_id:
+        await notification_repo.create_notification(
+            user_id=employer_user_id,
+            type="job",
+            title="New job application",
+            body=f"A candidate applied for {posting['title']}.",
+            link="/jobs/manage",
+            session=session,
+        )
+    return application
 
 
 async def get_job_application(
@@ -347,6 +362,30 @@ async def update_application_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job application not found",
+        )
+    posting = await job_repo.get_job_posting_by_id(application["job_posting_id"], session=session)
+    if applicant_id is not None and posting:
+        employer_user_id = posting.get("founder_user_id")
+        if posting.get("provider_id") is not None:
+            provider = await provider_repo.get_provider_profile_by_id(posting["provider_id"], session=session)
+            employer_user_id = provider.get("user_id") if provider else None
+        if employer_user_id is not None and employer_user_id != applicant_id:
+            await notification_repo.create_notification(
+                user_id=employer_user_id,
+                type="job",
+                title="Application withdrawn",
+                body=f"A candidate withdrew their application for {posting['title']}.",
+                link="/jobs/manage",
+                session=session,
+            )
+    elif applicant_id is None:
+        await notification_repo.create_notification(
+            user_id=application["applicant_id"],
+            type="job",
+            title="Application status updated",
+            body=f"Your application status is now {status_value}.",
+            link="/job-seeker/dashboard",
+            session=session,
         )
     return updated
 
