@@ -189,7 +189,7 @@ async def update_order_status(
         type="order",
         title="Order status updated",
         body=f"Order {order['order_id']} is now {new_status.replace('_', ' ')}.",
-        link=f"/checkout/{deal['id']}" if deal else "/marketplace",
+        link="/founder/orders",
         session=session,
     )
     return order
