@@ -15,6 +15,7 @@ export default function EmployerJobsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const pageView = location.pathname.endsWith("/new") ? "editor" : "list";
+  const editId = new URLSearchParams(location.search).get("edit");
   const [jobs, setJobs] = useState([]);
   const [form, setForm] = useState(EMPTY_JOB);
   const [editingJobId, setEditingJobId] = useState(null);
@@ -37,6 +38,21 @@ export default function EmployerJobsPage() {
   }, []);
 
   useEffect(() => { loadJobs(); }, [loadJobs]);
+  useEffect(() => {
+    if (pageView !== "editor" || !editId || !jobs.length) return;
+    const job = jobs.find((item) => String(item.id) === String(editId));
+    if (!job || String(editingJobId) === String(job.id)) return;
+    setEditingJobId(job.id);
+    setForm({
+      title: job.title || "",
+      description: job.description || "",
+      location: job.location || "",
+      role_type: job.role_type || "full_time",
+      requirements: job.requirements || "",
+      salary_min: job.salary_min ?? "",
+      salary_max: job.salary_max ?? "",
+    });
+  }, [pageView, editId, jobs, editingJobId]);
 
   const updateField = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
 
@@ -85,6 +101,7 @@ export default function EmployerJobsPage() {
       setForm(EMPTY_JOB);
       setEditingJobId(null);
       await loadJobs();
+      navigate("/jobs/manage");
     } catch (requestError) {
       setError(requestError.message || "Unable to publish this job.");
     } finally {
@@ -93,6 +110,7 @@ export default function EmployerJobsPage() {
   };
 
   const editJob = (job) => {
+    navigate("/jobs/manage/new?edit=" + job.id);
     setEditingJobId(job.id);
     setForm({
       title: job.title || "",
@@ -110,6 +128,7 @@ export default function EmployerJobsPage() {
   const cancelEdit = () => {
     setEditingJobId(null);
     setForm(EMPTY_JOB);
+    navigate("/jobs/manage");
   };
 
   const toggleJob = async (job) => {
