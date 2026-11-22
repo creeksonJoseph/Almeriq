@@ -44,7 +44,7 @@ export default function AppSidebar({
     if (baseItemPath === "/founder/intake") {
       return location.pathname === "/founder/intake";
     }
-    return location.pathname === itemPath;
+    return location.pathname === itemPath || location.pathname.startsWith(itemPath + "/");
   };
 
   const handleNavClick = (path) => {
