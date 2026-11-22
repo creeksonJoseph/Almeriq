@@ -8,6 +8,8 @@ from repositories import message as message_repo
 from repositories import provider_profile as provider_repo
 from repositories import user as user_repo
 from repositories import advisory_request as advisory_repo
+from repositories import investment as investment_repo
+from repositories import startup_pitch as pitch_repo
 
 logger = logging.getLogger(__name__)
 
@@ -91,4 +93,22 @@ async def start_advisory_conversation(
     if request["status"] not in {"accepted", "completed"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Messaging is available after the expert accepts the request")
     other_id = request["expert_id"] if user_id == request["founder_id"] else request["founder_id"]
+    return await conversation_repo.get_or_create_conversation(user_id, other_id, session=session)
+
+
+async def start_investment_conversation(
+    investment_id: int,
+    user_id: int,
+    session: AsyncSession | None = None,
+) -> dict:
+    """Start messaging after a founder accepts or opens investor discussions."""
+    request = await investment_repo.get_investment(investment_id, session=session)
+    if not request:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investor request not found")
+    pitch = await pitch_repo.get_startup_pitch(request["pitch_id"], session=session)
+    if not pitch or user_id not in {request["investor_id"], pitch["founder_id"]}:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investor request not found")
+    if request["status"] not in {"accepted", "in_discussion"}:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Messaging is available after the founder accepts or opens discussion")
+    other_id = pitch["founder_id"] if user_id == request["investor_id"] else request["investor_id"]
     return await conversation_repo.get_or_create_conversation(user_id, other_id, session=session)
