@@ -1,10 +1,12 @@
 import {
   Home, Lightbulb, BookOpen, CheckCircle2, Boxes, Scale, Settings,
-  ShieldCheck, TrendingUp, UserRound, Building2,
+  ShieldCheck, TrendingUp, UserRound, Building2, MessageSquare, Bell,
 } from "lucide-react";
 
 export const WORKSPACE_NAV = [
   { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
+  { key: "messages", label: "Messages", path: "/messages", icon: MessageSquare },
+  { key: "alerts", label: "Alerts", path: "/alerts", icon: Bell },
 ];
 
 export const FOUNDER_STUDIO_NAV = [
