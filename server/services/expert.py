@@ -36,6 +36,8 @@ async def create_request(founder_id: int, expert_id: int, subject: str, descript
         raise HTTPException(status_code=404, detail="Expert profile not found")
     if budget is not None and budget < 0:
         raise HTTPException(status_code=422, detail="Budget cannot be negative")
+    if len(subject.strip()) < 3 or len(description.strip()) < 10:
+        raise HTTPException(status_code=422, detail="Add a clear subject and at least 10 characters of request details")
     request = await request_repo.create_advisory_request(founder_id, expert_id, subject.strip(), description.strip(), budget, session=session)
     await notification_repo.create_notification(
         user_id=expert_id,
