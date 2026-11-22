@@ -1,6 +1,6 @@
 import {
   Home, Lightbulb, BookOpen, CheckCircle2, Boxes, Scale, Settings,
-  ShieldCheck, TrendingUp, UserRound, Building2, MessageSquare, Bell,
+  ShieldCheck, TrendingUp, UserRound, Building2, MessageSquare, Bell, Package,
 } from "lucide-react";
 
 export const WORKSPACE_NAV = [
@@ -17,6 +17,7 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
   { key: "hiring", label: "Hiring", path: "/jobs/manage", icon: Building2 },
   { key: "fundraising", label: "Fundraising", path: "/founder/pitches", icon: TrendingUp },
+  { key: "orders", label: "My Orders", path: "/founder/orders", icon: Package },
   { key: "experts", label: "Find Experts", path: "/founder/experts", icon: UserRound },
 ];
 
