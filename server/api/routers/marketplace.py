@@ -76,7 +76,7 @@ async def create_marketplace_checkout(
     # The listing price is authoritative; never trust a client-submitted lease amount.
     order = await order_service.create_order(
         provider_id=listing["provider_id"],
-        client_id=current_user["id"],
+        client_id=_require_founder(current_user),
         asset_id=body.asset_id,
         allocation=body.allocation,
         lease_amount=listing["price_monthly"],
