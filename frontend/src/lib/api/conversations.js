@@ -34,3 +34,9 @@ export async function startAdvisoryConversationApi(requestId) {
   const res = await apiClient.post(`/api/advisory-requests/${requestId}/conversation`);
   return res.data;
 }
+
+
+export async function startInvestmentConversationApi(investmentId) {
+  const res = await apiClient.post(`/api/investment-requests/${investmentId}/conversation`);
+  return res.data;
+}
