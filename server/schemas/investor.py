@@ -23,6 +23,7 @@ class InvestorProfileResponse(BaseModel):
     track_record: Optional[str] = None
     value_add: Optional[str] = None
     accreditation_status: Optional[str] = None
+    target_return_percent: Optional[float] = None
     verified: bool = False
 
 
@@ -55,6 +56,7 @@ class InvestorProfileUpdateRequest(BaseModel):
     track_record: Optional[str] = Field(default=None, max_length=3000)
     value_add: Optional[str] = Field(default=None, max_length=3000)
     accreditation_status: Optional[str] = Field(default=None, max_length=80)
+    target_return_percent: Optional[float] = Field(default=None, ge=-100, le=1000)
 
     @field_validator("lead_follow_preference")
     @classmethod
