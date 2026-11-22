@@ -45,6 +45,13 @@ async def create_startup_pitch(
     sector: str | None = None,
     stage: str | None = None,
     ask_amount: float | None = None,
+    location: str | None = None,
+    website_url: str | None = None,
+    pitch_deck_url: str | None = None,
+    financials_url: str | None = None,
+    traction: str | None = None,
+    team_summary: str | None = None,
+    documents: list[dict] | None = None,
 ) -> dict:
     if not title or not title.strip():
         raise HTTPException(
@@ -63,6 +70,13 @@ async def create_startup_pitch(
         sector=sector,
         stage=stage,
         ask_amount=ask_amount,
+        location=location,
+        website_url=website_url,
+        pitch_deck_url=pitch_deck_url,
+        financials_url=financials_url,
+        traction=traction,
+        team_summary=team_summary,
+        documents=documents,
         session=session,
     )
 
@@ -143,7 +157,46 @@ async def get_investor_pitch(pitch_id: int, session: AsyncSession | None = None)
     return pitch
 
 
+def _match_pitch_to_investor(pitch: dict, profile: dict | None) -> tuple[int | None, list[str]]:
+    if not profile:
+        return None, ["Complete your investor profile to see matching insights."]
+    score = 0
+    possible = 0
+    reasons: list[str] = []
+    sectors = [str(value).strip().lower() for value in (profile.get("preferred_sectors") or []) if str(value).strip()]
+    if sectors and pitch.get("sector"):
+        possible += 35
+        if str(pitch["sector"]).lower() in sectors:
+            score += 35
+            reasons.append(f"Sector match: {pitch['sector']}")
+    stages = [str(value).strip().lower() for value in (profile.get("preferred_stages") or []) if str(value).strip()]
+    if stages and pitch.get("stage"):
+        possible += 30
+        if str(pitch["stage"]).lower() in stages:
+            score += 30
+            reasons.append(f"Stage match: {pitch['stage']}")
+    geographies = [str(value).strip().lower() for value in (profile.get("geographies") or []) if str(value).strip()]
+    if geographies and pitch.get("location"):
+        possible += 15
+        location = str(pitch["location"]).lower()
+        if any(value in location for value in geographies):
+            score += 15
+            reasons.append(f"Geography match: {pitch['location']}")
+    minimum = profile.get("check_size_min")
+    maximum = profile.get("check_size_max")
+    ask = pitch.get("ask_amount")
+    if (minimum is not None or maximum is not None) and ask is not None:
+        possible += 20
+        if (minimum is None or float(ask) >= float(minimum)) and (maximum is None or float(ask) <= float(maximum)):
+            score += 20
+            reasons.append("Funding ask is within your check-size range")
+    if possible == 0:
+        return None, ["Add sectors, stages, geography or check-size preferences for a match score."]
+    return round(score / possible * 100), reasons or ["No matching criteria found; review the pitch details."]
+
+
 async def list_all_pitches(
+    investor_id: int | None = None,
     limit: int = 50,
     offset: int = 0,
     session: AsyncSession | None = None,
@@ -152,6 +205,13 @@ async def list_all_pitches(
         limit=limit, offset=offset, session=session
     )
     total = await pitch_repo.count_startup_pitches(session=session)
+    if investor_id is not None:
+        profile = await profile_repo.get_investor_profile_by_user_id(investor_id, session=session)
+        for pitch in items:
+            score, reasons = _match_pitch_to_investor(pitch, profile)
+            pitch["match_score"] = score
+            pitch["match_reasons"] = reasons
+        items.sort(key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1, reverse=True)
     return {"items": items, "total": total}
 
 
@@ -204,7 +264,10 @@ async def create_investment_request(
 
 async def list_investor_requests(investor_id: int, session: AsyncSession | None = None) -> list[dict]:
     from repositories import investment as investment_repo
-    return await investment_repo.list_investments(investor_id=investor_id, session=session)
+    items = await investment_repo.list_investments(investor_id=investor_id, session=session)
+    for item in items:
+        item["pitch"] = await pitch_repo.get_startup_pitch(item["pitch_id"], session=session)
+    return items
 
 
 async def get_investor_request(investment_id: int, investor_id: int, session: AsyncSession | None = None) -> dict:
@@ -212,7 +275,27 @@ async def get_investor_request(investment_id: int, investor_id: int, session: As
     item = await investment_repo.get_investment(investment_id, session=session)
     if not item or item["investor_id"] != investor_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+    item["pitch"] = await pitch_repo.get_startup_pitch(item["pitch_id"], session=session)
     return item
+
+
+async def update_investor_portfolio(
+    investment_id: int,
+    investor_id: int,
+    values: dict,
+    session: AsyncSession | None = None,
+) -> dict:
+    from repositories import investment as investment_repo
+    item = await investment_repo.get_investment(investment_id, session=session)
+    if not item or item["investor_id"] != investor_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
+    if item["status"] not in {"accepted", "in_discussion", "invested"}:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Record an investment only after the founder accepts or opens discussion")
+    updated = await investment_repo.update_investor_portfolio(investment_id, investor_id, values, session=session)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
+    updated["pitch"] = await pitch_repo.get_startup_pitch(updated["pitch_id"], session=session)
+    return updated
 
 
 async def list_founder_requests(founder_id: int, session: AsyncSession | None = None) -> list[dict]:
