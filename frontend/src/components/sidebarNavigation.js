@@ -14,6 +14,7 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
   { key: "hiring", label: "Hiring", path: "/jobs/manage", icon: Building2 },
+  { key: "fundraising", label: "Fundraising", path: "/founder/pitches", icon: TrendingUp },
 ];
 
 export const JOB_SEEKER_NAV = [
@@ -25,7 +26,7 @@ export const JOB_SEEKER_NAV = [
 export const INVESTOR_NAV = [
   { key: "investor-dashboard", label: "Investor Dashboard", path: "/dashboard", icon: TrendingUp },
   { key: "investor-profile", label: "Investor Profile", path: "/investor/profile", icon: UserRound },
-  { key: "investor-pitches", label: "Startup Pitches", path: "/investor/pitches", icon: Building2 },
+  { key: "investor-pitches", label: "Discover Startups", path: "/investor/dashboard", icon: Building2 },
 ];
 
 export const EXPERT_NAV = [
