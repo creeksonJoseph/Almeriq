@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import expert_profile as profile_repo
 from repositories import advisory_request as request_repo
+from repositories import notification as notification_repo
 
 
 async def upsert_profile(user_id: int, session: AsyncSession | None = None, **values) -> dict:
@@ -34,7 +35,16 @@ async def create_request(founder_id: int, expert_id: int, subject: str, descript
         raise HTTPException(status_code=404, detail="Expert profile not found")
     if budget is not None and budget < 0:
         raise HTTPException(status_code=422, detail="Budget cannot be negative")
-    return await request_repo.create_advisory_request(founder_id, expert_id, subject.strip(), description.strip(), budget, session=session)
+    request = await request_repo.create_advisory_request(founder_id, expert_id, subject.strip(), description.strip(), budget, session=session)
+    await notification_repo.create_notification(
+        user_id=expert_id,
+        type="advisory",
+        title="New advisory request",
+        body=f"A founder has requested help with: {subject.strip()}",
+        link="/dashboard",
+        session=session,
+    )
+    return request
 
 
 async def list_requests(user_id: int, role: str, session: AsyncSession | None = None) -> list[dict]:
@@ -53,4 +63,13 @@ async def update_request(request_id: int, expert_id: int, status_value: str, ses
         raise HTTPException(status_code=409, detail="Only pending requests can be accepted or declined")
     if status_value == "completed" and item["status"] != "accepted":
         raise HTTPException(status_code=409, detail="Only accepted engagements can be completed")
-    return await request_repo.update_advisory_request_status(request_id, status_value, session=session)
+    updated = await request_repo.update_advisory_request_status(request_id, status_value, session=session)
+    await notification_repo.create_notification(
+        user_id=item["founder_id"],
+        type="advisory",
+        title="Expert responded to your request",
+        body=f"Your advisory request is now {status_value}.",
+        link="/founder/experts",
+        session=session,
+    )
+    return updated
