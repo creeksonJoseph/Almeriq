@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import expert_profile as profile_repo
 from repositories import advisory_request as request_repo
 from repositories import notification as notification_repo
+from repositories import user as user_repo
 
 
 async def upsert_profile(user_id: int, session: AsyncSession | None = None, **values) -> dict:
@@ -48,7 +49,17 @@ async def create_request(founder_id: int, expert_id: int, subject: str, descript
 
 
 async def list_requests(user_id: int, role: str, session: AsyncSession | None = None) -> list[dict]:
-    return await request_repo.list_advisory_requests(user_id, role, session=session)
+    items = await request_repo.list_advisory_requests(user_id, role, session=session)
+    for item in items:
+        if role == "expert":
+            founder = await user_repo.get_user_by_id(item["founder_id"], session=session)
+            item["founder_name"] = (
+                founder.get("full_name") if founder else None
+            ) or f"Founder #{item['founder_id']}"
+        else:
+            profile = await profile_repo.get_expert_profile(item["expert_id"], session=session)
+            item["expert_headline"] = (profile or {}).get("headline") or f"Expert #{item['expert_id']}"
+    return items
 
 
 async def update_request(request_id: int, expert_id: int, status_value: str, session: AsyncSession | None = None) -> dict:
