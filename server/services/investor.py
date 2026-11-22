@@ -224,4 +224,6 @@ async def update_founder_request(
     pitch = await pitch_repo.get_startup_pitch(item["pitch_id"], founder_id=founder_id, session=session)
     if not pitch:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+    if item["status"] != "pending":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Only pending investor requests can be updated")
     return await investment_repo.update_investment_status(investment_id, status_value, session=session)
