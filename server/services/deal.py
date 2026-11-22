@@ -7,6 +7,7 @@ from repositories import deal as deal_repo
 from repositories import order as order_repo
 from repositories import asset as asset_repo
 from repositories import provider_profile as provider_repo
+from repositories import notification as notification_repo
 
 logger = logging.getLogger(__name__)
 
@@ -130,5 +131,18 @@ async def sign_deal(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
+        )
+    recipient_id = order["client_id"]
+    if client_id is not None and order["client_id"] == client_id:
+        provider = await provider_repo.get_provider_profile_by_id(order["provider_id"], session=session)
+        recipient_id = provider.get("user_id") if provider else None
+    if recipient_id is not None:
+        await notification_repo.create_notification(
+            user_id=recipient_id,
+            type="order",
+            title="Marketplace deal signed",
+            body=f"Deal #{deal_id} has been signed in the demo checkout.",
+            link=f"/provider/orders/{order['id']}" if recipient_id != order["client_id"] else f"/checkout/{deal_id}",
+            session=session,
         )
     return updated
