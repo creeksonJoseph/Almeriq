@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import conversation as conversation_repo
 from repositories import message as message_repo
 from repositories import provider_profile as provider_repo
+from repositories import user as user_repo
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,29 @@ async def list_conversations(
     session: AsyncSession | None = None,
 ) -> list[dict]:
     """List conversations for a user with last message and unread count."""
-    return await conversation_repo.list_user_conversations(
+    conversations = await conversation_repo.list_user_conversations(
         user_id, limit=limit, offset=offset, session=session
     )
+    for conversation in conversations:
+        other_id = (
+            conversation["participant_b_id"]
+            if conversation["participant_a_id"] == user_id
+            else conversation["participant_a_id"]
+        )
+        other = await user_repo.get_user_by_id(other_id, session=session)
+        if other:
+            conversation["other_participant"] = {
+                "id": other["id"],
+                "email": other["email"],
+                "full_name": other.get("full_name"),
+                "role": other["role"],
+                "is_admin": other.get("is_admin", False),
+            }
+        last_message = await conversation_repo.get_last_message_for_conversation(
+            conversation["id"], session=session
+        )
+        conversation["last_message"] = last_message
+    return conversations
 
 
 async def start_provider_conversation(provider_id: int, user_id: int, session: AsyncSession | None = None) -> dict:
