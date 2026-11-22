@@ -324,6 +324,14 @@ async def list_founder_requests(founder_id: int, session: AsyncSession | None = 
                 "check_size": investor_profile.get("check_size"),
                 "location": investor_profile.get("location"),
                 "about": investor_profile.get("about"),
+                "investor_type": investor_profile.get("investor_type"),
+                "preferred_sectors": investor_profile.get("preferred_sectors", []),
+                "preferred_stages": investor_profile.get("preferred_stages", []),
+                "geographies": investor_profile.get("geographies", []),
+                "lead_follow_preference": investor_profile.get("lead_follow_preference"),
+                "track_record": investor_profile.get("track_record"),
+                "value_add": investor_profile.get("value_add"),
+                "accreditation_status": investor_profile.get("accreditation_status"),
             }
             if investor_profile else None
         )
