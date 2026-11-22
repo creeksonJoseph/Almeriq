@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import {
@@ -18,8 +18,9 @@ export default function InvestorDashboardPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const signatureCanvasRef = useRef(null);
   const [editingInvestment, setEditingInvestment] = useState(null);
-  const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium" });
+  const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
 
   const load = async () => {
     setLoading(true);
@@ -42,6 +43,39 @@ export default function InvestorDashboardPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const handleSignaturePointerDown = (event) => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const context = canvas.getContext("2d");
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = 2.5;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    context.moveTo((event.clientX - rect.left) * scaleX, (event.clientY - rect.top) * scaleY);
+    canvas.setPointerCapture(event.pointerId);
+  };
+
+  const handleSignaturePointerMove = (event) => {
+    if (event.buttons !== 1) return;
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const context = canvas.getContext("2d");
+    context.lineTo((event.clientX - rect.left) * (canvas.width / rect.width), (event.clientY - rect.top) * (canvas.height / rect.height));
+    context.stroke();
+    setPortfolioForm((form) => ({ ...form, signature_data: canvas.toDataURL("image/png") }));
+  };
+
+  const clearSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    if (canvas) canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    setPortfolioForm((form) => ({ ...form, signature_data: "" }));
+  };
 
   const saveSettings = async () => {
     if (!profile) return;
@@ -73,6 +107,7 @@ export default function InvestorDashboardPage() {
     event.preventDefault();
     if (!editingInvestment) return;
     setError(""); setNotice("");
+    if (!portfolioForm.signature_data && !editingInvestment.signature_data) { setError("Draw your signature to confirm this demo deal record."); return; }
     try {
       const updated = await updateInvestorPortfolioApi(editingInvestment.id, {
         investment_amount: Number(portfolioForm.investment_amount),
@@ -81,6 +116,8 @@ export default function InvestorDashboardPage() {
         investment_date: portfolioForm.investment_date || null,
         notes: portfolioForm.notes.trim() || null,
         risk_level: portfolioForm.risk_level,
+        payment_method: portfolioForm.payment_method,
+        signature_data: portfolioForm.signature_data || editingInvestment.signature_data || null,
       });
       setRequests((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item));
       setEditingInvestment(null);
@@ -99,6 +136,8 @@ export default function InvestorDashboardPage() {
       investment_date: request.investment_date || "",
       notes: request.notes || "",
       risk_level: request.risk_level || "medium",
+      payment_method: request.payment_method || "visa",
+      signature_data: request.signature_data || "",
     });
   };
 
