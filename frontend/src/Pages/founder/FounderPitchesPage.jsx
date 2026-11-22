@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "../../lib/client";
 import { Button, Card, Input } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
@@ -9,6 +9,8 @@ const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", l
 
 export default function FounderPitchesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageView = location.pathname.includes("/investors") ? "investors" : "pitches";
   const [pitches, setPitches] = useState([]);
   const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
@@ -138,9 +140,11 @@ export default function FounderPitchesPage() {
   return (
     <main className="min-h-screen bg-bg px-4 py-10 text-text">
       <div className="mx-auto max-w-5xl space-y-6">
+        <nav aria-label="Fundraising" className="flex flex-wrap gap-2 border-b border-border pb-3">{[["pitches","Pitch management","/founder/fundraising/pitches"],["investors","Investor interest","/founder/fundraising/investors"]].map(([key,label,path]) => <Button key={key} size="sm" variant={pageView === key ? "primary" : "ghost"} onClick={() => navigate(path)}>{label}</Button>)}</nav>
         <header><p className="text-xs uppercase tracking-widest text-gold">Founder workspace</p><h1 className="mt-2 font-serif text-3xl">Fundraising pitches</h1><p className="mt-2 text-sm text-white/60">Publish a concise startup profile for investors to discover.</p></header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
+        {pageView === "pitches" && (
         <Card className="space-y-4 p-6">
           <div><h2 className="font-serif text-xl">Draft an investor update</h2><p className="mt-1 text-sm text-white/55">Generate an editable monthly update from details you provide. Missing metrics will not be invented.</p></div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -154,6 +158,9 @@ export default function FounderPitchesPage() {
           <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
           {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
         </Card>
+        
+        )}
+        {pageView === "pitches" && (
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
           <form onSubmit={submit} className="space-y-4">
@@ -177,6 +184,9 @@ export default function FounderPitchesPage() {
             <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Update pitch" : "Publish pitch"}</Button></div>
           </form>
         </Card>
+        
+        )}
+        {pageView === "pitches" && (
         <section className="space-y-3"><h2 className="font-serif text-xl">Your published pitches</h2>
           {loading ? <p className="text-sm text-white/50">Loading pitches…</p> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
             <Card key={pitch.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
@@ -185,6 +195,9 @@ export default function FounderPitchesPage() {
             </Card>
           ))}
         </section>
+        
+        )}
+        {pageView === "investors" && (
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Investor interest</h2>
           {requests.length === 0 ? <Card className="p-6 text-sm text-white/50">No investors have expressed interest yet.</Card> : requests.map((request) => {
@@ -195,6 +208,7 @@ export default function FounderPitchesPage() {
             </Card>;
           })}
         </section>
+        )}
       </div>
     </main>
   );
