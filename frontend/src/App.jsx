@@ -194,6 +194,18 @@ function App() {
                 />
                 <Route
                   path="/founder/team"
+                  element={<Navigate to="/founder/team/talent" replace />}
+                />
+                <Route
+                  path="/founder/team/talent"
+                  element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/team/members"
+                  element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/team/invitations"
                   element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
                 />
                 <Route
