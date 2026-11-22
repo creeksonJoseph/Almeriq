@@ -4,17 +4,15 @@ Revision ID: 002_add_jobs_domain
 Revises: d4f8c2b6e9a1
 Create Date: 2026-11-19
 
-Idempotent, dialect-neutral creation of the jobs domain tables:
-job_postings, job_applications, job_seeker_profiles.
-Uses SQLAlchemy column definitions (op.create_table) so the same migration
-runs on SQLite and PostgreSQL without native enum or ARRAY types.
+Dialect-neutral creation of the jobs domain tables using SQLAlchemy operations.
+Alembic tracks this revision; this migration is intentionally not rerunnable
+against a database where these tables already exist.
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-# revision identifiers, used by Alembic.
 revision: str = "002_add_jobs_domain"
 down_revision: Union[str, Sequence[str], None] = "d4f8c2b6e9a1"
 branch_labels: Union[str, Sequence[str], None] = None
@@ -22,8 +20,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema: Create jobs domain tables with indexes (IF NOT EXISTS)."""
-    # 1. job_postings
     op.create_table(
         "job_postings",
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
@@ -32,7 +28,6 @@ def upgrade() -> None:
             sa.Integer,
             sa.ForeignKey("provider_profiles.id", ondelete="CASCADE"),
             nullable=False,
-            index=True,
         ),
         sa.Column("title", sa.Text, nullable=False),
         sa.Column("description", sa.Text, nullable=False),
@@ -61,7 +56,6 @@ def upgrade() -> None:
     )
     op.create_index("idx_job_postings_is_active", "job_postings", ["is_active"])
 
-    # 2. job_applications
     op.create_table(
         "job_applications",
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
@@ -102,15 +96,18 @@ def upgrade() -> None:
             "job_posting_id", "applicant_id", name="uq_job_application_one_per_user"
         ),
     )
-    op.create_index("idx_job_applications_job_posting_id", "job_applications", ["job_posting_id"])
-    op.create_index("idx_job_applications_applicant_id", "job_applications", ["applicant_id"])
+    op.create_index(
+        "idx_job_applications_job_posting_id", "job_applications", ["job_posting_id"]
+    )
+    op.create_index(
+        "idx_job_applications_applicant_id", "job_applications", ["applicant_id"]
+    )
     op.create_index(
         "idx_job_applications_applicant_status",
         "job_applications",
         ["applicant_id", "status"],
     )
 
-    # 3. job_seeker_profiles
     op.create_table(
         "job_seeker_profiles",
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
@@ -142,14 +139,17 @@ def upgrade() -> None:
         ),
         sa.UniqueConstraint("user_id", name="uq_job_seeker_profile_user"),
     )
-    op.create_index("idx_job_seeker_profiles_user_id", "job_seeker_profiles", ["user_id"])
+    op.create_index(
+        "idx_job_seeker_profiles_user_id", "job_seeker_profiles", ["user_id"]
+    )
 
 
 def downgrade() -> None:
-    """Downgrade schema: Drop jobs domain tables in reverse dependency order."""
     op.drop_index("idx_job_seeker_profiles_user_id", table_name="job_seeker_profiles")
     op.drop_table("job_seeker_profiles")
-    op.drop_index("idx_job_applications_applicant_status", table_name="job_applications")
+    op.drop_index(
+        "idx_job_applications_applicant_status", table_name="job_applications"
+    )
     op.drop_index("idx_job_applications_applicant_id", table_name="job_applications")
     op.drop_index("idx_job_applications_job_posting_id", table_name="job_applications")
     op.drop_table("job_applications")
