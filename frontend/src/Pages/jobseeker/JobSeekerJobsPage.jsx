@@ -177,7 +177,7 @@ export default function JobSeekerJobsPage() {
               {applications.map((application) => (
                 <div key={application.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div><p className="font-medium">{jobs.find((job) => job.id === application.job_posting_id)?.title || `Job #${application.job_posting_id}`}</p><p className="mt-1 text-xs text-white/45">Applied {application.applied_at ? new Date(application.applied_at).toLocaleDateString() : "recently"}</p></div>
-                  <div className="flex items-center gap-2"><span className={`rounded-full border px-3 py-1 text-xs capitalize ${STATUS_STYLES[application.status] || STATUS_STYLES.pending}`}>{application.status}</span>{["pending", "reviewed"].includes(application.status) && <Button size="sm" variant="ghost" disabled={withdrawingId === application.id} onClick={() => withdraw(application)}>{withdrawingId === application.id ? "Withdrawing…" : "Withdraw"}</Button>}</div>
+                  <div className="flex items-center gap-2"><span className={`rounded-full border px-3 py-1 text-xs capitalize ${STATUS_STYLES[application.status] || STATUS_STYLES.pending}`}>{application.status}</span><Button size="sm" variant="ghost" onClick={() => navigate(`/job-seeker/applications/${application.id}`)}>View details</Button>{["pending", "reviewed"].includes(application.status) && <Button size="sm" variant="ghost" disabled={withdrawingId === application.id} onClick={() => withdraw(application)}>{withdrawingId === application.id ? "Withdrawing…" : "Withdraw"}</Button>}</div>
                 </div>
               ))}
             </Card>
