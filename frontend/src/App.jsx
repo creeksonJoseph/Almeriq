@@ -56,6 +56,7 @@ const FounderOrdersPage = lazyWithRetry(() => import("./Pages/founder/FounderOrd
 const ExpertDiscoveryPage = lazyWithRetry(() => import("./Pages/founder/ExpertDiscoveryPage"));
 const ExpertProfilePage = lazyWithRetry(() => import("./Pages/expert/ExpertProfilePage"));
 const TeamWorkforcePage = lazyWithRetry(() => import("./Pages/founder/TeamWorkforcePage"));
+const TalentProfilePage = lazyWithRetry(() => import("./Pages/founder/TalentProfilePage"));
 const TeamInvitationsPage = lazyWithRetry(() => import("./Pages/jobseeker/TeamInvitationsPage"));
 
 // Admin routes
@@ -186,6 +187,10 @@ function App() {
                       <FounderProductPage />
                     </ProtectedRoute>
                   }
+                />
+                <Route
+                  path="/founder/talent/:userId"
+                  element={<FounderRoute><TalentProfilePage /></FounderRoute>}
                 />
                 <Route
                   path="/founder/team"
