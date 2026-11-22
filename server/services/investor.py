@@ -301,10 +301,20 @@ async def update_investor_portfolio(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
     if item["status"] not in {"accepted", "in_discussion", "invested"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Record an investment only after the founder accepts or opens discussion")
+    was_invested = item["status"] == "invested"
     updated = await investment_repo.update_investor_portfolio(investment_id, investor_id, values, session=session)
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
     updated["pitch"] = await pitch_repo.get_startup_pitch(updated["pitch_id"], session=session)
+    if not was_invested and updated["pitch"]:
+        await notification_repo.create_notification(
+            user_id=updated["pitch"]["founder_id"],
+            type="investment",
+            title="Investor updated their portfolio",
+            body="An investor recorded a portfolio entry for your startup. This is an investor-reported record, not a payment confirmation.",
+            link="/founder/pitches",
+            session=session,
+        )
     return updated
 
 
