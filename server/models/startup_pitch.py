@@ -19,6 +19,7 @@ class StartupPitch(Base):
     stage: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     ask_amount: Mapped[Optional[float]] = mapped_column(Numeric(12, 2), nullable=True)
     location: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    target_check_size: Mapped[Optional[float]] = mapped_column(Numeric(12, 2), nullable=True)
     website_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     pitch_deck_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     financials_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -38,7 +39,7 @@ class StartupPitch(Base):
         return {
             "id": self.id, "founder_id": self.founder_id, "title": self.title,
             "summary": self.summary, "sector": self.sector, "stage": self.stage,
-            "ask_amount": self.ask_amount, "location": self.location,
+            "ask_amount": self.ask_amount, "location": self.location, "target_check_size": self.target_check_size,
             "website_url": self.website_url, "pitch_deck_url": self.pitch_deck_url,
             "financials_url": self.financials_url, "traction": self.traction,
             "team_summary": self.team_summary, "documents": documents,
