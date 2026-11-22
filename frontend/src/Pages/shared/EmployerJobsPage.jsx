@@ -8,6 +8,7 @@ import {
   reviewJobApplicationApi,
   updateJobApi,
 } from "../../lib/api/job";
+import { executeAiToolApi } from "../../lib/api/founder";
 
 const EMPTY_JOB = { title: "", description: "", location: "", role_type: "full_time", requirements: "", salary_min: "", salary_max: "" };
 
@@ -21,6 +22,7 @@ export default function EmployerJobsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [drafting, setDrafting] = useState(false);
 
   const loadJobs = useCallback(async () => {
     try {
@@ -38,6 +40,19 @@ export default function EmployerJobsPage() {
 
   const updateField = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
 
+  const draftJobWithAi = async () => {
+    if (form.title.trim().length < 5) { setError("Add a job title with at least five characters before drafting."); return; }
+    setDrafting(true); setError(""); setNotice("");
+    try {
+      const response = await executeAiToolApi({ tool_key: "job_post", idea: form.title.trim(), customer: "Potential applicants", location: form.location.trim(), extra_params: { employment_type: form.role_type, location: form.location.trim() || "Not specified", requirements: form.requirements.trim() || "Not specified", salary_min: form.salary_min || null, salary_max: form.salary_max || null } });
+      const draft = response.result || {};
+      const responsibilities = Array.isArray(draft.responsibilities) ? draft.responsibilities.map((item) => "- " + item).join("\n") : "";
+      const description = [draft.role_summary, responsibilities, draft.why_join_us].filter(Boolean).join("\n\n");
+      setForm((current) => ({ ...current, title: draft.title || current.title, description: description || current.description, requirements: Array.isArray(draft.requirements) ? draft.requirements.join(", ") : draft.requirements || current.requirements }));
+      setNotice("AI draft added to the form. Review and edit every detail before publishing.");
+    } catch (err) { setError(err.message || "Unable to draft this job post."); }
+    finally { setDrafting(false); }
+  };
   const submitJob = async (event) => {
     event.preventDefault();
     setSaving(true);
@@ -162,6 +177,7 @@ export default function EmployerJobsPage() {
 
         <Card className="p-6">
           <h2 className="font-serif text-xl">{editingJobId ? "Edit job posting" : "Create a job posting"}</h2>
+          <div className="mt-4 flex justify-end"><Button type="button" variant="ghost" disabled={drafting || !form.title.trim()} onClick={draftJobWithAi}>{drafting ? "Drafting…" : "Draft with AI"}</Button></div>
           <form onSubmit={submitJob} className="mt-5 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2 text-sm"><span>Job title</span><Input name="title" required maxLength={200} value={form.title} onChange={updateField} placeholder="e.g. Backend Engineer" /></label>
