@@ -27,11 +27,9 @@ export default function InvestorDashboardPage() {
   const signatureCanvasRef = useRef(null);
   const [editingInvestment, setEditingInvestment] = useState(null);
   const [confirmationStep, setConfirmationStep] = useState(1);
-  const [selectedDealId, setSelectedDealId] = useState(null);
-  const [selectedOpportunityId, setSelectedOpportunityId] = useState(null);
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
-  const activeOpportunityId = params.pitchId ? Number(params.pitchId) : selectedOpportunityId;
-  const activeDealId = params.dealId ? Number(params.dealId) : selectedDealId;
+  const activeOpportunityId = params.pitchId ? Number(params.pitchId) : null;
+  const activeDealId = params.dealId ? Number(params.dealId) : null;
 
   const load = async () => {
     setLoading(true);
