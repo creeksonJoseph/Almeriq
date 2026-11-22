@@ -15,6 +15,7 @@ import {
 import FounderStudioNav from "../../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
 import { getCompanyRegistrationGuideApi } from "../../lib/api";
+import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { COUNTRIES } from "../../lib/countries";
@@ -213,6 +214,11 @@ export default function FounderLegalPage() {
 
   // Mode: "dossier" (Company Formation) | "templates" (Contracts)
   const [activeMode, setActiveMode] = useState("dossier");
+  const [filings, setFilings] = useState([]);
+  const [filingLoading, setFilingLoading] = useState(false);
+  const [filingSaving, setFilingSaving] = useState(false);
+  const [filingError, setFilingError] = useState("");
+  const [filingForm, setFilingForm] = useState({ filing_type: "company", company_name: "", entity_type: "Ltd", jurisdiction: "", ip_title: "", ip_type: "Source Code", ip_description: "" });
 
   // Company registration guide stepper: 1 = Why & Steps, 2 = Documents & Next Steps
   const [guideStep, setGuideStep] = useState(1);
@@ -238,6 +244,36 @@ export default function FounderLegalPage() {
   const [selectedTemplate, setSelectedTemplate] = useState(LEGAL_TEMPLATES[0]);
   const [copiedTemplate, setCopiedTemplate] = useState(false);
 
+  const loadFilings = useCallback(async () => {
+    setFilingLoading(true);
+    setFilingError("");
+    try { setFilings(await listLegalFilingsApi()); }
+    catch (err) { setFilingError(err.message || "Unable to load your registration requests."); }
+    finally { setFilingLoading(false); }
+  }, []);
+
+  useEffect(() => { loadFilings(); }, [loadFilings]);
+
+  const submitFiling = async (event) => {
+    event.preventDefault();
+    setFilingSaving(true);
+    setFilingError("");
+    try {
+      await createLegalFilingApi({
+        ...filingForm,
+        company_name: filingForm.filing_type === "company" ? filingForm.company_name.trim() : null,
+        entity_type: filingForm.filing_type === "company" ? filingForm.entity_type : null,
+        jurisdiction: filingForm.filing_type === "company" ? filingForm.jurisdiction.trim() : null,
+        ip_title: filingForm.filing_type === "ip" ? filingForm.ip_title.trim() : null,
+        ip_type: filingForm.filing_type === "ip" ? filingForm.ip_type : null,
+        ip_description: filingForm.filing_type === "ip" ? filingForm.ip_description.trim() : null,
+      });
+      await loadFilings();
+      setFilingForm((current) => ({ ...current, company_name: "", ip_title: "", ip_description: "" }));
+      showToast("Registration intake submitted. This does not file with a government office.", "success");
+    } catch (err) { setFilingError(err.message || "Unable to submit this registration intake."); }
+    finally { setFilingSaving(false); }
+  };
   // Fetch company registration guide
   const loadGuide = useCallback(async (countryName, forceRefresh = false) => {
     setGuideLoading(true);
