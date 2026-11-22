@@ -9,6 +9,9 @@ const TYPE_ICONS = {
   payment: "💰",
   system: "⚙️",
   alert: "⚠️",
+  job: "💼",
+  investment: "📈",
+  advisory: "🧭",
 };
 
 export default function AlertsPage() {
@@ -40,7 +43,7 @@ export default function AlertsPage() {
     loadNotifications();
   }, []);
 
-  const filterTypes = { orders: "order", messages: "message", payments: "payment", system: "system" };
+  const filterTypes = { orders: "order", messages: "message", payments: "payment", system: "system", jobs: "job", investments: "investment", advisory: "advisory" };
   const filteredNotifications = filter === "unread"
     ? notifications.filter((n) => !n.read)
     : filter === "all"
@@ -112,7 +115,7 @@ export default function AlertsPage() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6">
-        {["all", "unread", "orders", "messages", "payments", "system"].map(f => (
+        {["all", "unread", "orders", "messages", "payments", "jobs", "investments", "advisory", "system"].map(f => (
           <Button
             key={f}
             variant={filter === f ? "primary" : "ghost"}
@@ -123,7 +126,7 @@ export default function AlertsPage() {
             {f.charAt(0).toUpperCase() + f.slice(1)}
             {f !== "all" && (
               <span className="px-1.5 py-0.2 rounded bg-surface text-[10px] font-mono">
-                {notifications.filter(n => f === "unread" ? !n.read : n.type === ({ orders: "order", messages: "message", payments: "payment", system: "system" }[f])).length}
+                {notifications.filter(n => f === "unread" ? !n.read : n.type === ({ orders: "order", messages: "message", payments: "payment", jobs: "job", investments: "investment", advisory: "advisory", system: "system" }[f])).length}
               </span>
             )}
           </Button>
