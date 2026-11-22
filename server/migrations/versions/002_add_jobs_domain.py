@@ -6,12 +6,13 @@ Create Date: 2026-11-19
 
 Idempotent, dialect-neutral creation of the jobs domain tables:
 job_postings, job_applications, job_seeker_profiles.
+Uses SQLAlchemy column definitions (op.create_table) so the same migration
+runs on SQLite and PostgreSQL without native enum or ARRAY types.
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision: str = "002_add_jobs_domain"
@@ -23,84 +24,136 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema: Create jobs domain tables with indexes (IF NOT EXISTS)."""
     # 1. job_postings
-    op.execute(
-        sa.text(
-            """
-            CREATE TABLE IF NOT EXISTS job_postings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                provider_id INTEGER NOT NULL REFERENCES provider_profiles(id) ON DELETE CASCADE,
-                title TEXT NOT NULL,
-                description TEXT NOT NULL,
-                location TEXT,
-                role_type TEXT,
-                salary_min NUMERIC(12, 2),
-                salary_max NUMERIC(12, 2),
-                requirements TEXT,
-                is_active BOOLEAN NOT NULL DEFAULT true,
-                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-            """
-        )
+    op.create_table(
+        "job_postings",
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column(
+            "provider_id",
+            sa.Integer,
+            sa.ForeignKey("provider_profiles.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column("title", sa.Text, nullable=False),
+        sa.Column("description", sa.Text, nullable=False),
+        sa.Column("location", sa.Text, nullable=True),
+        sa.Column("role_type", sa.Text, nullable=True),
+        sa.Column("salary_min", sa.Numeric(12, 2), nullable=True),
+        sa.Column("salary_max", sa.Numeric(12, 2), nullable=True),
+        sa.Column("requirements", sa.Text, nullable=True),
+        sa.Column("is_active", sa.Boolean, nullable=False, server_default=sa.true()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
     )
-    op.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_job_postings_provider_id ON job_postings (provider_id)"))
-    op.execute(
-        sa.text("CREATE INDEX IF NOT EXISTS idx_job_postings_provider_active ON job_postings (provider_id, is_active)")
+    op.create_index("idx_job_postings_provider_id", "job_postings", ["provider_id"])
+    op.create_index(
+        "idx_job_postings_provider_active", "job_postings", ["provider_id", "is_active"]
     )
-    op.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_job_postings_is_active ON job_postings (is_active)"))
+    op.create_index("idx_job_postings_is_active", "job_postings", ["is_active"])
 
     # 2. job_applications
-    op.execute(
-        sa.text(
-            """
-            CREATE TABLE IF NOT EXISTS job_applications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                job_posting_id INTEGER NOT NULL REFERENCES job_postings(id) ON DELETE CASCADE,
-                applicant_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                cover_letter TEXT,
-                resume_url TEXT,
-                status TEXT NOT NULL DEFAULT 'pending',
-                applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT uq_job_application_one_per_user UNIQUE (job_posting_id, applicant_id)
-            )
-            """
-        )
+    op.create_table(
+        "job_applications",
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column(
+            "job_posting_id",
+            sa.Integer,
+            sa.ForeignKey("job_postings.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "applicant_id",
+            sa.Integer,
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column("cover_letter", sa.Text, nullable=True),
+        sa.Column("resume_url", sa.Text, nullable=True),
+        sa.Column("status", sa.Text, nullable=False, server_default="pending"),
+        sa.Column(
+            "applied_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.UniqueConstraint(
+            "job_posting_id", "applicant_id", name="uq_job_application_one_per_user"
+        ),
     )
-    op.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_job_applications_job_posting_id ON job_applications (job_posting_id)"))
-    op.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_job_applications_applicant_id ON job_applications (applicant_id)"))
-    op.execute(
-        sa.text("CREATE INDEX IF NOT EXISTS idx_job_applications_applicant_status ON job_applications (applicant_id, status)")
+    op.create_index("idx_job_applications_job_posting_id", "job_applications", ["job_posting_id"])
+    op.create_index("idx_job_applications_applicant_id", "job_applications", ["applicant_id"])
+    op.create_index(
+        "idx_job_applications_applicant_status",
+        "job_applications",
+        ["applicant_id", "status"],
     )
 
     # 3. job_seeker_profiles
-    op.execute(
-        sa.text(
-            """
-            CREATE TABLE IF NOT EXISTS job_seeker_profiles (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                headline TEXT,
-                bio TEXT,
-                location TEXT,
-                skills_json TEXT NOT NULL DEFAULT '[]',
-                experience_years INTEGER,
-                resume_url TEXT,
-                portfolio_url TEXT,
-                is_active BOOLEAN NOT NULL DEFAULT true,
-                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT uq_job_seeker_profile_user UNIQUE (user_id)
-            )
-            """
-        )
+    op.create_table(
+        "job_seeker_profiles",
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column(
+            "user_id",
+            sa.Integer,
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column("headline", sa.Text, nullable=True),
+        sa.Column("bio", sa.Text, nullable=True),
+        sa.Column("location", sa.Text, nullable=True),
+        sa.Column("skills_json", sa.Text, nullable=False, server_default="[]"),
+        sa.Column("experience_years", sa.Integer, nullable=True),
+        sa.Column("resume_url", sa.Text, nullable=True),
+        sa.Column("portfolio_url", sa.Text, nullable=True),
+        sa.Column("is_active", sa.Boolean, nullable=False, server_default=sa.true()),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.now(),
+            nullable=False,
+        ),
+        sa.UniqueConstraint("user_id", name="uq_job_seeker_profile_user"),
     )
-    op.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_job_seeker_profiles_user_id ON job_seeker_profiles (user_id)"))
+    op.create_index("idx_job_seeker_profiles_user_id", "job_seeker_profiles", ["user_id"])
 
 
 def downgrade() -> None:
     """Downgrade schema: Drop jobs domain tables in reverse dependency order."""
-    op.execute(sa.text("DROP TABLE IF EXISTS job_applications"))
-    op.execute(sa.text("DROP TABLE IF EXISTS job_seeker_profiles"))
-    op.execute(sa.text("DROP TABLE IF EXISTS job_postings"))
+    op.drop_index("idx_job_seeker_profiles_user_id", table_name="job_seeker_profiles")
+    op.drop_table("job_seeker_profiles")
+    op.drop_index("idx_job_applications_applicant_status", table_name="job_applications")
+    op.drop_index("idx_job_applications_applicant_id", table_name="job_applications")
+    op.drop_index("idx_job_applications_job_posting_id", table_name="job_applications")
+    op.drop_table("job_applications")
+    op.drop_index("idx_job_postings_is_active", table_name="job_postings")
+    op.drop_index("idx_job_postings_provider_active", table_name="job_postings")
+    op.drop_index("idx_job_postings_provider_id", table_name="job_postings")
+    op.drop_table("job_postings")
