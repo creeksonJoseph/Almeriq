@@ -109,6 +109,7 @@ export default function InvestorDashboardPage() {
     groups[stage] = (groups[stage] || 0) + Number(item.investment_amount || 0);
     return groups;
   }, {});
+  const maxStageExposure = Math.max(1, ...Object.values(stageExposure));
   const visibleStartups = startups.filter((pitch) =>
     [pitch.title, pitch.summary, pitch.sector, pitch.stage]
       .filter(Boolean)
@@ -136,7 +137,7 @@ export default function InvestorDashboardPage() {
             <Card className="p-4"><p className="text-xs text-white/45">ROI on valued positions</p><p className="mt-2 text-2xl font-semibold">{portfolioRoi == null ? "—" : portfolioRoi.toFixed(1) + "%"}</p></Card>
           </div>
           {projectedValue != null && <Card className="p-4"><p className="text-xs text-white/45">Illustrative 12-month value projection</p><p className="mt-2 text-xl font-semibold">{projectedValue.toLocaleString()}</p><p className="mt-1 text-xs text-white/45">Uses your self-entered {returnAssumption}% annual return assumption; not a forecast or guarantee.</p></Card>}
-          {Object.keys(stageExposure).length > 0 && <Card className="p-4"><h3 className="font-medium">Portfolio stage exposure</h3><div className="mt-3 space-y-2">{Object.entries(stageExposure).map(([stage, amount]) => <div key={stage} className="flex items-center justify-between text-sm"><span className="text-white/65">{stage}</span><span>{amount.toLocaleString()}</span></div>)}</div><p className="mt-2 text-xs text-white/40">Stage exposure is a simple portfolio breakdown, not a formal risk rating.</p></Card>}
+          {Object.keys(stageExposure).length > 0 && <Card className="p-4"><h3 className="font-medium">Portfolio stage exposure</h3><div className="mt-3 space-y-2">{Object.entries(stageExposure).map(([stage, amount]) => <div key={stage} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="text-white/65">{stage}</span><span>{amount.toLocaleString()}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#C9A15A]" style={{ width: (amount / maxStageExposure * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Stage exposure is a simple portfolio breakdown, not a formal risk rating.</p></Card>}
           <p className="text-xs text-white/40">Portfolio figures are manually recorded by you. Almeriq does not process or verify investment transfers.</p>
         </section>
 
