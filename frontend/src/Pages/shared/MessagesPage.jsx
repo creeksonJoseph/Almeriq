@@ -49,7 +49,8 @@ export default function MessagesPage() {
 
   const openConversation = async (conversation) => {
     setActiveConversation(conversation);
-    setMobileDrawerOpen(true);
+    setMobileDrawerOpen(false);
+    setError("");
     try {
       const res = await listMessagesApi(conversation.id);
       setMessages((res.items || res.messages || []).map(message => ({
@@ -173,7 +174,7 @@ export default function MessagesPage() {
               messageForm={messageForm}
               sending={sending}
               messagesEndRef={messagesEndRef}
-              onClose={() => { setActiveConversation(null); setMobileDrawerOpen(false); }}
+              onClose={() => setMobileDrawerOpen(true)}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-white/60">
