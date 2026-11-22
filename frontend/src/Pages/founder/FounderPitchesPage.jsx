@@ -73,7 +73,7 @@ export default function FounderPitchesPage() {
     setError(""); setNotice("");
     try {
       const { data } = await apiClient.patch(`/api/founder/investment-requests/${requestId}`, { status });
-      setRequests((items) => items.map((item) => item.id === requestId ? data : item));
+      setRequests((items) => items.map((item) => item.id === requestId ? { ...item, ...data } : item));
       setNotice(`Investor request marked ${status.replaceAll("_", " ")}.`);
     } catch (err) {
       setError(err.response?.data?.detail || "Unable to update this investor request.");
