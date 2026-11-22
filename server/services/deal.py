@@ -1,6 +1,5 @@
 """services/deal.py - Business logic for deals."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import deal as deal_repo
@@ -9,7 +8,6 @@ from repositories import asset as asset_repo
 from repositories import provider_profile as provider_repo
 from repositories import notification as notification_repo
 
-logger = logging.getLogger(__name__)
 
 
 async def _get_participant_order(order_id: int, provider_id: int | None, client_id: int | None, session: AsyncSession | None) -> dict | None:
