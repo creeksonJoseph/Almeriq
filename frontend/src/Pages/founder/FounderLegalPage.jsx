@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ExternalLink,
   RotateCcw,
@@ -266,9 +267,10 @@ function normalizePostRegistration(item, idx) {
 export default function FounderLegalPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
-
-  // Mode: "dossier" (Company Formation) | "templates" (Contracts)
-  const [activeMode, setActiveMode] = useState("dossier");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeMode = location.pathname.endsWith("/templates") ? "templates" : location.pathname.endsWith("/filings") ? "filings" : "dossier";
+  const setActiveMode = (mode) => navigate(mode === "templates" ? "/founder/legal/templates" : mode === "filings" ? "/founder/legal/filings" : "/founder/legal/guide");
   const [filings, setFilings] = useState([]);
   const [filingLoading, setFilingLoading] = useState(false);
   const [filingSaving, setFilingSaving] = useState(false);
