@@ -39,3 +39,19 @@ class InvestmentRequestCreate(BaseModel):
 
 class InvestmentRequestStatusUpdate(BaseModel):
     status: str
+
+
+class StartupPitchCreateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    summary: Optional[str] = Field(default=None, max_length=10000)
+    sector: Optional[str] = Field(default=None, max_length=120)
+    stage: Optional[str] = Field(default=None, max_length=80)
+    ask_amount: Optional[float] = Field(default=None, ge=0)
+
+
+class StartupPitchUpdateRequest(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    summary: Optional[str] = Field(default=None, max_length=10000)
+    sector: Optional[str] = Field(default=None, max_length=120)
+    stage: Optional[str] = Field(default=None, max_length=80)
+    ask_amount: Optional[float] = Field(default=None, ge=0)
