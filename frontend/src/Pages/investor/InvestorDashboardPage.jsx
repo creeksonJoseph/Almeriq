@@ -23,7 +23,10 @@ export default function InvestorDashboardPage() {
     setError("");
     try {
       const [profileResult, startupResult, requestResult] = await Promise.all([
-        getInvestorProfileApi(),
+        getInvestorProfileApi().catch((err) => {
+          if (err.status === 404) return null;
+          throw err;
+        }),
         listInvestorStartupsApi(),
         listInvestorPortfolioApi(),
       ]);
