@@ -1,5 +1,5 @@
 from __future__ import annotations
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import expert_profile as profile_repo
 from repositories import advisory_request as request_repo
