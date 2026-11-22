@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.investor_profile import InvestorProfile
 
-PROFILE_FIELDS = {"firm_name", "investment_focus", "check_size", "location", "about"}
+PROFILE_FIELDS = {"firm_name", "investment_focus", "check_size", "location", "about", "investor_type", "preferred_sectors", "preferred_stages", "geographies", "check_size_min", "check_size_max", "lead_follow_preference", "track_record", "value_add", "accreditation_status"}
+JSON_FIELDS = {"preferred_sectors": "preferred_sectors_json", "preferred_stages": "preferred_stages_json", "geographies": "geographies_json"}
 
 
 async def create_investor_profile(user_id: int, session: AsyncSession | None = None) -> dict:
@@ -33,6 +34,7 @@ async def get_investor_profile_by_user_id(user_id: int, session: AsyncSession | 
 async def upsert_investor_profile(user_id: int, session: AsyncSession | None = None, **values) -> dict:
     stmt = select(InvestorProfile).where(InvestorProfile.user_id == user_id).limit(1)
     updates = {key: value for key, value in values.items() if key in PROFILE_FIELDS}
+    updates = {JSON_FIELDS.get(key, key): __import__("json").dumps(value or []) if key in JSON_FIELDS else value for key, value in updates.items()}
     if session is not None:
         profile = await session.scalar(stmt)
         if profile is None:
