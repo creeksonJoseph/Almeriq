@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Input } from "../../components/ui";
 import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
   createInvestmentApi,
@@ -14,6 +14,7 @@ export default function InvestorDashboardPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyPitch, setBusyPitch] = useState(null);
+  const [startupQuery, setStartupQuery] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -59,6 +60,13 @@ export default function InvestorDashboardPage() {
   if (loading) return <div className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white/60">Loading investor workspace…</div>;
 
   const requestedPitchIds = new Set(requests.map((request) => request.pitch_id));
+  const visibleStartups = startups.filter((pitch) =>
+    [pitch.title, pitch.summary, pitch.sector, pitch.stage]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(startupQuery.trim().toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white">
@@ -72,8 +80,9 @@ export default function InvestorDashboardPage() {
         {!profile?.firm_name && <Card className="border border-[#C9A15A]/20 bg-[#C9A15A]/5 p-4 text-sm text-white/70">Complete your investor profile so founders can understand your investment focus.</Card>}
 
         <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3"><h2 className="font-serif text-xl">Startup discovery</h2><span className="text-xs text-white/40">{startups.length} pitches</span></div>
-          {startups.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">No startup pitches are available yet.</Card> : startups.map((pitch) => (
+          <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-serif text-xl">Startup discovery</h2><span className="text-xs text-white/40">{visibleStartups.length} pitches</span></div>
+          <Input value={startupQuery} onChange={(event) => setStartupQuery(event.target.value)} placeholder="Search startups, sectors or stages…" />
+          {startups.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">No startup pitches are available yet.</Card> : visibleStartups.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">No pitches match that search.</Card> : visibleStartups.map((pitch) => (
             <Card key={pitch.id} className="border border-white/10 bg-white/2 p-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1"><h3 className="font-medium text-white">{pitch.title}</h3><p className="mt-1 text-xs text-[#C9A15A]">{pitch.sector || "Sector not specified"} · {pitch.stage || "Stage not specified"}</p><p className="mt-3 whitespace-pre-wrap text-sm text-white/65">{pitch.summary || "The founder hasn't added a summary yet."}</p>{pitch.ask_amount != null && <p className="mt-3 text-sm text-white/60">Funding ask: {Number(pitch.ask_amount).toLocaleString()}</p>}</div>
