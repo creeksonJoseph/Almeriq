@@ -15,6 +15,7 @@ async def create_startup_pitch(
     stage: str | None = None,
     ask_amount: float | None = None,
     location: str | None = None,
+    target_check_size: float | None = None,
     website_url: str | None = None,
     pitch_deck_url: str | None = None,
     financials_url: str | None = None,
@@ -31,6 +32,7 @@ async def create_startup_pitch(
         stage=stage,
         ask_amount=ask_amount,
         location=location,
+        target_check_size=target_check_size,
         website_url=website_url,
         pitch_deck_url=pitch_deck_url,
         financials_url=financials_url,
@@ -104,7 +106,7 @@ async def update_startup_pitch(
     session: AsyncSession | None = None,
     **values,
 ) -> dict | None:
-    allowed = {"title", "summary", "sector", "stage", "ask_amount", "location", "website_url", "pitch_deck_url", "financials_url", "traction", "team_summary", "documents"}
+    allowed = {"title", "summary", "sector", "stage", "ask_amount", "location", "target_check_size", "website_url", "pitch_deck_url", "financials_url", "traction", "team_summary", "documents"}
     updates = {("documents_json" if key == "documents" else key): (__import__("json").dumps(value or []) if key == "documents" else value) for key, value in values.items() if key in allowed}
     if not updates:
         return await get_startup_pitch(pitch_id, founder_id, session)
