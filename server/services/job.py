@@ -147,7 +147,7 @@ async def delete_job_posting(job_id: int, provider_id: int | None = None, founde
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job posting not found",
         )
-    if posting["provider_id"] != provider_id:
+    if not _owns_posting(posting, provider_id=provider_id, founder_user_id=founder_user_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not the owner of this job posting",
