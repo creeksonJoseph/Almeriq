@@ -68,6 +68,7 @@ const ProviderListingPreviewPage = lazyWithRetry(() => import("./Pages/provider/
 const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrdersPage"));
 const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrderDetailPage"));
 const ProviderDispatchPage = lazyWithRetry(() => import("./Pages/provider/ProviderDispatchPage"));
+const EmployerJobsPage = lazyWithRetry(() => import("./Pages/shared/EmployerJobsPage"));
 const JobSeekerJobsPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerJobsPage"));
 const JobSeekerDashboardPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerDashboardPage"));
 const JobSeekerSetupPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerSetupPage"));
@@ -281,6 +282,15 @@ function App() {
                     <ProviderRoute>
                       <ProviderDispatchPage />
                     </ProviderRoute>
+                  }
+                />
+
+                <Route
+                  path="/jobs/manage"
+                  element={
+                    <ProtectedRoute>
+                      <EmployerJobsPage />
+                    </ProtectedRoute>
                   }
                 />
 
