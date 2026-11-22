@@ -308,7 +308,7 @@ class DealCreateRequest(BaseModel):
 
 
 class DealSignRequest(BaseModel):
-    signature: str = Field(..., min_length=1)
+    signature: str = Field(..., min_length=1, max_length=100000)
     payment_method: Optional[str] = Field(default=None, max_length=50)
     amount: Optional[Decimal] = Field(default=None, gt=0)
 
