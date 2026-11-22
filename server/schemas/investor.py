@@ -172,3 +172,11 @@ class InvestorPortfolioUpdateRequest(BaseModel):
     ownership_percent: Optional[float] = Field(default=None, ge=0, le=100)
     investment_date: Optional[date] = None
     notes: Optional[str] = Field(default=None, max_length=3000)
+    risk_level: Optional[str] = Field(default=None)
+
+    @field_validator("risk_level")
+    @classmethod
+    def validate_risk_level(cls, value):
+        if value is not None and value not in {"low", "medium", "high"}:
+            raise ValueError("Risk level must be low, medium, or high")
+        return value
