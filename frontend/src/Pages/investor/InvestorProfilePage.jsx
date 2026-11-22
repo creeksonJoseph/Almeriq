@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import { getInvestorProfileApi, updateInvestorProfileApi } from "../../lib/api";
 
-const EMPTY = { firm_name: "", investment_focus: "", check_size: "", location: "", about: "" };
+const EMPTY = { firm_name: "", investment_focus: "", check_size: "", location: "", about: "", investor_type: "", preferred_sectors: [], preferred_stages: [], geographies: [], check_size_min: "", check_size_max: "", lead_follow_preference: "either", track_record: "", value_add: "", accreditation_status: "" };
 
 export default function InvestorProfilePage() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function InvestorProfilePage() {
   useEffect(() => {
     let active = true;
     getInvestorProfileApi().then((profile) => {
-      if (active && profile) setForm({ ...EMPTY, ...profile });
+      if (active && profile) setForm({ ...EMPTY, ...profile, preferred_sectors: profile.preferred_sectors || [], preferred_stages: profile.preferred_stages || [], geographies: profile.geographies || [] });
     }).catch((err) => {
       if (active && err.status !== 404) setError(err.message || "Unable to load your profile.");
     }).finally(() => { if (active) setLoading(false); });
@@ -38,8 +38,18 @@ export default function InvestorProfilePage() {
         check_size: form.check_size.trim() || null,
         location: form.location.trim() || null,
         about: form.about.trim() || null,
+        investor_type: form.investor_type.trim() || null,
+        preferred_sectors: form.preferred_sectors,
+        preferred_stages: form.preferred_stages,
+        geographies: form.geographies,
+        check_size_min: form.check_size_min === "" ? null : Number(form.check_size_min),
+        check_size_max: form.check_size_max === "" ? null : Number(form.check_size_max),
+        lead_follow_preference: form.lead_follow_preference,
+        track_record: form.track_record.trim() || null,
+        value_add: form.value_add.trim() || null,
+        accreditation_status: form.accreditation_status || null,
       });
-      setForm({ ...EMPTY, ...profile });
+      setForm({ ...EMPTY, ...profile, preferred_sectors: profile.preferred_sectors || [], preferred_stages: profile.preferred_stages || [], geographies: profile.geographies || [] });
       setSaved(true);
     } catch (err) {
       setError(err.message || "Unable to save your profile.");
@@ -63,7 +73,16 @@ export default function InvestorProfilePage() {
             <label className="block space-y-2"><span className="text-sm">Investment focus</span><Input name="investment_focus" value={form.investment_focus || ""} onChange={update} placeholder="e.g. fintech, climate, developer tools" /></label>
             <label className="block space-y-2"><span className="text-sm">Typical check size</span><Input name="check_size" value={form.check_size || ""} onChange={update} placeholder="e.g. $10k–$50k" /></label>
             <label className="block space-y-2"><span className="text-sm">Location</span><Input name="location" value={form.location || ""} onChange={update} placeholder="City, country or remote" /></label>
-            <label className="block space-y-2"><span className="text-sm">About</span><textarea name="about" value={form.about || ""} onChange={update} rows={5} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm outline-none focus:border-[#C9A15A]" placeholder="Your investment thesis, stage preference and what you offer founders." /></label>
+            <label className="block space-y-2"><span className="text-sm">Investor type</span><Input name="investor_type" value={form.investor_type || ""} onChange={update} placeholder="Angel, VC, family office, syndicate…" /></label>
+            <label className="block space-y-2"><span className="text-sm">Preferred sectors (comma separated)</span><Input value={(form.preferred_sectors || []).join(", ")} onChange={(event) => setForm((current) => ({ ...current, preferred_sectors: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) }))} placeholder="Fintech, climate, developer tools" /></label>
+            <label className="block space-y-2"><span className="text-sm">Preferred stages (comma separated)</span><Input value={(form.preferred_stages || []).join(", ")} onChange={(event) => setForm((current) => ({ ...current, preferred_stages: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) }))} placeholder="Pre-seed, seed, Series A" /></label>
+            <label className="block space-y-2"><span className="text-sm">Investment geographies (comma separated)</span><Input value={(form.geographies || []).join(", ")} onChange={(event) => setForm((current) => ({ ...current, geographies: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) }))} placeholder="Kenya, East Africa, Africa" /></label>
+            <div className="grid gap-4 sm:grid-cols-2"><label className="block space-y-2"><span className="text-sm">Minimum check size</span><Input type="number" min="0" step="0.01" name="check_size_min" value={form.check_size_min ?? ""} onChange={update} /></label><label className="block space-y-2"><span className="text-sm">Maximum check size</span><Input type="number" min="0" step="0.01" name="check_size_max" value={form.check_size_max ?? ""} onChange={update} /></label></div>
+            <label className="block space-y-2"><span className="text-sm">Lead / follow preference</span><select name="lead_follow_preference" value={form.lead_follow_preference || "either"} onChange={update} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm"><option value="either">Either</option><option value="lead">Prefer to lead</option><option value="follow">Prefer to follow</option></select></label>
+            <label className="block space-y-2"><span className="text-sm">Track record</span><textarea name="track_record" value={form.track_record || ""} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm" placeholder="Relevant investments, exits or experience." /></label>
+            <label className="block space-y-2"><span className="text-sm">Value you bring to founders</span><textarea name="value_add" value={form.value_add || ""} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm" placeholder="Introductions, hiring, product, operations, go-to-market…" /></label>
+            <label className="block space-y-2"><span className="text-sm">Accreditation status (self-reported)</span><select name="accreditation_status" value={form.accreditation_status || ""} onChange={update} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm"><option value="">Not provided</option><option value="accredited">Accredited</option><option value="not_accredited">Not accredited</option><option value="not_applicable">Not applicable</option></select></label>
+            <label className="block space-y-2"><span className="text-sm">About</span><textarea name="about" value={form.about || ""} onChange={update} rows={4} maxLength={3000} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm outline-none focus:border-[#C9A15A]" placeholder="Your investment thesis and what you offer founders." /></label>
             <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : "Save profile"}</Button></div>
           </form>
         </Card>
