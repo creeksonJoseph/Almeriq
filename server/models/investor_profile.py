@@ -29,6 +29,15 @@ class InvestorProfile(Base):
     value_add: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     accreditation_status: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     target_return_percent: Mapped[Optional[float]] = mapped_column(Numeric(7, 4), nullable=True)
+    years_investing: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    verification_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notable_investments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    companies_backed: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    exits: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    assets_under_management: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    time_commitment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    contact_preference: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    contact_formats_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="[]")
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
@@ -50,6 +59,11 @@ class InvestorProfile(Base):
             "check_size_min": self.check_size_min, "check_size_max": self.check_size_max,
             "lead_follow_preference": self.lead_follow_preference,
             "track_record": self.track_record, "value_add": self.value_add,
-            "accreditation_status": self.accreditation_status, "target_return_percent": self.target_return_percent, "verified": self.verified,
+            "accreditation_status": self.accreditation_status, "target_return_percent": self.target_return_percent,
+            "years_investing": self.years_investing, "verification_url": self.verification_url,
+            "notable_investments": self.notable_investments, "companies_backed": self.companies_backed,
+            "exits": self.exits, "assets_under_management": self.assets_under_management,
+            "time_commitment": self.time_commitment, "contact_preference": self.contact_preference,
+            "contact_formats": decode(self.contact_formats_json), "verified": self.verified,
             "created_at": self.created_at, "updated_at": self.updated_at,
         }
