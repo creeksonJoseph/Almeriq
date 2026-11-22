@@ -24,6 +24,7 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "team-invitations", label: "Team Invitations", path: "/founder/team/invitations", icon: Mail },
   { key: "fundraising-pitches", label: "Pitch Management", path: "/founder/fundraising/pitches", icon: TrendingUp },
   { key: "fundraising-investors", label: "Investor Interest", path: "/founder/fundraising/investors", icon: Building2 },
+  { key: "fundraising-updates", label: "Investor Updates", path: "/founder/fundraising/updates", icon: Mail },
   { key: "orders", label: "My Orders", path: "/founder/orders", icon: Package },
   { key: "experts", label: "Find Experts", path: "/founder/experts", icon: UserRound },
 ];
