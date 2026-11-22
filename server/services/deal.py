@@ -98,7 +98,24 @@ async def sign_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
-    updated = await deal_repo.sign_deal(deal_id, signature, payment_method=payment_method, amount=amount, session=session)
+    if deal.get("signature"):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This demo deal has already been signed.",
+        )
+    if amount is not None and round(float(amount), 2) != round(float(deal.get("amount") or 0), 2):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The deal amount is fixed by the marketplace listing and cannot be changed.",
+        )
+    if payment_method is not None and payment_method not in {"visa", "mastercard", "paypal", "mpesa"}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Unsupported simulated payment method.",
+        )
+    updated = await deal_repo.sign_deal(
+        deal_id, signature, payment_method=payment_method, amount=None, session=session
+    )
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
