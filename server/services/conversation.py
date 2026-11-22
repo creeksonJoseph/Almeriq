@@ -1,6 +1,5 @@
 """services/conversation.py - Business logic for conversations."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import conversation as conversation_repo
@@ -11,7 +10,6 @@ from repositories import advisory_request as advisory_repo
 from repositories import investment as investment_repo
 from repositories import startup_pitch as pitch_repo
 
-logger = logging.getLogger(__name__)
 
 
 async def list_conversations(
