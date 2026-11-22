@@ -1,6 +1,5 @@
 """services/message.py - Business logic for messages."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import conversation as conversation_repo
@@ -8,7 +7,6 @@ from repositories import message as message_repo
 from repositories import notification as notification_repo
 from repositories import user as user_repo
 
-logger = logging.getLogger(__name__)
 
 
 async def list_messages(
