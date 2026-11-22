@@ -71,11 +71,17 @@ async def list_job_postings(
     limit: int = 50,
     offset: int = 0,
     session: AsyncSession | None = None,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
 ) -> list[dict]:
     """List job postings, newest first, optionally filtered by active status."""
     stmt = select(JobPosting).order_by(JobPosting.created_at.desc()).limit(limit).offset(offset)
     if is_active is not None:
         stmt = stmt.where(JobPosting.is_active == is_active)
+    if provider_id is not None:
+        stmt = stmt.where(JobPosting.provider_id == provider_id)
+    if founder_user_id is not None:
+        stmt = stmt.where(JobPosting.founder_user_id == founder_user_id)
 
     if session is not None:
         rows = (await session.execute(stmt)).scalars().all()
@@ -89,11 +95,17 @@ async def list_job_postings(
 async def count_job_postings(
     is_active: bool | None = None,
     session: AsyncSession | None = None,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
 ) -> int:
     """Count job postings, optionally filtered by active status."""
     stmt = select(func.count()).select_from(JobPosting)
     if is_active is not None:
         stmt = stmt.where(JobPosting.is_active == is_active)
+    if provider_id is not None:
+        stmt = stmt.where(JobPosting.provider_id == provider_id)
+    if founder_user_id is not None:
+        stmt = stmt.where(JobPosting.founder_user_id == founder_user_id)
 
     if session is not None:
         return await session.scalar(stmt) or 0
