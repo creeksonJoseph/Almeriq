@@ -22,7 +22,6 @@ export default function EmployerJobsPage() {
   const [notice, setNotice] = useState("");
 
   const loadJobs = useCallback(async () => {
-    setLoading(true);
     try {
       const result = await listMyJobsApi();
       setJobs(result.items || []);
