@@ -33,7 +33,13 @@ export const JOB_SEEKER_NAV = [
 ];
 
 export const INVESTOR_NAV = [
-  { key: "investor-dashboard", label: "Startup Discovery & Pipeline", path: "/dashboard", icon: TrendingUp },
+  { key: "investor-dashboard", label: "Overview", path: "/investor/dashboard", icon: Home },
+  { key: "investor-startups", label: "Discover Startups", path: "/investor/startups", icon: TrendingUp },
+  { key: "investor-deals", label: "Deal Pipeline", path: "/investor/deals", icon: Boxes },
+  { key: "investor-portfolio", label: "Portfolio", path: "/investor/portfolio", icon: Building2 },
+  { key: "investor-analytics", label: "Analytics", path: "/investor/analytics", icon: TrendingUp },
+  { key: "investor-resources", label: "Documents & Templates", path: "/investor/resources", icon: BookOpen },
+  { key: "investor-settings", label: "Settings", path: "/investor/settings", icon: Settings },
   { key: "investor-profile", label: "Investor Profile", path: "/investor/profile", icon: UserRound },
 ];
 
