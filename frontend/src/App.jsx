@@ -77,6 +77,7 @@ const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/provider/Provider
 const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrderDetailPage"));
 const ProviderDispatchPage = lazyWithRetry(() => import("./Pages/provider/ProviderDispatchPage"));
 const EmployerJobsPage = lazyWithRetry(() => import("./Pages/shared/EmployerJobsPage"));
+const EmployerJobApplicationsPage = lazyWithRetry(() => import("./Pages/shared/EmployerJobApplicationsPage"));
 const JobSeekerJobsPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerJobsPage"));
 const JobSeekerDashboardPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerDashboardPage"));
 const JobSeekerSetupPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerSetupPage"));
@@ -379,6 +380,16 @@ function App() {
                   }
                 />
 
+                <Route
+                  path="/jobs/manage/:jobId/applications"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["founder", "INFRASTRUCTURE_PROVIDER"]}>
+                        <EmployerJobApplicationsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/investor/dashboard"
                   element={
