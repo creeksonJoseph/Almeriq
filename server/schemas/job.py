@@ -56,7 +56,8 @@ class JobPostingUpdateRequest(BaseModel):
 
 class JobPostingResponse(JobPostingBase):
     id: int
-    provider_id: int
+    provider_id: Optional[int] = None
+    founder_user_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
