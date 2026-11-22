@@ -16,6 +16,7 @@ export default function MessagesPage() {
   const [sending, setSending] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [error, setError] = useState("");
+  const [conversationQuery, setConversationQuery] = useState("");
 
   const messageForm = useForm({ defaultValues: { content: "" } });
   const messagesEndRef = useRef(null);
@@ -90,6 +91,13 @@ export default function MessagesPage() {
   }, [messages]);
 
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+  const visibleConversations = conversations.filter((conversation) =>
+    [conversation.otherParty?.name, conversation.lastMessage]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(conversationQuery.trim().toLowerCase()),
+  );
 
   if (loading) {
     return (
@@ -130,19 +138,19 @@ export default function MessagesPage() {
 
           {/* Search */}
           <div className="p-4 border-b border-border">
-            <Input placeholder="Search conversations..." className="text-sm" />
+            <Input value={conversationQuery} onChange={(event) => setConversationQuery(event.target.value)} placeholder="Search conversations..." className="text-sm" />
           </div>
 
           {/* Conversation List */}
           <div className="flex-1 overflow-y-auto">
-            {conversations.length === 0 ? (
+            {visibleConversations.length === 0 ? (
               <div className="p-8 text-center text-white/60">
-                <p>No conversations yet</p>
-                <p className="text-sm mt-1">Start chatting from the Marketplace</p>
+                <p>{conversations.length === 0 ? "No conversations yet" : "No matching conversations"}</p>
+                <p className="text-sm mt-1">{conversations.length === 0 ? "Start chatting from the Marketplace or an accepted request" : "Try another name or message."}</p>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {conversations.map(conv => (
+                {visibleConversations.map(conv => (
                   <ConversationItem
                     key={conv.id}
                     conversation={conv}
