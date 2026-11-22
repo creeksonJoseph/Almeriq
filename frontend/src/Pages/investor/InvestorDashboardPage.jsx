@@ -5,6 +5,7 @@ import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
   createInvestmentApi,
 } from "../../lib/api";
+import { startInvestmentConversationApi } from "../../lib/api/conversations";
 
 export default function InvestorDashboardPage() {
   const navigate = useNavigate();
@@ -34,6 +35,15 @@ export default function InvestorDashboardPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const openConversation = async (investmentId) => {
+    try {
+      const conversation = await startInvestmentConversationApi(investmentId);
+      navigate(`/messages?conversation=${conversation.id}`);
+    } catch (err) {
+      setError(err.message || "Unable to open this conversation.");
+    }
+  };
 
   const expressInterest = async (pitch) => {
     setBusyPitch(pitch.id); setError(""); setNotice("");
@@ -77,7 +87,7 @@ export default function InvestorDashboardPage() {
           <h2 className="font-serif text-xl">Your founder conversations</h2>
           {requests.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">You haven't expressed interest in a startup yet.</Card> : requests.map((request) => {
             const pitch = startups.find((item) => item.id === request.pitch_id);
-            return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-white/2 p-4"><div><p className="font-medium">{pitch?.title || `Startup pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">Request #{request.id}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p></div><span className="rounded-full border border-white/10 px-3 py-1 text-xs capitalize text-white/70">{String(request.status || "pending").replaceAll("_", " ")}</span></Card>;
+            return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-white/2 p-4"><div><p className="font-medium">{pitch?.title || `Startup pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">Request #{request.id}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p></div><div className="flex items-center gap-2"><span className="rounded-full border border-white/10 px-3 py-1 text-xs capitalize text-white/70">{String(request.status || "pending").replaceAll("_", " ")}</span>{["accepted", "in_discussion"].includes(request.status) && <Button size="sm" variant="ghost" onClick={() => openConversation(request.id)}>Message founder</Button>}</div></Card>;
           })}
         </section>
         <p className="text-xs text-white/40">Expressing interest starts a conversation only. It does not transfer funds or create a binding investment.</p>
