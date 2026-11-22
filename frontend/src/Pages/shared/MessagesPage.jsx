@@ -181,6 +181,7 @@ export default function MessagesPage() {
               <div className="text-center">
                 <p className="text-lg font-medium">Select a conversation</p>
                 <p className="text-sm mt-1">Choose a conversation from the list to start messaging</p>
+                <Button className="mt-4 lg:hidden" onClick={() => setMobileDrawerOpen(true)}>View conversations</Button>
               </div>
             </div>
           )}
