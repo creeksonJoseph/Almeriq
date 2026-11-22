@@ -14,9 +14,9 @@ class InvestorProfileResponse(BaseModel):
     location: Optional[str] = None
     about: Optional[str] = None
     investor_type: Optional[str] = None
-    preferred_sectors: list[str] = []
-    preferred_stages: list[str] = []
-    geographies: list[str] = []
+    preferred_sectors: list[str] = Field(default_factory=list)
+    preferred_stages: list[str] = Field(default_factory=list)
+    geographies: list[str] = Field(default_factory=list)
     check_size_min: Optional[float] = None
     check_size_max: Optional[float] = None
     lead_follow_preference: Optional[str] = None
@@ -87,6 +87,13 @@ class PitchDocument(BaseModel):
     title: str = Field(min_length=1, max_length=120)
     url: str = Field(min_length=8, max_length=1000)
 
+    @field_validator("url")
+    @classmethod
+    def validate_document_url(cls, value):
+        if not value.startswith(("https://", "http://")):
+            raise ValueError("Document URLs must use http or https")
+        return value
+
 
 class StartupPitchCreateRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
@@ -102,6 +109,13 @@ class StartupPitchCreateRequest(BaseModel):
     team_summary: Optional[str] = Field(default=None, max_length=3000)
     documents: list[PitchDocument] = Field(default_factory=list, max_length=20)
 
+    @field_validator("website_url", "pitch_deck_url", "financials_url")
+    @classmethod
+    def validate_material_urls(cls, value):
+        if value is not None and not value.startswith(("https://", "http://")):
+            raise ValueError("Material URLs must use http or https")
+        return value
+
 
 class StartupPitchUpdateRequest(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
@@ -116,6 +130,13 @@ class StartupPitchUpdateRequest(BaseModel):
     traction: Optional[str] = Field(default=None, max_length=3000)
     team_summary: Optional[str] = Field(default=None, max_length=3000)
     documents: Optional[list[PitchDocument]] = Field(default=None, max_length=20)
+
+    @field_validator("website_url", "pitch_deck_url", "financials_url")
+    @classmethod
+    def validate_material_urls(cls, value):
+        if value is not None and not value.startswith(("https://", "http://")):
+            raise ValueError("Material URLs must use http or https")
+        return value
 
 
 class InvestorPortfolioUpdateRequest(BaseModel):
