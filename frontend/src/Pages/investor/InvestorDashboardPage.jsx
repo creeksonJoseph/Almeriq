@@ -173,6 +173,7 @@ export default function InvestorDashboardPage() {
   const maxStageExposure = Math.max(1, ...Object.values(stageExposure));
   const riskExposure = investedItems.reduce((groups, item) => { const level = ["low", "medium", "high"].includes(item.risk_level) ? item.risk_level : "unclassified"; groups[level] = (groups[level] || 0) + Number(item.investment_amount || 0); return groups; }, {});
   const riskTotal = Object.values(riskExposure).reduce((sum, amount) => sum + amount, 0);
+  const documentedStartups = startups.filter((pitch) => pitch.website_url || pitch.pitch_deck_url || pitch.financials_url || (pitch.documents || []).length > 0);
   const visibleStartups = startups.filter((pitch) =>
     [pitch.title, pitch.summary, pitch.sector, pitch.stage, pitch.location]
       .filter(Boolean)
@@ -227,6 +228,12 @@ export default function InvestorDashboardPage() {
               </div>
             </Card>
           ))}
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="font-serif text-xl">Deal room documents</h2>
+          {documentedStartups.length === 0 ? <Card className="p-5 text-sm text-white/50">Founders have not attached deal documents yet. You can ask them to share a pitch deck, financials, NDA, founder agreement or term sheet in your conversation.</Card> : documentedStartups.map((pitch) => <Card key={pitch.id} className="space-y-3 p-5"><div><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-xs text-white/45">Founder-provided materials</p></div><div className="flex flex-wrap gap-3 text-sm">{pitch.website_url && <a className="text-[#C9A15A] underline" href={pitch.website_url} target="_blank" rel="noreferrer">Website</a>}{pitch.pitch_deck_url && <a className="text-[#C9A15A] underline" href={pitch.pitch_deck_url} target="_blank" rel="noreferrer">Pitch deck</a>}{pitch.financials_url && <a className="text-[#C9A15A] underline" href={pitch.financials_url} target="_blank" rel="noreferrer">Financials</a>}{(pitch.documents || []).map((doc, index) => <a key={index} className="text-[#C9A15A] underline" href={doc.url} target="_blank" rel="noreferrer">{doc.title}</a>)}</div></Card>)}
+          <p className="text-xs text-white/40">NDA, founder agreements and term sheets must be exchanged and reviewed by the parties. Almeriq does not generate or sign binding investment contracts.</p>
         </section>
 
         <section className="space-y-3">
