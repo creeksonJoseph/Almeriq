@@ -11,12 +11,15 @@ export const WORKSPACE_NAV = [
 
 export const FOUNDER_STUDIO_NAV = [
   { key: "ventures", label: "Saved Ventures", path: "/founder/ventures", icon: BookOpen },
+  { key: "business-builder", label: "AI Business Builder", path: "/founder/analysis", icon: TrendingUp },
   { key: "intake", label: "Share New Idea", path: "/founder/intake?mode=new", icon: Lightbulb },
   { key: "validation", label: "Idea Validation", path: "/founder/validation", icon: CheckCircle2 },
   { key: "product", label: "Product Development", path: "/founder/product", icon: Boxes },
   { key: "legal", label: "Legal & Setup", path: "/founder/legal", icon: Scale },
   { key: "hiring", label: "Hiring", path: "/jobs/manage", icon: Building2 },
-  { key: "team", label: "Teams & Workforce", path: "/founder/team", icon: Users },
+  { key: "team-talent", label: "Discover Talent", path: "/founder/team/talent", icon: UserRound },
+  { key: "team-members", label: "Team Members", path: "/founder/team/members", icon: Users },
+  { key: "team-invitations", label: "Team Invitations", path: "/founder/team/invitations", icon: Mail },
   { key: "fundraising", label: "Fundraising", path: "/founder/pitches", icon: TrendingUp },
   { key: "orders", label: "My Orders", path: "/founder/orders", icon: Package },
   { key: "experts", label: "Find Experts", path: "/founder/experts", icon: UserRound },
