@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import {
   discoverTalentApi, inviteTalentApi, listFounderTeamInvitationsApi,
   listTeamMembersApi, removeTeamMemberApi,
 } from "../../lib/api/team";
 
-const TABS = ["talent", "team", "invitations"];
+const TEAM_VIEWS = [
+  { key: "talent", label: "Discover talent", path: "/founder/team/talent" },
+  { key: "members", label: "My team", path: "/founder/team/members" },
+  { key: "invitations", label: "Invitations", path: "/founder/team/invitations" },
+];
 
 export default function TeamWorkforcePage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("talent");
+  const location = useLocation();
+  const tab = location.pathname.endsWith("/members") ? "members" : location.pathname.endsWith("/invitations") ? "invitations" : "talent";
   const [talent, setTalent] = useState([]);
   const [members, setMembers] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -71,7 +76,7 @@ export default function TeamWorkforcePage() {
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
         <div className="flex flex-wrap gap-2 border-b border-border pb-3">
-          {TABS.map((item) => <Button key={item} size="sm" variant={tab === item ? "primary" : "ghost"} onClick={() => setTab(item)}>{item === "talent" ? "Discover talent" : item === "team" ? `My team (${members.length})` : `Invitations (${invitations.length})`}</Button>)}
+          {TEAM_VIEWS.map((item) => <Button key={item.key} size="sm" variant={tab === item.key ? "primary" : "ghost"} onClick={() => navigate(item.path)}>{item.key === "members" ? item.label + " (" + members.length + ")" : item.key === "invitations" ? item.label + " (" + invitations.length + ")" : item.label}</Button>)}
         </div>
 
         {tab === "talent" && <section className="space-y-4">
@@ -98,7 +103,7 @@ export default function TeamWorkforcePage() {
           })}</div>}
         </section>}
 
-        {tab === "team" && <section className="space-y-3">
+        {tab === "members" && <section className="space-y-3">
           {members.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">Your team is empty. Discover talent and send your first invitation.</Card> : members.map((member) => <Card key={member.id} className="flex flex-wrap items-center justify-between gap-4 p-4"><div><h3 className="font-medium">{member.full_name}</h3><p className="mt-1 text-sm text-white/55">{member.headline || "Team member"} · {member.location || "Location not set"}</p><p className="mt-1 text-xs text-white/40">{(member.skills || []).join(" · ")}</p></div><div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => navigate("/messages")}>Message</Button><Button size="sm" variant="ghost" disabled={busyId === member.member_id} onClick={() => remove(member)}>Remove</Button></div></Card>)}
         </section>}
 
