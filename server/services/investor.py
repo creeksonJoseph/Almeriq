@@ -137,6 +137,13 @@ async def delete_founder_pitch(
         )
 
 
+async def get_investor_pitch(pitch_id: int, session: AsyncSession | None = None) -> dict:
+    pitch = await pitch_repo.get_startup_pitch(pitch_id, session=session)
+    if not pitch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    return pitch
+
+
 async def list_all_pitches(
     limit: int = 50,
     offset: int = 0,
