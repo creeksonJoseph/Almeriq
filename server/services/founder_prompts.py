@@ -161,6 +161,45 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
             f"  quick_wins (array of 3-5 strings, things achievable in first 2 weeks)."
         )
 
+    if tool_key == "idea_breakdown":
+        return (
+            f"Break this product idea into a practical first version: {idea}.\\n"
+            f"Problem: {problem}\\nSolution: {solution}\\nCustomer: {customer}\\nLocation: {location}\\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\\n"
+            "Return JSON with: core_problem (string), primary_user (string), core_workflow (array of ordered steps), "
+            "key_screens (array of objects with screen and purpose), assumptions_to_validate (array of strings), "
+            "success_signals (array of strings), out_of_scope (array of strings)."
+        )
+
+    if tool_key == "feature_prioritization":
+        return (
+            f"Prioritize features for this product: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}.\\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\\n"
+            "Return JSON with: must_have (array of objects with feature, user_value, reason), "
+            "should_have (array of objects with feature, user_value, reason), "
+            "could_have (array of objects with feature, user_value, reason), defer (array of strings), "
+            "prioritization_notes (string). Focus on a small MVP and explain trade-offs."
+        )
+
+    if tool_key == "tech_stack":
+        return (
+            f"Recommend a practical technology stack for: {idea}. Customer: {customer}. Location: {location}.\\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\\n"
+            "Return JSON with: frontend (string), backend (string), database (string), hosting_and_infrastructure (string), "
+            "authentication (string), integrations (array of strings), security_notes (array of strings), "
+            "alternatives (array of objects with option and tradeoff), recommendation_rationale (string). "
+            "Prefer maintainable, cost-conscious choices for a small team. Do not assume a specific cloud provider."
+        )
+
+    if tool_key == "build_roadmap":
+        return (
+            f"Create a practical build roadmap for: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}.\\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\\n"
+            "Return JSON with: phases (array of objects with phase, duration, tasks, deliverables, acceptance_criteria), "
+            "dependencies (array of strings), risks (array of strings), first_week_actions (array of strings). "
+            "Keep the roadmap focused on delivering and validating a small working product."
+        )
+
     if tool_key in ("idea_validation", "validation_analysis"):
         extra_ctx = ""
         if payload.extra_params and isinstance(payload.extra_params, dict):
