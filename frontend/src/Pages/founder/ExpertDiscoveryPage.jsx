@@ -57,7 +57,8 @@ export default function ExpertDiscoveryPage() {
     if (amount !== null && (!Number.isFinite(amount) || amount < 0)) { setError("Budget must be a valid non-negative amount."); return; }
     setSending(true); setError(""); setNotice("");
     try {
-      await apiClient.post(`/api/experts/${selected.user_id}/requests`, { subject: subject.trim(), description: description.trim(), budget: amount });
+      const { data } = await apiClient.post(`/api/experts/${selected.user_id}/requests`, { subject: subject.trim(), description: description.trim(), budget: amount });
+      setRequests((items) => [data, ...items]);
       setNotice(`Your advisory request was sent to ${selected.headline || "the expert"}.`);
       setSelected(null); setSubject(""); setDescription(""); setBudget("");
     } catch (err) { setError(err.response?.data?.detail || "Unable to send your request."); }
