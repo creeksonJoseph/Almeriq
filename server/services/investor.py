@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from repositories import investor_profile as profile_repo
 from repositories import startup_pitch as pitch_repo
+from repositories import notification as notification_repo
 
 logger = logging.getLogger(__name__)
 
@@ -186,9 +187,19 @@ async def create_investment_request(
     existing = await investment_repo.list_investments(investor_id=investor_id, session=session)
     if any(item["pitch_id"] == pitch_id for item in existing):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You have already contacted this founder about the pitch")
-    return await investment_repo.create_investment(
+    request = await investment_repo.create_investment(
         investor_id=investor_id, pitch_id=pitch_id, amount=amount, session=session
     )
+    if pitch.get("founder_id") != investor_id:
+        await notification_repo.create_notification(
+            user_id=pitch["founder_id"],
+            type="investment",
+            title="New investor interest",
+            body="An investor has expressed interest in your startup pitch.",
+            link="/founder/pitches",
+            session=session,
+        )
+    return request
 
 
 async def list_investor_requests(investor_id: int, session: AsyncSession | None = None) -> list[dict]:
@@ -226,4 +237,13 @@ async def update_founder_request(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
     if item["status"] != "pending":
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Only pending investor requests can be updated")
-    return await investment_repo.update_investment_status(investment_id, status_value, session=session)
+    updated = await investment_repo.update_investment_status(investment_id, status_value, session=session)
+    await notification_repo.create_notification(
+        user_id=item["investor_id"],
+        type="investment",
+        title="Founder responded to your interest",
+        body=f"Your startup interest request is now {status_value.replace('_', ' ')}.",
+        link="/investor/dashboard",
+        session=session,
+    )
+    return updated
