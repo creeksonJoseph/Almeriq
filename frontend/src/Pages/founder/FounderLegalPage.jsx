@@ -98,6 +98,61 @@ All code, domain names, and prototypes created before today belong to the compan
 4. MAKING BIG DECISIONS:
 Major decisions like selling the company or taking large loans require all founders to agree.`,
   },
+  {
+    id: "data_protection",
+    title: "Data Protection Policy Starter",
+    tag: "Handle Customer Data",
+    desc: "A starting point for documenting what personal data your business collects and how it is protected.",
+    content: `DATA PROTECTION POLICY STARTER
+
+1. PURPOSE:
+Explain why your business collects personal information and which services need it.
+
+2. DATA COLLECTED:
+List each type of personal information collected, where it comes from, and whether it is required.
+
+3. HOW DATA IS USED:
+Describe the exact business purposes for using each type of information. Do not use data for unrelated purposes without a valid basis.
+
+4. ACCESS AND SECURITY:
+Limit access to people who need it for their work. Use suitable security controls, backups, and access reviews.
+
+5. RETENTION AND DELETION:
+Set a retention period for each data type. Explain how people can request access, correction, or deletion where the law gives them that right.
+
+6. THIRD PARTIES:
+List processors and service providers that receive personal data, and document the safeguards and agreements that apply.
+
+7. CONTACT:
+Provide a real privacy contact and a process for handling privacy requests or incidents.
+
+Complete this with the rules that apply in your country before using it with customers.`,
+  },
+  {
+    id: "industry_license",
+    title: "Industry Licensing Checklist",
+    tag: "Check Sector Rules",
+    desc: "A checklist for identifying permits and approvals your business may need before operating.",
+    content: `INDUSTRY LICENSING CHECKLIST
+
+1. DESCRIBE THE ACTIVITY:
+Write down exactly what your company will sell, provide, store, transport, or process.
+
+2. CHECK THE REGULATOR:
+Identify the government office that regulates this activity in every country or region where you will operate.
+
+3. LIST REQUIRED APPROVALS:
+Record each licence, permit, registration, professional approval, or inspection that may apply.
+
+4. CHECK THE CONDITIONS:
+For every approval, note who can apply, required documents, fees, renewal dates, and operating limits.
+
+5. CONFIRM BEFORE LAUNCH:
+Contact the regulator or a qualified local adviser to confirm the current rules. Do not treat this checklist as proof that you are licensed.
+
+6. KEEP RECORDS:
+Store applications, approval letters, renewal dates, and inspection records in one secure place.`,
+  },
 ];
 
 // ── Plain English Why-Register Pillars (Strict White, Gold & Dark) ───────────
