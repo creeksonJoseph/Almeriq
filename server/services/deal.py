@@ -142,7 +142,7 @@ async def sign_deal(
             type="order",
             title="Marketplace deal signed",
             body=f"Deal #{deal_id} has been signed in the demo checkout.",
-            link=f"/provider/orders/{order['id']}" if recipient_id != order["client_id"] else f"/checkout/{deal_id}",
+            link=f"/provider/orders/{order['id']}" if recipient_id != order["client_id"] else "/founder/orders",
             session=session,
         )
     return updated
