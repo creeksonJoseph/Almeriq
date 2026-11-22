@@ -285,6 +285,15 @@ export default function InvestorDashboardPage() {
                 <div className="space-y-2"><h3 className="text-sm font-medium">Opportunity overview</h3><p className="text-sm text-white/65">{pitch?.summary || "The founder has not added a company summary."}</p><p className="text-xs text-white/45">{[pitch?.location, pitch?.sector, pitch?.stage].filter(Boolean).join(" · ")}</p>{pitch?.traction && <p className="text-sm text-white/55">Traction: {pitch.traction}</p>}{pitch?.team_summary && <p className="text-sm text-white/55">Team: {pitch.team_summary}</p>}{pitch?.ask_amount != null && <p className="text-sm text-white/55">Funding ask: {Number(pitch.ask_amount).toLocaleString()}</p>}</div>
                 <div className="space-y-2"><h3 className="text-sm font-medium">Deal documents</h3><div className="flex flex-wrap gap-3 text-sm">{pitch?.website_url && <a className="text-[#C9A15A] underline" href={pitch.website_url} target="_blank" rel="noreferrer">Website</a>}{pitch?.pitch_deck_url && <a className="text-[#C9A15A] underline" href={pitch.pitch_deck_url} target="_blank" rel="noreferrer">Pitch deck</a>}{pitch?.financials_url && <a className="text-[#C9A15A] underline" href={pitch.financials_url} target="_blank" rel="noreferrer">Financials</a>}{(pitch?.documents || []).map((doc,index) => <a key={index} className="text-[#C9A15A] underline" href={doc.url} target="_blank" rel="noreferrer">{doc.title}</a>)}</div><p className="text-xs text-white/40">Use the starter NDA, Founder Agreement and Term Sheet resources above as editable discussion drafts.</p><p className="text-xs text-white/40">Deal terms should be agreed directly by both parties and reviewed by qualified counsel.</p></div>
               </div>}
+              {activeDealId === request.id && <div className="space-y-2 border-t border-white/10 pt-4">
+                <h3 className="text-sm font-medium">Deal activity</h3>
+                <ol className="space-y-2 text-xs text-white/55">
+                  {request.created_at && <li><span className="text-white/80">Interest submitted</span> · {new Date(request.created_at).toLocaleString()}</li>}
+                  {request.updated_at && request.updated_at !== request.created_at && <li><span className="text-white/80">Deal record updated</span> · {new Date(request.updated_at).toLocaleString()}</li>}
+                  {request.deal_confirmed_at && <li><span className="text-white/80">Investor demo confirmation recorded</span> · {new Date(request.deal_confirmed_at).toLocaleString()}</li>}
+                </ol>
+                <p className="text-xs text-white/35">This timeline reflects timestamps stored on the deal record, not a verified financial transaction history.</p>
+              </div>}
             </Card>;
           })}
         </section>
