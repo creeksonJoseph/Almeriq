@@ -1,14 +1,11 @@
 """services/order.py - Business logic for orders."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import order as order_repo
 from repositories import order_event as order_event_repo
 from repositories import provider_profile as provider_repo
 from repositories import notification as notification_repo
-
-logger = logging.getLogger(__name__)
 
 
 async def list_orders(
