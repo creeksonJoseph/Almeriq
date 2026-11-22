@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiClient } from "../../lib/client";
 import { Button, Card, Input } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
+import { executeAiToolApi } from "../../lib/api/founder";
 
 const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", target_check_size: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
 
@@ -17,6 +18,14 @@ export default function FounderPitchesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [updatePitchId, setUpdatePitchId] = useState("");
+  const [updatePeriod, setUpdatePeriod] = useState("");
+  const [updateHighlights, setUpdateHighlights] = useState("");
+  const [updateChallenges, setUpdateChallenges] = useState("");
+  const [updateKpis, setUpdateKpis] = useState("");
+  const [updateAsks, setUpdateAsks] = useState("");
+  const [investorUpdateDraft, setInvestorUpdateDraft] = useState("");
+  const [draftingUpdate, setDraftingUpdate] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -73,6 +82,28 @@ export default function FounderPitchesPage() {
     setNotice(""); setError("");
   };
 
+  const generateInvestorUpdate = async () => {
+    const pitch = pitches.find((item) => String(item.id) === String(updatePitchId));
+    if (!pitch) { setError("Choose a startup pitch first."); return; }
+    setDraftingUpdate(true); setError(""); setNotice("");
+    try {
+      const response = await executeAiToolApi({
+        tool_key: "investor_update", idea: pitch.title, customer: "Current investors", location: pitch.location || "",
+        problem: pitch.summary || "", solution: pitch.traction || "",
+        extra_params: { period: updatePeriod || "Not specified", sector: pitch.sector, stage: pitch.stage, company_summary: pitch.summary, traction_so_far: pitch.traction, team: pitch.team_summary, founder_highlights: updateHighlights, challenges: updateChallenges, kpis: updateKpis, investor_asks: updateAsks },
+      });
+      const result = response.result || {};
+      setInvestorUpdateDraft(result.full_email || [result.subject, ...(result.highlights || []), ...(result.lowlights || []), ...(result.asks || [])].join("\n"));
+      setNotice("Investor update draft generated. Check every metric and statement before sending.");
+    } catch (err) { setError(err.message || "Unable to draft the investor update."); }
+    finally { setDraftingUpdate(false); }
+  };
+
+  const copyInvestorUpdate = async () => {
+    if (!investorUpdateDraft) return;
+    try { await navigator.clipboard.writeText(investorUpdateDraft); setNotice("Investor update copied."); }
+    catch { setError("Clipboard access was blocked. Select and copy the draft manually."); }
+  };
   const openConversation = async (requestId) => {
     try {
       const conversation = await startInvestmentConversationApi(requestId);
