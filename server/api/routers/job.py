@@ -156,7 +156,7 @@ async def list_my_applications(
     applicant_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "private, max-age=30"
     items = await svc.list_applications_for_applicant(
-        applicant_id=current_user["id"], session=db
+        applicant_id=applicant_id, session=db
     )
     return {"items": items, "total": len(items)}
 
@@ -173,7 +173,7 @@ async def get_my_application(
     response.headers["Cache-Control"] = "private, max-age=30"
     return await svc.get_job_application(
         application_id=application_id,
-        applicant_id=current_user["id"],
+        applicant_id=applicant_id,
         session=db,
     )
 
