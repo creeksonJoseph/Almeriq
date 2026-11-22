@@ -46,6 +46,7 @@ async def create_startup_pitch(
     stage: str | None = None,
     ask_amount: float | None = None,
     location: str | None = None,
+    target_check_size: float | None = None,
     website_url: str | None = None,
     pitch_deck_url: str | None = None,
     financials_url: str | None = None,
@@ -71,6 +72,7 @@ async def create_startup_pitch(
         stage=stage,
         ask_amount=ask_amount,
         location=location,
+        target_check_size=target_check_size,
         website_url=website_url,
         pitch_deck_url=pitch_deck_url,
         financials_url=financials_url,
@@ -184,12 +186,12 @@ def _match_pitch_to_investor(pitch: dict, profile: dict | None) -> tuple[int | N
             reasons.append(f"Geography match: {pitch['location']}")
     minimum = profile.get("check_size_min")
     maximum = profile.get("check_size_max")
-    ask = pitch.get("ask_amount")
+    ask = pitch.get("target_check_size")
     if (minimum is not None or maximum is not None) and ask is not None:
         possible += 20
         if (minimum is None or float(ask) >= float(minimum)) and (maximum is None or float(ask) <= float(maximum)):
             score += 20
-            reasons.append("Funding ask is within your check-size range")
+            reasons.append("Target investor check size fits your range")
     if possible == 0:
         return None, ["Add sectors, stages, geography or check-size preferences for a match score."]
     return round(score / possible * 100), reasons or ["No matching criteria found; review the pitch details."]
