@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 # ── Job posting schemas ────────────────────────────────────────────────────
 
 class JobPostingBase(BaseModel):
-    title: str = Field(..., max_length=200)
+    title: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1)
     location: Optional[str] = Field(default=None, max_length=200)
     role_type: Optional[str] = Field(default=None, max_length=30)
@@ -16,6 +16,15 @@ class JobPostingBase(BaseModel):
     salary_max: Optional[float] = Field(default=None, ge=0)
     requirements: Optional[str] = None
     is_active: bool = True
+
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def strip_required_text(cls, value):
+        if value is not None and isinstance(value, str):
+            value = value.strip()
+            if not value:
+                raise ValueError("This field cannot be blank")
+        return value
 
     @field_validator("role_type", mode="before")
     @classmethod
@@ -37,7 +46,7 @@ class JobPostingCreateRequest(JobPostingBase):
 
 
 class JobPostingUpdateRequest(BaseModel):
-    title: Optional[str] = Field(default=None, max_length=200)
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
     description: Optional[str] = Field(default=None, min_length=1)
     location: Optional[str] = Field(default=None, max_length=200)
     role_type: Optional[str] = Field(default=None, max_length=30)
@@ -45,6 +54,15 @@ class JobPostingUpdateRequest(BaseModel):
     salary_max: Optional[float] = Field(default=None, ge=0)
     requirements: Optional[str] = None
     is_active: Optional[bool] = None
+
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def strip_optional_text(cls, value):
+        if value is not None and isinstance(value, str):
+            value = value.strip()
+            if not value:
+                raise ValueError("This field cannot be blank")
+        return value
 
     @field_validator("role_type", mode="before")
     @classmethod
@@ -73,7 +91,7 @@ class JobPostingListResponse(BaseModel):
 # ── Job application schemas ────────────────────────────────────────────────
 
 class JobApplicationBase(BaseModel):
-    cover_letter: Optional[str] = None
+    cover_letter: Optional[str] = Field(default=None, max_length=5000)
     resume_url: Optional[str] = Field(default=None, max_length=500)
 
 
