@@ -98,6 +98,33 @@ async def list_job_postings(
     return {"items": items, "total": total}
 
 
+async def list_my_job_postings(
+    *,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    session: AsyncSession | None = None,
+) -> dict:
+    """List only postings belonging to the authenticated employer."""
+    if (provider_id is None) == (founder_user_id is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A job posting owner is required",
+        )
+    filters = {
+        "provider_id": provider_id,
+        "founder_user_id": founder_user_id,
+    }
+    items = await job_repo.list_job_postings(
+        is_active=None, limit=limit, offset=offset, session=session, **filters
+    )
+    total = await job_repo.count_job_postings(
+        is_active=None, session=session, **filters
+    )
+    return {"items": items, "total": total}
+
+
 async def update_job_posting(
     job_id: int,
     provider_id: int | None = None,
