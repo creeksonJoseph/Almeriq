@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
@@ -11,6 +11,9 @@ const DEAL_ROOM_TEMPLATES = [{"title":"Mutual NDA","description":"Confidentialit
 
 export default function InvestorDashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pathname = location.pathname;
+  const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : "overview";
   const [profile, setProfile] = useState(null);
   const [startups, setStartups] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -194,6 +197,7 @@ export default function InvestorDashboardPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white">
       <div className="mx-auto max-w-5xl space-y-6">
+        <nav aria-label="Investor workspace" className="flex flex-wrap gap-2 border-b border-white/10 pb-3 text-sm">{[["overview","Overview","/investor/dashboard"],["startups","Discover startups","/investor/startups"],["deals","Deal pipeline","/investor/deals"],["portfolio","Portfolio","/investor/portfolio"],["analytics","Analytics","/investor/analytics"],["resources","Documents & templates","/investor/resources"],["settings","Settings","/investor/settings"]].map(([key,label,path]) => <button key={key} type="button" onClick={() => navigate(path)} className={"rounded-lg px-3 py-2 transition-colors " + (pageView === key ? "bg-[#C9A15A]/15 text-[#E8D6A8]" : "text-white/60 hover:bg-white/5 hover:text-white")}>{label}</button>)}</nav>
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div><p className="text-xs uppercase tracking-widest text-[#C9A15A]">Investor workspace</p><h1 className="mt-2 font-serif text-3xl">Investor Dashboard</h1><p className="mt-2 text-sm text-white/60">Discover startups and manage founder conversations.</p></div>
           <Button className="bg-[#C9A15A] text-[#111318] hover:bg-[#E8D6A8]" onClick={() => navigate("/investor/profile")}>{profile ? "Edit Profile" : "Complete Profile"}</Button>
@@ -201,6 +205,7 @@ export default function InvestorDashboardPage() {
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
         {!profile?.firm_name && <Card className="border border-[#C9A15A]/20 bg-[#C9A15A]/5 p-4 text-sm text-white/70">Complete your investor profile so founders can understand your investment focus.</Card>}
+        {pageView === "portfolio" && (
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Portfolio overview</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -215,6 +220,10 @@ export default function InvestorDashboardPage() {
           <p className="text-xs text-white/40">Portfolio figures are manually recorded by you. Almeriq does not process or verify investment transfers.</p>
         </section>
 
+        
+        )}
+
+        {pageView === "settings" && (
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Investor settings</h2>
           <Card className="space-y-4 border border-white/10 bg-white/2 p-5">
@@ -226,6 +235,10 @@ export default function InvestorDashboardPage() {
           </Card>
         </section>
 
+        
+        )}
+
+        {pageView === "startups" && (
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-serif text-xl">Startup discovery</h2><span className="text-xs text-white/40">{visibleStartups.length} pitches</span></div>
           <Input value={startupQuery} onChange={(event) => setStartupQuery(event.target.value)} placeholder="Search startups, sectors or stages…" />
@@ -240,6 +253,10 @@ export default function InvestorDashboardPage() {
           ))}
         </section>
 
+        
+        )}
+
+        {pageView === "resources" && (
         <section className="space-y-3">
           <div><h2 className="font-serif text-xl">Deal room resources</h2><p className="mt-1 text-sm text-white/50">Starter documents for reviewing a potential investment. Download, edit and have counsel review before use.</p></div>
           <div className="grid gap-3 md:grid-cols-3">
@@ -249,6 +266,10 @@ export default function InvestorDashboardPage() {
           <p className="text-xs text-white/40">These are editable starting points, not legal advice, legal filings or binding agreements. Almeriq does not generate or sign legal contracts.</p>
         </section>
 
+        
+        )}
+
+        {pageView === "deals" && (
         <section className="space-y-3">
           <div><h2 className="font-serif text-xl">Your deals & conversations</h2><p className="mt-1 text-sm text-white/50">Each request becomes a shared workspace once the founder responds.</p></div>
           {requests.length === 0 ? <Card className="border border-white/10 bg-white/2 p-6 text-sm text-white/50">You haven't expressed interest in a startup yet.</Card> : requests.map((request) => {
@@ -266,7 +287,10 @@ export default function InvestorDashboardPage() {
             </Card>;
           })}
         </section>
-        {editingInvestment && <Card className="space-y-4 border border-[#C9A15A]/30 p-5">
+
+        )}
+
+                {editingInvestment && <Card className="space-y-4 border border-[#C9A15A]/30 p-5">
           <div className="flex items-center justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-[#C9A15A]">Demo deal flow · Step {confirmationStep} of 5</p><h2 className="mt-1 font-serif text-xl">{confirmationStep === 5 ? "Deal confirmation complete" : "Confirm investment details"}</h2></div><Button size="sm" variant="ghost" onClick={() => setEditingInvestment(null)}>Close</Button></div>
           <div className="grid grid-cols-5 gap-1" aria-label="Deal confirmation progress">{[1,2,3,4,5].map((step) => <div key={step} className={`h-1.5 rounded-full ${step <= confirmationStep ? "bg-[#C9A15A]" : "bg-white/10"}`} />)}</div>
           {confirmationStep === 1 && <div className="space-y-4"><div><h3 className="font-medium">1. Choose a payment method</h3><p className="mt-1 text-sm text-white/50">This only selects a method for the demo. No credentials or payment details are collected.</p></div><div className="grid grid-cols-2 gap-2">{[["paypal","PayPal"],["mastercard","Mastercard"],["visa","Visa"],["mpesa","M-Pesa"]].map(([value,label]) => <button type="button" key={value} onClick={() => setPortfolioForm((form) => ({...form,payment_method:value}))} className={`rounded-lg border p-4 text-left text-sm ${portfolioForm.payment_method === value ? "border-[#C9A15A] bg-[#C9A15A]/10 text-[#E8D6A8]" : "border-white/10 bg-white/5 text-white"}`}>{label}{portfolioForm.payment_method === value && <span className="ml-2 text-xs">Selected</span>}</button>)}</div><div className="flex justify-end"><Button disabled={!portfolioForm.payment_method} onClick={() => setConfirmationStep(2)}>Continue</Button></div></div>}
