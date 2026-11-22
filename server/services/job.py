@@ -8,6 +8,7 @@ from repositories import job_posting as job_repo
 from repositories import job_application as application_repo
 from repositories import job_seeker_profile as seeker_repo
 from repositories import provider_profile as provider_repo
+from repositories import user as user_repo
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +259,17 @@ async def list_applications_for_job(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job posting not found",
         )
-    return await application_repo.get_applications_for_job(job_posting_id, session=session)
+    applications = await application_repo.get_applications_for_job(job_posting_id, session=session)
+    for application in applications:
+        applicant = await user_repo.get_user_by_id(application["applicant_id"], session=session)
+        profile = await seeker_repo.get_job_seeker_profile_by_user_id(
+            application["applicant_id"], session=session
+        )
+        application["applicant_name"] = (
+            applicant.get("full_name") if applicant else None
+        ) or f"Applicant #{application['applicant_id']}"
+        application["applicant_profile"] = profile
+    return applications
 
 
 async def list_applications_for_applicant(
