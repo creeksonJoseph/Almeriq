@@ -64,6 +64,25 @@ export default function JobSeekerJobsPage() {
     );
   }, [jobs, query]);
 
+  const recommendedJobs = useMemo(() => {
+    if (!profile) return [];
+    const skills = (profile.skills || []).map((value) => String(value).toLowerCase()).filter(Boolean);
+    const roles = (profile.preferences?.desired_roles || []).map((value) => String(value).toLowerCase()).filter(Boolean);
+    const preferredLocation = (profile.preferences?.location || profile.location || "").toLowerCase();
+    const preferredTypes = profile.preferences?.job_types || [];
+    return jobs.map((job) => {
+      const searchable = [job.title, job.description, job.requirements].filter(Boolean).join(" ").toLowerCase();
+      const matchedSkills = skills.filter((skill) => searchable.includes(skill));
+      const reasons = [];
+      if (matchedSkills.length) reasons.push("Skills: " + matchedSkills.slice(0, 3).join(", "));
+      if (roles.some((role) => searchable.includes(role))) reasons.push("Matches your role preferences");
+      if (preferredLocation && String(job.location || "").toLowerCase().includes(preferredLocation)) reasons.push("Matches your location preference");
+      if (preferredTypes.includes(job.role_type)) reasons.push("Matches your employment type");
+      const score = Math.min(100, matchedSkills.length * 20 + (reasons.some((reason) => reason.startsWith("Matches your role")) ? 25 : 0) + (reasons.some((reason) => reason.startsWith("Matches your location")) ? 15 : 0) + (reasons.some((reason) => reason.startsWith("Matches your employment")) ? 10 : 0));
+      return { ...job, match_score: score, match_reasons: reasons };
+    }).filter((job) => job.match_reasons.length > 0).sort((a, b) => b.match_score - a.match_score).slice(0, 3);
+  }, [jobs, profile]);
+
   const apply = async (job) => {
     setApplyingId(job.id);
     setError("");
@@ -111,6 +130,7 @@ export default function JobSeekerJobsPage() {
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
 
+        {recommendedJobs.length > 0 && <section className="space-y-3"><div><h2 className="font-serif text-2xl">Recommended for you</h2><p className="mt-1 text-sm text-white/50">Based on your skills and saved job preferences.</p></div><div className="grid gap-3 md:grid-cols-3">{recommendedJobs.map((job) => <Card key={job.id} className="space-y-2 p-4"><div className="flex items-start justify-between gap-2"><h3 className="font-medium">{job.title}</h3><span className="text-xs text-gold">{job.match_score}%</span></div><p className="text-xs text-white/45">{job.location || "Location not specified"}</p><p className="text-xs text-white/55">{job.match_reasons.join(" · ")}</p><Button size="sm" disabled={appliedJobIds.has(job.id) || applyingId === job.id} onClick={() => apply(job)}>{appliedJobIds.has(job.id) ? "Applied" : "Apply now"}</Button></Card>)}</div></section>}
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 className="font-serif text-2xl">Open positions</h2><p className="mt-1 text-sm text-white/50">Search by title, skills, location or description.</p></div>
