@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Input } from "../../components/ui";
 import {
   createJobApi,
@@ -13,6 +13,8 @@ const EMPTY_JOB = { title: "", description: "", location: "", role_type: "full_t
 
 export default function EmployerJobsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageView = location.pathname.endsWith("/new") ? "editor" : "list";
   const [jobs, setJobs] = useState([]);
   const [form, setForm] = useState(EMPTY_JOB);
   const [editingJobId, setEditingJobId] = useState(null);
@@ -141,11 +143,15 @@ export default function EmployerJobsPage() {
           <h1 className="mt-2 font-serif text-3xl">Manage your openings</h1>
           <p className="mt-2 text-sm text-white/60">Publish roles, manage applications and keep hiring activity in one place.</p>
         </header>
+        <nav aria-label="Hiring workspace" className="flex flex-wrap gap-2 border-b border-border pb-3">
+          <Button size="sm" variant={pageView === "list" ? "primary" : "ghost"} onClick={() => navigate("/jobs/manage")}>Job postings</Button>
+          <Button size="sm" variant={pageView === "editor" ? "primary" : "ghost"} onClick={() => { setEditingJobId(null); setForm(EMPTY_JOB); navigate("/jobs/manage/new"); }}>Create a job</Button>
+        </nav>
 
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
 
-        <Card className="p-6">
+{pageView === "editor" && (\n        <Card className="p-6">
           <h2 className="font-serif text-xl">{editingJobId ? "Edit job posting" : "Create a job posting"}</h2>
           <div className="mt-4 flex justify-end"><Button type="button" variant="ghost" disabled={drafting || !form.title.trim()} onClick={draftJobWithAi}>{drafting ? "Drafting…" : "Draft with AI"}</Button></div>
           <form onSubmit={submitJob} className="mt-5 space-y-4">
@@ -166,7 +172,7 @@ export default function EmployerJobsPage() {
           </form>
         </Card>
 
-        <section className="space-y-4">
+\n        )}\n{pageView === "list" && (\n        <section className="space-y-4">
           <div className="flex items-center justify-between"><h2 className="font-serif text-2xl">Your job postings</h2><span className="text-sm text-white/45">{jobs.length} total</span></div>
           {loading ? <p className="py-8 text-center text-sm text-white/50">Loading your postings…</p> :
             jobs.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">You have not posted a role yet. Create your first opening above.</Card> :
@@ -182,7 +188,7 @@ export default function EmployerJobsPage() {
               ))}
             </div>
           }
-        </section>
+        </section>\n        )}
       </div>
     </main>
   );
