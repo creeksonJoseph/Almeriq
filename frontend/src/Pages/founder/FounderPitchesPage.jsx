@@ -4,7 +4,7 @@ import { apiClient } from "../../lib/client";
 import { Button, Card, Input } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
 
-const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
+const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", target_check_size: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
 
 export default function FounderPitchesPage() {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ export default function FounderPitchesPage() {
     const payload = {
       title: form.title.trim(), summary: form.summary.trim() || null,
       sector: form.sector.trim() || null, stage: form.stage.trim() || null, ask_amount: amount,
-      location: form.location.trim() || null, website_url: form.website_url.trim() || null,
+      location: form.location.trim() || null, target_check_size: form.target_check_size === "" ? null : Number(form.target_check_size), website_url: form.website_url.trim() || null,
       pitch_deck_url: form.pitch_deck_url.trim() || null, financials_url: form.financials_url.trim() || null,
       traction: form.traction.trim() || null, team_summary: form.team_summary.trim() || null,
       documents,
@@ -68,7 +68,7 @@ export default function FounderPitchesPage() {
 
   const edit = (pitch) => {
     setEditingId(pitch.id);
-    setForm({ ...EMPTY, title: pitch.title || "", summary: pitch.summary || "", sector: pitch.sector || "", stage: pitch.stage || "", ask_amount: pitch.ask_amount ?? "", location: pitch.location || "", website_url: pitch.website_url || "", pitch_deck_url: pitch.pitch_deck_url || "", financials_url: pitch.financials_url || "", traction: pitch.traction || "", team_summary: pitch.team_summary || "" });
+    setForm({ ...EMPTY, title: pitch.title || "", summary: pitch.summary || "", sector: pitch.sector || "", stage: pitch.stage || "", ask_amount: pitch.ask_amount ?? "", location: pitch.location || "", target_check_size: pitch.target_check_size ?? "", website_url: pitch.website_url || "", pitch_deck_url: pitch.pitch_deck_url || "", financials_url: pitch.financials_url || "", traction: pitch.traction || "", team_summary: pitch.team_summary || "" });
     setDocumentsText((pitch.documents || []).map((item) => item.title + " | " + item.url).join("\n"));
     setNotice(""); setError("");
   };
@@ -122,6 +122,7 @@ export default function FounderPitchesPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2"><span className="text-sm">Location / market</span><Input name="location" value={form.location} onChange={update} placeholder="Nairobi, Kenya / East Africa" /></label>
+              <label className="block space-y-2"><span className="text-sm">Target investor check size</span><Input name="target_check_size" type="number" min="0" step="0.01" value={form.target_check_size} onChange={update} placeholder="Typical individual ticket" /></label>
               <label className="block space-y-2"><span className="text-sm">Website</span><Input name="website_url" value={form.website_url} onChange={update} placeholder="https://…" /></label>
               <label className="block space-y-2"><span className="text-sm">Pitch deck URL</span><Input name="pitch_deck_url" value={form.pitch_deck_url} onChange={update} placeholder="https://…" /></label>
               <label className="block space-y-2"><span className="text-sm">Financials / data room URL</span><Input name="financials_url" value={form.financials_url} onChange={update} placeholder="https://…" /></label>
