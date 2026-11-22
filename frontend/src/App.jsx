@@ -240,11 +240,15 @@ function App() {
                 />
                 <Route
                   path="/founder/pitches"
-                  element={
-                    <FounderRoute>
-                      <FounderPitchesPage />
-                    </FounderRoute>
-                  }
+                  element={<Navigate to="/founder/fundraising/pitches" replace />}
+                />
+                <Route
+                  path="/founder/fundraising/pitches"
+                  element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/fundraising/investors"
+                  element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
                 />
                 <Route
                   path="/founder/legal"
