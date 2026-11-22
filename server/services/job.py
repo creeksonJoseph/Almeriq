@@ -1,6 +1,5 @@
 """services/job.py - Business logic for the jobs domain (postings, applications, seeker profiles)."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +10,6 @@ from repositories import provider_profile as provider_repo
 from repositories import user as user_repo
 from repositories import notification as notification_repo
 
-logger = logging.getLogger(__name__)
 
 VALID_STATUSES = {"pending", "reviewed", "accepted", "rejected", "withdrawn"}
 VALID_ROLE_TYPES = {"full_time", "part_time", "contract", "freelance", "internship"}
