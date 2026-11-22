@@ -208,7 +208,8 @@ export default function EmployerJobsPage() {
               ))}
             </div>
           }
-        </section>\n        )}
+        </section>
+        )}
       </div>
     </main>
   );
