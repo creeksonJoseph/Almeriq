@@ -6,6 +6,7 @@ const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "" };
 
 export default function FounderPitchesPage() {
   const [pitches, setPitches] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,8 +17,13 @@ export default function FounderPitchesPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get("/api/founder/pitches");
-      setPitches(Array.isArray(data) ? data : data.items || []);
+      const [pitchResponse, requestResponse] = await Promise.all([
+        apiClient.get("/api/founder/pitches"),
+        apiClient.get("/api/founder/investment-requests"),
+      ]);
+      const pitchData = pitchResponse.data;
+      setPitches(Array.isArray(pitchData) ? pitchData : pitchData.items || []);
+      setRequests(requestResponse.data?.items || []);
     } catch (err) {
       setError(err.response?.data?.detail || "Unable to load your pitches.");
     } finally { setLoading(false); }
@@ -49,6 +55,17 @@ export default function FounderPitchesPage() {
     setEditingId(pitch.id);
     setForm({ title: pitch.title || "", summary: pitch.summary || "", sector: pitch.sector || "", stage: pitch.stage || "", ask_amount: pitch.ask_amount ?? "" });
     setNotice(""); setError("");
+  };
+
+  const updateRequest = async (requestId, status) => {
+    setError(""); setNotice("");
+    try {
+      const { data } = await apiClient.patch(`/api/founder/investment-requests/${requestId}`, { status });
+      setRequests((items) => items.map((item) => item.id === requestId ? data : item));
+      setNotice(`Investor request marked ${status.replaceAll("_", " ")}.`);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Unable to update this investor request.");
+    }
   };
 
   const remove = async (pitchId) => {
@@ -88,6 +105,16 @@ export default function FounderPitchesPage() {
               <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
             </Card>
           ))}
+        </section>
+        <section className="space-y-3">
+          <h2 className="font-serif text-xl">Investor interest</h2>
+          {requests.length === 0 ? <Card className="p-6 text-sm text-white/50">No investors have expressed interest yet.</Card> : requests.map((request) => {
+            const pitch = pitches.find((item) => item.id === request.pitch_id);
+            return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+              <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">Investor #{request.investor_id}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p><p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
+              {request.status === "pending" && <div className="flex gap-2"><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></div>}
+            </Card>;
+          })}
         </section>
       </div>
     </main>
