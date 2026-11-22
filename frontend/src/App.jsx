@@ -252,12 +252,19 @@ function App() {
                 />
                 <Route
                   path="/founder/legal"
-                  element={
-                    <ProtectedRoute>
-                      <FounderLegalPage />
-                    </ProtectedRoute>
-                  }
+                  element={<Navigate to="/founder/legal/guide" replace />}
                 />
+                {["/founder/legal/guide", "/founder/legal/templates", "/founder/legal/filings"].map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={
+                      <ProtectedRoute>
+                        <FounderLegalPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                ))}
                 <Route
                   path="/founder/outreach"
                   element={
