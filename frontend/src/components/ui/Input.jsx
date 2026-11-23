@@ -5,6 +5,10 @@ const Input = forwardRef(function Input(
   ref
 ) {
   const inputId = id || props.name;
+  const nativeControlTypes = ["checkbox", "radio", "range", "file", "hidden", "submit", "button", "reset", "image", "color"];
+  const controlClass = nativeControlTypes.includes(String(props.type || "text").toLowerCase())
+    ? className
+    : `alq-input ${className}`;
   return (
     <div className={`flex flex-col gap-1.5 ${containerClassName}`}>
       {label ? (
@@ -15,7 +19,7 @@ const Input = forwardRef(function Input(
       <input
         ref={ref}
         id={inputId}
-        className={`alq-input ${className}`}
+        className={controlClass}
         aria-invalid={error ? "true" : undefined}
         {...props}
       />
