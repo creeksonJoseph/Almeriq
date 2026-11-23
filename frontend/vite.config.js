@@ -19,6 +19,35 @@ export default defineConfig(({ mode }) => {
     ],
     build: {
       sourcemap: true,
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            minSize: 20000,
+            groups: [
+              {
+                name: 'react-vendor',
+                test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+                priority: 30,
+              },
+              {
+                name: 'router-vendor',
+                test: /node_modules[\\/](react-router|@remix-run)[\\/]/,
+                priority: 20,
+              },
+              {
+                name: 'charts-vendor',
+                test: /node_modules[\\/](recharts|d3-[^\\/]+)[\\/]/,
+                priority: 15,
+              },
+              {
+                name: 'vendor',
+                test: /node_modules[\\/]/,
+                priority: 1,
+              },
+            ],
+          },
+        },
+      },
     },
   }
 })
