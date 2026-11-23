@@ -26,7 +26,7 @@ config = context.config
 # Dynamically read and adapt DATABASE_URL for psycopg driver (Neon DB compatible)
 raw_url = settings.DATABASE_URL
 if raw_url:
-    psycopg_url = re.sub(r"^(postgres|postgresql)(\\+[^:]+)?:", "postgresql+psycopg:", raw_url)
+    psycopg_url = re.sub(r"^(postgres|postgresql)(\+[^:]+)?:", "postgresql+psycopg:", raw_url)
     config.set_main_option("sqlalchemy.url", psycopg_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
