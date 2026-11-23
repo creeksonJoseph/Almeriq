@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { applyToJobApi, listJobsApi, listMyJobApplicationsApi, getJobSeekerProfileApi, withdrawJobApplicationApi } from "../../lib/api/job";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 
 const STATUS_STYLES = {
   pending: "border-amber-500/30 bg-amber-500/10 text-amber-200",
@@ -144,7 +144,7 @@ export default function JobSeekerJobsPage() {
             <div><h2 className="font-serif text-2xl">Open positions</h2><p className="mt-1 text-sm text-white/50">Search by title, skills, location or description.</p></div>
             <div className="grid w-full gap-2 sm:grid-cols-3 lg:max-w-2xl"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or skills…" /><Input value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} placeholder="Filter by location…" /><select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text"><option value="">All employment types</option><option value="full_time">Full time</option><option value="part_time">Part time</option><option value="contract">Contract</option><option value="freelance">Freelance</option><option value="internship">Internship</option></select></div>
           </div>
-          {loading ? <p className="py-10 text-center text-sm text-white/50">Loading opportunities…</p> :
+          {loading ? <div className="grid gap-4 lg:grid-cols-2">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-4 p-5"><Skeleton className="h-5 w-2/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> :
             filteredJobs.length === 0 ? <Card className="p-8 text-center"><p className="font-medium">No matching roles found</p><p className="mt-2 text-sm text-white/50">Try another search, or check back as new roles are posted.</p></Card> :
             <div className="grid gap-4 lg:grid-cols-2">
               {filteredJobs.map((job) => (
@@ -172,7 +172,7 @@ export default function JobSeekerJobsPage() {
         {pageView === "applications" && (
         <section className="space-y-4">
           <div><h2 className="font-serif text-2xl">My applications</h2><p className="mt-1 text-sm text-white/50">Keep track of where each application stands.</p></div>
-          {applications.length === 0 ? <Card className="p-6 text-sm text-white/55">You have not applied to any roles yet.</Card> :
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="flex items-center gap-4 p-5"><div className="flex-1 space-y-2"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-3 w-1/2" /></div><Skeleton className="h-8 w-24 rounded-xl" /></Card>)}</div> : applications.length === 0 ? <Card className="p-6 text-sm text-white/55">You have not applied to any roles yet.</Card> :
             <Card className="divide-y divide-border p-0">
               {applications.map((application) => (
                 <div key={application.id} className="flex flex-wrap items-center justify-between gap-3 p-4">

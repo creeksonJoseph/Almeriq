@@ -40,6 +40,7 @@ export default function SearchPage() {
   const [sortMode, setSortMode] = useState("relevance");
   const [orderingId, setOrderingId] = useState(null);
   const [providers, setProviders] = useState([]);
+  const [providersLoading, setProvidersLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -57,6 +58,8 @@ export default function SearchPage() {
         if (!cancelled) setProviders(getItems(response));
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail || err.message || "We could not load providers.");
+      } finally {
+        if (!cancelled) setProvidersLoading(false);
       }
     }
     loadProviders();
@@ -239,7 +242,11 @@ export default function SearchPage() {
             <h2 className="font-serif text-2xl font-semibold text-text">Featured providers</h2>
             <p className="mt-1 text-sm text-white/60">Explore providers and their available infrastructure.</p>
           </div>
-          {providers.length ? (
+          {providersLoading ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true">
+              {[0, 1, 2, 3].map((item) => <SkeletonCard key={item} className="p-5" />)}
+            </div>
+          ) : providers.length ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {providers.slice(0, 8).map((provider) => <FeaturedProviderCard key={provider.id} provider={provider} onView={() => navigate("/listings/" + provider.id)} />)}
             </div>

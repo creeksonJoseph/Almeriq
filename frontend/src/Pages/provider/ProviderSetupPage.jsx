@@ -69,7 +69,7 @@ const STEPS = [
 export default function ProviderSetupPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pendingDeletions, setPendingDeletions] = useState([]);
 
@@ -313,8 +313,21 @@ export default function ProviderSetupPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-bg px-4 py-6 text-text">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <div className="flex items-center justify-between border-b border-border pb-5">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-9 w-28" />
+          </div>
+          <div className="grid grid-cols-5 gap-3">
+            {[0, 1, 2, 3, 4].map((item) => <Skeleton key={item} className="h-2 rounded-full" />)}
+          </div>
+          <div className="space-y-3"><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-96 max-w-full" /></div>
+          <Card className="space-y-5 p-6">
+            {[0, 1, 2, 3].map((item) => <div key={item} className="space-y-2"><Skeleton className="h-3 w-32" /><Skeleton className="h-11 w-full rounded-xl" /></div>)}
+            <Skeleton className="h-11 w-36 rounded-xl" />
+          </Card>
+        </div>
       </div>
     );
   }

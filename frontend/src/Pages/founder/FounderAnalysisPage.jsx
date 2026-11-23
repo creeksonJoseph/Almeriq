@@ -10,7 +10,6 @@ import {
   CheckSquare,
   FileText,
   Map,
-  Loader2,
   AlertCircle,
   ArrowLeft,
   RefreshCw,
@@ -370,7 +369,7 @@ export default function FounderAnalysisPage() {
             <Icon size={32} className={selected.iconColor} />
           </div>
           <div className="flex items-center gap-2 mb-3">
-            <Loader2 size={18} className="text-[#f2ca50] animate-spin" />
+            <Skeleton className="h-5 w-40" />
             <p className="text-base font-semibold text-white">Analyzing your {selected.label}...</p>
           </div>
           <p className="text-sm text-white max-w-xs leading-relaxed">

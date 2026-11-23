@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 import { useNavigate } from "react-router-dom";
 
@@ -72,7 +72,7 @@ export default function ExpertDiscoveryPage() {
         <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expertise, location or keywords…" />
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
-        {loading ? <p className="text-sm text-white/50">Loading experts…</p> : visible.length === 0 ? <Card className="p-6 text-sm text-white/50">No active expert profiles match that search.</Card> : <div className="grid gap-4 md:grid-cols-2">{visible.map((expert) => (
+        {loading ? <div className="grid gap-4 md:grid-cols-2" aria-busy="true">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : visible.length === 0 ? <Card className="p-6 text-sm text-white/50">No active expert profiles match that search.</Card> : <div className="grid gap-4 md:grid-cols-2">{visible.map((expert) => (
           <Card key={expert.id} className="space-y-3 p-5">
             <div><h2 className="font-serif text-xl">{expert.headline || "Independent expert"}</h2><p className="mt-1 text-xs text-gold">{expert.expertise?.join(" · ") || "Expertise not listed"}</p></div>
             <p className="text-sm text-white/65">{expert.bio || "No bio provided."}</p>

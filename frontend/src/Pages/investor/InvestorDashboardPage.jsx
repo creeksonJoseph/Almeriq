@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
   createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi,
@@ -167,7 +167,14 @@ export default function InvestorDashboardPage() {
     } finally { setBusyPitch(null); }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white/60">Loading investor workspace…</div>;
+  if (loading) return (
+    <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-10" aria-label="Loading investor workspace" aria-busy="true">
+      <div className="space-y-3"><Skeleton className="h-3 w-36" /><Skeleton className="h-9 w-72" /><Skeleton className="h-4 w-full max-w-2xl" /></div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-4"><Skeleton className="h-3 w-1/2" /><Skeleton className="h-7 w-1/3" /><Skeleton className="h-3 w-2/3" /></Card>)}</div>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3"><Card className="space-y-4 p-5 xl:col-span-2"><Skeleton className="h-6 w-1/3" /><SkeletonText lines={5} /></Card><Card className="space-y-4 p-5"><Skeleton className="h-6 w-1/2" /><SkeletonText lines={5} /></Card></div>
+      <Card className="space-y-4 p-5"><Skeleton className="h-6 w-1/3" />{[0, 1, 2, 3].map((item) => <div key={item} className="flex gap-3"><Skeleton className="h-9 w-9 rounded-lg" /><Skeleton className="h-4 flex-1" /><Skeleton className="h-4 w-20" /></div>)}</Card>
+    </main>
+  );
 
   const requestedPitchIds = new Set(requests.map((request) => request.pitch_id));
   const investedItems = requests.filter((request) => request.status === "invested" && Number(request.investment_amount) > 0);

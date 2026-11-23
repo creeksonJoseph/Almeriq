@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY_PROFILE = {
   headline: "", bio: "", location: "", skills: "", experience_years: "",
@@ -104,7 +104,12 @@ export default function JobSeekerSetupPage() {
     } finally { setSaving(false); }
   };
 
-  if (loading) return <div className="mx-auto max-w-3xl p-6 text-white/60">Loading your profile…</div>;
+  if (loading) return (
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-10" aria-label="Loading your profile" aria-busy="true">
+      <div className="space-y-3"><Skeleton className="h-3 w-32" /><Skeleton className="h-9 w-64" /><Skeleton className="h-4 w-full max-w-xl" /></div>
+      <Card className="space-y-5 p-5">{[0, 1, 2, 3, 4].map((item) => <div key={item} className="space-y-2"><Skeleton className="h-3 w-1/4" /><Skeleton className="h-11 w-full rounded-xl" /></div>)}<SkeletonText lines={3} /><Skeleton className="h-10 w-36 rounded-xl" /></Card>
+    </main>
+  );
 
   const section = (title, name, hint, placeholder, rows = 4) => (
     <label className="block space-y-2" key={name}>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { getClientOrderApi, listClientOrdersApi } from "../../lib/api/orders";
 
 const STATUS_STYLES = {
@@ -45,7 +45,7 @@ export default function FounderOrdersPage() {
       <div className="mx-auto max-w-5xl space-y-6">
         <header><p className="text-xs uppercase tracking-widest text-gold">Founder workspace</p><h1 className="mt-2 font-serif text-3xl">My marketplace orders</h1><p className="mt-2 text-sm text-white/60">Track provider confirmations, dispatch updates and your demo deal records.</p></header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
-        {loading ? <p className="py-10 text-sm text-white/50">Loading your orders…</p> : orders.length === 0 ? <Card className="p-8 text-center"><p className="font-medium">No marketplace orders yet</p><p className="mt-2 text-sm text-white/50">Orders you place from marketplace listings will appear here.</p><Button className="mt-4" onClick={() => navigate("/marketplace")}>Browse marketplace</Button></Card> : (
+        {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/3" /><SkeletonText lines={2} /><div className="flex gap-2"><Skeleton className="h-8 w-24 rounded-xl" /><Skeleton className="h-8 w-24 rounded-xl" /></div></Card>)}</div> : orders.length === 0 ? <Card className="p-8 text-center"><p className="font-medium">No marketplace orders yet</p><p className="mt-2 text-sm text-white/50">Orders you place from marketplace listings will appear here.</p><Button className="mt-4" onClick={() => navigate("/marketplace")}>Browse marketplace</Button></Card> : (
           <div className="space-y-3">
             {orders.map((order) => (
               <Card key={order.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
@@ -57,7 +57,7 @@ export default function FounderOrdersPage() {
         )}
         {selected && <Card className="space-y-4 border border-gold/25 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs uppercase tracking-wider text-gold">Order timeline</p><h2 className="mt-1 font-serif text-xl">{selected.assetName || selected.asset_name || selected.order_id}</h2></div><Button size="sm" variant="ghost" onClick={() => setSelected(null)}>Close</Button></div>
-          {detailLoading ? <p className="text-sm text-white/50">Loading timeline…</p> : (selected.events || []).length === 0 ? <p className="text-sm text-white/50">No timeline events have been recorded.</p> : <div className="space-y-4">{[...selected.events].reverse().map((event) => <div key={event.id} className="flex gap-3"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gold" /><div><p className="text-sm font-medium capitalize">{String(event.event_type || "update").replaceAll("_", " ")}</p>{event.note && <p className="mt-1 text-sm text-white/60">{event.note}</p>}<p className="mt-1 text-xs text-white/40">{event.created_at ? new Date(event.created_at).toLocaleString() : "Time unavailable"}</p></div></div>)}</div>}
+          {detailLoading ? <div className="space-y-4" aria-busy="true">{[0, 1, 2].map((item) => <div key={item} className="flex gap-3"><Skeleton className="mt-1 h-2 w-2 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-3 w-2/3" /></div></div>)}</div> : (selected.events || []).length === 0 ? <p className="text-sm text-white/50">No timeline events have been recorded.</p> : <div className="space-y-4">{[...selected.events].reverse().map((event) => <div key={event.id} className="flex gap-3"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gold" /><div><p className="text-sm font-medium capitalize">{String(event.event_type || "update").replaceAll("_", " ")}</p>{event.note && <p className="mt-1 text-sm text-white/60">{event.note}</p>}<p className="mt-1 text-xs text-white/40">{event.created_at ? new Date(event.created_at).toLocaleString() : "Time unavailable"}</p></div></div>)}</div>}
           <div className="rounded-lg border border-border bg-surface-2 p-3 text-xs text-white/55">Payments and escrow are not connected. This page tracks order records and provider fulfillment updates only.</div>
         </Card>}
       </div>

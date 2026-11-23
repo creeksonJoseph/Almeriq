@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, Search, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, MapPin, Search, ShieldCheck, Image as ImageIcon, Layers } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText, EmptyState } from "../../components/ui";
+import { Button, Card, Pill, Skeleton, SkeletonText, EmptyState } from "../../components/ui";
 import { listMarketplaceListingsApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -50,6 +50,7 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [sortMode, setSortMode] = useState("featured");
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -79,7 +80,7 @@ export default function MarketplacePage() {
 
   const visibleListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return listings.filter((listing) => {
+    const filtered = listings.filter((listing) => {
       const categoryMatch = matchesCategory(listing, activeCategory);
       const searchable = [listing.name, listing.provider_name, listing.category, listing.description, listing.provider_location]
         .map((value) => String(value || "").toLowerCase()).join(" ");
@@ -91,11 +92,20 @@ export default function MarketplacePage() {
       const maxMatch = filters.maxPrice === "" || price <= Number(filters.maxPrice);
       return categoryMatch && queryMatch && locationMatch && kindMatch && minMatch && maxMatch;
     });
-  }, [listings, activeCategory, query, filters]);
+    return filtered.sort((a, b) => {
+      if (sortMode === "price_asc") return Number(a.price_monthly || 0) - Number(b.price_monthly || 0);
+      if (sortMode === "price_desc") return Number(b.price_monthly || 0) - Number(a.price_monthly || 0);
+      if (sortMode === "provider") return String(a.provider_name || a.name || "").localeCompare(String(b.provider_name || b.name || ""));
+      return 0;
+    });
+  }, [listings, activeCategory, query, filters, sortMode]);
 
   const activeFilterCount = [filters.location, filters.kind !== "all" ? filters.kind : "", filters.minPrice, filters.maxPrice]
     .filter(Boolean).length;
   const availableCount = listings.filter((listing) => String(listing.status || "available").toLowerCase() === "available").length;
+  const verifiedCount = listings.filter((listing) => listing.verified || listing.provider_verified).length;
+  const physicalCount = listings.filter((listing) => String(listing.kind || "").toLowerCase() === "physical").length;
+  const digitalCount = listings.filter((listing) => String(listing.kind || "").toLowerCase() === "digital").length;
 
   const handleOrder = async (listing) => {
     if (!user) {
@@ -156,11 +166,12 @@ export default function MarketplacePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
-        <SkeletonText lines={3} className="max-w-2xl" />
-        <Skeleton className="h-12 w-full rounded-xl" />
+      <div className="mx-auto max-w-7xl space-y-7 px-4 py-6 sm:px-6 lg:px-8" aria-label="Loading marketplace" aria-busy="true">
+        <div className="space-y-3"><Skeleton className="h-3 w-40" /><Skeleton className="h-10 w-2/3 max-w-xl" /><Skeleton className="h-4 w-full max-w-2xl" /></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-4"><Skeleton className="h-3 w-1/2" /><Skeleton className="h-7 w-1/3" /><Skeleton className="h-3 w-2/3" /></Card>)}</div>
+        <div className="flex flex-col gap-3 sm:flex-row"><Skeleton className="h-12 flex-1 rounded-xl" /><Skeleton className="h-12 w-28 rounded-xl" /><Skeleton className="h-12 w-28 rounded-xl" /></div>
         <div className="flex gap-2 overflow-hidden">{CATEGORIES.map((category) => <Skeleton key={category.id} className="h-10 w-36 shrink-0 rounded-lg" />)}</div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">{[...Array(6)].map((_, index) => <SkeletonCard key={index} className="p-5" />)}</div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((item) => <MarketplaceListingSkeleton key={item} />)}</div>
       </div>
     );
   }
@@ -175,7 +186,7 @@ export default function MarketplacePage() {
             Browse equipment, compute, power, transport and other services from infrastructure providers.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ImageIcon size={18} /></div>
             <div>
@@ -186,8 +197,15 @@ export default function MarketplacePage() {
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ShieldCheck size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Checkout</p>
-              <p className="text-xl font-semibold text-text">Demo flow</p>
+              <p className="text-xs font-medium text-white/60">Verified providers</p>
+              <p className="text-xl font-semibold text-text">{verifiedCount}</p>
+            </div>
+          </Card>
+          <Card className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><Layers size={18} /></div>
+            <div>
+              <p className="text-xs font-medium text-white/60">Infrastructure types</p>
+              <p className="text-xl font-semibold text-text">{physicalCount} physical / {digitalCount} digital</p>
             </div>
           </Card>
         </div>
@@ -263,7 +281,18 @@ export default function MarketplacePage() {
             <h2 className="font-serif text-2xl font-semibold text-text">Available infrastructure</h2>
             <p className="mt-1 text-sm text-white/60">Compare listings and contact providers directly.</p>
           </div>
-          <p className="text-xs text-white/60">{visibleListings.length} {visibleListings.length === 1 ? "listing" : "listings"}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-white/70">
+              <span>Sort by</span>
+              <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} className="alq-input min-h-10 w-auto">
+                <option value="featured">Featured</option>
+                <option value="price_asc">Price: low to high</option>
+                <option value="price_desc">Price: high to low</option>
+                <option value="provider">Provider name</option>
+              </select>
+            </label>
+            <p className="text-xs text-white/60">{visibleListings.length} {visibleListings.length === 1 ? "listing" : "listings"}</p>
+          </div>
         </div>
         {visibleListings.length ? (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -298,6 +327,19 @@ export default function MarketplacePage() {
         </div>
       )}
     </main>
+  );
+}
+
+function MarketplaceListingSkeleton() {
+  return (
+    <Card className="space-y-4 overflow-hidden p-4" aria-hidden="true">
+      <Skeleton className="aspect-[16/9] w-full rounded-lg" />
+      <div className="flex items-center gap-3"><Skeleton className="h-4 w-2/3" /><Skeleton className="h-6 w-20" /></div>
+      <Skeleton className="h-3 w-1/2" /><SkeletonText lines={2} />
+      <div className="space-y-2 border-t border-border pt-4"><Skeleton className="h-3 w-1/4" /><Skeleton className="h-6 w-1/2" /></div>
+      <div className="grid grid-cols-2 gap-2"><Skeleton className="h-9" /><Skeleton className="h-9" /></div>
+      <Skeleton className="h-9 w-full" />
+    </Card>
   );
 }
 

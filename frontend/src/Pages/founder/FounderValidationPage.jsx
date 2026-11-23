@@ -16,7 +16,7 @@ import { executeAiToolApi } from "../../lib/api";
 import { useToast } from "../../context/ToastContext";
 import { useActiveIdea } from "../../context/IdeaContext";
 import { useFounderFlow } from "../../hooks/useFounderFlow";
-import { SkeletonCard } from "../../components/ui";
+import { Skeleton, SkeletonCard } from "../../components/ui";
 
 export default function FounderValidationPage() {
   const { showToast } = useToast();
@@ -280,7 +280,7 @@ export default function FounderValidationPage() {
         {/* ── Loading State ── */}
         {evaluating && (
           <div className="py-20 text-center">
-            <Loader2 size={24} className="animate-spin mx-auto text-[#c9a15a]" />
+            <Skeleton className="mx-auto h-8 w-56" />
             <p className="mt-4 text-sm font-semibold text-white">
               Evaluating Validation Rubric…
             </p>
