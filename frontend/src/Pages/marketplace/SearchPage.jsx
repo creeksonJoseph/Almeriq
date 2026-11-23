@@ -23,7 +23,7 @@ export default function SearchPage() {
   const [results, setResults] = useState([]);
   const [sortMode, setSortMode] = useState("relevance");
   const [orderingId, setOrderingId] = useState(null);
-  const [providers, setProviders] = useState([]);
+  const [providers, setProviders] = useState([]);\n  const [providersLoading, setProvidersLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -207,7 +207,7 @@ export default function SearchPage() {
       )}
 
       {/* Featured Providers */}
-      {providers.length > 0 && !watchQuery && !searchLoading && (
+      {!watchQuery && !searchLoading && (
         <div>
           <h2 className="font-serif text-xl font-semibold text-text mb-4">Featured Providers</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
