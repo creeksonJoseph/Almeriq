@@ -29,9 +29,22 @@ export default function AppSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const role = user?.role || "founder";
-  const isFounder = String(role).toLowerCase() === "founder";
+  const normalizedRole = String(role).trim().toUpperCase();
+  const isFounder = normalizedRole === "FOUNDER";
 
   const isCurrentActive = (itemPath) => {
+    if (itemPath === "/investor/dashboard") {
+      return location.pathname.startsWith("/investor/") && location.pathname !== "/investor/profile";
+    }
+    if (itemPath === "/founder/legal/guide") {
+      return location.pathname.startsWith("/founder/legal/");
+    }
+    if (itemPath === "/founder/team/talent") {
+      return location.pathname.startsWith("/founder/team/");
+    }
+    if (itemPath === "/founder/fundraising/pitches") {
+      return location.pathname.startsWith("/founder/fundraising/");
+    }
     if (itemPath.includes("?tab=")) {
       const tabParam = itemPath.split("?tab=")[1];
       const searchParams = new URLSearchParams(location.search);
@@ -226,7 +239,7 @@ export default function AppSidebar({
           )}
 
           {/* GROUP 2b: Provider Navigation */}
-          {role === "INFRASTRUCTURE_PROVIDER" && (
+          {normalizedRole === "INFRASTRUCTURE_PROVIDER" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -271,7 +284,7 @@ export default function AppSidebar({
           )}
 
                      {/* GROUP 2c: Job Seeker Navigation */}
-           {role === "JOB_SEEKER" && (
+           {normalizedRole === "JOB_SEEKER" && (
              <div>
                {!isCollapsed && (
                  <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -315,7 +328,7 @@ export default function AppSidebar({
              </div>
             )}
             {/* GROUP 2d: Investor Navigation */}
-            {role === "INVESTOR" && (
+            {normalizedRole === "INVESTOR" && (
               <div>
                 {!isCollapsed && (
                   <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -359,7 +372,7 @@ export default function AppSidebar({
               </div>
             )}
             {/* GROUP 2e: Expert Navigation */}
-            {role === "EXPERT" && (
+            {normalizedRole === "EXPERT" && (
               <div>
                 {!isCollapsed && (
                   <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
