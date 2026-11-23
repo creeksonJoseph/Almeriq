@@ -31,6 +31,7 @@ const ROLE_BADGES = {
 };
 
 const USER_ROLES = [
+  { value: "ADMIN", label: "Admin (restore admin role)" },
   { value: "FOUNDER", label: "Founder" },
   { value: "INVESTOR", label: "Investor" },
   { value: "JOB_SEEKER", label: "Job Seeker" },
@@ -99,19 +100,12 @@ export default function AdminWaitlistPage() {
     }
   }, [user?.is_admin]);
 
-  // Wait for auth initialization before evaluating access
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] w-full">
-        <div className="w-8 h-8 border-2 border-[#C9A15A] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Guard: Admin only
-  if (!user?.is_admin) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  useEffect(() => {
+    const currentRole = toUserRole(user?.role);
+    if (currentRole && USER_ROLES.some((role) => role.value === currentRole)) {
+      setMyRole(currentRole);
+    }
+  }, [user?.role]);
 
   const filteredItems = useMemo(() => {
     return (data.items || []).filter((item) => {
@@ -125,6 +119,20 @@ export default function AdminWaitlistPage() {
       return matchSearch && matchRole;
     });
   }, [data.items, search, selectedRole]);
+
+  // Wait for auth initialization before evaluating access
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh] w-full">
+        <div className="w-8 h-8 border-2 border-[#C9A15A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Guard: Admin only
+  if (!user?.is_admin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
@@ -152,7 +160,8 @@ export default function AdminWaitlistPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <select
+            <div className="flex flex-col gap-1">
+              <select
               value={myRole}
               onChange={(event) => handleRoleChange(event.target.value)}
               disabled={savingRole === "self"}
@@ -164,7 +173,11 @@ export default function AdminWaitlistPage() {
                   Switch my role: {role.label}
                 </option>
               ))}
-            </select>
+              </select>
+              <span className="text-[10px] text-white/40">
+                Saved to your account. Admin console access stays enabled.
+              </span>
+            </div>
             <button
               type="button"
               onClick={fetchWaitlist}
