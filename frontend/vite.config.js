@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
               },
               {
                 name: 'router-vendor',
-                test: /node_modules[\\/](react-router|@remix-run)[\\/]/,
+                test: /node_modules[\\/](react-router-dom|react-router|@remix-run)[\\/]/,
                 priority: 20,
               },
               {
