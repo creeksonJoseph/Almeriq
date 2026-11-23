@@ -25,7 +25,7 @@ export const getExpertProfileApi = () =>
 
 export async function saveExpertProfileApi(payload) {
   const data = await request("Unable to save your expert profile.", () => apiClient.put("/api/expert/profile", payload));
-  invalidate("public:experts");
+  invalidate("private:experts:*");
   return data;
 }
 
