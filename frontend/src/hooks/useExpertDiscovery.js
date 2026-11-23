@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDataCache } from "./useDataCache";
+import { useAuth } from "../context/AuthContext";
 import {
   createExpertRequestApi,
   listExpertsCachedApi,
@@ -8,11 +9,13 @@ import {
 import { startAdvisoryConversationApi } from "../lib/api/conversations";
 
 export function useExpertDiscovery() {
+  const { user } = useAuth();
+  const cacheKey = user?.id ? `private:experts:${user.id}` : null;
   const {
     data: expertResponse,
     loading: expertsLoading,
     error: expertsError,
-  } = useDataCache("public:experts", listExpertsCachedApi);
+  } = useDataCache(cacheKey, listExpertsCachedApi, { enabled: Boolean(user?.id) });
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [requestsError, setRequestsError] = useState("");
