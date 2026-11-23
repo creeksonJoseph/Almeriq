@@ -1,7 +1,7 @@
 /**
  * lib/api/founder.js - Founder analysis & venture history API calls.
  */
-import { apiClient, extractErrorMessage } from "../client";
+import { apiClient, apiFetch, extractErrorMessage } from "../client";
 
 function apiErr(error, defaultMsg) {
   if (
@@ -188,3 +188,7 @@ export async function deleteFounderPitchApi(id) {
     throw apiErr(e, "Unable to delete this pitch");
   }
 }
+
+
+/** ETag-aware read for the authenticated user's venture history. */
+export const getVenturesCachedApi = (etag) => apiFetch("/founder/ventures", { etag });
