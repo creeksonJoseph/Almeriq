@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { extractErrorMessage, fetchWithSWR, getCached, invalidate } from "../client";
+import { extractErrorMessage, fetchWithSWR, getCached, setCached, invalidate } from "../client";
 
 // Mock axios for client tests
 vi.mock("axios", () => ({
@@ -63,5 +63,15 @@ describe("client SWR cache", () => {
     const unchanged = await fetchWithSWR(key, vi.fn().mockResolvedValue(null), { force: true });
     expect(unchanged).toEqual(initial);
     expect(getCached(key)).toEqual(initial);
+  });
+
+  it("invalidates all user-scoped cache entries for a prefix", () => {
+    setCached("private:experts:11", [{ id: 1 }]);
+    setCached("private:experts:22", [{ id: 2 }]);
+
+    invalidate("private:experts:*");
+
+    expect(getCached("private:experts:11")).toBeNull();
+    expect(getCached("private:experts:22")).toBeNull();
   });
 });
