@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useExpertProfile } from "../../hooks/useExpertProfile";
 import { useNavigate } from "react-router-dom";
 
-import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
+import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY = { headline: "", bio: "", expertise: "", years_experience: "", location: "", hourly_rate: "", availability: "", portfolio_url: "", is_active: true };
 
@@ -56,7 +56,7 @@ export default function ExpertProfilePage() {
             {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
             {saved && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">Profile saved.</p>}
             <label className="block space-y-2"><span className="text-sm">Professional headline</span><Input name="headline" value={form.headline || ""} onChange={update} placeholder="e.g. Fintech and payments advisor" /></label>
-            <label className="block space-y-2"><span className="text-sm">About your experience</span><textarea name="bio" value={form.bio || ""} onChange={update} rows={5} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm outline-none transition-colors focus:border-gold focus:ring-1 focus:ring-gold" placeholder="Your background, achievements and how you help founders." /></label>
+            <label className="block space-y-2"><span className="text-sm">About your experience</span><Textarea name="bio" value={form.bio || ""} onChange={update} rows={5} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm outline-none transition-colors focus:border-gold focus:ring-1 focus:ring-gold" placeholder="Your background, achievements and how you help founders." /></label>
             <label className="block space-y-2"><span className="text-sm">Areas of expertise</span><Input name="expertise" value={form.expertise || ""} onChange={update} placeholder="Product strategy, fundraising, cloud infrastructure" /><span className="text-xs text-white/40">Separate areas with commas.</span></label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2"><span className="text-sm">Years of experience</span><Input name="years_experience" value={form.years_experience ?? ""} onChange={update} placeholder="Years" /></label>
