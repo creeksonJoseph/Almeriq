@@ -18,7 +18,8 @@ import { getCompanyRegistrationGuideApi } from "../../lib/api";
 import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import { COUNTRIES } from "../../lib/countries";\nimport { Skeleton, SkeletonText } from "../../components/ui";
+import { COUNTRIES } from "../../lib/countries";
+import { Skeleton, SkeletonText } from "../../components/ui";
 
 // ── Plain English Starter Legal Templates ─────────────────────────────────────
 const LEGAL_TEMPLATES = [
