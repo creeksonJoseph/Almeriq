@@ -41,7 +41,7 @@ export function extractErrorMessage(error, defaultMsg = "An error occurred") {
 // ── SWR & Dedup Cache ─────────────────────────────────────────────────────────
 const cache = new Map();    // key → { data, etag, ts }
 const inFlight = new Map(); // key → Promise (dedup)
-const TTL = 60_000;         // 60 s
+const TTL = 30_000;         // 30 s; align with private API cache headers
 
 export async function apiFetch(url, { etag } = {}) {
   try {
