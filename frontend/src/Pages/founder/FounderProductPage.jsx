@@ -4,7 +4,6 @@ import {
   RefreshCw,
   Copy,
   Check,
-  Loader2,
 } from "lucide-react";
 import FounderStudioNav from "../../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
