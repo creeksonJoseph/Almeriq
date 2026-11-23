@@ -4,6 +4,9 @@ import Button from "./Button";
 import StatusPill from "./StatusPill";
 import Pill from "./Pill";
 import Card from "./Card";
+import Input from "./Input";
+import Textarea from "./Textarea";
+import Select from "./Select";
 
 describe("Button", () => {
   it("renders children and calls onClick", () => {
@@ -44,5 +47,28 @@ describe("Card", () => {
   it("renders children", () => {
     render(<Card>Card content</Card>);
     expect(screen.getByText(/card content/i)).toBeInTheDocument();
+  });
+});
+
+
+describe("Shared form controls", () => {
+  it("uses the canonical dark input class", () => {
+    render(<Input aria-label="Email" />);
+    expect(screen.getByRole("textbox", { name: /email/i })).toHaveClass("alq-input");
+  });
+
+  it("uses the canonical dark textarea class", () => {
+    render(<Textarea aria-label="Biography" />);
+    expect(screen.getByRole("textbox", { name: /biography/i })).toHaveClass("alq-textarea");
+  });
+
+  it("uses the canonical dark select class", () => {
+    render(<Select aria-label="Country"><option value="ke">Kenya</option></Select>);
+    expect(screen.getByRole("combobox", { name: /country/i })).toHaveClass("alq-select");
+  });
+
+  it("does not apply text-field styling to checkbox inputs", () => {
+    render(<Input type="checkbox" aria-label="Active" />);
+    expect(screen.getByRole("checkbox", { name: /active/i })).not.toHaveClass("alq-input");
   });
 });

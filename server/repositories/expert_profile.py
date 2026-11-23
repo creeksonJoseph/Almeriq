@@ -57,3 +57,22 @@ async def list_expert_profiles(limit: int = 50, offset: int = 0, session: AsyncS
     async with async_session_factory() as db:
         rows = (await db.scalars(stmt)).all()
         return [row.to_dict() for row in rows]
+
+
+async def get_expert_headlines_by_user_ids(
+    user_ids: list[int],
+    session: AsyncSession | None = None,
+) -> dict[int, str | None]:
+    """Fetch expert display headlines for multiple users in one query."""
+    ids = set(user_ids)
+    if not ids:
+        return {}
+    stmt = select(ExpertProfile.user_id, ExpertProfile.headline).where(
+        ExpertProfile.user_id.in_(ids)
+    )
+    if session is not None:
+        rows = (await session.execute(stmt)).all()
+    else:
+        async with async_session_factory() as db:
+            rows = (await db.execute(stmt)).all()
+    return {user_id: headline for user_id, headline in rows}

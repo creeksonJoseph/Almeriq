@@ -1,0 +1,94 @@
+import { useCallback, useEffect, useState } from "react";
+import {
+  createFounderPitchApi,
+  deleteFounderPitchApi,
+  listFounderInvestmentRequestsApi,
+  listFounderPitchesApi,
+  updateFounderInvestmentRequestApi,
+  updateFounderPitchApi,
+} from "../lib/api/founder";
+import { startInvestmentConversationApi } from "../lib/api/conversations";
+
+export function useFounderPitches() {
+  const [pitches, setPitches] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [busyRequestId, setBusyRequestId] = useState(null);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const load = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
+    setError("");
+    const [pitchResult, requestResult] = await Promise.allSettled([
+      listFounderPitchesApi(),
+      listFounderInvestmentRequestsApi(),
+    ]);
+    if (pitchResult.status === "fulfilled") setPitches(pitchResult.value);
+    else setError(pitchResult.reason.message || "Unable to load your pitches.");
+    if (requestResult.status === "fulfilled") setRequests(requestResult.value);
+    else setError((current) => current || requestResult.reason.message || "Unable to load investor interest.");
+    if (!silent) setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const savePitch = useCallback(async (id, payload) => {
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      if (id) {
+        await updateFounderPitchApi(id, payload);
+        setNotice("Pitch updated.");
+      } else {
+        await createFounderPitchApi(payload);
+        setNotice("Pitch published to investor discovery.");
+      }
+      await load({ silent: true });
+    } catch (requestError) {
+      setError(requestError.message || "Unable to save this pitch.");
+      throw requestError;
+    } finally {
+      setSaving(false);
+    }
+  }, [load]);
+
+  const updateRequest = useCallback(async (requestId, status) => {
+    setBusyRequestId(requestId);
+    setError("");
+    setNotice("");
+    try {
+      const data = await updateFounderInvestmentRequestApi(requestId, status);
+      setRequests((items) => items.map((item) => item.id === requestId ? { ...item, ...data } : item));
+      setNotice(`Investor request marked ${status.replaceAll("_", " ")}.`);
+      return data;
+    } catch (requestError) {
+      setError(requestError.message || "Unable to update this investor request.");
+      return null;
+    } finally {
+      setBusyRequestId(null);
+    }
+  }, []);
+
+  const startConversation = useCallback((requestId) => startInvestmentConversationApi(requestId), []);
+
+  const removePitch = useCallback(async (pitchId) => {
+    setError("");
+    setNotice("");
+    try {
+      await deleteFounderPitchApi(pitchId);
+      setPitches((items) => items.filter((item) => item.id !== pitchId));
+      setNotice("Pitch deleted.");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to delete this pitch.");
+      throw requestError;
+    }
+  }, []);
+
+  return {
+    pitches, requests, loading, saving, busyRequestId, error, notice,
+    load, savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
+  };
+}

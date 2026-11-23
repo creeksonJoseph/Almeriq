@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useJobSeekerProfile } from "../../hooks/useJobSeekerProfile";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "../../lib/client";
-import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
+
+import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY_PROFILE = {
   headline: "", bio: "", location: "", skills: "", experience_years: "",
@@ -22,45 +23,28 @@ const numberOrNull = (value) => value === "" ? null : Number(value);
 export default function JobSeekerSetupPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY_PROFILE);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const { profile, loading, saving, error, saved, save, setError, setSaved } = useJobSeekerProfile();
 
   useEffect(() => {
-    let cancelled = false;
-    async function loadProfile() {
-      try {
-        const { data } = await apiClient.get("/api/job-seeker/profile");
-        if (cancelled || !data) return;
-        const preferences = data.preferences || {};
-        setForm({
-          ...EMPTY_PROFILE,
-          headline: data.headline || "", bio: data.bio || "", location: data.location || "",
-          skills: Array.isArray(data.skills) ? data.skills.join(", ") : "",
-          experience_years: data.experience_years ?? "", resume_url: data.resume_url || "",
-          portfolio_url: data.portfolio_url || "",
-          experience: toLines(data.experience, ["title", "company", "start_date", "end_date", "description"]),
-          education: toLines(data.education, ["qualification", "institution", "year", "details"]),
-          certifications: toLines(data.certifications, ["name", "issuer", "year", "url"]),
-          projects: toLines(data.projects, ["name", "description", "url", "technologies"]),
-          desired_roles: (preferences.desired_roles || []).join(", "),
-          job_types: (preferences.job_types || []).join(", "),
-          preferred_location: preferences.location || "",
-          salary_min: preferences.salary_min ?? "", salary_max: preferences.salary_max ?? "",
-          remote_only: Boolean(preferences.remote_only), is_active: data.is_active ?? true,
-        });
-      } catch (requestError) {
-        if (!cancelled && requestError.response?.status !== 404) {
-          setError(requestError.response?.data?.detail || "Unable to load your profile.");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    loadProfile();
-    return () => { cancelled = true; };
-  }, []);
+    if (!profile) return;
+    const preferences = profile.preferences || {};
+    setForm({
+      ...EMPTY_PROFILE,
+      headline: profile.headline || "", bio: profile.bio || "", location: profile.location || "",
+      skills: Array.isArray(profile.skills) ? profile.skills.join(", ") : "",
+      experience_years: profile.experience_years ?? "", resume_url: profile.resume_url || "",
+      portfolio_url: profile.portfolio_url || "",
+      experience: toLines(profile.experience, ["title", "company", "start_date", "end_date", "description"]),
+      education: toLines(profile.education, ["qualification", "institution", "year", "details"]),
+      certifications: toLines(profile.certifications, ["name", "issuer", "year", "url"]),
+      projects: toLines(profile.projects, ["name", "description", "url", "technologies"]),
+      desired_roles: (preferences.desired_roles || []).join(", "),
+      job_types: (preferences.job_types || []).join(", "),
+      preferred_location: preferences.location || "",
+      salary_min: preferences.salary_min ?? "", salary_max: preferences.salary_max ?? "",
+      remote_only: Boolean(preferences.remote_only), is_active: profile.is_active ?? true,
+    });
+  }, [profile]);
 
   const updateField = (event) => {
     const { name, value, type, checked } = event.target;
@@ -70,7 +54,7 @@ export default function JobSeekerSetupPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setSaving(true); setError(""); setSaved(false);
+    setError(""); setSaved(false);
     const years = numberOrNull(form.experience_years);
     const salaryMin = numberOrNull(form.salary_min);
     const salaryMax = numberOrNull(form.salary_max);
@@ -79,10 +63,10 @@ export default function JobSeekerSetupPage() {
         (salaryMax !== null && (!Number.isFinite(salaryMax) || salaryMax < 0)) ||
         (salaryMin !== null && salaryMax !== null && salaryMin > salaryMax)) {
       setError("Check your experience and salary values. They must be valid non-negative numbers, and minimum salary cannot exceed maximum salary.");
-      setSaving(false); return;
+      return;
     }
     try {
-      await apiClient.put("/api/job-seeker/profile", {
+      await save({
         headline: form.headline.trim() || null, bio: form.bio.trim() || null,
         location: form.location.trim() || null, skills: splitList(form.skills),
         experience_years: years, resume_url: form.resume_url.trim() || null,
@@ -98,10 +82,7 @@ export default function JobSeekerSetupPage() {
         },
         is_active: form.is_active,
       });
-      setSaved(true);
-    } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Unable to save your profile. Please try again.");
-    } finally { setSaving(false); }
+    } catch { /* The hook owns and exposes the request error. */ }
   };
 
   if (loading) return (
@@ -114,7 +95,7 @@ export default function JobSeekerSetupPage() {
   const section = (title, name, hint, placeholder, rows = 4) => (
     <label className="block space-y-2" key={name}>
       <span className="text-sm font-medium">{title}</span>
-      <textarea name={name} value={form[name]} onChange={updateField} rows={rows}
+      <Textarea name={name} value={form[name]} onChange={updateField} rows={rows}
         className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold"
         placeholder={placeholder} />
       <span className="text-xs text-white/50">{hint}</span>
@@ -141,7 +122,7 @@ export default function JobSeekerSetupPage() {
             <section className="space-y-4">
               <h2 className="font-serif text-xl">Basic information</h2>
               <label className="block space-y-2"><span className="text-sm font-medium">Professional headline</span><Input name="headline" value={form.headline} onChange={updateField} placeholder="e.g. Junior Backend Developer" /></label>
-              <label className="block space-y-2"><span className="text-sm font-medium">About you</span><textarea name="bio" value={form.bio} onChange={updateField} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Summarize your experience, strengths and career direction." /></label>
+              <label className="block space-y-2"><span className="text-sm font-medium">About you</span><Textarea name="bio" value={form.bio} onChange={updateField} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Summarize your experience, strengths and career direction." /></label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block space-y-2"><span className="text-sm font-medium">Location</span><Input name="location" value={form.location} onChange={updateField} placeholder="City, country" /></label>
                 <label className="block space-y-2"><span className="text-sm font-medium">Years of experience</span><Input name="experience_years" value={form.experience_years} onChange={updateField} placeholder="0" /></label>

@@ -41,7 +41,8 @@ export function extractErrorMessage(error, defaultMsg = "An error occurred") {
 // ── SWR & Dedup Cache ─────────────────────────────────────────────────────────
 const cache = new Map();    // key → { data, etag, ts }
 const inFlight = new Map(); // key → Promise (dedup)
-const TTL = 60_000;         // 60 s
+const subscribers = new Map(); // key → Set<listener>
+const TTL = 30_000;         // 30 s; align with private API cache headers
 
 export async function apiFetch(url, { etag } = {}) {
   try {
@@ -65,14 +66,38 @@ export function getCached(key) {
   return cache.get(key)?.data ?? null;
 }
 
-export async function fetchWithSWR(key, fetcher) {
+function notifyCache(key, data) {
+  for (const listener of subscribers.get(key) || []) listener(data);
+}
+
+export function subscribeCache(key, listener) {
+  if (!key) return () => {};
+  if (!subscribers.has(key)) subscribers.set(key, new Set());
+  subscribers.get(key).add(listener);
+  return () => {
+    const listeners = subscribers.get(key);
+    listeners?.delete(listener);
+    if (listeners?.size === 0) subscribers.delete(key);
+  };
+}
+
+export function setCached(key, data) {
+  if (!key) return;
+  cache.set(key, { data, ts: Date.now() });
+  notifyCache(key, data);
+}
+
+export async function fetchWithSWR(key, fetcher, { force = false } = {}) {
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.ts < TTL) return hit.data;
+  if (!force && hit && Date.now() - hit.ts < TTL) return hit.data;
 
   if (!inFlight.has(key)) {
     const p = fetcher(hit?.etag)
       .then((r) => {
-        if (r) cache.set(key, { data: r.data, etag: r.etag, ts: Date.now() });
+        if (r) {
+          cache.set(key, { data: r.data, etag: r.etag, ts: Date.now() });
+          notifyCache(key, r.data);
+        }
         return cache.get(key)?.data ?? null;
       })
       .finally(() => inFlight.delete(key));
@@ -82,5 +107,16 @@ export async function fetchWithSWR(key, fetcher) {
 }
 
 export function invalidate(key) {
+  if (key.endsWith("*")) {
+    const prefix = key.slice(0, -1);
+    for (const cacheKey of cache.keys()) {
+      if (cacheKey.startsWith(prefix)) {
+        cache.delete(cacheKey);
+        notifyCache(cacheKey, null);
+      }
+    }
+    return;
+  }
   cache.delete(key);
+  notifyCache(key, null);
 }

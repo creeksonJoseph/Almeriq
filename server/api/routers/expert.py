@@ -1,5 +1,6 @@
 from __future__ import annotations
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from api.cache import with_etag
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import get_current_user
 from core.db import get_db
@@ -18,6 +19,7 @@ def _role_user(user: dict, expected: str) -> int:
 
 @router.get("/experts")
 async def discover_experts(
+    request: Request,
     response: Response,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -26,7 +28,8 @@ async def discover_experts(
 ):
     response.headers["Cache-Control"] = "private, max-age=30"
     items = await svc.list_profiles(limit=limit, offset=offset, session=db)
-    return {"items": items, "total": len(items)}
+    payload = {"items": items, "total": len(items)}
+    return with_etag(request, response, payload)
 
 
 @router.get("/expert/profile")
