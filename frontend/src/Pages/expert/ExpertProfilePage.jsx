@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY = { headline: "", bio: "", expertise: "", years_experience: "", location: "", hourly_rate: "", availability: "", portfolio_url: "", is_active: true };
 
@@ -51,7 +51,12 @@ export default function ExpertProfilePage() {
     finally { setSaving(false); }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0A0A0B] p-8 text-white/60">Loading expert profile…</div>;
+  if (loading) return (
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-10" aria-label="Loading expert profile" aria-busy="true">
+      <div className="space-y-3"><Skeleton className="h-3 w-28" /><Skeleton className="h-9 w-64" /><Skeleton className="h-4 w-96 max-w-full" /></div>
+      <Card className="space-y-5 p-5"><Skeleton className="h-16 w-16 rounded-full" />{[0, 1, 2, 3, 4].map((item) => <div key={item} className="space-y-2"><Skeleton className="h-3 w-1/4" /><Skeleton className="h-11 w-full rounded-xl" /></div>)}<SkeletonText lines={3} /><Skeleton className="h-10 w-36 rounded-xl" /></Card>
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white">
