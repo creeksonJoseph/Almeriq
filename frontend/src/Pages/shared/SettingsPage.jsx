@@ -204,7 +204,7 @@ export default function SettingsPage() {
                       setPwdError("");
                     }}
                     placeholder="000000"
-                    className="w-full max-w-xs px-4 py-2.5 rounded-lg tracking-[0.5em] text-center font-mono text-lg outline-none transition-all border border-white/15 bg-[#181824] text-white focus:border-[#f2ca50] focus:ring-1 focus:ring-[#f2ca50]/30 disabled:opacity-60 disabled:bg-white/5"
+                    className="w-full max-w-xs px-4 py-2.5 rounded-lg tracking-[0.5em] text-center font-mono text-lg outline-none transition-all border border-[#282a2f] bg-[#181824] text-white focus:border-[#f2ca50] focus:ring-1 focus:ring-[#f2ca50]/30 disabled:opacity-60 disabled:bg-white/5"
                   />
                 </div>
 
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                       setPwdError("");
                     }}
                     placeholder="Minimum 8 characters"
-                    className="w-full pl-3.5 pr-10 py-2.5 rounded-lg text-xs outline-none transition-all border border-white/15 bg-[#181824] text-white placeholder-white/20 focus:border-[#f2ca50] focus:ring-1 focus:ring-[#f2ca50]/30"
+                    className="w-full pl-3.5 pr-10 py-2.5 rounded-lg text-xs outline-none transition-all border border-[#282a2f] bg-[#181824] text-white placeholder-white/20 focus:border-[#f2ca50] focus:ring-1 focus:ring-[#f2ca50]/30"
                   />
                   <button
                     type="button"
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                       setPwdError("");
                     }}
                     placeholder="Re-enter new password"
-                    className="w-full pl-3.5 pr-10 py-2.5 rounded-lg text-xs outline-none transition-all border border-white/15 bg-[#181824] text-white placeholder-white/20 focus:border-[#f2ca50] focus:ring-1 focus:ring-[#f2ca50]/30"
+                    className="w-full pl-3.5 pr-10 py-2.5 rounded-lg text-xs outline-none transition-all border border-[#282a2f] bg-[#181824] text-white placeholder-white/20 focus:border-[#f2ca50] focus:ring-1 focus:ring-[#f2ca50]/30"
                   />
                   <button
                     type="button"

@@ -43,3 +43,9 @@
 - **Keep loading, empty, and error states distinct.** Loading uses skeletons, empty states explain that there is no content and provide a useful next action, and errors use the reserved red error treatment with a retry path when possible.
 - **Audit every new page and every changed data-fetching page** for an initial skeleton before calling the UI complete. Do not mark a portal complete while its initial page load still renders a full-page spinner or plain "Loading..." text.
 
+
+
+## Form Input Border Standards
+- Form inputs, textareas, and selects should use the shared `border-border` token or `#282a2f` on dark surfaces. Do not use white-based border utilities such as `border-white/10` or `border-white/15` for editable fields.
+- Keep default field borders low-contrast and consistent across forms. Use the existing gold focus treatment to make the active field clear; do not make every idle field look focused.
+- Prefer the shared `Input` component and existing `alq-input` styles. When a native textarea or select is necessary, match the same surface, border, and focus tokens.
