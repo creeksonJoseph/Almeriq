@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   ArrowRight, CheckCircle2, Loader2, Building2, TrendingUp, Briefcase, Truck,
   Globe2, Lock, User, Mail, ShieldCheck,
