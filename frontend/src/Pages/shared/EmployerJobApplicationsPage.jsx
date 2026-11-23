@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { listJobApplicationsApi, listMyJobsApi, reviewJobApplicationApi } from "../../lib/api/job";
 
 export default function EmployerJobApplicationsPage() {
@@ -66,7 +66,7 @@ export default function EmployerJobApplicationsPage() {
         </header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
-        {loading ? <Card className="p-8 text-center text-sm text-white/55">Loading applicants…</Card>
+        {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/3" /><SkeletonText lines={2} /><div className="flex gap-2"><Skeleton className="h-9 w-24 rounded-xl" /><Skeleton className="h-9 w-24 rounded-xl" /></div></Card>)}</div>
           : applications.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">No applications have been submitted for this role yet.</Card>
           : <section className="space-y-3">
             <div className="flex items-center justify-between"><h2 className="font-serif text-xl">Applications</h2><span className="text-sm text-white/45">{applications.length} total</span></div>
