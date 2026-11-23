@@ -91,7 +91,6 @@ describe("FounderPitchesPage pitch creation", () => {
 
     await waitFor(() => {
       expect(createPitch).toHaveBeenCalledWith(
-        "/api/founder/pitches",
         expect.objectContaining({ title: "Acme AI", ask_amount: 50000 }),
       );
     });
@@ -151,7 +150,7 @@ describe("FounderPitchesPage pitch creation", () => {
 
     await waitFor(() => {
       expect(updatePitch).toHaveBeenCalledWith(
-        "/api/founder/pitches/1",
+        1,
         expect.objectContaining({ title: "Updated Pitch" }),
       );
     });
@@ -165,7 +164,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.click(screen.getByText(/delete/i));
 
     await waitFor(() => {
-      expect(deletePitch).toHaveBeenCalledWith("/api/founder/pitches/1");
+      expect(deletePitch).toHaveBeenCalledWith(1);
     });
     await waitFor(() => {
       expect(screen.getByText(/pitch deleted/i)).toBeInTheDocument();
