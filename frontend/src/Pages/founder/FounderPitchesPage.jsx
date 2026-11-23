@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
 import { executeAiToolApi } from "../../lib/api/founder";
 
@@ -188,7 +188,7 @@ export default function FounderPitchesPage() {
         )}
         {pageView === "pitches" && (
         <section className="space-y-3"><h2 className="font-serif text-xl">Your published pitches</h2>
-          {loading ? <p className="text-sm text-white/50">Loading pitches…</p> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={2} /><Skeleton className="h-9 w-32 rounded-xl" /></Card>)}</div> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
             <Card key={pitch.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div className="min-w-0 flex-1"><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-sm text-white/60">{pitch.sector || "Sector not set"} · {pitch.stage || "Stage not set"}{pitch.ask_amount != null ? ` · Ask: ${pitch.ask_amount}` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-white/50">{pitch.summary || "No summary added."}</p></div>
               <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
