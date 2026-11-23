@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2, MessageSquare, ShoppingCart, CheckCircle, Shield, Truck } from "lucide-react";
-import { Button, Card, StatusPill, Modal, Pill, Skeleton, SkeletonText } from "../../components/ui";
+import { ChevronLeft, ChevronRight, X, MapPin, CheckCircle, Shield, Truck } from "lucide-react";
+import { Button, Card, StatusPill, Skeleton, SkeletonText } from "../../components/ui";
 import { getMarketplaceListingApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -89,13 +89,8 @@ export default function PublicListingPreviewPage() {
           <h1 className="font-serif text-3xl font-semibold text-text leading-tight">{listing.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={async () => { try { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied"); } catch { setShareMessage("Copy this page URL from your browser address bar."); } }}>
-            <Share2 className="w-4 h-4 mr-1" /> Share
-          </Button>
-          <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)}>
-            <ShoppingCart className="w-4 h-4 mr-1" />
-            {dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order Now" : "Price unavailable"}
-          </Button>
+          <Button variant="ghost" onClick={async () => { try { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied"); } catch { setShareMessage("Copy this page URL from your browser address bar."); } }}>Share</Button>
+          <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)}>{dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order now" : "Price unavailable"}</Button>
         </div>
       </div>
 
@@ -171,10 +166,7 @@ export default function PublicListingPreviewPage() {
                 <span className="text-label-caps text-white/60 uppercase tracking-wider block mb-1">RESERVE RATE</span>
                 <div className="font-serif text-2xl font-semibold text-gold">${Number(listing.price_monthly || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-sans text-white/60 font-normal">/mo</span></div>
               </div>
-              <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)} className="w-full sm:w-auto h-11 px-6">
-                <ShoppingCart className="w-4 h-4 mr-1" />
-                {dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order Now" : "Price unavailable"}
-              </Button>
+              <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)} className="w-full sm:w-auto h-11 px-6">{dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order now" : "Price unavailable"}</Button>
             </div>
             <div className="mt-4 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2 text-gold font-medium">
