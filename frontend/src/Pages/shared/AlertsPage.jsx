@@ -198,7 +198,7 @@ function NotificationItem({ notification, onClick }) {
       onClick={onClick}
     >
       <div className="w-10 h-10 rounded-lg bg-surface-2 border border-border flex items-center justify-center shrink-0 text-2xl">
-        {TYPE_ICONS[notification.type] || "🔔"}
+        {TYPE_ICONS[notification.type] || Bell}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
