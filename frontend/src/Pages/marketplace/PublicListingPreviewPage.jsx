@@ -138,7 +138,7 @@ export default function PublicListingPreviewPage() {
               <span className="text-label-caps text-white/60 uppercase tracking-wider">ABOUT THIS LISTING</span>
               <span className="text-[10px] text-white/40 uppercase font-mono tracking-wider">SPEC 4.2</span>
             </div>
-            <p className="text-base text-white/80 leading-relaxed">{listing.description || "No additional listing description provided."}</p>
+            <p className="text-base text-white leading-relaxed">{listing.description || "No additional listing description provided."}</p>
           </Card>
 
           {/* Specs */}
