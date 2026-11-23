@@ -84,7 +84,7 @@ export default function AlertsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 space-y-6">
         <div className="flex items-center justify-between">
           <SkeletonText lines={2} className="max-w-xl" />
           <div className="flex gap-2"><Skeleton className="h-9 w-24" /><Skeleton className="h-9 w-32" /></div>
@@ -97,7 +97,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
