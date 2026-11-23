@@ -162,17 +162,17 @@ export default function AdminWaitlistPage() {
           <div className="flex items-center gap-3">
             <div className="flex flex-col gap-1">
               <select
-              value={myRole}
-              onChange={(event) => handleRoleChange(event.target.value)}
-              disabled={savingRole === "self"}
-              aria-label="Switch my test role"
-              className="rounded-xl bg-[#1a1b22] px-3 py-2.5 text-xs font-semibold text-white outline-none transition-colors focus:ring-1 focus:ring-[#f2ca50] disabled:opacity-50"
-            >
-              {USER_ROLES.map((role) => (
-                <option key={role.value} value={role.value}>
-                  Switch my role: {role.label}
-                </option>
-              ))}
+                value={myRole}
+                onChange={(event) => handleRoleChange(event.target.value)}
+                disabled={savingRole === "self"}
+                aria-label="Switch my test role"
+                className="rounded-xl bg-[#1a1b22] px-3 py-2.5 text-xs font-semibold text-white outline-none transition-colors focus:ring-1 focus:ring-[#f2ca50] disabled:opacity-50"
+              >
+                {USER_ROLES.map((role) => (
+                  <option key={role.value} value={role.value}>
+                    Switch my role: {role.label}
+                  </option>
+                ))}
               </select>
               <span className="text-[10px] text-white/40">
                 Saved to your account. Admin console access stays enabled.
