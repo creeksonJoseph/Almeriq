@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink, Share2, MessageSquare, ShoppingCart, CheckCircle, Shield, Truck } from "lucide-react";
-import { Button, Card, StatusPill, Modal, Pill, Skeleton, SkeletonText } from "../../components/ui";
+import { ChevronLeft, ChevronRight, X, CheckCircle, Shield, Truck } from "lucide-react";
+import { Button, Card, StatusPill, Skeleton, SkeletonText } from "../../components/ui";
 import { getMarketplaceListingApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -89,13 +89,8 @@ export default function PublicListingPreviewPage() {
           <h1 className="font-serif text-3xl font-semibold text-text leading-tight">{listing.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={async () => { try { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied"); } catch { setShareMessage("Copy this page URL from your browser address bar."); } }}>
-            <Share2 className="w-4 h-4 mr-1" /> Share
-          </Button>
-          <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)}>
-            <ShoppingCart className="w-4 h-4 mr-1" />
-            {dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order Now" : "Price unavailable"}
-          </Button>
+          <Button variant="ghost" onClick={async () => { try { await navigator.clipboard.writeText(window.location.href); setShareMessage("Link copied"); } catch { setShareMessage("Copy this page URL from your browser address bar."); } }}>Share</Button>
+          <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)}>{dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order now" : "Price unavailable"}</Button>
         </div>
       </div>
 
@@ -132,7 +127,7 @@ export default function PublicListingPreviewPage() {
                   {(listing.provider_verified) && <span className="text-gold" aria-label="Verified">✓</span>}
                   <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">{listing.provider_location || "Location not provided"}</span>
                 </div>
-                <p className="text-sm text-white/60 mt-1">{listing.description || "Infrastructure provider"}</p>
+                <p className="text-sm text-white/75 mt-1">{listing.description || "Infrastructure provider"}</p>
               </div>
             </div>
           </Card>
@@ -143,7 +138,7 @@ export default function PublicListingPreviewPage() {
               <span className="text-label-caps text-white/60 uppercase tracking-wider">ABOUT THIS LISTING</span>
               <span className="text-[10px] text-white/40 uppercase font-mono tracking-wider">SPEC 4.2</span>
             </div>
-            <p className="text-base text-white/60 leading-relaxed">{listing.description || "No additional listing description provided."}</p>
+            <p className="text-base text-white leading-relaxed">{listing.description || "No additional listing description provided."}</p>
           </Card>
 
           {/* Specs */}
@@ -157,7 +152,7 @@ export default function PublicListingPreviewPage() {
                 { label: "Availability", value: listing.status },
               ].map((spec, i) => (
                 <div key={i} className="bg-surface border border-border rounded-lg p-3">
-                  <span className="text-white/40 block uppercase text-[9px] tracking-wider">{spec.label}</span>
+                  <span className="text-white/65 block uppercase text-[9px] tracking-wider">{spec.label}</span>
                   <span className="font-semibold text-text font-serif text-sm">{spec.value}</span>
                 </div>
               ))}
@@ -171,17 +166,14 @@ export default function PublicListingPreviewPage() {
                 <span className="text-label-caps text-white/60 uppercase tracking-wider block mb-1">RESERVE RATE</span>
                 <div className="font-serif text-2xl font-semibold text-gold">${Number(listing.price_monthly || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-sans text-white/60 font-normal">/mo</span></div>
               </div>
-              <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)} className="w-full sm:w-auto h-11 px-6">
-                <ShoppingCart className="w-4 h-4 mr-1" />
-                {dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order Now" : "Price unavailable"}
-              </Button>
+              <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)} className="w-full sm:w-auto h-11 px-6">{dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order now" : "Price unavailable"}</Button>
             </div>
             <div className="mt-4 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2 text-gold font-medium">
                 <CheckCircle className="w-4 h-4" />
                 <span>Provider-uploaded listing</span>
               </div>
-              <div className="flex items-center gap-2 text-white/60">
+              <div className="flex items-center gap-2 text-white/75">
                 <Shield className="w-4 h-4" />
                 <span>Payment simulation only</span>
               </div>
@@ -218,7 +210,7 @@ export default function PublicListingPreviewPage() {
 
           <Card className="p-5 text-center border border-border bg-surface">
             <button type="button" onClick={async () => { if (!user) { navigate(`/login?redirect=${encodeURIComponent(`/listings/${id}`)}`); return; } try { const conversation = await startProviderConversationApi(listing.provider_id); navigate(`/messages?conversation=${conversation.id}`); } catch (e) { setError(e.response?.data?.detail || e.message || "Unable to start conversation."); } }} className="text-gold hover:underline flex items-center justify-center gap-1">
-              <MessageSquare className="w-4 h-4" /> Chat with Provider
+              Chat with provider
             </button>
           </Card>
         </div>
@@ -241,7 +233,7 @@ export default function PublicListingPreviewPage() {
                 </button>
               </>
             )}
-            <button onClick={() => setGalleryOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Close">✕</button>
+            <button onClick={() => setGalleryOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Close"><X size={18} /></button>
             <div className="flex justify-center gap-2 p-4">
               {media.map((item, i) => (
                 <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
