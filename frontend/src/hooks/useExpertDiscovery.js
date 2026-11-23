@@ -1,34 +1,39 @@
 import { useCallback, useEffect, useState } from "react";
-import { createExpertRequestApi, listExpertsApi, listFounderExpertRequestsApi } from "../lib/api/expert";
+import { useDataCache } from "./useDataCache";
+import {
+  createExpertRequestApi,
+  listExpertsCachedApi,
+  listFounderExpertRequestsApi,
+} from "../lib/api/expert";
 
 export function useExpertDiscovery() {
-  const [experts, setExperts] = useState([]);
+  const {
+    data: expertResponse,
+    loading: expertsLoading,
+    error: expertsError,
+  } = useDataCache("public:experts", listExpertsCachedApi);
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [requestsLoading, setRequestsLoading] = useState(true);
+  const [requestsError, setRequestsError] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    const [expertsResult, requestsResult] = await Promise.allSettled([
-      listExpertsApi(),
-      listFounderExpertRequestsApi(),
-    ]);
-    if (expertsResult.status === "fulfilled") {
-      setExperts(expertsResult.value?.items || []);
-    } else {
-      setError(expertsResult.reason.message || "Unable to load expert profiles.");
-    }
-    if (requestsResult.status === "fulfilled") {
-      setRequests(requestsResult.value?.items || []);
-    } else {
-      setError((current) => current || requestsResult.reason.message || "Unable to load advisory requests.");
-    }
-    setLoading(false);
-  }, []);
+  const experts = expertResponse?.items || [];
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    listFounderExpertRequestsApi()
+      .then((data) => {
+        if (active) setRequests(data?.items || []);
+      })
+      .catch((requestError) => {
+        if (active) setRequestsError(requestError.message || "Unable to load your advisory requests.");
+      })
+      .finally(() => {
+        if (active) setRequestsLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const sendRequest = useCallback(async (expertUserId, payload) => {
     setError("");
@@ -44,5 +49,14 @@ export function useExpertDiscovery() {
     }
   }, []);
 
-  return { experts, requests, loading, error, notice, sendRequest, setError, setNotice };
+  return {
+    experts,
+    requests,
+    loading: expertsLoading || requestsLoading,
+    error: error || expertsError || requestsError,
+    notice,
+    sendRequest,
+    setError,
+    setNotice,
+  };
 }
