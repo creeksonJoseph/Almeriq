@@ -26,7 +26,6 @@ const coverageToApi = {
   "Middle East": "middle_east",
   "Global / no restriction": "global",
 };
-const coverageFromApi = Object.fromEntries(Object.entries(coverageToApi).map(([label, value]) => [value, label]));
 
 const providerSchema = z.object({
   name: z.string().min(2, "Provider name is required"),
