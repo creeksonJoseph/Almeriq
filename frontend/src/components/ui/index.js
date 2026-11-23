@@ -14,3 +14,4 @@ export { default as StatusPill } from "./StatusPill.jsx";
 export { default as Stepper } from "./Stepper.jsx";
 export { Avatar, AvatarGroup } from "./Avatar.jsx";
 export { Link } from "./Link.jsx";
+export { default as RouteSkeleton } from "./RouteSkeleton.jsx";
