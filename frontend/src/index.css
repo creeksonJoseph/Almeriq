@@ -5,7 +5,7 @@
   --color-bg: #0a0a0b;
   --color-surface: #141417;
   --color-surface-2: #1c1c21;
-  --color-border: #2b2b31;
+  --color-border: #282a2f;
   --color-gold: #c9a15a;
   --color-gold-soft: #e8d6a8;
   --color-text: #f3f1ec;
@@ -81,6 +81,24 @@ select option,
 select optgroup {
   color: var(--color-text);
   background: var(--color-surface);
+}
+
+/* Enforce the dark field palette even where legacy pages still carry white
+   Tailwind border/background utilities. Checkbox/radio controls are excluded. */
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+)[class*="border-white"] {
+  border-color: var(--color-border) !important;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+)[class~="bg-white"] {
+  background-color: var(--color-surface-2) !important;
 }
 
 /* Keep Chrome/Safari autofill from painting light fields over the dark theme. */
@@ -325,7 +343,7 @@ body {
 }
 .alq-submit[aria-disabled="true"] {
   background: var(--color-border);
-  color: var(--color-muted);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 .alq-submit:not([aria-disabled="true"]):hover {
