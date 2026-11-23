@@ -65,6 +65,11 @@ export function getCached(key) {
   return cache.get(key)?.data ?? null;
 }
 
+export function setCached(key, data) {
+  if (!key) return;
+  cache.set(key, { ...cache.get(key), data, ts: Date.now() });
+}
+
 export async function fetchWithSWR(key, fetcher) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.ts < TTL) return hit.data;
