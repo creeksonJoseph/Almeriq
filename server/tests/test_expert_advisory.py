@@ -283,7 +283,9 @@ async def test_list_advisory_requests_for_founder_and_expert(session):
     founder_requests = await expert_service.list_requests(founder_id, "founder", session=session)
     assert len(founder_requests) == 1
     assert founder_requests[0]["expert_id"] == expert_id
+    assert founder_requests[0]["expert_headline"] == "Cloud infrastructure advisor"
 
     expert_requests = await expert_service.list_requests(expert_id, "expert", session=session)
     assert len(expert_requests) == 1
     assert expert_requests[0]["founder_id"] == founder_id
+    assert expert_requests[0]["founder_name"] == "Founder #{}".format(founder_id)
