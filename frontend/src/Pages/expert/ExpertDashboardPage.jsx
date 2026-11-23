@@ -1,31 +1,15 @@
-import { useEffect, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
-import { apiClient } from "../../lib/client";
+import { useExpertDashboard } from "../../hooks/useExpertDashboard";
 import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 
 export default function ExpertDashboardPage() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [busyId, setBusyId] = useState(null);
-
-  const load = async () => {
-    setLoading(true); setError("");
-    const [profileResult, requestResult] = await Promise.allSettled([
-      apiClient.get("/api/expert/profile"), apiClient.get("/api/expert/requests"),
-    ]);
-    if (profileResult.status === "fulfilled") setProfile(profileResult.value.data);
-    else if (profileResult.reason.response?.status !== 404) setError(profileResult.reason.response?.data?.detail || "Unable to load your expert profile.");
-    if (requestResult.status === "fulfilled") setRequests(requestResult.value.data?.items || []);
-    else setError((current) => current || requestResult.reason.response?.data?.detail || "Unable to load advisory requests.");
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, []);
+  const {
+    profile, requests, loading, error, notice, busyId,
+    updateRequest, setError,
+  } = useExpertDashboard();
 
   const openConversation = async (requestId) => {
     try {
@@ -34,16 +18,6 @@ export default function ExpertDashboardPage() {
     } catch (err) {
       setError(err.response?.data?.detail || "Unable to open this conversation.");
     }
-  };
-
-  const updateRequest = async (id, status) => {
-    setBusyId(id); setError(""); setNotice("");
-    try {
-      const { data } = await apiClient.patch(`/api/expert/requests/${id}`, { status });
-      setRequests((items) => items.map((item) => item.id === id ? { ...item, ...data } : item));
-      setNotice(`Request updated to ${status}.`);
-    } catch (err) { setError(err.response?.data?.detail || "Unable to update request."); }
-    finally { setBusyId(null); }
   };
 
   if (loading) return (
