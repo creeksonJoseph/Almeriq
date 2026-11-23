@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getExpertProfileApi, listExpertRequestsApi, updateExpertRequestApi } from "../lib/api/expert";
+import { startAdvisoryConversationApi } from "../lib/api/conversations";
 
 export function useExpertDashboard() {
   const [profile, setProfile] = useState(null);
@@ -53,8 +54,10 @@ export function useExpertDashboard() {
     }
   }, []);
 
+  const openConversation = useCallback((requestId) => startAdvisoryConversationApi(requestId), []);
+
   return {
-    profile, requests, profileLoading, requestsLoading,
+    profile, requests, profileLoading, requestsLoading, openConversation,
     error, notice, busyId, load, updateRequest, setError,
   };
 }
