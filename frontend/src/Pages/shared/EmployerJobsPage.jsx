@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import {
   createJobApi,
   deleteJobApi,
@@ -197,7 +197,7 @@ export default function EmployerJobsPage() {
 {pageView === "list" && (
         <section className="space-y-4">
           <div className="flex items-center justify-between"><h2 className="font-serif text-2xl">Your job postings</h2><span className="text-sm text-white/45">{jobs.length} total</span></div>
-          {loading ? <p className="py-8 text-center text-sm text-white/50">Loading your postings…</p> :
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> :
             jobs.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">You have not posted a role yet. Create your first opening above.</Card> :
             <div className="space-y-4">
               {jobs.map((job) => (
