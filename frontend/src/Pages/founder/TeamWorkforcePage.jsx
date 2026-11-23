@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import {
   discoverTalentApi, inviteTalentApi, listFounderTeamInvitationsApi,
   listTeamMembersApi, removeTeamMemberApi,
@@ -86,7 +86,7 @@ export default function TeamWorkforcePage() {
             <Input value={filterLocation} onChange={(event) => setFilterLocation(event.target.value)} placeholder="Location" />
             <Button type="submit" disabled={loading}>Search talent</Button>
           </form>
-          {loading ? <p className="py-8 text-center text-sm text-white/50">Finding talent…</p> : talent.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">No active talent profiles match those filters.</Card> : <div className="grid gap-4 md:grid-cols-2">{talent.map((person) => {
+          {loading ? <div className="grid gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : talent.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">No active talent profiles match those filters.</Card> : <div className="grid gap-4 md:grid-cols-2">{talent.map((person) => {
             const alreadyInvited = invitations.some((item) => item.invitee_id === person.user_id && ["pending", "accepted"].includes(item.status));
             const alreadyMember = members.some((item) => item.member_id === person.user_id);
             return <Card key={person.user_id} className="space-y-3 p-5">
