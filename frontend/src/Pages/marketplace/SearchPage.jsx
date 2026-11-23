@@ -106,7 +106,6 @@ export default function SearchPage() {
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     navigate({ pathname: "/search", search: params.toString() ? "?" + params.toString() : "" }, { replace: true });
-    runSearch(query, activeCategory);
   };
 
   const handleCategory = (category) => {
