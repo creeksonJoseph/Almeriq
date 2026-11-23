@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { apiClient } from "../../lib/client";
 import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 
@@ -46,7 +46,14 @@ export default function ExpertDashboardPage() {
     finally { setBusyId(null); }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0A0A0B] p-8 text-white/60">Loading expert workspace…</div>;
+  if (loading) return (
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-10" aria-label="Loading expert workspace" aria-busy="true">
+      <div className="space-y-3"><Skeleton className="h-3 w-28" /><Skeleton className="h-9 w-64" /><Skeleton className="h-4 w-96 max-w-full" /></div>
+      <div className="flex justify-end"><Skeleton className="h-10 w-36 rounded-xl" /></div>
+      <Card className="space-y-3 p-5"><Skeleton className="h-5 w-1/3" /><SkeletonText lines={3} /></Card>
+      <div className="space-y-3"><Skeleton className="h-6 w-48" />{[0, 1, 2].map((item) => <Card key={item} className="space-y-4 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={3} /><Skeleton className="h-9 w-40" /></Card>)}</div>
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white">
