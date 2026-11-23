@@ -3,7 +3,6 @@ import { useFounderPitches } from "../../hooks/useFounderPitches";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button, Card, Input, Select, Textarea, Skeleton, SkeletonText } from "../../components/ui";
-import { startInvestmentConversationApi } from "../../lib/api/conversations";
 import { executeAiToolApi } from "../../lib/api/founder";
 
 const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", target_check_size: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
@@ -17,7 +16,7 @@ export default function FounderPitchesPage() {
   const [editingId, setEditingId] = useState(null);
   const {
     pitches, requests, loading, saving, error, notice,
-    savePitch, updateRequest, removePitch, setError, setNotice,
+    savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
   } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
   const [updatePeriod, setUpdatePeriod] = useState("");
@@ -85,15 +84,6 @@ export default function FounderPitchesPage() {
     try { await navigator.clipboard.writeText(investorUpdateDraft); setNotice("Investor update copied."); }
     catch { setError("Clipboard access was blocked. Select and copy the draft manually."); }
   };
-  const openConversation = async (requestId) => {
-    try {
-      const conversation = await startInvestmentConversationApi(requestId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Unable to open this conversation.");
-    }
-  };
-
   const remove = async (pitchId) => {
     if (!window.confirm("Delete this startup pitch?")) return;
     setError(""); setNotice("");
@@ -170,7 +160,7 @@ export default function FounderPitchesPage() {
             const pitch = pitches.find((item) => item.id === request.pitch_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">{request.investor_name || `Investor #${request.investor_id}`}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p>{request.investor_profile && <p className="mt-2 max-w-xl text-xs text-white/55">{[request.investor_profile.investor_type, request.investor_profile.investment_focus, request.investor_profile.preferred_sectors?.join(", "), request.investor_profile.preferred_stages?.join(", "), request.investor_profile.geographies?.join(", "), request.investor_profile.check_size ? `Typical check: ${request.investor_profile.check_size}` : null, request.investor_profile.lead_follow_preference ? `Prefers to ${request.investor_profile.lead_follow_preference}` : null, request.investor_profile.accreditation_status ? `Accreditation: ${request.investor_profile.accreditation_status}` : null, request.investor_profile.location].filter(Boolean).join(" · ")}</p>}{request.investor_profile?.about && <p className="mt-1 max-w-xl text-xs text-white/45">{request.investor_profile.about}</p>}{request.investor_profile?.verification_url && <a className="mt-1 block text-xs text-[#C9A15A] underline" href={request.investor_profile.verification_url} target="_blank" rel="noreferrer">Investor verification link</a>}{request.investor_profile?.notable_investments && <p className="mt-1 max-w-xl text-xs text-white/45">Notable investments: {request.investor_profile.notable_investments}</p>}{request.investor_profile?.companies_backed != null && <p className="mt-1 max-w-xl text-xs text-white/45">Track record: {request.investor_profile.companies_backed} companies backed · {request.investor_profile.exits ?? 0} exits · {request.investor_profile.years_investing ?? "—"} years investing</p>}{request.investor_profile?.assets_under_management && <p className="mt-1 max-w-xl text-xs text-white/45">AUM: {request.investor_profile.assets_under_management}</p>}{request.investor_profile?.time_commitment && <p className="mt-1 max-w-xl text-xs text-white/45">Time commitment: {request.investor_profile.time_commitment}</p>}{request.investor_profile?.contact_preference && <p className="mt-1 max-w-xl text-xs text-white/45">Contact preference: {request.investor_profile.contact_preference}</p>}{request.investor_profile?.contact_formats?.length > 0 && <p className="mt-1 max-w-xl text-xs text-white/45">First contact: {request.investor_profile.contact_formats.join(", ")}</p>}{request.investor_profile?.track_record && <p className="mt-1 max-w-xl text-xs text-white/45">Track record: {request.investor_profile.track_record}</p>}{request.investor_profile?.value_add && <p className="mt-1 max-w-xl text-xs text-white/45">Founder support: {request.investor_profile.value_add}</p>}{request.status === "invested" && <div className="mt-2 rounded-lg border border-emerald-400/20 bg-emerald-400/5 p-3"><p className="text-xs font-medium text-emerald-200">Demo deal confirmed</p><p className="mt-1 text-xs text-white/65">Investor-reported amount: {Number(request.investment_amount || 0).toLocaleString()}</p>{request.ownership_percent != null && <p className="mt-1 text-xs text-white/65">Proposed ownership entered: {request.ownership_percent}%</p>}{request.payment_method && <p className="mt-1 text-xs text-white/65">Selected demo method: {String(request.payment_method).toUpperCase()}</p>}{request.deal_confirmed_at && <p className="mt-1 text-xs text-white/50">Confirmed {new Date(request.deal_confirmed_at).toLocaleString()}</p>}<p className="mt-1 text-xs text-white/45">Simulation only — Almeriq has not processed or verified a transfer.</p></div>}<p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
-              <div className="flex flex-wrap gap-2">{request.status === "pending" && <><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></>}{["accepted", "in_discussion", "invested"].includes(request.status) && <Button size="sm" variant="ghost" onClick={() => openConversation(request.id)}>Message investor</Button>}</div>
+              <div className="flex flex-wrap gap-2">{request.status === "pending" && <><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></>}{["accepted", "in_discussion", "invested"].includes(request.status) && <Button size="sm" variant="ghost" onClick={async () => { try { const conversation = await startConversation(request.id); navigate(`/messages?conversation=${conversation.id}`); } catch (err) { setError(err.message || "Unable to open this conversation."); } }}>Message investor</Button>}</div>
             </Card>;
           })}
         </section>
