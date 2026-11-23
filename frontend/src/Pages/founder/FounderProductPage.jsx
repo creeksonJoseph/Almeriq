@@ -180,11 +180,12 @@ export default function FounderProductPage() {
           </div>
 
           {loading && (
-            <div className="flex min-h-64 flex-col items-center justify-center py-12">
-              <Loader2 size={32} className="animate-spin text-[#C9A15A]" />
-              <p className="mt-4 text-xs font-medium text-white">
-                Synthesizing product specifications with engineering heuristics...
-              </p>
+            <div className="space-y-6 py-6" aria-label="Loading product deliverable" aria-busy="true">
+              <Skeleton className="h-6 w-56" />
+              <SkeletonText lines={2} />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {[0, 1, 2, 3].map((item) => <div key={item} className="space-y-3 rounded-xl bg-surface p-5"><Skeleton className="h-4 w-1/2" /><SkeletonText lines={4} /></div>)}
+              </div>
             </div>
           )}
 
