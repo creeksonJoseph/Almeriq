@@ -8,6 +8,7 @@ Audit baseline: `.agents/skills/architectureskill.md`, repository tree and front
 - **Provider onboarding:** moved profile/coverage/assets loading, draft persistence, asset upserts/deletions and completion orchestration into `useProviderSetupWorkflow`. The form remains in the page and React Hook Form owns field state/validation. The four independent initial reads now start in parallel, and stale responses are ignored after unmount.
 - **Investor workspace:** moved profile/startup/portfolio reads, settings save, interest submission, portfolio confirmation persistence and conversation creation into `useInvestorWorkspace`. The route component retains display-only calculations and signature-canvas interaction.
 - **Landing page:** extracted Hero, ecosystem, capabilities, waitlist form and footer into dedicated presentational sections. The route now composes those sections and handles only the hash-scroll entry behavior.
+- **Error alerting:** fixed a Sentry filter defect that could classify an HTTP 5xx event as a client error solely because its exception type was `HTTPException`. The filter now suppresses only positively identified 4xx/validation events; regression tests cover 404, 422 and 5xx cases.
 - **Shared architecture:** retains the Axios client/domain API modules and the user-scoped SWR cache from PR #18. Raw Axios/fetch usage remains confined to the shared client layer.
 
 ## Existing implementation confirmed during audit
@@ -30,5 +31,7 @@ Audit baseline: `.agents/skills/architectureskill.md`, repository tree and front
 - **ETags on every GET:** conditional responses are applied to suitable stable list reads; personalized or mutation-sensitive endpoints need endpoint-specific cache policy and invalidation review before broad rollout.
 
 ## Verification boundary
+
+Hook-level regression tests were added for founder legal and investor workflows, and the provider onboarding page tests were updated for the global toast feedback. These tests are written but not executed.
 
 This is a source-level audit/refactor only. The repository connection permits source and Git operations but does not provide a runnable checkout or database/browser environment in this session. Frontend build/lint/tests, backend pytest, migration execution, PostgreSQL query plans and browser visual regression remain the final verification pass.
