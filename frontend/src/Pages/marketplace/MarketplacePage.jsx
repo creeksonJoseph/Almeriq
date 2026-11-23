@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, Search, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, MapPin, Search, ShieldCheck, Image as ImageIcon, Layers } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonText, EmptyState } from "../../components/ui";
 import { listMarketplaceListingsApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
