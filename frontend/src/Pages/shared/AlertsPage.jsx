@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Check, ChevronRight, Loader2 } from "lucide-react";
+import { Bell, Check, ChevronRight, Loader2, Package, MessageSquare, CreditCard, Settings, AlertTriangle, Briefcase, TrendingUp, Compass, Users } from "lucide-react";
 import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
 
 const TYPE_ICONS = {
-  order: "📦",
-  message: "💬",
-  payment: "💰",
-  system: "⚙️",
-  alert: "⚠️",
-  job: "💼",
-  investment: "📈",
-  advisory: "🧭",
-  team: "👥",
+  order: Package,
+  message: MessageSquare,
+  payment: CreditCard,
+  system: Settings,
+  alert: AlertTriangle,
+  job: Briefcase,
+  investment: TrendingUp,
+  advisory: Compass,
+  team: Users,
 };
 
 export default function AlertsPage() {
@@ -163,7 +163,7 @@ export default function AlertsPage() {
         {selectedNotification && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{TYPE_ICONS[selectedNotification.type] || "🔔"}</span>
+              {(() => { const TypeIcon = TYPE_ICONS[selectedNotification.type] || Bell; return <TypeIcon className="h-6 w-6 text-gold" aria-hidden="true" />; })()}
               <div>
                 <h3 className="font-serif text-lg font-semibold text-text">{selectedNotification.title}</h3>
                 <span className={`text-label-caps text-xs ${selectedNotification.read ? "text-white/60" : "text-gold"}`}>
