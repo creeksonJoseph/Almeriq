@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { getJobApi, getMyJobApplicationApi, withdrawJobApplicationApi } from "../../lib/api/job";
 
 const STATUS_STYLES = {
@@ -65,7 +65,7 @@ export default function JobSeekerApplicationDetailPage() {
         </header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{notice}</p>}
-        {loading ? <Card className="p-8 text-center text-sm text-white/55">Loading application…</Card>
+        {loading ? <Card className="space-y-5 p-6" aria-busy="true"><Skeleton className="h-6 w-1/2" /><SkeletonText lines={3} /><Skeleton className="h-24 w-full" /><Skeleton className="h-10 w-32 rounded-xl" /></Card>
           : application && <div className="space-y-4">
             <Card className="space-y-4 p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
