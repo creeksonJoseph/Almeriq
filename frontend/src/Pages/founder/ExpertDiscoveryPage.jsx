@@ -1,38 +1,18 @@
-import { useEffect, useState } from "react";
-import { apiClient } from "../../lib/client";
+import { useState } from "react";
+import { useExpertDiscovery } from "../../hooks/useExpertDiscovery";
 import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 import { useNavigate } from "react-router-dom";
 
 export default function ExpertDiscoveryPage() {
   const navigate = useNavigate();
-  const [experts, setExperts] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    Promise.all([
-      apiClient.get("/api/experts"),
-      apiClient.get("/api/founder/expert-requests"),
-    ]).then(([expertResponse, requestResponse]) => {
-      if (active) {
-        setExperts(expertResponse.data?.items || []);
-        setRequests(requestResponse.data?.items || []);
-      }
-    }).catch((err) => {
-      if (active) setError(err.response?.data?.detail || "Unable to load expert data.");
-    }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+  const { experts, requests, loading, error, notice, sendRequest, setError } = useExpertDiscovery();
 
   const visible = experts.filter((expert) => {
     const haystack = [expert.headline, expert.bio, expert.location, ...(expert.expertise || [])].join(" ").toLowerCase();
@@ -57,11 +37,9 @@ export default function ExpertDiscoveryPage() {
     if (amount !== null && (!Number.isFinite(amount) || amount < 0)) { setError("Budget must be a valid non-negative amount."); return; }
     setSending(true); setError(""); setNotice("");
     try {
-      const { data } = await apiClient.post(`/api/experts/${selected.user_id}/requests`, { subject: subject.trim(), description: description.trim(), budget: amount });
-      setRequests((items) => [data, ...items]);
-      setNotice(`Your advisory request was sent to ${selected.headline || "the expert"}.`);
+      await sendRequest(selected.user_id, { subject: subject.trim(), description: description.trim(), budget: amount });
       setSelected(null); setSubject(""); setDescription(""); setBudget("");
-    } catch (err) { setError(err.response?.data?.detail || "Unable to send your request."); }
+    } catch { /* The feature hook exposes the request error. */ }
     finally { setSending(false); }
   };
 
