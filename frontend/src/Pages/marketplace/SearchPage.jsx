@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Input, SkeletonCard, EmptyState } from "../../components/ui";
 import { searchMarketplaceApi, listMarketplaceProvidersApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
@@ -47,13 +47,7 @@ export default function SearchPage() {
   const searchForm = useForm({ defaultValues: { query: new URLSearchParams(location.search).get("q") || "" } });
   const query = searchForm.watch("query");
 
-  useEffect(() => {
-    const initialQuery = new URLSearchParams(location.search).get("q") || "";
-    if (initialQuery) {
-      searchForm.setValue("query", initialQuery);
-      setHasSearched(true);
-    }
-  }, [location.search, searchForm]);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -98,8 +92,15 @@ export default function SearchPage() {
 
   useEffect(() => {
     const initialQuery = new URLSearchParams(location.search).get("q") || "";
-    if (initialQuery && providers.length) runSearch(initialQuery, activeCategory);
-  }, [providers, location.search]);
+    searchForm.setValue("query", initialQuery);
+    if (initialQuery && providers.length) {
+      setHasSearched(true);
+      runSearch(initialQuery, activeCategory);
+    } else if (!initialQuery) {
+      setHasSearched(false);
+      setResults([]);
+    }
+  }, [location.search, providers]);
 
   const handleSearch = (event) => {
     event.preventDefault();
