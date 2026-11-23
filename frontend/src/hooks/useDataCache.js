@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { fetchWithSWR, getCached } from "../lib/client";
+import { useCallback, useEffect, useState } from "react";
+import { fetchWithSWR, getCached, invalidate, setCached } from "../lib/client";
 
 /**
  * Stale-while-revalidate data hook.
@@ -10,17 +10,19 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
   const [data, setData] = useState(() => key ? getCached(key) : null);
   const [loading, setLoading] = useState(Boolean(enabled && key && !getCached(key)));
   const [error, setError] = useState("");
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     let active = true;
     if (!enabled || !key) {
+      setData(null);
       setLoading(false);
       return undefined;
     }
 
     const cached = getCached(key);
+    setData(cached);
     if (cached !== null) {
-      setData(cached);
       setLoading(false);
     } else {
       setLoading(true);
@@ -39,7 +41,22 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
       });
 
     return () => { active = false; };
-  }, [key, enabled, fetcher]);
+  }, [key, enabled, fetcher, revision]);
 
-  return { data, loading, error };
+  const refresh = useCallback(() => {
+    if (!enabled || !key) return;
+    invalidate(key);
+    setLoading(true);
+    setRevision((current) => current + 1);
+  }, [enabled, key]);
+
+  const mutate = useCallback((updater) => {
+    setData((current) => {
+      const next = typeof updater === "function" ? updater(current) : updater;
+      if (key) setCached(key, next);
+      return next;
+    });
+  }, [key]);
+
+  return { data, loading, error, refresh, mutate };
 }
