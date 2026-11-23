@@ -1,7 +1,7 @@
 /**
  * Expert-domain HTTP operations. Components and hooks must not build endpoint URLs.
  */
-import { apiClient, extractErrorMessage } from "../client";
+import { apiClient, apiFetch, extractErrorMessage, invalidate } from "../client";
 
 function apiError(error, fallback) {
   const normalized = new Error(extractErrorMessage(error, fallback));
@@ -23,8 +23,13 @@ async function request(fallback, operation) {
 export const getExpertProfileApi = () =>
   request("Unable to load your expert profile.", () => apiClient.get("/api/expert/profile"));
 
-export const saveExpertProfileApi = (payload) =>
-  request("Unable to save your expert profile.", () => apiClient.put("/api/expert/profile", payload));
+export async function saveExpertProfileApi(payload) {
+  const data = await request("Unable to save your expert profile.", () => apiClient.put("/api/expert/profile", payload));
+  invalidate("public:experts");
+  return data;
+}
+
+export const listExpertsCachedApi = (etag) => apiFetch("/api/experts", { etag });
 
 export const listExpertRequestsApi = () =>
   request("Unable to load advisory requests.", () => apiClient.get("/api/expert/requests"));
