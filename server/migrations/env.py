@@ -7,6 +7,7 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
+import sqlalchemy as sa
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -25,7 +26,7 @@ config = context.config
 # Dynamically read and adapt DATABASE_URL for psycopg driver (Neon DB compatible)
 raw_url = settings.DATABASE_URL
 if raw_url:
-    psycopg_url = re.sub(r"^(postgres|postgresql)(\+[^:]+)?:", "postgresql+psycopg:", raw_url)
+    psycopg_url = re.sub(r"^(postgres|postgresql)(\\+[^:]+)?:", "postgresql+psycopg:", raw_url)
     config.set_main_option("sqlalchemy.url", psycopg_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
@@ -36,6 +37,44 @@ from models import Base
 
 # add your model's MetaData object here for 'autogenerate' support
 target_metadata = Base.metadata
+
+
+def _ensure_postgresql_alembic_version_capacity(connection: Connection) -> None:
+    """Widen Alembic's version column before it records long revision identifiers.
+
+    Alembic's default PostgreSQL version table uses VARCHAR(32). This repository
+    contains revision IDs longer than 32 characters, so the column must be widened
+    before Alembic starts traversing the migration graph. Doing this here (rather
+    than in a normal revision) also repairs databases that currently fail while
+    trying to record one of those earlier revisions.
+    """
+    if connection.dialect.name != "postgresql":
+        return
+
+    inspector = sa.inspect(connection)
+    if not inspector.has_table("alembic_version"):
+        # A new database will get the version table from Alembic itself.
+        return
+
+    version_column = next(
+        (
+            column
+            for column in inspector.get_columns("alembic_version")
+            if column["name"] == "version_num"
+        ),
+        None,
+    )
+    if version_column is None:
+        raise RuntimeError(
+            "The alembic_version table exists but has no version_num column."
+        )
+
+    current_length = getattr(version_column["type"], "length", None)
+    if current_length is not None and current_length < 255:
+        connection.exec_driver_sql(
+            "ALTER TABLE alembic_version "
+            "ALTER COLUMN version_num TYPE VARCHAR(255)"
+        )
 
 
 def run_migrations_offline() -> None:
@@ -53,6 +92,9 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    # Must happen before context.configure/run_migrations: an ordinary Alembic
+    # revision cannot fix this because Alembic must first write that revision ID.
+    _ensure_postgresql_alembic_version_capacity(connection)
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
