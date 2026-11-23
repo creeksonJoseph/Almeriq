@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import COOKIE_NAME
 from core.db import get_db
 from core.security import decode_access_token
+from core.roles import user_has_role
 from repositories import provider_profile as provider_repo
 from services import auth as auth_service
 
@@ -66,7 +67,7 @@ async def get_current_admin_user(current_user: dict = Depends(get_current_user))
 
 async def get_current_provider_user(current_user: dict = Depends(get_current_user)) -> dict:
     """FastAPI dependency to verify that the current user is an infrastructure provider."""
-    if current_user.get("role") != "INFRASTRUCTURE_PROVIDER":
+    if not user_has_role(current_user, "infrastructure_provider"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Provider account required",
@@ -96,10 +97,9 @@ async def get_current_job_owner(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     """Resolve the authenticated founder or provider as a job-posting owner."""
-    role = (current_user.get("role") or "").lower()
-    if role == "founder":
+    if user_has_role(current_user, "founder"):
         return {"provider_id": None, "founder_user_id": int(current_user["id"])}
-    if role == "INFRASTRUCTURE_PROVIDER":
+    if user_has_role(current_user, "infrastructure_provider"):
         profile = await provider_repo.get_provider_profile_by_user_id(
             current_user["id"], session=db
         )
