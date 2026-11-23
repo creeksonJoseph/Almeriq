@@ -54,6 +54,8 @@ def _ensure_postgresql_alembic_version_capacity(connection: Connection) -> None:
     inspector = sa.inspect(connection)
     if not inspector.has_table("alembic_version"):
         # A new database will get the version table from Alembic itself.
+        if connection.in_transaction():
+            connection.commit()
         return
 
     version_column = next(
@@ -75,6 +77,11 @@ def _ensure_postgresql_alembic_version_capacity(connection: Connection) -> None:
             "ALTER TABLE alembic_version "
             "ALTER COLUMN version_num TYPE VARCHAR(255)"
         )
+
+    # Inspector queries autobegin a SQLAlchemy transaction. Commit this
+    # preflight separately so Alembic can own its normal migration transaction.
+    if connection.in_transaction():
+        connection.commit()
 
 
 def run_migrations_offline() -> None:
