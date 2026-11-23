@@ -87,5 +87,12 @@ export async function fetchWithSWR(key, fetcher, { force = false } = {}) {
 }
 
 export function invalidate(key) {
+  if (key.endsWith("*")) {
+    const prefix = key.slice(0, -1);
+    for (const cacheKey of cache.keys()) {
+      if (cacheKey.startsWith(prefix)) cache.delete(cacheKey);
+    }
+    return;
+  }
   cache.delete(key);
 }
