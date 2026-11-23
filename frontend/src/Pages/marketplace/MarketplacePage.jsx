@@ -199,7 +199,7 @@ export default function MarketplacePage() {
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
             <input {...searchForm.register("query")} aria-label="Search marketplace listings" placeholder="Search by asset, provider or location" className="alq-input min-h-12 w-full pl-10" />
           </div>
-          <Button type="submit" variant="primary" className="shrink-0">Search</Button>\n          <Button type="submit" variant="primary" className="shrink-0">Search</Button>
+          <Button type="submit" variant="primary" className="shrink-0">Search</Button>
           <Button type="button" variant="ghost" onClick={() => setFiltersOpen((open) => !open)} className="shrink-0">
             {filtersOpen ? "Hide filters" : "Filters" + (activeFilterCount ? " (" + activeFilterCount + ")" : "")}
           </Button>
