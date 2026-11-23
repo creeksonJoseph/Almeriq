@@ -21,7 +21,7 @@ export default function TeamWorkforcePage() {
   const [invitations, setInvitations] = useState([]);
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("");
-  const [location, setLocation] = useState("");
+  const [filterLocation, setFilterLocation] = useState("");
   const [filters, setFilters] = useState({ query: "", role: "", location: "" });
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -80,10 +80,10 @@ export default function TeamWorkforcePage() {
         </div>
 
         {tab === "talent" && <section className="space-y-4">
-          <form onSubmit={(event) => { event.preventDefault(); setFilters({ query: query.trim(), role: role.trim(), location: location.trim() }); }} className="grid gap-3 md:grid-cols-4">
+          <form onSubmit={(event) => { event.preventDefault(); setFilters({ query: query.trim(), role: role.trim(), location: filterLocation.trim() }); }} className="grid gap-3 md:grid-cols-4">
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, skill or keyword" />
             <Input value={role} onChange={(event) => setRole(event.target.value)} placeholder="Role (e.g. frontend engineer)" />
-            <Input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Location" />
+            <Input value={filterLocation} onChange={(event) => setFilterLocation(event.target.value)} placeholder="Location" />
             <Button type="submit" disabled={loading}>Search talent</Button>
           </form>
           {loading ? <p className="py-8 text-center text-sm text-white/50">Finding talent…</p> : talent.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">No active talent profiles match those filters.</Card> : <div className="grid gap-4 md:grid-cols-2">{talent.map((person) => {
@@ -96,8 +96,10 @@ export default function TeamWorkforcePage() {
               <div className="flex flex-wrap gap-1.5">{(person.skills || []).slice(0, 8).map((skill) => <span key={skill} className="rounded-md border border-border px-2 py-1 text-xs text-white/65">{skill}</span>)}</div>
               {person.match_reasons?.length > 0 && <p className="text-xs text-emerald-200/80">{person.match_reasons.join(" · ")}</p>}
               <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                <Button size="sm" variant="ghost" onClick={() => navigate(`/founder/talent/${person.user_id}`)}>View profile</Button>{person.portfolio_url && <a className="text-sm text-gold underline" href={person.portfolio_url} target="_blank" rel="noreferrer">Portfolio</a>
-                <Button size="sm" disabled={alreadyInvited || alreadyMember || busyId === person.user_id} onClick={() => invite(person)}>{alreadyMember ? "Already on team" : alreadyInvited ? "Invited" : busyId === person.user_id ? "Sending…" : "Invite to team"}</Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => navigate(`/founder/talent/${person.user_id}`)}>View profile</Button>{person.portfolio_url && <a className="text-sm text-gold underline" href={person.portfolio_url} target="_blank" rel="noreferrer">Portfolio</a>}
+                  <Button size="sm" disabled={alreadyInvited || alreadyMember || busyId === person.user_id} onClick={() => invite(person)}>{alreadyMember ? "Already on team" : alreadyInvited ? "Invited" : busyId === person.user_id ? "Sending…" : "Invite to team"}</Button>
+                </div>
               </div>
             </Card>;
           })}</div>}

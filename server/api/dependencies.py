@@ -96,7 +96,7 @@ async def get_current_job_owner(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     """Resolve the authenticated founder or provider as a job-posting owner."""
-    role = current_user.get("role")
+    role = (current_user.get("role") or "").lower()
     if role == "founder":
         return {"provider_id": None, "founder_user_id": int(current_user["id"])}
     if role == "INFRASTRUCTURE_PROVIDER":
