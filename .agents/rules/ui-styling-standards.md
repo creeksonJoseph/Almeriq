@@ -29,3 +29,17 @@
 - **No White Borders**: Never use `border-white`, `border-white/*`, or `border-gray-200/300` on dark themes. White borders create harsh contrast and visual clutter.
 - **Subtle Surface Borders Only**: Use `#282a2f` (surfaceHigh) for card borders, `#1e2025` (surfaceContainer) for section separators. Keep borders minimal — they should gently separate, not frame everything.
 - **Remove Unnecessary Borders**: Don't add borders to every component. Use background color contrast (surface vs bg) instead of borders where possible. Less border = cleaner hierarchy.
+
+## Workspace UI Consistency Rules
+
+- **No emojis in product UI.** Do not use emoji characters as category icons, status indicators, decoration, or empty-state art. Use the existing `lucide-react` icon set where an icon adds meaning, or use a clear text label.
+- **Use the existing design system.** Follow the black, white, and gold palette, Fraunces headings, Inter body text, JetBrains Mono for technical metadata, existing radius tokens, and shared UI components. Do not introduce a one-off visual language for an individual portal.
+- **Buttons use text or icon, not both.** Text buttons should communicate the action without a decorative icon. Icon-only buttons must have an accessible name through `aria-label` or equivalent.
+- **Every page-level loading state must use a skeleton.** This applies to route authentication checks, lazy route fallbacks, dashboard pages, tables, forms, detail views, marketplace grids, inboxes, and initial data fetches.
+- **Skeletons must resemble the content being loaded.** Match the page's major layout, number and shape of regions, card proportions, table rows, form fields, and responsive grid. Do not use a centered spinner or a generic block when a page-specific skeleton can be shown.
+- **Use the shared skeleton primitives** from `frontend/src/components/ui/Skeleton.jsx` and reusable page skeletons from `frontend/src/components/ui/RouteSkeleton.jsx`. Extend them when a new page layout needs a new variant rather than inventing a separate loading system.
+- **Avoid layout shift.** Skeleton dimensions should be close to the final content dimensions. Use `aria-busy="true"` on the loading region and keep decorative skeleton blocks hidden from assistive technology.
+- **Keep loading feedback proportional.** A small spinner is acceptable inside a button or a single action while that action is running. It must not replace the entire page during initial loading. During background refreshes, keep existing content visible where possible.
+- **Keep loading, empty, and error states distinct.** Loading uses skeletons, empty states explain that there is no content and provide a useful next action, and errors use the reserved red error treatment with a retry path when possible.
+- **Audit every new page and every changed data-fetching page** for an initial skeleton before calling the UI complete. Do not mark a portal complete while its initial page load still renders a full-page spinner or plain "Loading..." text.
+
