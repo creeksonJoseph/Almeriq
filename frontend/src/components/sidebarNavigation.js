@@ -1,6 +1,6 @@
 import {
   Home, Lightbulb, BookOpen, CheckCircle2, Boxes, Scale, Settings,
-  ShieldCheck, TrendingUp, UserRound, Building2, MessageSquare, Bell, Package, Users, Mail,
+  ShieldCheck, TrendingUp, UserRound, Building2, MessageSquare, Bell, Package, Users, Mail, Store,
 } from "lucide-react";
 
 export const WORKSPACE_NAV = [
@@ -25,6 +25,7 @@ export const FOUNDER_STUDIO_NAV = [
   { key: "fundraising-pitches", label: "Pitch Management", path: "/founder/fundraising/pitches", icon: TrendingUp },
   { key: "fundraising-investors", label: "Investor Interest", path: "/founder/fundraising/investors", icon: Building2 },
   { key: "fundraising-updates", label: "Investor Updates", path: "/founder/fundraising/updates", icon: Mail },
+  { key: "marketplace", label: "Marketplace", path: "/marketplace", icon: Store },
   { key: "orders", label: "My Orders", path: "/founder/orders", icon: Package },
   { key: "experts", label: "Find Experts", path: "/founder/experts", icon: UserRound },
 ];
