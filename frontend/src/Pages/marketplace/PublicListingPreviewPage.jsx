@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, CheckCircle, Shield, Truck } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, CheckCircle, Shield, Truck } from "lucide-react";
 import { Button, Card, StatusPill, Skeleton, SkeletonText } from "../../components/ui";
 import { getMarketplaceListingApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
@@ -233,7 +233,7 @@ export default function PublicListingPreviewPage() {
                 </button>
               </>
             )}
-            <button onClick={() => setGalleryOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Close">✕</button>
+            <button onClick={() => setGalleryOpen(false)} className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Close"><X size={18} /></button>
             <div className="flex justify-center gap-2 p-4">
               {media.map((item, i) => (
                 <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
