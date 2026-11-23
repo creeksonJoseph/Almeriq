@@ -5,6 +5,7 @@ import {
   listExpertsCachedApi,
   listFounderExpertRequestsApi,
 } from "../lib/api/expert";
+import { startAdvisoryConversationApi } from "../lib/api/conversations";
 
 export function useExpertDiscovery() {
   const {
@@ -35,6 +36,8 @@ export function useExpertDiscovery() {
     return () => { active = false; };
   }, []);
 
+  const openConversation = useCallback((requestId) => startAdvisoryConversationApi(requestId), []);
+
   const sendRequest = useCallback(async (expertUserId, payload) => {
     setError("");
     setNotice("");
@@ -57,6 +60,7 @@ export function useExpertDiscovery() {
     error: error || expertsError || requestsError,
     notice,
     sendRequest,
+    openConversation,
     setError,
     setNotice,
   };
