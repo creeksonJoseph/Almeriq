@@ -15,6 +15,7 @@ from repositories import provider_profile as provider_repo
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 VALID_USER_ROLES = {
+    "ADMIN",
     "FOUNDER",
     "INVESTOR",
     "JOB_SEEKER",
@@ -31,7 +32,7 @@ def _normalize_role(role: str) -> str:
     if normalized not in VALID_USER_ROLES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Role must be FOUNDER, INVESTOR, JOB_SEEKER, or INFRASTRUCTURE_PROVIDER",
+            detail="Role must be ADMIN, FOUNDER, INVESTOR, JOB_SEEKER, or INFRASTRUCTURE_PROVIDER",
         )
     return normalized
 
