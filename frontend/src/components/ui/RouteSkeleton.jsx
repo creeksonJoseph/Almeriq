@@ -125,8 +125,8 @@ export default function RouteSkeleton({ variant }) {
     /marketplace|\/search/.test(pathname) ? "marketplace" :
     /messages/.test(pathname) ? "inbox" :
     /orders|alerts|applications|waitlist/.test(pathname) ? "table" :
+    /setup|profile|checkout|intake|edit|new|talent/.test(pathname) ? "form" :
     /dashboard|investor/.test(pathname) ? "dashboard" :
-    /setup|profile|checkout|intake|edit|new/.test(pathname) ? "form" :
     /listings|ventures|experts|jobs/.test(pathname) ? "grid" : "default"
   );
 
