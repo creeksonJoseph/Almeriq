@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { getJobSeekerProfileApi, listJobsApi, listMyJobApplicationsApi } from "../../lib/api/job";
 
 export default function JobSeekerDashboardPage() {
