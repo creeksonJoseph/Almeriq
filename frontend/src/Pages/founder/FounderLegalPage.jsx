@@ -19,7 +19,7 @@ import { getCompanyRegistrationGuideApi } from "../../lib/api";
 import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import { COUNTRIES } from "../../lib/countries";
+import { COUNTRIES } from "../../lib/countries";\nimport { Skeleton, SkeletonText } from "../../components/ui";
 
 // ── Plain English Starter Legal Templates ─────────────────────────────────────
 const LEGAL_TEMPLATES = [
@@ -625,14 +625,12 @@ export default function FounderLegalPage() {
 
               {/* Loading State when country is selected or refreshing */}
               {guideLoading && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.015] p-16 text-center space-y-4">
-                  <Loader2 size={36} className="mx-auto animate-spin text-[#f2ca50]" />
-                  <h3 className="font-serif text-xl font-medium text-white">
-                    Loading Official Registration Guide for {selectedCountry}...
-                  </h3>
-                  <p className="mx-auto max-w-md text-xs font-normal text-white leading-relaxed">
-                    Checking our database for official {selectedCountry} procedures. If this is the first search for this country, our system synthesizes the steps and saves them permanently for all founders.
-                  </p>
+                <div className="space-y-5 rounded-xl bg-surface p-6" aria-label="Loading registration guide" aria-busy="true">
+                  <Skeleton className="h-7 w-2/3 max-w-md" />
+                  <SkeletonText lines={3} />
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {[0, 1, 2, 3].map((item) => <div key={item} className="space-y-3 rounded-lg bg-surface-2 p-4"><Skeleton className="h-4 w-1/2" /><SkeletonText lines={3} /></div>)}
+                  </div>
                 </div>
               )}
 
