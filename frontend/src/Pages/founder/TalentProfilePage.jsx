@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { getTalentProfileApi, inviteTalentApi } from "../../lib/api/team";
 
 export default function TalentProfilePage() {
@@ -30,7 +30,13 @@ export default function TalentProfilePage() {
     } finally { setBusy(false); }
   };
 
-  if (loading) return <main className="min-h-screen bg-bg p-8 text-white/50">Loading talent profile…</main>;
+  if (loading) return (
+    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-10" aria-label="Loading talent profile" aria-busy="true">
+      <div className="space-y-3"><Skeleton className="h-3 w-32" /><Skeleton className="h-9 w-72" /></div>
+      <Card className="flex flex-col gap-5 p-6 sm:flex-row"><Skeleton className="h-24 w-24 shrink-0 rounded-full" /><div className="flex-1 space-y-3"><Skeleton className="h-6 w-1/2" /><Skeleton className="h-4 w-1/3" /><SkeletonText lines={3} /></div></Card>
+      <Card className="space-y-4 p-6"><Skeleton className="h-5 w-1/3" /><SkeletonText lines={5} /></Card>
+    </main>
+  );
   if (!profile) return <main className="min-h-screen bg-bg p-8 text-text"><p role="alert">{error || "Profile not found."}</p><Button className="mt-4" onClick={() => navigate("/founder/team")}>Back to talent</Button></main>;
 
   return (
