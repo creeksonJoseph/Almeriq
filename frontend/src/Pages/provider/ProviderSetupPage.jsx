@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Check, X, Loader2, Save, Eye, MapPin, Building2, Server, Globe, Users } from "lucide-react";
 import { Button, Input, Card, Stepper, Pill, Modal, Skeleton } from "../../components/ui";
-import { getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi, updateCoverageRegionsApi, listAssetsApi, createAssetApi, updateAssetApi, deleteAssetApi } from "../../lib/api";
+import { useProviderSetupWorkflow } from "../../hooks/useProviderSetupWorkflow";
 
 const COVERAGE_REGIONS = [
   "Africa",
@@ -26,7 +26,6 @@ const coverageToApi = {
   "Middle East": "middle_east",
   "Global / no restriction": "global",
 };
-const coverageFromApi = Object.fromEntries(Object.entries(coverageToApi).map(([label, value]) => [value, label]));
 
 const providerSchema = z.object({
   name: z.string().min(2, "Provider name is required"),
@@ -58,6 +57,14 @@ const preferencesSchema = z.object({
   engagement: z.string().max(500).optional(),
 });
 
+const providerSetupSchema = z.object({
+  info: providerSchema,
+  physicalAssets: z.array(physicalAssetSchema).default([]),
+  digitalAssets: z.array(digitalAssetSchema).default([]),
+  coverage: coverageSchema,
+  preferences: preferencesSchema,
+});
+
 const STEPS = [
   { id: "info", label: "Provider Info", icon: Building2, schema: providerSchema },
   { id: "physical", label: "Physical Fleet", icon: MapPin, schema: physicalAssetSchema },
@@ -69,18 +76,10 @@ const STEPS = [
 export default function ProviderSetupPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [pendingDeletions, setPendingDeletions] = useState([]);
 
   const methods = useForm({
-    resolver: zodResolver(z.object({
-      info: providerSchema,
-      physicalAssets: z.array(physicalAssetSchema).default([]),
-      digitalAssets: z.array(digitalAssetSchema).default([]),
-      coverage: coverageSchema,
-      preferences: preferencesSchema,
-    })),
+    resolver: zodResolver(providerSetupSchema),
     defaultValues: {
       info: { name: "", location: "", type: "COMPANY", about: "" },
       physicalAssets: [],
@@ -93,50 +92,15 @@ export default function ProviderSetupPage() {
 
   const { fields: physicalAssets, append: addPhysicalAsset, remove: removePhysicalAsset } = useFieldArray({ control: methods.control, name: "physicalAssets" });
   const { fields: digitalAssets, append: addDigitalAsset, remove: removeDigitalAsset } = useFieldArray({ control: methods.control, name: "digitalAssets" });
+
+  const workflow = useProviderSetupWorkflow({
+    methods, navigate, coverageToApi, pendingDeletions, setPendingDeletions,
+    finalSchema: providerSetupSchema,
+  });
+  const { loading, saving, handleSaveDraft, handleComplete } = workflow;
+
   const watchCoverage = methods.watch("coverage.regions");
   const watchInfo = methods.watch("info");
-
-  useEffect(() => {
-    async function loadProfile() {
-      setLoading(true);
-      try {
-        const profile = await getProviderProfileApi();
-        if (profile) {
-          methods.setValue("info", {
-            name: profile.company_name || profile.trading_name || "",
-            location: profile.location || "",
-            type: profile.provider_type || "COMPANY",
-            about: profile.about || "",
-          });
-          methods.setValue("preferences", { engagement: profile.engagement_preferences || "" });
-        }
-        const coverage = await listCoverageRegionsApi();
-        methods.setValue("coverage.regions", (coverage.items || []).map(item => coverageFromApi[item.region] || item.region));
-        const physical = await listAssetsApi({ kind: "physical" });
-        const digital = await listAssetsApi({ kind: "digital" });
-        methods.setValue("physicalAssets", (physical.items || physical || []).map(a => ({
-          id: a.id,
-          name: a.name || "",
-          category: a.category || "",
-          quantity: a.quantity_capacity != null ? String(a.quantity_capacity) : (a.specs?.quantity || ""),
-          availability: a.specs?.availability || "",
-          rate: a.price_monthly != null ? String(a.price_monthly) : (a.specs?.rate || ""),
-        })));
-        methods.setValue("digitalAssets", (digital.items || digital || []).map(a => ({
-          id: a.id,
-          name: a.name || "",
-          category: a.category || "",
-          capacity: a.quantity_capacity != null ? String(a.quantity_capacity) : (a.specs?.capacity || ""),
-          rate: a.price_monthly != null ? String(a.price_monthly) : (a.specs?.rate || ""),
-        })));
-      } catch (e) {
-        console.error("Failed to load profile", e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadProfile();
-  }, [methods, addPhysicalAsset, addDigitalAsset]);
 
   const nextStep = async () => {
     const step = STEPS[currentStep];
@@ -169,146 +133,6 @@ export default function ProviderSetupPage() {
 
   const prevStep = () => {
     if (currentStep > 0) setCurrentStep(c => c - 1);
-  };
-
-  const handleSaveDraft = async () => {
-    setSaving(true);
-    try {
-      const data = methods.getValues();
-      await updateProviderProfileApi({
-        company_name: data.info.name,
-        provider_type: data.info.type,
-        location: data.info.location,
-        about: data.info.about,
-        engagement_preferences: data.preferences?.engagement,
-      });
-      await updateCoverageRegionsApi(data.coverage.regions.map(region => coverageToApi[region] || region));
-      const toNum = (v) => (v != null && v !== "" && !isNaN(Number(v)) ? Number(v) : null);
-      const saveAsset = async (asset, kind, index, fieldPath) => {
-        const payload = {
-          name: asset.name,
-          category: asset.category,
-          kind,
-          client_asset_id: asset.client_asset_id,
-          quantity_capacity: toNum(kind === "physical" ? asset.quantity : asset.capacity),
-          price_monthly: toNum(asset.rate),
-          specs: {
-            quantity: asset.quantity || undefined,
-            capacity: asset.capacity || undefined,
-            availability: asset.availability || undefined,
-            rate: asset.rate || undefined,
-          },
-        };
-        let saved;
-        if (asset.id) {
-          saved = await updateAssetApi(asset.id, payload);
-        } else {
-          saved = await createAssetApi(payload);
-          if (saved?.id) methods.setValue(`${fieldPath}.${index}.id`, saved.id);
-          if (saved?.client_asset_id) methods.setValue(`${fieldPath}.${index}.client_asset_id`, saved.client_asset_id);
-        }
-        return saved;
-      };
-      await Promise.all([
-        ...data.physicalAssets.map((a, i) => saveAsset(a, "physical", i, "physicalAssets")),
-        ...data.digitalAssets.map((a, i) => saveAsset(a, "digital", i, "digitalAssets")),
-      ]);
-      // delete pending
-      const deleted = [];
-      const failed = [];
-      for (const id of pendingDeletions) {
-        try { await deleteAssetApi(id); deleted.push(id); }
-        catch (e) { failed.push(id); console.error(e); }
-      }
-      setPendingDeletions(prev => prev.filter(id => !deleted.includes(id)));
-      if (failed.length) {
-        alert("Some assets could not be deleted. Draft partially saved.");
-      }
-    } catch (e) {
-      console.error("Save failed", e);
-      alert("Some draft data failed to save.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleComplete = async () => {
-    const allData = methods.getValues();
-    const finalSchema = z.object({
-      info: providerSchema,
-      physicalAssets: z.array(physicalAssetSchema),
-      digitalAssets: z.array(digitalAssetSchema),
-      coverage: coverageSchema,
-      preferences: preferencesSchema,
-    });
-    const result = finalSchema.safeParse(allData);
-    if (!result.success) {
-      result.error.issues.forEach((issue) => {
-        methods.setError(issue.path.join("."), { message: issue.message });
-      });
-      return;
-    }
-    setSaving(true);
-    try {
-      await updateProviderProfileApi({
-        company_name: allData.info.name,
-        provider_type: allData.info.type,
-        location: allData.info.location,
-        about: allData.info.about,
-        engagement_preferences: allData.preferences?.engagement,
-      });
-      await updateCoverageRegionsApi(allData.coverage.regions.map(region => coverageToApi[region] || region));
-      const toNum = (v) => (v != null && v !== "" && !isNaN(Number(v)) ? Number(v) : null);
-      const saveAsset = async (asset, kind, index, fieldPath) => {
-        const payload = {
-          name: asset.name,
-          category: asset.category,
-          kind,
-          client_asset_id: asset.client_asset_id,
-          quantity_capacity: toNum(kind === "physical" ? asset.quantity : asset.capacity),
-          price_monthly: toNum(asset.rate),
-          specs: {
-            quantity: asset.quantity || undefined,
-            capacity: asset.capacity || undefined,
-            availability: asset.availability || undefined,
-            rate: asset.rate || undefined,
-          },
-        };
-        let saved;
-        if (asset.id) {
-          saved = await updateAssetApi(asset.id, payload);
-        } else {
-          saved = await createAssetApi(payload);
-          if (saved?.id) {
-            methods.setValue(`${fieldPath}.${index}.id`, saved.id);
-          }
-          if (saved?.client_asset_id) {
-            methods.setValue(`${fieldPath}.${index}.client_asset_id`, saved.client_asset_id);
-          }
-        }
-        return saved;
-      };
-      await Promise.all([
-        ...allData.physicalAssets.map((a, i) => saveAsset(a, "physical", i, "physicalAssets")),
-        ...allData.digitalAssets.map((a, i) => saveAsset(a, "digital", i, "digitalAssets")),
-      ]);
-      const deleted = [];
-      const failed = [];
-      for (const id of pendingDeletions) {
-        try { await deleteAssetApi(id); deleted.push(id); }
-        catch (e) { failed.push(id); console.error(e); }
-      }
-      setPendingDeletions(prev => prev.filter(id => !deleted.includes(id)));
-      if (failed.length) {
-        alert("Some assets could not be deleted. Please retry.");
-        return;
-      }
-      navigate("/provider/dashboard");
-    } catch (e) {
-      console.error("Complete failed", e);
-    } finally {
-      setSaving(false);
-    }
   };
 
   if (loading) {

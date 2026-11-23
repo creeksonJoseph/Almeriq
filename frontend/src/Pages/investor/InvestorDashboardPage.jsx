@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
-import {
-  getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
-  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi,
-} from "../../lib/api";
-import { startInvestmentConversationApi } from "../../lib/api/conversations";
+import { useInvestorWorkspace } from "../../hooks/useInvestorWorkspace";
 
 const DEAL_ROOM_TEMPLATES = [{"title":"Mutual NDA","description":"Confidentiality terms for founders and prospective investors.","body":"MUTUAL NON-DISCLOSURE AGREEMENT\n\nDate: [DATE]\n\nParties: [FOUNDER / COMPANY LEGAL NAME] and [INVESTOR LEGAL NAME]\n\nPurpose. The parties may exchange confidential information solely to evaluate a potential investment or business relationship (the Purpose).\n\nConfidential Information. Includes non-public business, product, technical, financial, customer, operational and strategic information disclosed in any form, excluding information the recipient can show was public without breach, already lawfully known, independently developed, or lawfully received without confidentiality duty.\n\nRecipient obligations. The recipient will use the information only for the Purpose, protect it with reasonable care, and disclose it only to representatives who need to know and are bound by confidentiality obligations.\n\nRequired disclosure. A recipient may disclose information where legally required, giving notice where lawful.\n\nTerm. Confidentiality obligations continue for [2] years from disclosure; trade secrets remain protected while legally qualifying as trade secrets.\n\nNo licence or obligation. No intellectual-property licence is granted and neither party is required to proceed with a transaction.\n\nReturn / destruction. On written request, return or destroy confidential information subject to lawful archival copies.\n\nGoverning law: [JURISDICTION]\n\nSigned: ____________________  Date: __________\n[FOUNDER / COMPANY]\n\nSigned: ____________________  Date: __________\n[INVESTOR]\n\nSTARTER TEMPLATE ONLY. Obtain legal review and tailor to the governing law."},{"title":"Founder Agreement","description":"Outline founder roles, equity intentions and decision-making.","body":"FOUNDERS' AGREEMENT — DISCUSSION DRAFT\n\nCompany: [COMPANY NAME / FORMATION STATUS]\nDate: [DATE]\nFounders: [FULL LEGAL NAMES]\n\n1. Purpose and business. The founders intend to build [BUSINESS DESCRIPTION].\n\n2. Roles and time commitment. [FOUNDER A: ROLE / COMMITMENT]. [FOUNDER B: ROLE / COMMITMENT].\n\n3. Proposed ownership. [FOUNDER A: %]. [FOUNDER B: %]. These are proposed allocations only until properly approved, documented and issued under applicable law.\n\n4. Vesting and leaver terms. [VESTING SCHEDULE, CLIFF, GOOD-LEAVER / BAD-LEAVER TERMS].\n\n5. Intellectual property. Each founder will identify relevant pre-existing IP and agree in a separate written instrument how company-related IP is assigned or licensed to the company.\n\n6. Decisions. Ordinary decisions: [PROCESS]. Reserved matters requiring consent: [LIST].\n\n7. Expenses and compensation. [APPROVAL AND REIMBURSEMENT RULES].\n\n8. Confidentiality and conflicts. Founders will protect company confidential information and disclose material conflicts.\n\n9. Departure and dispute resolution. [NOTICE, BUYBACK / TRANSFER, MEDIATION AND DISPUTE PROCESS].\n\n10. Governing law: [JURISDICTION]\n\nAcknowledged for discussion: ____________________ [FOUNDER] Date: ______\nAcknowledged for discussion: ____________________ [FOUNDER] Date: ______\n\nDISCUSSION DRAFT ONLY. It does not issue shares or replace constitutional, employment, IP-assignment or shareholder documents. Obtain independent legal and tax advice."},{"title":"Term Sheet","description":"Capture proposed investment economics and key conditions.","body":"NON-BINDING INVESTMENT TERM SHEET\n\nDate: [DATE]\nCompany: [LEGAL NAME / JURISDICTION]\nInvestor: [LEGAL NAME]\nRound: [PRE-SEED / SEED / SERIES A / OTHER]\n\nInvestment amount: [CURRENCY AND AMOUNT]\nInstrument: [EQUITY / SAFE / CONVERTIBLE NOTE / OTHER]\nPre-money valuation: [AMOUNT OR NOT APPLICABLE]\nPost-money valuation: [AMOUNT OR NOT APPLICABLE]\nProposed ownership / conversion mechanics: [DETAILS]\nUse of proceeds: [DETAILS]\nBoard / observer rights: [DETAILS]\nInformation rights: [DETAILS]\nPro-rata / participation rights: [DETAILS]\nConditions precedent: [DUE DILIGENCE, APPROVALS, DEFINITIVE DOCUMENTS]\nTarget closing date: [DATE]\nExclusivity (if any): [PERIOD / NONE]\n\nNon-binding effect. This term sheet records current discussion points only. No party is obliged to complete the investment until definitive agreements are negotiated, approved and signed.\n\nPotential binding clauses (only if expressly selected and legally reviewed): confidentiality, exclusivity, expenses, governing law and dispute resolution. Mark each clause intended to bind: [SPECIFY].\n\nGoverning law for any expressly binding clauses: [JURISDICTION]\n\nAcknowledged for discussion: ____________________ [COMPANY] Date: ______\nAcknowledged for discussion: ____________________ [INVESTOR] Date: ______\n\nSTARTER TEMPLATE ONLY. Investment terms and securities laws vary; obtain qualified legal advice."}];
 
@@ -15,44 +11,23 @@ export default function InvestorDashboardPage() {
   const params = useParams();
   const pathname = location.pathname;
   const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : "overview";
-  const [profile, setProfile] = useState(null);
-  const [startups, setStartups] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [busyPitch, setBusyPitch] = useState(null);
-  const [startupQuery, setStartupQuery] = useState("");
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [settingsSaving, setSettingsSaving] = useState(false);
+  const workspace = useInvestorWorkspace({ navigate });
+  const {
+    profile, setProfile, startups, requests, loading, busyPitch,
+    error, notice, settingsSaving, saveSettings,
+    openConversation, savePortfolio, expressInterest,
+  } = workspace;
   const signatureCanvasRef = useRef(null);
   const [editingInvestment, setEditingInvestment] = useState(null);
   const [confirmationStep, setConfirmationStep] = useState(1);
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
+
+  useEffect(() => {
+    const preferredMethod = profile?.preferred_payment_methods?.[0];
+    if (preferredMethod) setPortfolioForm((current) => ({ ...current, payment_method: preferredMethod }));
+  }, [profile?.preferred_payment_methods]);
   const activeOpportunityId = params.pitchId ? Number(params.pitchId) : null;
   const activeDealId = params.dealId ? Number(params.dealId) : null;
-
-  const load = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const [profileResult, startupResult, requestResult] = await Promise.all([
-        getInvestorProfileApi().catch((err) => {
-          if (err.status === 404) return null;
-          throw err;
-        }),
-        listInvestorStartupsApi(),
-        listInvestorPortfolioApi(),
-      ]);
-      setProfile(profileResult ? { preferred_payment_methods: ["visa"], notify_deal_updates: true, notify_valuation_changes: true, notify_messages: true, ...profileResult } : null);
-      setPortfolioForm((current) => ({ ...current, payment_method: profileResult?.preferred_payment_methods?.[0] || "visa" }));
-      setStartups(startupResult?.items || []);
-      setRequests(requestResult?.items || []);
-    } catch (err) {
-      setError(err.message || "Unable to load your investor workspace.");
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
 
   const handleSignaturePointerDown = (event) => {
     const canvas = signatureCanvasRef.current;
@@ -88,59 +63,6 @@ export default function InvestorDashboardPage() {
     setEditingInvestment((current) => current ? { ...current, signature_data: null } : current);
   };
 
-  const saveSettings = async () => {
-    if (!profile) return;
-    setSettingsSaving(true); setError(""); setNotice("");
-    try {
-      const updated = await updateInvestorProfileApi({
-        preferred_payment_methods: profile.preferred_payment_methods || [],
-        notify_deal_updates: Boolean(profile.notify_deal_updates),
-        notify_valuation_changes: Boolean(profile.notify_valuation_changes),
-        notify_messages: Boolean(profile.notify_messages),
-      });
-      setProfile((current) => ({ ...current, ...updated }));
-      setNotice("Investor preferences saved.");
-    } catch (err) {
-      setError(err.message || "Unable to save investor preferences.");
-    } finally { setSettingsSaving(false); }
-  };
-
-  const openConversation = async (investmentId) => {
-    try {
-      const conversation = await startInvestmentConversationApi(investmentId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.message || "Unable to open this conversation.");
-    }
-  };
-
-  const savePortfolio = async (event) => {
-    event.preventDefault();
-    if (!editingInvestment) return;
-    setError(""); setNotice("");
-    if (!Number.isFinite(Number(portfolioForm.investment_amount)) || Number(portfolioForm.investment_amount) <= 0) { setError("Enter an investment amount greater than zero."); return; }
-    if (!portfolioForm.payment_method) { setError("Choose a demo payment method."); return; }
-    if (!portfolioForm.signature_data && !editingInvestment.signature_data) { setError("Draw your signature before completing the demo confirmation."); return; }
-    try {
-      const updated = await updateInvestorPortfolioApi(editingInvestment.id, {
-        investment_amount: Number(portfolioForm.investment_amount),
-        current_value: portfolioForm.current_value === "" ? null : Number(portfolioForm.current_value),
-        ownership_percent: portfolioForm.ownership_percent === "" ? null : Number(portfolioForm.ownership_percent),
-        investment_date: portfolioForm.investment_date || null,
-        notes: portfolioForm.notes.trim() || null,
-        risk_level: portfolioForm.risk_level,
-        payment_method: portfolioForm.payment_method,
-        signature_data: portfolioForm.signature_data || editingInvestment.signature_data || null,
-      });
-      setRequests((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item));
-      setEditingInvestment(updated);
-      setConfirmationStep(5);
-      setNotice("Demo deal confirmation completed. No funds were charged or transferred.");
-    } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Unable to save this portfolio record.");
-    }
-  };
-
   const beginPortfolioEdit = (request) => {
     setEditingInvestment(request);
     setConfirmationStep(1);
@@ -154,17 +76,6 @@ export default function InvestorDashboardPage() {
       payment_method: request.payment_method || "visa",
       signature_data: request.signature_data || "",
     });
-  };
-
-  const expressInterest = async (pitch) => {
-    setBusyPitch(pitch.id); setError(""); setNotice("");
-    try {
-      const request = await createInvestmentApi({ pitch_id: pitch.id });
-      setRequests((current) => [request, ...current]);
-      setNotice(`Your interest in ${pitch.title} has been sent to the founder.`);
-    } catch (err) {
-      setError(err.message || "Unable to send your request.");
-    } finally { setBusyPitch(null); }
   };
 
   if (loading) return (
@@ -323,7 +234,7 @@ export default function InvestorDashboardPage() {
           {confirmationStep === 1 && <div className="space-y-4"><div><h3 className="font-medium">1. Choose a payment method</h3><p className="mt-1 text-sm text-white/50">This only selects a method for the demo. No credentials or payment details are collected.</p></div><div className="grid grid-cols-2 gap-2">{[["paypal","PayPal"],["mastercard","Mastercard"],["visa","Visa"],["mpesa","M-Pesa"]].map(([value,label]) => <button type="button" key={value} onClick={() => setPortfolioForm((form) => ({...form,payment_method:value}))} className={`rounded-lg border p-4 text-left text-sm ${portfolioForm.payment_method === value ? "border-[#C9A15A] bg-[#C9A15A]/10 text-[#E8D6A8]" : "border-white/10 bg-white/5 text-white"}`}>{label}{portfolioForm.payment_method === value && <span className="ml-2 text-xs">Selected</span>}</button>)}</div><div className="flex justify-end"><Button disabled={!portfolioForm.payment_method} onClick={() => setConfirmationStep(2)}>Continue</Button></div></div>}
           {confirmationStep === 2 && <div className="space-y-4"><div><h3 className="font-medium">2. Enter investment amount</h3><p className="mt-1 text-sm text-white/50">Enter the amount agreed for this demo deal record.</p></div><label className="block space-y-1 text-sm"><span>Investment amount</span><Input type="number" min="0.01" step="0.01" required value={portfolioForm.investment_amount} onChange={(event) => setPortfolioForm((form) => ({ ...form, investment_amount: event.target.value }))} placeholder="Enter amount" /></label><label className="block space-y-1 text-sm"><span>Ownership percentage (optional)</span><Input type="number" min="0" max="100" step="0.0001" value={portfolioForm.ownership_percent} onChange={(event) => setPortfolioForm((form) => ({ ...form, ownership_percent: event.target.value }))} /></label><div className="flex justify-between"><Button variant="ghost" onClick={() => setConfirmationStep(1)}>Back</Button><Button disabled={!Number.isFinite(Number(portfolioForm.investment_amount)) || Number(portfolioForm.investment_amount) <= 0} onClick={() => setConfirmationStep(3)}>Review amount</Button></div></div>}
           {confirmationStep === 3 && <div className="space-y-4"><div><h3 className="font-medium">3. Review and confirm details</h3><p className="mt-1 text-sm text-white/50">Check the information before signing.</p></div><div className="rounded-lg border border-white/10 bg-black/20 p-4 text-sm"><div className="flex justify-between gap-3 py-2"><span className="text-white/50">Startup</span><strong>{editingInvestment.pitch?.title || startups.find((item) => item.id === editingInvestment.pitch_id)?.title || `Pitch #${editingInvestment.pitch_id}`}</strong></div><div className="flex justify-between gap-3 border-t border-white/10 py-2"><span className="text-white/50">Amount</span><strong>{Number(portfolioForm.investment_amount).toLocaleString()}</strong></div><div className="flex justify-between gap-3 border-t border-white/10 py-2"><span className="text-white/50">Payment method</span><strong className="capitalize">{portfolioForm.payment_method}</strong></div><div className="flex justify-between gap-3 border-t border-white/10 py-2"><span className="text-white/50">Ownership</span><strong>{portfolioForm.ownership_percent ? `${portfolioForm.ownership_percent}%` : "Not specified"}</strong></div></div><p className="text-xs text-amber-200/80">This is a simulation only. It does not charge a card, initiate M-Pesa, transfer funds or issue shares.</p><div className="flex justify-between"><Button variant="ghost" onClick={() => setConfirmationStep(2)}>Back</Button><Button onClick={() => setConfirmationStep(4)}>Confirm details & sign</Button></div></div>}
-          {confirmationStep === 4 && <div className="space-y-3"><div><h3 className="font-medium">4. Digital signature</h3><p className="mt-1 text-sm text-white/50">Draw your name below to confirm that you reviewed this demo record.</p></div>{editingInvestment.signature_data && !portfolioForm.signature_data && <img src={editingInvestment.signature_data} alt="Previously saved deal signature" className="max-h-24 rounded border border-white/10 bg-black/20 p-2" />}<canvas ref={signatureCanvasRef} width={640} height={160} onPointerDown={handleSignaturePointerDown} onPointerMove={handleSignaturePointerMove} onPointerUp={() => { const canvas = signatureCanvasRef.current; if (canvas) setPortfolioForm((form) => ({ ...form, signature_data: canvas.toDataURL("image/png") })); }} className="h-32 w-full touch-none rounded-lg border border-white/20 bg-black/20" /><div className="flex flex-wrap justify-between gap-2"><Button type="button" size="sm" variant="ghost" onClick={clearSignature}>Clear signature</Button><div className="flex gap-2"><Button variant="ghost" onClick={() => setConfirmationStep(3)}>Back</Button><Button disabled={!portfolioForm.signature_data && !editingInvestment.signature_data} onClick={savePortfolio}>Complete demo confirmation</Button></div></div><p className="text-xs text-white/40">Your signature is saved as part of the investor-reported record. It is not a legally executed investment agreement.</p></div>}
+          {confirmationStep === 4 && <div className="space-y-3"><div><h3 className="font-medium">4. Digital signature</h3><p className="mt-1 text-sm text-white/50">Draw your name below to confirm that you reviewed this demo record.</p></div>{editingInvestment.signature_data && !portfolioForm.signature_data && <img src={editingInvestment.signature_data} alt="Previously saved deal signature" className="max-h-24 rounded border border-white/10 bg-black/20 p-2" />}<canvas ref={signatureCanvasRef} width={640} height={160} onPointerDown={handleSignaturePointerDown} onPointerMove={handleSignaturePointerMove} onPointerUp={() => { const canvas = signatureCanvasRef.current; if (canvas) setPortfolioForm((form) => ({ ...form, signature_data: canvas.toDataURL("image/png") })); }} className="h-32 w-full touch-none rounded-lg border border-white/20 bg-black/20" /><div className="flex flex-wrap justify-between gap-2"><Button type="button" size="sm" variant="ghost" onClick={clearSignature}>Clear signature</Button><div className="flex gap-2"><Button variant="ghost" onClick={() => setConfirmationStep(3)}>Back</Button><Button disabled={!portfolioForm.signature_data && !editingInvestment.signature_data} onClick={(event) => savePortfolio({ event, editingInvestment, portfolioForm, setEditingInvestment, setConfirmationStep })}>Complete demo confirmation</Button></div></div><p className="text-xs text-white/40">Your signature is saved as part of the investor-reported record. It is not a legally executed investment agreement.</p></div>}
           {confirmationStep === 5 && <div className="space-y-3"><p className="text-emerald-200">The demo confirmation has been saved to your portfolio.</p><div className="rounded-lg border border-emerald-400/20 bg-emerald-400/5 p-4 text-sm"><p><strong>Startup:</strong> {editingInvestment.pitch?.title || startups.find((item) => item.id === editingInvestment.pitch_id)?.title || `Pitch #${editingInvestment.pitch_id}`}</p><p className="mt-1"><strong>Recorded amount:</strong> {Number(editingInvestment.investment_amount || 0).toLocaleString()}</p><p className="mt-1"><strong>Reference:</strong> ALM-DEMO-{String(editingInvestment.id).padStart(6,"0")}</p><p className="mt-1"><strong>Method:</strong> {String(editingInvestment.payment_method || "").toUpperCase()}</p></div><p className="text-xs text-white/45">No funds were charged or transferred. This reference identifies a simulated confirmation only.</p><div className="flex justify-end"><Button onClick={() => setEditingInvestment(null)}>Return to deal room</Button></div></div>}
         </Card>}
         <p className="text-xs text-white/40">Expressing interest starts a conversation only. Recording an investment is a manual portfolio entry; Almeriq does not transfer funds or create a binding investment.</p>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ExternalLink,
@@ -14,8 +14,7 @@ import {
 } from "lucide-react";
 import FounderStudioNav from "../../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
-import { getCompanyRegistrationGuideApi } from "../../lib/api";
-import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder";
+import { useFounderLegalWorkspace } from "../../hooks/useFounderLegalWorkspace";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { COUNTRIES } from "../../lib/countries";
@@ -271,10 +270,6 @@ export default function FounderLegalPage() {
   const location = useLocation();
   const activeMode = location.pathname.endsWith("/templates") ? "templates" : location.pathname.endsWith("/filings") ? "filings" : "dossier";
   const setActiveMode = (mode) => navigate(mode === "templates" ? "/founder/legal/templates" : mode === "filings" ? "/founder/legal/filings" : "/founder/legal/guide");
-  const [filings, setFilings] = useState([]);
-  const [filingLoading, setFilingLoading] = useState(false);
-  const [filingSaving, setFilingSaving] = useState(false);
-  const [filingError, setFilingError] = useState("");
   const [filingForm, setFilingForm] = useState({ filing_type: "company", company_name: "", entity_type: "Ltd", jurisdiction: "", ip_title: "", ip_type: "Source Code", ip_description: "" });
 
   // Company registration guide stepper: 1 = Why & Steps, 2 = Documents & Next Steps
@@ -293,73 +288,11 @@ export default function FounderLegalPage() {
   }, [user?.nationality]);
 
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
-  const [guide, setGuide] = useState(null);
-  const [guideLoading, setGuideLoading] = useState(true);
-  const [guideError, setGuideError] = useState(null);
-
   // Starter contracts state
   const [selectedTemplate, setSelectedTemplate] = useState(LEGAL_TEMPLATES[0]);
   const [copiedTemplate, setCopiedTemplate] = useState(false);
 
-  const loadFilings = useCallback(async () => {
-    setFilingLoading(true);
-    setFilingError("");
-    try { setFilings(await listLegalFilingsApi()); }
-    catch (err) { setFilingError(err.message || "Unable to load your registration requests."); }
-    finally { setFilingLoading(false); }
-  }, []);
-
-  useEffect(() => { loadFilings(); }, [loadFilings]);
-
-  const submitFiling = async (event) => {
-    event.preventDefault();
-    setFilingSaving(true);
-    setFilingError("");
-    try {
-      await createLegalFilingApi({
-        ...filingForm,
-        company_name: filingForm.filing_type === "company" ? filingForm.company_name.trim() : null,
-        entity_type: filingForm.filing_type === "company" ? filingForm.entity_type : null,
-        jurisdiction: filingForm.filing_type === "company" ? (filingForm.jurisdiction.trim() || selectedCountry) : null,
-        ip_title: filingForm.filing_type === "ip" ? filingForm.ip_title.trim() : null,
-        ip_type: filingForm.filing_type === "ip" ? filingForm.ip_type : null,
-        ip_description: filingForm.filing_type === "ip" ? filingForm.ip_description.trim() : null,
-      });
-      await loadFilings();
-      setFilingForm((current) => ({ ...current, company_name: "", ip_title: "", ip_description: "" }));
-      showToast("Registration intake submitted. This does not file with a government office.", "success");
-    } catch (err) { setFilingError(err.message || "Unable to submit this registration intake."); }
-    finally { setFilingSaving(false); }
-  };
-  // Fetch company registration guide
-  const loadGuide = useCallback(async (countryName, forceRefresh = false) => {
-    setGuideLoading(true);
-    setGuide(null); // Clear previous country data immediately
-    setGuideError(null);
-    try {
-      const data = await getCompanyRegistrationGuideApi(countryName, forceRefresh);
-      setGuide(data);
-    } catch (err) {
-      console.error("Failed to load company registration guide:", err);
-      setGuideError(
-        err.message ||
-          "Could not load the registration guide right now. Please check your internet connection and click retry."
-      );
-    } finally {
-      setGuideLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadGuide(selectedCountry);
-  }, [selectedCountry, loadGuide]);
-
-  const handleCountryChange = (e) => {
-    const newCountry = e.target.value;
-    setSelectedCountry(newCountry);
-    setGuide(null); // Clear previous country data immediately
-    setGuideError(null);
-  };
+  const handleCountryChange = (event) => setSelectedCountry(event.target.value);
 
   const copyTemplateContent = () => {
     if (!selectedTemplate) return;
@@ -368,6 +301,9 @@ export default function FounderLegalPage() {
     showToast("Template copied to clipboard", "success");
     setTimeout(() => setCopiedTemplate(false), 2000);
   };
+
+  const legalWorkspace = useFounderLegalWorkspace({ selectedCountry, filingForm, setFilingForm, showToast });
+  const { filings, filingLoading, filingSaving, filingError, submitFiling, guide, guideLoading, guideError, refreshGuide } = legalWorkspace;
 
   // Safe normalized collections
   const prerequisitesList = useMemo(() => {
@@ -582,7 +518,7 @@ export default function FounderLegalPage() {
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => loadGuide(selectedCountry, true)}
+                      onClick={refreshGuide}
                       disabled={guideLoading}
                       className="inline-flex items-center gap-2 rounded border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-white/[0.08] disabled:opacity-50 cursor-pointer"
                     >
@@ -647,7 +583,7 @@ export default function FounderLegalPage() {
                   <div className="pt-2 flex justify-center">
                     <button
                       type="button"
-                      onClick={() => loadGuide(selectedCountry, true)}
+                      onClick={refreshGuide}
                       className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-all hover:bg-[#e2ba40] cursor-pointer"
                     >
                       <RotateCcw size={13} />
