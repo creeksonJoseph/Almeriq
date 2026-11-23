@@ -1,13 +1,12 @@
 """services/message.py - Business logic for messages."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import conversation as conversation_repo
 from repositories import message as message_repo
 from repositories import notification as notification_repo
+from repositories import user as user_repo
 
-logger = logging.getLogger(__name__)
 
 
 async def list_messages(
@@ -26,9 +25,20 @@ async def list_messages(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation not found",
         )
-    return await message_repo.list_messages(
+    messages = await message_repo.list_messages(
         conversation_id, user_id, limit=limit, offset=offset, session=session
     )
+    for message in messages:
+        sender = await user_repo.get_user_by_id(message["sender_id"], session=session)
+        if sender:
+            message["sender"] = {
+                "id": sender["id"],
+                "email": sender["email"],
+                "full_name": sender.get("full_name"),
+                "role": sender["role"],
+                "is_admin": sender.get("is_admin", False),
+            }
+    return messages
 
 
 async def create_message(

@@ -1,15 +1,11 @@
 """services/order.py - Business logic for orders."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import order as order_repo
 from repositories import order_event as order_event_repo
 from repositories import provider_profile as provider_repo
 from repositories import notification as notification_repo
-from repositories import deal as deal_repo
-
-logger = logging.getLogger(__name__)
 
 
 async def list_orders(
@@ -27,6 +23,31 @@ async def list_orders(
         offset=offset,
         session=session,
     )
+
+
+async def list_client_orders(
+    client_id: int,
+    limit: int = 100,
+    offset: int = 0,
+    session: AsyncSession | None = None,
+) -> tuple[list[dict], int]:
+    """List orders placed by the authenticated marketplace buyer."""
+    return await order_repo.list_orders(
+        client_id=client_id, limit=limit, offset=offset, session=session
+    )
+
+
+async def get_client_order(
+    order_id: int,
+    client_id: int,
+    session: AsyncSession | None = None,
+) -> dict:
+    """Get one buyer-owned order with its event timeline."""
+    order = await order_repo.get_order_by_id(order_id, client_id=client_id, session=session)
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    order["events"] = await order_event_repo.list_order_events(order_id, session=session)
+    return order
 
 
 async def create_order(
@@ -86,28 +107,6 @@ async def get_order(
     return order
 
 
-_VALID_ORDER_STATUS_TRANSITIONS: dict[str, set[str]] = {
-    "pending_review": {"confirmed", "declined"},
-    "confirmed": {"shipped", "completed"},
-    "shipped": {"completed"},
-    # terminal states: no outgoing transitions
-    "declined": set(),
-    "completed": set(),
-}
-
-
-def _validate_status_transition(current_status: str, new_status: str) -> None:
-    """Reject invalid order status transitions."""
-    allowed = _VALID_ORDER_STATUS_TRANSITIONS.get(current_status, set())
-    if new_status not in allowed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"Invalid status transition from '{current_status}' to '{new_status}'. "
-                f"Allowed: {', '.join(sorted(allowed)) or 'none (terminal state)'}"
-            ),
-        )
-
 
 async def update_order_status(
     order_id: int,
@@ -158,13 +157,12 @@ async def update_order_status(
             note=f"Order status updated to {new_status}",
             session=session,
         )
-    deal = await deal_repo.get_deal_by_order_id(order["id"], session=session)
     await notification_repo.create_notification(
         user_id=order["client_id"],
         type="order",
         title="Order status updated",
         body=f"Order {order['order_id']} is now {new_status.replace('_', ' ')}.",
-        link=f"/checkout/{deal['id']}" if deal else "/marketplace",
+        link="/founder/orders",
         session=session,
     )
     return order

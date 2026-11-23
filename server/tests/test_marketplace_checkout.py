@@ -98,7 +98,7 @@ async def test_marketplace_checkout_creates_order_and_deal_together(session, mon
     result = await marketplace_router.create_marketplace_checkout(
         body=MarketplaceCheckoutRequest(asset_id=asset["id"], payment_method="mpesa"),
         response=Response(),
-        current_user={"id": buyer["id"]},
+        current_user={"id": buyer["id"], "role": "founder"},
         db=session,
     )
     await session.commit()
@@ -135,7 +135,7 @@ async def test_marketplace_checkout_rolls_back_order_when_deal_creation_fails(se
         await marketplace_router.create_marketplace_checkout(
             body=MarketplaceCheckoutRequest(asset_id=asset["id"]),
             response=Response(),
-            current_user={"id": buyer["id"]},
+            current_user={"id": buyer["id"], "role": "founder"},
             db=session,
         )
 
@@ -160,7 +160,7 @@ async def test_provider_can_confirm_and_dispatch_order_with_audited_events(sessi
     checkout = await marketplace_router.create_marketplace_checkout(
         body=MarketplaceCheckoutRequest(asset_id=asset["id"]),
         response=Response(),
-        current_user={"id": buyer["id"]},
+        current_user={"id": buyer["id"], "role": "founder"},
         db=session,
     )
     order_id = checkout["order"]["id"]
@@ -223,7 +223,7 @@ async def test_provider_cannot_skip_or_reverse_order_statuses(session, monkeypat
     checkout = await marketplace_router.create_marketplace_checkout(
         body=MarketplaceCheckoutRequest(asset_id=asset["id"]),
         response=Response(),
-        current_user={"id": buyer["id"]},
+        current_user={"id": buyer["id"], "role": "founder"},
         db=session,
     )
     order_id = checkout["order"]["id"]
@@ -288,7 +288,7 @@ async def http_client(tmp_path) -> AsyncGenerator[dict, None]:
         buyer = await create_user(
             email=f"{uuid.uuid4().hex}@example.com",
             hashed_password="x",
-            role="user",
+            role="founder",
             session=s,
         )
         provider_user = await create_user(

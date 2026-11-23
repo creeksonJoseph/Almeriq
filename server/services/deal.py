@@ -1,14 +1,13 @@
 """services/deal.py - Business logic for deals."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import deal as deal_repo
 from repositories import order as order_repo
 from repositories import asset as asset_repo
 from repositories import provider_profile as provider_repo
+from repositories import notification as notification_repo
 
-logger = logging.getLogger(__name__)
 
 
 async def _get_participant_order(order_id: int, provider_id: int | None, client_id: int | None, session: AsyncSession | None) -> dict | None:
@@ -35,6 +34,16 @@ async def create_deal(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found",
+        )
+    if payment_method not in {"visa", "mastercard", "paypal", "mpesa"}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Unsupported simulated payment method.",
+        )
+    if amount <= 0 or round(float(amount), 2) != round(float(order.get("lease_amount") or 0), 2):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Deal amount must match the marketplace order price.",
         )
     existing = await deal_repo.get_deal_by_order_id(order_id, session=session)
     if existing:
@@ -98,10 +107,40 @@ async def sign_deal(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
         )
-    updated = await deal_repo.sign_deal(deal_id, signature, payment_method=payment_method, amount=amount, session=session)
+    if deal.get("signature"):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This demo deal has already been signed.",
+        )
+    if amount is not None and round(float(amount), 2) != round(float(deal.get("amount") or 0), 2):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The deal amount is fixed by the marketplace listing and cannot be changed.",
+        )
+    if payment_method is not None and payment_method not in {"visa", "mastercard", "paypal", "mpesa"}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Unsupported simulated payment method.",
+        )
+    updated = await deal_repo.sign_deal(
+        deal_id, signature, payment_method=payment_method, amount=None, session=session
+    )
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deal not found",
+        )
+    recipient_id = order["client_id"]
+    if client_id is not None and order["client_id"] == client_id:
+        provider = await provider_repo.get_provider_profile_by_id(order["provider_id"], session=session)
+        recipient_id = provider.get("user_id") if provider else None
+    if recipient_id is not None:
+        await notification_repo.create_notification(
+            user_id=recipient_id,
+            type="order",
+            title="Marketplace deal signed",
+            body=f"Deal #{deal_id} has been signed in the demo checkout.",
+            link=f"/provider/orders/{order['id']}" if recipient_id != order["client_id"] else "/founder/orders",
+            session=session,
         )
     return updated

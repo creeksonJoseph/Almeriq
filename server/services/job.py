@@ -1,6 +1,5 @@
 """services/job.py - Business logic for the jobs domain (postings, applications, seeker profiles)."""
 from __future__ import annotations
-import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,8 +7,9 @@ from repositories import job_posting as job_repo
 from repositories import job_application as application_repo
 from repositories import job_seeker_profile as seeker_repo
 from repositories import provider_profile as provider_repo
+from repositories import user as user_repo
+from repositories import notification as notification_repo
 
-logger = logging.getLogger(__name__)
 
 VALID_STATUSES = {"pending", "reviewed", "accepted", "rejected", "withdrawn"}
 VALID_ROLE_TYPES = {"full_time", "part_time", "contract", "freelance", "internship"}
@@ -218,13 +218,27 @@ async def create_job_application(
             detail="You have already applied to this job posting",
         )
 
-    return await application_repo.create_job_application(
+    application = await application_repo.create_job_application(
         job_posting_id=job_posting_id,
         applicant_id=applicant_id,
         cover_letter=cover_letter,
         resume_url=resume_url,
         session=session,
     )
+    employer_user_id = posting.get("founder_user_id")
+    if posting.get("provider_id") is not None:
+        provider = await provider_repo.get_provider_profile_by_id(posting["provider_id"], session=session)
+        employer_user_id = provider.get("user_id") if provider else None
+    if employer_user_id is not None and employer_user_id != applicant_id:
+        await notification_repo.create_notification(
+            user_id=employer_user_id,
+            type="job",
+            title="New job application",
+            body=f"A candidate applied for {posting['title']}.",
+            link="/jobs/manage",
+            session=session,
+        )
+    return application
 
 
 async def get_job_application(
@@ -258,7 +272,17 @@ async def list_applications_for_job(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job posting not found",
         )
-    return await application_repo.get_applications_for_job(job_posting_id, session=session)
+    applications = await application_repo.get_applications_for_job(job_posting_id, session=session)
+    for application in applications:
+        applicant = await user_repo.get_user_by_id(application["applicant_id"], session=session)
+        profile = await seeker_repo.get_job_seeker_profile_by_user_id(
+            application["applicant_id"], session=session
+        )
+        application["applicant_name"] = (
+            applicant.get("full_name") if applicant else None
+        ) or f"Applicant #{application['applicant_id']}"
+        application["applicant_profile"] = profile
+    return applications
 
 
 async def list_applications_for_applicant(
@@ -299,6 +323,11 @@ async def update_application_status(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Applicants may only withdraw their own applications",
             )
+        if application["status"] not in {"pending", "reviewed"}:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Only pending or reviewed applications can be withdrawn",
+            )
     elif (provider_id is not None or founder_user_id is not None) and job_posting_id is not None:
         if application["job_posting_id"] != job_posting_id:
             raise HTTPException(
@@ -313,10 +342,14 @@ async def update_application_status(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not the owner of this job posting",
             )
-        if status_value not in {"reviewed", "accepted", "rejected"}:
+        allowed_transitions = {
+            "pending": {"reviewed", "accepted", "rejected"},
+            "reviewed": {"accepted", "rejected"},
+        }
+        if status_value not in allowed_transitions.get(application["status"], set()):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Employers may set status to reviewed, accepted, or rejected",
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Application cannot transition from {application['status']} to {status_value}",
             )
     else:
         raise HTTPException(
@@ -337,6 +370,30 @@ async def update_application_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job application not found",
         )
+    posting = await job_repo.get_job_posting_by_id(application["job_posting_id"], session=session)
+    if applicant_id is not None and posting:
+        employer_user_id = posting.get("founder_user_id")
+        if posting.get("provider_id") is not None:
+            provider = await provider_repo.get_provider_profile_by_id(posting["provider_id"], session=session)
+            employer_user_id = provider.get("user_id") if provider else None
+        if employer_user_id is not None and employer_user_id != applicant_id:
+            await notification_repo.create_notification(
+                user_id=employer_user_id,
+                type="job",
+                title="Application withdrawn",
+                body=f"A candidate withdrew their application for {posting['title']}.",
+                link="/jobs/manage",
+                session=session,
+            )
+    elif applicant_id is None:
+        await notification_repo.create_notification(
+            user_id=application["applicant_id"],
+            type="job",
+            title="Application status updated",
+            body=f"Your application status is now {status_value}.",
+            link="/job-seeker/dashboard",
+            session=session,
+        )
     return updated
 
 
@@ -344,30 +401,15 @@ async def update_application_status(
 
 async def create_or_update_job_seeker_profile(
     user_id: int,
-    headline: str | None = None,
-    bio: str | None = None,
-    location: str | None = None,
-    skills: list[str] | None = None,
-    experience_years: int | None = None,
-    resume_url: str | None = None,
-    portfolio_url: str | None = None,
-    is_active: bool = True,
     session: AsyncSession | None = None,
+    **values,
 ) -> dict:
     """Create or update a job seeker profile."""
     return await seeker_repo.create_or_update_job_seeker_profile(
         user_id=user_id,
-        headline=headline,
-        bio=bio,
-        location=location,
-        skills=skills,
-        experience_years=experience_years,
-        resume_url=resume_url,
-        portfolio_url=portfolio_url,
-        is_active=is_active,
         session=session,
+        **values,
     )
-
 
 async def get_job_seeker_profile(
     user_id: int,

@@ -12,6 +12,13 @@ from services import marketplace as svc
 
 router = APIRouter(prefix="/api", tags=["marketplace"])
 
+def _require_founder(current_user: dict) -> int:
+    from fastapi import HTTPException
+    if str(current_user.get("role", "")).lower() != "founder":
+        raise HTTPException(status_code=403, detail="Founder account required to place marketplace orders")
+    return int(current_user["id"])
+
+
 
 @router.post("/marketplace/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_marketplace_order(
@@ -31,7 +38,7 @@ async def create_marketplace_order(
     response.headers["Cache-Control"] = "no-store"
     return await order_service.create_order(
         provider_id=listing["provider_id"],
-        client_id=current_user["id"],
+        client_id=_require_founder(current_user),
         asset_id=body.asset_id,
         allocation=body.allocation,
         lease_amount=listing.get("price_monthly"),
@@ -69,7 +76,7 @@ async def create_marketplace_checkout(
     # The listing price is authoritative; never trust a client-submitted lease amount.
     order = await order_service.create_order(
         provider_id=listing["provider_id"],
-        client_id=current_user["id"],
+        client_id=_require_founder(current_user),
         asset_id=body.asset_id,
         allocation=body.allocation,
         lease_amount=listing["price_monthly"],

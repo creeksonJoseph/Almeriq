@@ -61,3 +61,13 @@ export async function getWaybillApi(id) {
   const res = await apiClient.get(`/api/provider/orders/${id}/waybill`);
   return res.data;
 }
+
+export async function listClientOrdersApi(params = {}) {
+  const res = await apiClient.get("/api/client/orders", { params });
+  return normalizeOrderList(res.data);
+}
+
+export async function getClientOrderApi(id) {
+  const res = await apiClient.get(`/api/client/orders/${id}`);
+  return normalizeOrder(res.data);
+}

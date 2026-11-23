@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Send, ChevronLeft, MoreVertical, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
-import { Button, Card, Input, Pill, Avatar, Skeleton, SkeletonText, Drawer } from "../../components/ui";
+import { Send, ChevronLeft, Check, CheckCheck, Clock, Loader2 } from "lucide-react";
+import { Button, Input, Pill, Avatar, SkeletonText } from "../../components/ui";
 import { listConversationsApi, listMessagesApi, sendMessageApi, markMessagesReadApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -15,6 +15,8 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [conversationQuery, setConversationQuery] = useState("");
 
   const messageForm = useForm({ defaultValues: { content: "" } });
   const messagesEndRef = useRef(null);
@@ -37,7 +39,7 @@ export default function MessagesPage() {
         const requestedConversation = normalized.find(conv => conv.id === requestedId);
         if (requestedConversation) await openConversation(requestedConversation);
       } catch (e) {
-        console.error("Failed to load conversations", e);
+        setError(e.response?.data?.detail || e.message || "Failed to load conversations.");
       } finally {
         setLoading(false);
       }
@@ -47,7 +49,8 @@ export default function MessagesPage() {
 
   const openConversation = async (conversation) => {
     setActiveConversation(conversation);
-    setMobileDrawerOpen(true);
+    setMobileDrawerOpen(false);
+    setError("");
     try {
       const res = await listMessagesApi(conversation.id);
       setMessages((res.items || res.messages || []).map(message => ({
@@ -60,7 +63,7 @@ export default function MessagesPage() {
       if (conversation.unread > 0) await markMessagesReadApi(conversation.id);
       setConversations(prev => prev.map(c => c.id === conversation.id ? { ...c, unread: 0 } : c));
     } catch (e) {
-      console.error("Failed to load messages", e);
+      setError(e.response?.data?.detail || e.message || "Failed to load messages.");
     }
   };
 
@@ -71,13 +74,14 @@ export default function MessagesPage() {
     if (!data.content.trim()) return;
     setSending(true);
     try {
+      setError("");
       const res = await sendMessageApi(activeConversation.id, data.content);
       const message = res.data || res.message || res;
       setMessages(prev => [...prev, { ...message, content: message.content || message.body || data.content, own: true, time: message.time || message.created_at || "now" }]);
       messageForm.reset();
       setConversations(prev => prev.map(c => c.id === activeConversation.id ? { ...c, lastMessage: data.content, time: "now" } : c));
     } catch (e) {
-      console.error("Failed to send message", e);
+      setError(e.response?.data?.detail || e.message || "Failed to send message.");
     } finally {
       setSending(false);
     }
@@ -88,6 +92,13 @@ export default function MessagesPage() {
   }, [messages]);
 
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread || 0), 0);
+  const visibleConversations = conversations.filter((conversation) =>
+    [conversation.otherParty?.name, conversation.lastMessage]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(conversationQuery.trim().toLowerCase()),
+  );
 
   if (loading) {
     return (
@@ -103,7 +114,7 @@ export default function MessagesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-border shrink-0">
         <div>
           <h1 className="font-serif text-xl font-semibold text-text">Messages</h1>
-          <p className="text-sm text-white/70">Conversations with providers and clients</p>
+          <p className="text-sm text-white/70">Conversations across your Almeriq workspace</p>
         </div>
         <div className="flex items-center gap-2">
           {totalUnread > 0 && (
@@ -111,6 +122,8 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
+
+      {error && <p role="alert" className="mx-4 mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
 
       {/* Conversation List + Chat View */}
       <div className="flex-1 flex overflow-hidden">
@@ -126,19 +139,19 @@ export default function MessagesPage() {
 
           {/* Search */}
           <div className="p-4 border-b border-border">
-            <Input placeholder="Search conversations..." className="text-sm" />
+            <Input value={conversationQuery} onChange={(event) => setConversationQuery(event.target.value)} placeholder="Search conversations..." className="text-sm" />
           </div>
 
           {/* Conversation List */}
           <div className="flex-1 overflow-y-auto">
-            {conversations.length === 0 ? (
+            {visibleConversations.length === 0 ? (
               <div className="p-8 text-center text-white/60">
-                <p>No conversations yet</p>
-                <p className="text-sm mt-1">Start chatting from the Marketplace</p>
+                <p>{conversations.length === 0 ? "No conversations yet" : "No matching conversations"}</p>
+                <p className="text-sm mt-1">{conversations.length === 0 ? "Start chatting from the Marketplace or an accepted request" : "Try another name or message."}</p>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {conversations.map(conv => (
+                {visibleConversations.map(conv => (
                   <ConversationItem
                     key={conv.id}
                     conversation={conv}
@@ -161,13 +174,14 @@ export default function MessagesPage() {
               messageForm={messageForm}
               sending={sending}
               messagesEndRef={messagesEndRef}
-              onClose={() => { setActiveConversation(null); setMobileDrawerOpen(false); }}
+              onClose={() => setMobileDrawerOpen(true)}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-white/60">
               <div className="text-center">
                 <p className="text-lg font-medium">Select a conversation</p>
                 <p className="text-sm mt-1">Choose a conversation from the list to start messaging</p>
+                <Button className="mt-4 lg:hidden" onClick={() => setMobileDrawerOpen(true)}>View conversations</Button>
               </div>
             </div>
           )}
@@ -178,7 +192,6 @@ export default function MessagesPage() {
 }
 
 function ConversationItem({ conversation, active, onClick }) {
-  const avatarText = conversation.otherParty?.name?.split(' ').map(w => w[0]).join('') || "AD";
   return (
     <button
       onClick={onClick}

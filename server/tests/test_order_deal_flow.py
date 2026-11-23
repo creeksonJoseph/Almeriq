@@ -153,7 +153,7 @@ async def test_duplicate_deal_rejected(session):
     # service-level repeat raises 409 conflict (no duplicate deal)
     with pytest.raises(HTTPException) as exc:
         await deal_service.create_deal(
-            order["id"], "mastercard", 60.0,
+            order["id"], "mastercard", 50.0,
             provider_id=provider_id, client_id=buyer_id, session=session,
         )
     await session.commit()

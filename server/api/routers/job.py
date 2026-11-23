@@ -14,13 +14,19 @@ from schemas.job import (
     JobPostingListResponse,
     JobPostingResponse,
     JobPostingUpdateRequest,
-    JobSeekerProfileCreateRequest,
     JobSeekerProfileResponse,
     JobSeekerProfileUpdateRequest,
 )
 from services import job as svc
 
 router = APIRouter(prefix="/api", tags=["jobs"])
+
+def _require_job_seeker(current_user: dict) -> int:
+    if str(current_user.get("role", "")).lower() != "job_seeker":
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Job seeker account required")
+    return int(current_user["id"])
+
 
 
 # ── Job postings (public read, provider write) ──────────────────────────────
@@ -128,10 +134,11 @@ async def apply_to_job(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Apply to a job posting (one application per user per job)."""
+    applicant_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "no-store"
     return await svc.create_job_application(
         job_posting_id=job_id,
-        applicant_id=current_user["id"],
+        applicant_id=applicant_id,
         cover_letter=body.cover_letter,
         resume_url=body.resume_url,
         session=db,
@@ -145,9 +152,10 @@ async def list_my_applications(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """List applications submitted by the current user."""
+    applicant_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "private, max-age=30"
     items = await svc.list_applications_for_applicant(
-        applicant_id=current_user["id"], session=db
+        applicant_id=applicant_id, session=db
     )
     return {"items": items, "total": len(items)}
 
@@ -160,10 +168,11 @@ async def get_my_application(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Retrieve one of the current user's applications."""
+    applicant_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "private, max-age=30"
     return await svc.get_job_application(
         application_id=application_id,
-        applicant_id=current_user["id"],
+        applicant_id=applicant_id,
         session=db,
     )
 
@@ -177,10 +186,11 @@ async def update_my_application(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Allow an applicant to withdraw their own application."""
+    applicant_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "no-store"
     return await svc.update_application_status(
         application_id=application_id,
-        applicant_id=current_user["id"],
+        applicant_id=applicant_id,
         status_value=body.status,
         session=db,
     )
@@ -197,6 +207,7 @@ async def list_job_applications(
     response.headers["Cache-Control"] = "private, max-age=30"
     posting = await svc.get_job_posting(job_id=job_id, session=db)
     if posting["provider_id"] != owner["provider_id"] or posting["founder_user_id"] != owner["founder_user_id"]:
+        # Exactly one owner column is populated; comparing both values is intentional.
         from fastapi import HTTPException
         raise HTTPException(status_code=403, detail="Not the owner of this job posting")
     items = await svc.list_applications_for_job(job_posting_id=job_id, session=db)
@@ -235,8 +246,9 @@ async def get_seeker_profile(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Retrieve the current user's job seeker profile."""
+    user_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "private, max-age=30"
-    return await svc.get_job_seeker_profile(user_id=current_user["id"], session=db)
+    return await svc.get_job_seeker_profile(user_id=user_id, session=db)
 
 
 @router.put("/job-seeker/profile", response_model=JobSeekerProfileResponse)
@@ -247,10 +259,11 @@ async def create_or_update_seeker_profile(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Create or update the current user's job seeker profile."""
+    user_id = _require_job_seeker(current_user)
     response.headers["Cache-Control"] = "no-store"
     data = body.model_dump(exclude_unset=True)
     return await svc.create_or_update_job_seeker_profile(
-        user_id=current_user["id"],
+        user_id=user_id,
         session=db,
         **data,
     )

@@ -5,6 +5,7 @@ from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.message import Message
+from models.conversation import Conversation
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,7 @@ async def get_unread_count(
     stmt = (
         select(func.count())
         .select_from(Message)
-        .join(Message.conversation)
+        .join(Conversation, Conversation.id == Message.conversation_id)
         .where(
             (Message.sender_id != user_id) &
             Message.read_at.is_(None) & (

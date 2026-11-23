@@ -32,6 +32,8 @@ const CANONICAL_ROLES = {
   INVESTOR: "INVESTOR",
   expert: "EXPERT",
   EXPERT: "EXPERT",
+  job_seeker: "JOB_SEEKER",
+  JOB_SEEKER: "JOB_SEEKER",
 };
 
 function normalizeUser(user) {

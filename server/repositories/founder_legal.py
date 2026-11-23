@@ -15,7 +15,7 @@ async def create_filing(user_id: int, payload: dict) -> dict:
         user_id=user_id,
         filing_type=filing_type,
         ref_number=ref,
-        status="Filed",
+        status="Intake submitted",
         company_name=payload.get("company_name"),
         entity_type=payload.get("entity_type"),
         jurisdiction=payload.get("jurisdiction"),

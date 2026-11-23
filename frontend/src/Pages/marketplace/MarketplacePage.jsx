@@ -37,6 +37,7 @@ export default function MarketplacePage() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const galleryTouchStart = useRef(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({ location: "", kind: "all", minPrice: "", maxPrice: "" });
 
@@ -114,6 +115,20 @@ export default function MarketplacePage() {
     } catch (e) {
       setError(e.response?.data?.detail || e.message || "Unable to start conversation.");
     }
+  };
+
+  const handleGalleryTouchStart = (event) => {
+    galleryTouchStart.current = event.touches?.[0]?.clientX ?? null;
+  };
+
+  const handleGalleryTouchEnd = (event) => {
+    if (galleryTouchStart.current == null || galleryImages.length < 2) return;
+    const endX = event.changedTouches?.[0]?.clientX;
+    const delta = endX - galleryTouchStart.current;
+    if (Math.abs(delta) > 45) {
+      setGalleryIndex((index) => (index + (delta < 0 ? 1 : -1) + galleryImages.length) % galleryImages.length);
+    }
+    galleryTouchStart.current = null;
   };
 
   const handleImageClick = (images, index) => {
@@ -246,7 +261,7 @@ export default function MarketplacePage() {
       {galleryOpen && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center" onClick={() => setGalleryOpen(false)}>
           <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
-            <div className="aspect-video bg-black rounded-xl overflow-hidden">
+            <div className="aspect-video bg-black rounded-xl overflow-hidden" onTouchStart={handleGalleryTouchStart} onTouchEnd={handleGalleryTouchEnd}>
               {galleryImages[galleryIndex]?.resource_type === "video"
                 ? <video src={galleryImages[galleryIndex].url} controls className="w-full h-full object-contain" />
                 : <img src={galleryImages[galleryIndex]?.url} alt="" className="w-full h-full object-contain" />}

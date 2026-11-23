@@ -14,7 +14,6 @@ def upgrade() -> None:
             sa.Column(
                 "founder_user_id",
                 sa.Integer(),
-                sa.ForeignKey("users.id", ondelete="CASCADE"),
                 nullable=True,
             )
         )
@@ -22,11 +21,6 @@ def upgrade() -> None:
             "provider_id",
             existing_type=sa.Integer(),
             nullable=True,
-        )
-        batch_op.create_check_constraint(
-            "ck_job_posting_exactly_one_owner",
-            "(provider_id IS NOT NULL AND founder_user_id IS NULL) OR "
-            "(provider_id IS NULL AND founder_user_id IS NOT NULL)",
         )
     op.create_index(
         "ix_job_postings_founder_user_id", "job_postings", ["founder_user_id"]
@@ -45,9 +39,6 @@ def downgrade() -> None:
         )
     op.drop_index("ix_job_postings_founder_user_id", table_name="job_postings")
     with op.batch_alter_table("job_postings") as batch_op:
-        batch_op.drop_constraint(
-            "ck_job_posting_exactly_one_owner", type_="check"
-        )
         batch_op.alter_column(
             "provider_id",
             existing_type=sa.Integer(),

@@ -91,6 +91,8 @@ export {
   updateOrderStatusApi,
   uploadWaybillApi,
   getWaybillApi,
+  listClientOrdersApi,
+  getClientOrderApi,
 } from "./api/orders";
 
 export {
@@ -106,6 +108,8 @@ export {
   listMessagesApi,
   sendMessageApi,
   markMessagesReadApi,
+  startAdvisoryConversationApi,
+  startInvestmentConversationApi,
 } from "./api/conversations";
 
 export {
@@ -137,9 +141,17 @@ export {
   listInvestorStartupsApi,
   getInvestorStartupApi,
   createInvestmentApi,
-  getInvestmentApi,
-  signInvestmentApi,
-  completeInvestmentApi,
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
+  updateInvestorPortfolioApi,
 } from "./api/investor";
+export {
+  discoverTalentApi,
+  getTalentProfileApi,
+  inviteTalentApi,
+  listFounderTeamInvitationsApi,
+  listTeamMembersApi,
+  removeTeamMemberApi,
+  listMyTeamInvitationsApi,
+  respondToTeamInvitationApi,
+} from "./api/team";

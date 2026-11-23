@@ -1,7 +1,7 @@
 /**
  * lib/api/investor.js - Investor Portal API client.
  *
- * Covers investor profile, startup browse, investment checkout, and portfolio.
+ * Covers investor profile, startup browse, founder interest requests and portfolio.
  */
 import { apiClient, extractErrorMessage } from "../client";
 
@@ -53,41 +53,14 @@ export async function getInvestorStartupApi(id) {
   }
 }
 
-// ── Investment Checkout ────────────────────────────────────────────────────────
+// ── Founder interest requests ─────────────────────────────────────────────────
 
 export async function createInvestmentApi(payload) {
   try {
     const { data } = await apiClient.post("/api/investor/investments", payload);
     return data;
   } catch (e) {
-    throw apiErr(e, "Failed to create investment");
-  }
-}
-
-export async function getInvestmentApi(id) {
-  try {
-    const { data } = await apiClient.get(`/api/investor/investments/${id}`);
-    return data;
-  } catch (e) {
-    throw apiErr(e, "Failed to load investment");
-  }
-}
-
-export async function signInvestmentApi(id, signature) {
-  try {
-    const { data } = await apiClient.post(`/api/investor/investments/${id}/sign`, { signature });
-    return data;
-  } catch (e) {
-    throw apiErr(e, "Failed to sign investment");
-  }
-}
-
-export async function completeInvestmentApi(id) {
-  try {
-    const { data } = await apiClient.post(`/api/investor/investments/${id}/complete`);
-    return data;
-  } catch (e) {
-    throw apiErr(e, "Failed to complete investment");
+    throw apiErr(e, "Failed to send founder interest request");
   }
 }
 
@@ -108,5 +81,13 @@ export async function getInvestorPortfolioItemApi(id) {
     return data;
   } catch (e) {
     throw apiErr(e, "Failed to load portfolio item");
+  }
+}
+export async function updateInvestorPortfolioApi(id, payload) {
+  try {
+    const { data } = await apiClient.patch(`/api/investor/portfolio/${id}`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Failed to update portfolio tracking");
   }
 }
