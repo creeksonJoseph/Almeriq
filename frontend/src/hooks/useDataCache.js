@@ -10,7 +10,6 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
   const [data, setData] = useState(() => key ? getCached(key) : null);
   const [loading, setLoading] = useState(Boolean(enabled && key && !getCached(key)));
   const [error, setError] = useState("");
-  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -29,7 +28,7 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
     }
     setError("");
 
-    fetchWithSWR(key, fetcher, { force: revision > 0 })
+    fetchWithSWR(key, fetcher)
       .then((next) => {
         if (active) setData(next);
       })
@@ -41,13 +40,23 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
       });
 
     return () => { active = false; };
-  }, [key, enabled, fetcher, revision]);
+  }, [key, enabled, fetcher]);
 
-  const refresh = useCallback(() => {
-    if (!enabled || !key) return;
+  const refresh = useCallback(async () => {
+    if (!enabled || !key) return null;
     setLoading(getCached(key) === null);
-    setRevision((current) => current + 1);
-  }, [enabled, key]);
+    setError("");
+    try {
+      const next = await fetchWithSWR(key, fetcher, { force: true });
+      setData(next);
+      return next;
+    } catch (requestError) {
+      setError(requestError.message || "Unable to refresh this data.");
+      throw requestError;
+    } finally {
+      setLoading(false);
+    }
+  }, [enabled, key, fetcher]);
 
   const mutate = useCallback((updater) => {
     setData((current) => {
