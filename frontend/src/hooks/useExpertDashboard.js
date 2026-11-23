@@ -4,28 +4,34 @@ import { getExpertProfileApi, listExpertRequestsApi, updateExpertRequestApi } fr
 export function useExpertDashboard() {
   const [profile, setProfile] = useState(null);
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busyId, setBusyId] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(() => {
     setError("");
-    const [profileResult, requestResult] = await Promise.allSettled([
-      getExpertProfileApi(),
-      listExpertRequestsApi(),
-    ]);
-    if (profileResult.status === "fulfilled") setProfile(profileResult.value || null);
-    else if (profileResult.reason.status !== 404) {
-      setError(profileResult.reason.message || "Unable to load your expert profile.");
-    }
-    if (requestResult.status === "fulfilled") {
-      setRequests(requestResult.value?.items || []);
-    } else {
-      setError((current) => current || requestResult.reason.message || "Unable to load advisory requests.");
-    }
-    setLoading(false);
+    setProfileLoading(true);
+    setRequestsLoading(true);
+
+    getExpertProfileApi()
+      .then((data) => setProfile(data || null))
+      .catch((requestError) => {
+        if (requestError.status !== 404) {
+          setError(requestError.message || "Unable to load your expert profile.");
+        } else {
+          setProfile(null);
+        }
+      })
+      .finally(() => setProfileLoading(false));
+
+    listExpertRequestsApi()
+      .then((data) => setRequests(data?.items || []))
+      .catch((requestError) => {
+        setError((current) => current || requestError.message || "Unable to load advisory requests.");
+      })
+      .finally(() => setRequestsLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -47,5 +53,8 @@ export function useExpertDashboard() {
     }
   }, []);
 
-  return { profile, requests, loading, error, notice, busyId, load, updateRequest, setError };
+  return {
+    profile, requests, profileLoading, requestsLoading,
+    error, notice, busyId, load, updateRequest, setError,
+  };
 }
