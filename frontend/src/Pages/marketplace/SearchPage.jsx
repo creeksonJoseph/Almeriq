@@ -17,17 +17,6 @@ const SEARCH_CATEGORIES = [
   { id: "solar", label: "Solar / Renewable", icon: "Sun" },
 ];
 
-const ICONS = {
-  LayoutDashboard: "⬜",
-  Cpu: "🖥️",
-  Satellite: "🛰️",
-  Zap: "⚡",
-  Box: "📦",
-  Truck: "🚛",
-  Package: "📦",
-  Sun: "☀️",
-};
-
 export default function SearchPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -174,7 +163,6 @@ export default function SearchPage() {
               className="h-24 flex flex-col items-center justify-center gap-2 text-left px-4"
               onClick={() => { searchForm.setValue("query", ""); handleCategory(cat.id); }}
             >
-              <span className="text-3xl">{ICONS[cat.icon] || "📦"}</span>
               <span className="text-sm font-medium">{cat.label}</span>
             </Button>
           ))}
