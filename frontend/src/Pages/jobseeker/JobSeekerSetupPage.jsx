@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useJobSeekerProfile } from "../../hooks/useJobSeekerProfile";
 import { useNavigate } from "react-router-dom";
 
-import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
+import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY_PROFILE = {
   headline: "", bio: "", location: "", skills: "", experience_years: "",
@@ -95,7 +95,7 @@ export default function JobSeekerSetupPage() {
   const section = (title, name, hint, placeholder, rows = 4) => (
     <label className="block space-y-2" key={name}>
       <span className="text-sm font-medium">{title}</span>
-      <textarea name={name} value={form[name]} onChange={updateField} rows={rows}
+      <Textarea name={name} value={form[name]} onChange={updateField} rows={rows}
         className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold"
         placeholder={placeholder} />
       <span className="text-xs text-white/50">{hint}</span>
@@ -122,7 +122,7 @@ export default function JobSeekerSetupPage() {
             <section className="space-y-4">
               <h2 className="font-serif text-xl">Basic information</h2>
               <label className="block space-y-2"><span className="text-sm font-medium">Professional headline</span><Input name="headline" value={form.headline} onChange={updateField} placeholder="e.g. Junior Backend Developer" /></label>
-              <label className="block space-y-2"><span className="text-sm font-medium">About you</span><textarea name="bio" value={form.bio} onChange={updateField} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Summarize your experience, strengths and career direction." /></label>
+              <label className="block space-y-2"><span className="text-sm font-medium">About you</span><Textarea name="bio" value={form.bio} onChange={updateField} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Summarize your experience, strengths and career direction." /></label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block space-y-2"><span className="text-sm font-medium">Location</span><Input name="location" value={form.location} onChange={updateField} placeholder="City, country" /></label>
                 <label className="block space-y-2"><span className="text-sm font-medium">Years of experience</span><Input name="experience_years" value={form.experience_years} onChange={updateField} placeholder="0" /></label>
