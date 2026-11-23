@@ -2,23 +2,13 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { useExpertDashboard } from "../../hooks/useExpertDashboard";
-import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 
 export default function ExpertDashboardPage() {
   const navigate = useNavigate();
   const {
     profile, requests, profileLoading, requestsLoading, error, notice, busyId,
-    updateRequest, setError,
+    updateRequest, openConversation, setError,
   } = useExpertDashboard();
-
-  const openConversation = async (requestId) => {
-    try {
-      const conversation = await startAdvisoryConversationApi(requestId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to open this conversation.");
-    }
-  };
 
 
 
@@ -34,7 +24,7 @@ export default function ExpertDashboardPage() {
             <Card key={request.id} className="border border-white/10 bg-white/2 p-5">
               <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1"><h3 className="font-medium">{request.subject}</h3><p className="mt-1 text-xs text-white/40">{request.founder_name || `Founder #${request.founder_id}`}{request.budget != null ? ` · Budget: ${request.budget}` : ""}</p><p className="mt-3 whitespace-pre-wrap text-sm text-white/65">{request.description}</p></div><span className="rounded-full border border-white/10 px-3 py-1 text-xs capitalize text-white/70">{request.status.replaceAll("_", " ")}</span></div>
               {request.status === "pending" && <div className="mt-4 flex flex-wrap gap-2"><Button size="sm" disabled={busyId === request.id} onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" disabled={busyId === request.id} onClick={() => updateRequest(request.id, "declined")}>Decline</Button></div>}
-              {request.status === "accepted" && <div className="mt-4 flex flex-wrap gap-2"><Button size="sm" variant="ghost" onClick={() => openConversation(request.id)}>Message founder</Button><Button size="sm" variant="ghost" disabled={busyId === request.id} onClick={() => updateRequest(request.id, "completed")}>Mark completed</Button></div>}
+              {request.status === "accepted" && <div className="mt-4 flex flex-wrap gap-2"><Button size="sm" variant="ghost" onClick={async () => { try { const conversation = await openConversation(request.id); navigate(`/messages?conversation=${conversation.id}`); } catch (err) { setError(err.message || "Unable to open this conversation."); } }}>Message founder</Button><Button size="sm" variant="ghost" disabled={busyId === request.id} onClick={() => updateRequest(request.id, "completed")}>Mark completed</Button></div>}
               {request.status === "completed" && <div className="mt-4"><Button size="sm" variant="ghost" onClick={() => openConversation(request.id)}>Open conversation</Button></div>}
             </Card>
           ))}
