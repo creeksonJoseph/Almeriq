@@ -179,7 +179,7 @@ export default function SearchPage() {
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-white/60">Popular searches</span>
           {popularSearches.map((term) => (
-            <button key={term} type="button" onClick={() => { searchForm.setValue("query", term); runSearch(term, activeCategory); navigate("/search?q=" + encodeURIComponent(term), { replace: true }); }}
+            <button key={term} type="button" onClick={() => { searchForm.setValue("query", term); navigate("/search?q=" + encodeURIComponent(term), { replace: true }); }}
               className="rounded-lg bg-surface px-3 py-2 text-text transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-gold">{term}</button>
           ))}
         </div>
