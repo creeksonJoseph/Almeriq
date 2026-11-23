@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
-import {
-  getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
-  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi,
-} from "../../lib/api";
-import { startInvestmentConversationApi } from "../../lib/api/conversations";
+import { useInvestorWorkspace } from "../../hooks/useInvestorWorkspace";
 
 const DEAL_ROOM_TEMPLATES = [{"title":"Mutual NDA","description":"Confidentiality terms for founders and prospective investors.","body":"MUTUAL NON-DISCLOSURE AGREEMENT\n\nDate: [DATE]\n\nParties: [FOUNDER / COMPANY LEGAL NAME] and [INVESTOR LEGAL NAME]\n\nPurpose. The parties may exchange confidential information solely to evaluate a potential investment or business relationship (the Purpose).\n\nConfidential Information. Includes non-public business, product, technical, financial, customer, operational and strategic information disclosed in any form, excluding information the recipient can show was public without breach, already lawfully known, independently developed, or lawfully received without confidentiality duty.\n\nRecipient obligations. The recipient will use the information only for the Purpose, protect it with reasonable care, and disclose it only to representatives who need to know and are bound by confidentiality obligations.\n\nRequired disclosure. A recipient may disclose information where legally required, giving notice where lawful.\n\nTerm. Confidentiality obligations continue for [2] years from disclosure; trade secrets remain protected while legally qualifying as trade secrets.\n\nNo licence or obligation. No intellectual-property licence is granted and neither party is required to proceed with a transaction.\n\nReturn / destruction. On written request, return or destroy confidential information subject to lawful archival copies.\n\nGoverning law: [JURISDICTION]\n\nSigned: ____________________  Date: __________\n[FOUNDER / COMPANY]\n\nSigned: ____________________  Date: __________\n[INVESTOR]\n\nSTARTER TEMPLATE ONLY. Obtain legal review and tailor to the governing law."},{"title":"Founder Agreement","description":"Outline founder roles, equity intentions and decision-making.","body":"FOUNDERS' AGREEMENT — DISCUSSION DRAFT\n\nCompany: [COMPANY NAME / FORMATION STATUS]\nDate: [DATE]\nFounders: [FULL LEGAL NAMES]\n\n1. Purpose and business. The founders intend to build [BUSINESS DESCRIPTION].\n\n2. Roles and time commitment. [FOUNDER A: ROLE / COMMITMENT]. [FOUNDER B: ROLE / COMMITMENT].\n\n3. Proposed ownership. [FOUNDER A: %]. [FOUNDER B: %]. These are proposed allocations only until properly approved, documented and issued under applicable law.\n\n4. Vesting and leaver terms. [VESTING SCHEDULE, CLIFF, GOOD-LEAVER / BAD-LEAVER TERMS].\n\n5. Intellectual property. Each founder will identify relevant pre-existing IP and agree in a separate written instrument how company-related IP is assigned or licensed to the company.\n\n6. Decisions. Ordinary decisions: [PROCESS]. Reserved matters requiring consent: [LIST].\n\n7. Expenses and compensation. [APPROVAL AND REIMBURSEMENT RULES].\n\n8. Confidentiality and conflicts. Founders will protect company confidential information and disclose material conflicts.\n\n9. Departure and dispute resolution. [NOTICE, BUYBACK / TRANSFER, MEDIATION AND DISPUTE PROCESS].\n\n10. Governing law: [JURISDICTION]\n\nAcknowledged for discussion: ____________________ [FOUNDER] Date: ______\nAcknowledged for discussion: ____________________ [FOUNDER] Date: ______\n\nDISCUSSION DRAFT ONLY. It does not issue shares or replace constitutional, employment, IP-assignment or shareholder documents. Obtain independent legal and tax advice."},{"title":"Term Sheet","description":"Capture proposed investment economics and key conditions.","body":"NON-BINDING INVESTMENT TERM SHEET\n\nDate: [DATE]\nCompany: [LEGAL NAME / JURISDICTION]\nInvestor: [LEGAL NAME]\nRound: [PRE-SEED / SEED / SERIES A / OTHER]\n\nInvestment amount: [CURRENCY AND AMOUNT]\nInstrument: [EQUITY / SAFE / CONVERTIBLE NOTE / OTHER]\nPre-money valuation: [AMOUNT OR NOT APPLICABLE]\nPost-money valuation: [AMOUNT OR NOT APPLICABLE]\nProposed ownership / conversion mechanics: [DETAILS]\nUse of proceeds: [DETAILS]\nBoard / observer rights: [DETAILS]\nInformation rights: [DETAILS]\nPro-rata / participation rights: [DETAILS]\nConditions precedent: [DUE DILIGENCE, APPROVALS, DEFINITIVE DOCUMENTS]\nTarget closing date: [DATE]\nExclusivity (if any): [PERIOD / NONE]\n\nNon-binding effect. This term sheet records current discussion points only. No party is obliged to complete the investment until definitive agreements are negotiated, approved and signed.\n\nPotential binding clauses (only if expressly selected and legally reviewed): confidentiality, exclusivity, expenses, governing law and dispute resolution. Mark each clause intended to bind: [SPECIFY].\n\nGoverning law for any expressly binding clauses: [JURISDICTION]\n\nAcknowledged for discussion: ____________________ [COMPANY] Date: ______\nAcknowledged for discussion: ____________________ [INVESTOR] Date: ______\n\nSTARTER TEMPLATE ONLY. Investment terms and securities laws vary; obtain qualified legal advice."}];
 
@@ -15,44 +11,18 @@ export default function InvestorDashboardPage() {
   const params = useParams();
   const pathname = location.pathname;
   const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : "overview";
-  const [profile, setProfile] = useState(null);
-  const [startups, setStartups] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [busyPitch, setBusyPitch] = useState(null);
-  const [startupQuery, setStartupQuery] = useState("");
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [settingsSaving, setSettingsSaving] = useState(false);
+  const workspace = useInvestorWorkspace({ navigate });
+  const {
+    profile, setProfile, startups, requests, setRequests, loading, busyPitch,
+    error, setError, notice, setNotice, settingsSaving, saveSettings,
+    openConversation, savePortfolio, expressInterest,
+  } = workspace;
   const signatureCanvasRef = useRef(null);
   const [editingInvestment, setEditingInvestment] = useState(null);
   const [confirmationStep, setConfirmationStep] = useState(1);
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
   const activeOpportunityId = params.pitchId ? Number(params.pitchId) : null;
   const activeDealId = params.dealId ? Number(params.dealId) : null;
-
-  const load = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const [profileResult, startupResult, requestResult] = await Promise.all([
-        getInvestorProfileApi().catch((err) => {
-          if (err.status === 404) return null;
-          throw err;
-        }),
-        listInvestorStartupsApi(),
-        listInvestorPortfolioApi(),
-      ]);
-      setProfile(profileResult ? { preferred_payment_methods: ["visa"], notify_deal_updates: true, notify_valuation_changes: true, notify_messages: true, ...profileResult } : null);
-      setPortfolioForm((current) => ({ ...current, payment_method: profileResult?.preferred_payment_methods?.[0] || "visa" }));
-      setStartups(startupResult?.items || []);
-      setRequests(requestResult?.items || []);
-    } catch (err) {
-      setError(err.message || "Unable to load your investor workspace.");
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
 
   const handleSignaturePointerDown = (event) => {
     const canvas = signatureCanvasRef.current;
@@ -88,59 +58,6 @@ export default function InvestorDashboardPage() {
     setEditingInvestment((current) => current ? { ...current, signature_data: null } : current);
   };
 
-  const saveSettings = async () => {
-    if (!profile) return;
-    setSettingsSaving(true); setError(""); setNotice("");
-    try {
-      const updated = await updateInvestorProfileApi({
-        preferred_payment_methods: profile.preferred_payment_methods || [],
-        notify_deal_updates: Boolean(profile.notify_deal_updates),
-        notify_valuation_changes: Boolean(profile.notify_valuation_changes),
-        notify_messages: Boolean(profile.notify_messages),
-      });
-      setProfile((current) => ({ ...current, ...updated }));
-      setNotice("Investor preferences saved.");
-    } catch (err) {
-      setError(err.message || "Unable to save investor preferences.");
-    } finally { setSettingsSaving(false); }
-  };
-
-  const openConversation = async (investmentId) => {
-    try {
-      const conversation = await startInvestmentConversationApi(investmentId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.message || "Unable to open this conversation.");
-    }
-  };
-
-  const savePortfolio = async (event) => {
-    event.preventDefault();
-    if (!editingInvestment) return;
-    setError(""); setNotice("");
-    if (!Number.isFinite(Number(portfolioForm.investment_amount)) || Number(portfolioForm.investment_amount) <= 0) { setError("Enter an investment amount greater than zero."); return; }
-    if (!portfolioForm.payment_method) { setError("Choose a demo payment method."); return; }
-    if (!portfolioForm.signature_data && !editingInvestment.signature_data) { setError("Draw your signature before completing the demo confirmation."); return; }
-    try {
-      const updated = await updateInvestorPortfolioApi(editingInvestment.id, {
-        investment_amount: Number(portfolioForm.investment_amount),
-        current_value: portfolioForm.current_value === "" ? null : Number(portfolioForm.current_value),
-        ownership_percent: portfolioForm.ownership_percent === "" ? null : Number(portfolioForm.ownership_percent),
-        investment_date: portfolioForm.investment_date || null,
-        notes: portfolioForm.notes.trim() || null,
-        risk_level: portfolioForm.risk_level,
-        payment_method: portfolioForm.payment_method,
-        signature_data: portfolioForm.signature_data || editingInvestment.signature_data || null,
-      });
-      setRequests((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item));
-      setEditingInvestment(updated);
-      setConfirmationStep(5);
-      setNotice("Demo deal confirmation completed. No funds were charged or transferred.");
-    } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Unable to save this portfolio record.");
-    }
-  };
-
   const beginPortfolioEdit = (request) => {
     setEditingInvestment(request);
     setConfirmationStep(1);
@@ -154,17 +71,6 @@ export default function InvestorDashboardPage() {
       payment_method: request.payment_method || "visa",
       signature_data: request.signature_data || "",
     });
-  };
-
-  const expressInterest = async (pitch) => {
-    setBusyPitch(pitch.id); setError(""); setNotice("");
-    try {
-      const request = await createInvestmentApi({ pitch_id: pitch.id });
-      setRequests((current) => [request, ...current]);
-      setNotice(`Your interest in ${pitch.title} has been sent to the founder.`);
-    } catch (err) {
-      setError(err.message || "Unable to send your request.");
-    } finally { setBusyPitch(null); }
   };
 
   if (loading) return (
