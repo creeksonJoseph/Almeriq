@@ -3,30 +3,30 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
-vi.mock("../../lib/client", () => ({
-  apiClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  },
+vi.mock("../../lib/api/founder", () => ({
+  executeAiToolApi: vi.fn(),
+  listFounderPitchesApi: vi.fn(),
+  listFounderInvestmentRequestsApi: vi.fn(),
+  createFounderPitchApi: vi.fn(),
+  updateFounderPitchApi: vi.fn(),
+  updateFounderInvestmentRequestApi: vi.fn(),
+  deleteFounderPitchApi: vi.fn(),
 }));
 
 vi.mock("../../lib/api/conversations", () => ({
   startInvestmentConversationApi: vi.fn(),
 }));
 
-vi.mock("../../lib/api/founder", () => ({
-  executeAiToolApi: vi.fn(),
-}));
 
-import * as client from "../../lib/client";
+
+import * as founderApi from "../../lib/api/founder";
 import FounderPitchesPage from "./FounderPitchesPage.jsx";
 
-const apiGet = vi.mocked(client.apiClient.get);
-const apiPost = vi.mocked(client.apiClient.post);
-const apiPut = vi.mocked(client.apiClient.put);
-const apiDelete = vi.mocked(client.apiClient.delete);
+const listPitches = vi.mocked(founderApi.listFounderPitchesApi);
+const listRequests = vi.mocked(founderApi.listFounderInvestmentRequestsApi);
+const createPitch = vi.mocked(founderApi.createFounderPitchApi);
+const updatePitch = vi.mocked(founderApi.updateFounderPitchApi);
+const deletePitch = vi.mocked(founderApi.deleteFounderPitchApi);
 
 const PITCH = {
   id: 1,
@@ -46,26 +46,18 @@ const PITCH = {
 };
 
 const pitchList = (payload = []) => {
-  apiGet.mockImplementation((url) => {
-    if (String(url).includes("investment-requests")) {
-      return Promise.resolve({ data: { items: [] } });
-    }
-    return Promise.resolve({ data: payload });
-  });
+  listPitches.mockResolvedValue(payload);
+  listRequests.mockResolvedValue([]);
 };
 
 beforeEach(() => {
   vi.resetAllMocks();
   window.confirm = vi.fn(() => true);
-  apiGet.mockImplementation((url) => {
-    if (String(url).includes("investment-requests")) {
-      return Promise.resolve({ data: { items: [] } });
-    }
-    return Promise.resolve({ data: [] });
-  });
-  apiPost.mockResolvedValue({ data: {} });
-  apiPut.mockResolvedValue({ data: {} });
-  apiDelete.mockResolvedValue({ data: {} });
+  listPitches.mockResolvedValue([]);
+  listRequests.mockResolvedValue([]);
+  createPitch.mockResolvedValue({});
+  updatePitch.mockResolvedValue({});
+  deletePitch.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -98,7 +90,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.click(screen.getByText(/publish pitch/i));
 
     await waitFor(() => {
-      expect(apiPost).toHaveBeenCalledWith(
+      expect(createPitch).toHaveBeenCalledWith(
         "/api/founder/pitches",
         expect.objectContaining({ title: "Acme AI", ask_amount: 50000 }),
       );
@@ -126,7 +118,7 @@ describe("FounderPitchesPage pitch creation", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/enter a pitch title and a valid non-negative funding ask/i);
     });
-    expect(apiPost).not.toHaveBeenCalled();
+    expect(createPitch).not.toHaveBeenCalled();
   });
 
   it("loads an existing pitch into the form for editing", async () => {
@@ -158,7 +150,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.click(screen.getByText(/update pitch/i));
 
     await waitFor(() => {
-      expect(apiPut).toHaveBeenCalledWith(
+      expect(updatePitch).toHaveBeenCalledWith(
         "/api/founder/pitches/1",
         expect.objectContaining({ title: "Updated Pitch" }),
       );
@@ -173,7 +165,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.click(screen.getByText(/delete/i));
 
     await waitFor(() => {
-      expect(apiDelete).toHaveBeenCalledWith("/api/founder/pitches/1");
+      expect(deletePitch).toHaveBeenCalledWith("/api/founder/pitches/1");
     });
     await waitFor(() => {
       expect(screen.getByText(/pitch deleted/i)).toBeInTheDocument();
