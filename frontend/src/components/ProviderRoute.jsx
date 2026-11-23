@@ -7,7 +7,7 @@ export default function ProviderRoute({ children }) {
   const { isLoggedIn, loading, user } = useAuth();
   const location = useLocation();
 
-  if (loading) return <RouteSkeleton variant="dashboard" />;
+  if (loading) return <RouteSkeleton />;
 
   if (!isLoggedIn) {
     return <Navigate to="/login" state={{ from: location }} replace />;
