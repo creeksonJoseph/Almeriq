@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Download, Plus, Filter, ChevronRight, Search } from "lucide-react";
 import { Button, Card, Input, StatusPill, DataTable, Skeleton, SkeletonText, SkeletonCard, Drawer } from "../../components/ui";
-import { listOrdersApi } from "../../lib/api";
+import { listOrdersApi, getOrderApi } from "../../lib/api";
 
 const C = {
   bg: "#0c0e13",
@@ -17,6 +17,8 @@ const C = {
 
 const STATUS_CONFIG = {
   pending: { variant: "gold", label: "Pending" },
+  pending_review: { variant: "gold", label: "Pending" },
+  declined: { variant: "danger", label: "Declined" },
   confirmed: { variant: "gold", label: "Confirmed" },
   shipped: { variant: "gold", label: "Shipped" },
   completed: { variant: "gold", label: "Completed" },
@@ -37,7 +39,7 @@ export default function ProviderOrdersPage() {
     async function loadOrders() {
       setLoading(true);
       try {
-        const res = await listOrdersApi({ status: activeTab !== "all" ? activeTab === "pending" ? "pending_review" : activeTab : undefined });
+        const res = await listOrdersApi();
         setOrders(res?.items || res.data?.items || res.data || res.orders || res);
       } catch (e) {
         setError(e.message);
@@ -48,11 +50,16 @@ export default function ProviderOrdersPage() {
     loadOrders();
   }, [activeTab]);
 
-  const filteredOrders = orders.filter(o =>
-    o.id?.toLowerCase().includes(search.toLowerCase()) ||
-    o.clientName?.toLowerCase().includes(search.toLowerCase()) ||
-    o.assetName?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredOrders = orders.filter((order) => {
+    const statusMatches = activeTab === "all" ||
+      (activeTab === "pending" ? order.status?.toLowerCase() === "pending_review" : order.status?.toLowerCase() === activeTab);
+    const query = search.toLowerCase();
+    const searchMatches = !query ||
+      String(order.order_id || order.id || "").toLowerCase().includes(query) ||
+      order.clientName?.toLowerCase().includes(query) ||
+      order.assetName?.toLowerCase().includes(query);
+    return statusMatches && searchMatches;
+  });
 
   const statusTabs = useMemo(() => [
     { value: "all", label: "All", count: orders.length },
@@ -62,9 +69,15 @@ export default function ProviderOrdersPage() {
     { value: "completed", label: "Completed", count: orders.filter(o => o.status?.toLowerCase() === "completed").length },
   ], [orders]);
 
-  const openDrawer = (order) => {
+  const openDrawer = async (order) => {
     setSelectedOrder(order);
     setDrawerOpen(true);
+    try {
+      const detail = await getOrderApi(order.id);
+      setSelectedOrder(detail.data || detail.order || detail);
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Unable to load order details.");
+    }
   };
 
   if (loading) {
@@ -115,7 +128,10 @@ export default function ProviderOrdersPage() {
           }}>
             Export CSV
           </Button>
-          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" onClick={() => navigate("/provider/orders?status=confirmed")}>
+          <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" disabled={!orders.some(order => order.status?.toLowerCase() === "confirmed")} onClick={() => {
+            const nextOrder = orders.find(order => order.status?.toLowerCase() === "confirmed");
+            if (nextOrder) navigate(`/provider/orders/${nextOrder.id}/dispatch`);
+          }}>
             Manual Dispatch
           </Button>
         </div>
@@ -126,7 +142,7 @@ export default function ProviderOrdersPage() {
         <KPICard label="Total Orders" value={orders.length} icon="Receipt" />
         <KPICard label="Pending Review" value={orders.filter(o => o.status?.toLowerCase() === "pending_review").length} icon="AlertCircle" highlight />
         <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status?.toLowerCase() === "shipped").length} icon="Truck" />
-        <KPICard label="Escrow Volume" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} icon="Lock" />
+        <KPICard label="Total Order Value" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} icon="Lock" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
@@ -283,7 +299,7 @@ function OrderDetailDrawer({ order, navigate }) {
       <div className="flex items-start justify-between pb-4 border-b border-[#282a2f]">
         <div>
           <div className="flex items-center gap-2 font-mono font-bold text-[#ffffff]">
-            <span>{order.id}</span>
+            <span>{order.order_id || order.id}</span>
             <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.variant === "gold" ? "bg-[#f2ca50]" : "bg-[#f2ca50]"}`}></span>
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -292,7 +308,7 @@ function OrderDetailDrawer({ order, navigate }) {
             </div>
             <div>
               <span className="font-medium text-[#ffffff]">{order.clientName || "—"}</span>
-              <div className="text-xs font-mono text-[#ffffff]/60">{order.ventureInfo || "—"}</div>
+              
             </div>
           </div>
         </div>
@@ -314,6 +330,10 @@ function OrderDetailDrawer({ order, navigate }) {
           <span className="text-[#ffffff]/60">Lease Amount:</span>
           <span className="font-mono font-bold text-[#f2ca50]">${(order.amount || order.lease_amount || 0).toLocaleString()}/mo</span>
         </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-[#ffffff]/60">Payment status:</span>
+          <span className="font-mono text-[#f2ca50]">{order.paymentStatus || "not_started"}</span>
+        </div>
       </div>
 
       {/* Timeline / Events */}
@@ -328,8 +348,9 @@ function OrderDetailDrawer({ order, navigate }) {
                   {i < timelineEvents.length - 1 && <div className="absolute left-0.5 top-2 w-0.5 h-full bg-[#282a2f]"></div>}
                 </div>
                 <div className="flex-1">
-                  <div className={`font-medium text-sm ${item.status === "current" ? "text-[#f2ca50]" : item.status === "completed" ? "text-[#ffffff]" : "text-[#ffffff]/60"}`}>{item.event}</div>
-                  <div className={`text-xs font-mono ${item.status === "completed" ? "text-[#ffffff]/60" : "text-[#ffffff]/40"}`}>{item.time}</div>
+                  <div className={`font-medium text-sm ${item.status === "current" ? "text-[#f2ca50]" : item.status === "completed" ? "text-[#ffffff]" : "text-[#ffffff]/60"}`}>{(item.event_type || "update").replaceAll("_", " ")}</div>
+                  <div className={`text-xs font-mono ${item.status === "completed" ? "text-[#ffffff]/60" : "text-[#ffffff]/40"}`}>{item.note || ""}</div>
+                  <time className="text-xs font-mono text-[#ffffff]/40">{item.created_at ? new Date(item.created_at).toLocaleString() : "Time not available"}</time>
                 </div>
               </div>
             ))

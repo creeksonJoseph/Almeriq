@@ -242,7 +242,7 @@ export default function FounderAnalysisPage() {
 
 
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-8 border-b border-white/10">
           {ANALYSIS_TYPES.map((type) => {
             const Icon = type.icon;
             return (
@@ -266,6 +266,10 @@ export default function FounderAnalysisPage() {
               </button>
             );
           })}
+          <Link to="/founder/product" state={{ autoSelectTool: "mvp_building" }} className="group flex flex-col justify-start py-2 text-left transition-all">
+            <div className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg bg-[#f2ca50]/10 text-[#f2ca50]"><FileText size={16} /></div>
+            <div><h4 className="font-semibold text-sm text-white group-hover:text-[#f2ca50] transition-colors">MVP Generator</h4><p className="mt-2 text-xs leading-relaxed text-white/70">Turn the idea into a first-version product specification and build plan</p></div>
+          </Link>
         </div>
 
         <div className="mt-6 flex justify-end">

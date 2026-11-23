@@ -142,6 +142,7 @@ async def update_asset(
     status: str | None = None,
     telemetry_url: str | None = None,
     is_active: bool | None = None,
+    media: list[dict] | None = None,
     session: AsyncSession | None = None,
 ) -> dict | None:
     """Update asset (ownership check via provider_id)."""
@@ -166,6 +167,8 @@ async def update_asset(
         values["telemetry_url"] = telemetry_url
     if is_active is not None:
         values["is_active"] = is_active
+    if media is not None:
+        values["media"] = media
 
     if not values:
         return await get_asset_by_id(asset_id, provider_id, session)

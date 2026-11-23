@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ExternalLink,
   RotateCcw,
@@ -15,6 +16,7 @@ import {
 import FounderStudioNav from "../../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
 import { getCompanyRegistrationGuideApi } from "../../lib/api";
+import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { COUNTRIES } from "../../lib/countries";
@@ -96,6 +98,61 @@ All code, domain names, and prototypes created before today belong to the compan
 
 4. MAKING BIG DECISIONS:
 Major decisions like selling the company or taking large loans require all founders to agree.`,
+  },
+  {
+    id: "data_protection",
+    title: "Data Protection Policy Starter",
+    tag: "Handle Customer Data",
+    desc: "A starting point for documenting what personal data your business collects and how it is protected.",
+    content: `DATA PROTECTION POLICY STARTER
+
+1. PURPOSE:
+Explain why your business collects personal information and which services need it.
+
+2. DATA COLLECTED:
+List each type of personal information collected, where it comes from, and whether it is required.
+
+3. HOW DATA IS USED:
+Describe the exact business purposes for using each type of information. Do not use data for unrelated purposes without a valid basis.
+
+4. ACCESS AND SECURITY:
+Limit access to people who need it for their work. Use suitable security controls, backups, and access reviews.
+
+5. RETENTION AND DELETION:
+Set a retention period for each data type. Explain how people can request access, correction, or deletion where the law gives them that right.
+
+6. THIRD PARTIES:
+List processors and service providers that receive personal data, and document the safeguards and agreements that apply.
+
+7. CONTACT:
+Provide a real privacy contact and a process for handling privacy requests or incidents.
+
+Complete this with the rules that apply in your country before using it with customers.`,
+  },
+  {
+    id: "industry_license",
+    title: "Industry Licensing Checklist",
+    tag: "Check Sector Rules",
+    desc: "A checklist for identifying permits and approvals your business may need before operating.",
+    content: `INDUSTRY LICENSING CHECKLIST
+
+1. DESCRIBE THE ACTIVITY:
+Write down exactly what your company will sell, provide, store, transport, or process.
+
+2. CHECK THE REGULATOR:
+Identify the government office that regulates this activity in every country or region where you will operate.
+
+3. LIST REQUIRED APPROVALS:
+Record each licence, permit, registration, professional approval, or inspection that may apply.
+
+4. CHECK THE CONDITIONS:
+For every approval, note who can apply, required documents, fees, renewal dates, and operating limits.
+
+5. CONFIRM BEFORE LAUNCH:
+Contact the regulator or a qualified local adviser to confirm the current rules. Do not treat this checklist as proof that you are licensed.
+
+6. KEEP RECORDS:
+Store applications, approval letters, renewal dates, and inspection records in one secure place.`,
   },
 ];
 
@@ -210,9 +267,15 @@ function normalizePostRegistration(item, idx) {
 export default function FounderLegalPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
-
-  // Mode: "dossier" (Company Formation) | "templates" (Contracts)
-  const [activeMode, setActiveMode] = useState("dossier");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeMode = location.pathname.endsWith("/templates") ? "templates" : location.pathname.endsWith("/filings") ? "filings" : "dossier";
+  const setActiveMode = (mode) => navigate(mode === "templates" ? "/founder/legal/templates" : mode === "filings" ? "/founder/legal/filings" : "/founder/legal/guide");
+  const [filings, setFilings] = useState([]);
+  const [filingLoading, setFilingLoading] = useState(false);
+  const [filingSaving, setFilingSaving] = useState(false);
+  const [filingError, setFilingError] = useState("");
+  const [filingForm, setFilingForm] = useState({ filing_type: "company", company_name: "", entity_type: "Ltd", jurisdiction: "", ip_title: "", ip_type: "Source Code", ip_description: "" });
 
   // Company registration guide stepper: 1 = Why & Steps, 2 = Documents & Next Steps
   const [guideStep, setGuideStep] = useState(1);
@@ -238,6 +301,36 @@ export default function FounderLegalPage() {
   const [selectedTemplate, setSelectedTemplate] = useState(LEGAL_TEMPLATES[0]);
   const [copiedTemplate, setCopiedTemplate] = useState(false);
 
+  const loadFilings = useCallback(async () => {
+    setFilingLoading(true);
+    setFilingError("");
+    try { setFilings(await listLegalFilingsApi()); }
+    catch (err) { setFilingError(err.message || "Unable to load your registration requests."); }
+    finally { setFilingLoading(false); }
+  }, []);
+
+  useEffect(() => { loadFilings(); }, [loadFilings]);
+
+  const submitFiling = async (event) => {
+    event.preventDefault();
+    setFilingSaving(true);
+    setFilingError("");
+    try {
+      await createLegalFilingApi({
+        ...filingForm,
+        company_name: filingForm.filing_type === "company" ? filingForm.company_name.trim() : null,
+        entity_type: filingForm.filing_type === "company" ? filingForm.entity_type : null,
+        jurisdiction: filingForm.filing_type === "company" ? (filingForm.jurisdiction.trim() || selectedCountry) : null,
+        ip_title: filingForm.filing_type === "ip" ? filingForm.ip_title.trim() : null,
+        ip_type: filingForm.filing_type === "ip" ? filingForm.ip_type : null,
+        ip_description: filingForm.filing_type === "ip" ? filingForm.ip_description.trim() : null,
+      });
+      await loadFilings();
+      setFilingForm((current) => ({ ...current, company_name: "", ip_title: "", ip_description: "" }));
+      showToast("Registration intake submitted. This does not file with a government office.", "success");
+    } catch (err) { setFilingError(err.message || "Unable to submit this registration intake."); }
+    finally { setFilingSaving(false); }
+  };
   // Fetch company registration guide
   const loadGuide = useCallback(async (countryName, forceRefresh = false) => {
     setGuideLoading(true);
@@ -328,6 +421,10 @@ export default function FounderLegalPage() {
             >
               <FileText size={13} className={activeMode === "templates" ? "text-black" : "text-[#f2ca50]"} />
               <span>Starter Legal Templates</span>
+            </button>
+            <button type="button" onClick={() => setActiveMode("filings")} className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded transition-all cursor-pointer ${activeMode === "filings" ? "bg-[#f2ca50] text-black font-semibold shadow-sm" : "text-white hover:text-[#f2ca50]"}`}>
+              <FileText size={13} className={activeMode === "filings" ? "text-black" : "text-[#f2ca50]"} />
+              <span>My Registration Requests</span>
             </button>
           </div>
         </div>
@@ -845,6 +942,31 @@ export default function FounderLegalPage() {
         </div>
       )}
 
+        {activeMode === "filings" && (
+          <div className="grid gap-8 lg:grid-cols-2">
+            <section className="space-y-4">
+              <div><h2 className="font-serif text-2xl text-white">Start a registration request</h2><p className="mt-2 text-sm text-white/60">Submit your company or intellectual-property details for an Almeriq intake record. This is not a government filing or legal registration.</p></div>
+              <form onSubmit={submitFiling} className="space-y-4 rounded border border-white/10 bg-white/[0.02] p-5">
+                <label className="block space-y-2 text-sm"><span className="text-white/75">Request type</span><select value={filingForm.filing_type} onChange={(event) => setFilingForm((form) => ({ ...form, filing_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option value="company">Company registration guidance</option><option value="ip">Copyright / trademark guidance</option></select></label>
+                {filingForm.filing_type === "company" ? <>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Proposed company name</span><input required maxLength={200} value={filingForm.company_name} onChange={(event) => setFilingForm((form) => ({ ...form, company_name: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Entity type</span><select value={filingForm.entity_type} onChange={(event) => setFilingForm((form) => ({ ...form, entity_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option>Ltd</option><option>LLC</option><option>Corporation</option><option>Sole Proprietor</option></select></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Country / jurisdiction</span><input required maxLength={120} value={filingForm.jurisdiction} onChange={(event) => setFilingForm((form) => ({ ...form, jurisdiction: event.target.value }))} placeholder={selectedCountry} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                </> : <>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Title of work / brand</span><input required maxLength={200} value={filingForm.ip_title} onChange={(event) => setFilingForm((form) => ({ ...form, ip_title: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">What are you protecting?</span><select value={filingForm.ip_type} onChange={(event) => setFilingForm((form) => ({ ...form, ip_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option>Source Code</option><option>Logo</option><option>Company Name</option><option>Product Design</option><option>Written Content</option></select></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Description</span><textarea required maxLength={3000} rows={4} value={filingForm.ip_description} onChange={(event) => setFilingForm((form) => ({ ...form, ip_description: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                </>}
+                {filingError && <p role="alert" className="text-sm text-red-300">{filingError}</p>}
+                <button disabled={filingSaving} className="rounded bg-[#f2ca50] px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50">{filingSaving ? "Submitting…" : "Submit intake request"}</button>
+              </form>
+            </section>
+            <section className="space-y-4">
+              <div><h2 className="font-serif text-2xl text-white">Your requests</h2><p className="mt-2 text-sm text-white/60">Reference numbers and submission history for your records.</p></div>
+              {filingLoading ? <p className="text-sm text-white/50">Loading requests…</p> : filings.length === 0 ? <div className="rounded border border-white/10 p-5 text-sm text-white/50">No registration requests yet.</div> : filings.map((filing) => <article key={filing.id} className="rounded border border-white/10 bg-white/[0.02] p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-white">{filing.filing_type === "company" ? filing.company_name : filing.ip_title}</strong><span className="text-xs text-[#f2ca50]">{filing.status}</span></div><p className="mt-1 text-xs text-white/50">{filing.ref_number} · {filing.filing_type === "company" ? filing.entity_type + " · " + filing.jurisdiction : filing.ip_type}</p><p className="mt-2 text-xs text-white/40">{filing.filed_at ? new Date(filing.filed_at).toLocaleString() : ""}</p><p className="mt-2 text-xs text-amber-200/70">Almeriq intake record only — no government application has been submitted.</p></article>)}
+            </section>
+          </div>
+        )}
         {/* ── MODE 2: STARTER LEGAL TEMPLATES ── */}
         {activeMode === "templates" && (
           <div className="space-y-8">
@@ -858,6 +980,7 @@ export default function FounderLegalPage() {
               <p className="mt-2 text-sm font-normal text-white leading-relaxed max-w-3xl">
                 Simple, standard agreements to protect your code, keep your ideas confidential, divide equity fairly among co-founders, and take early investment.
               </p>
+              <p className="mt-3 max-w-3xl rounded border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-5 text-amber-100/80">These are general starting points, not legal advice or ready-to-sign documents. Have a qualified lawyer adapt them to your company, country, and actual deal before use.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">

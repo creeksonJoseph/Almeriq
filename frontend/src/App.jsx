@@ -7,6 +7,7 @@ import { SidebarProvider } from "./context/SidebarContext";
 import { IdeaProvider } from "./context/IdeaContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProviderRoute from "./components/ProviderRoute";
+import RoleRoute from "./components/RoleRoute";
 import FounderRoute from "./components/FounderRoute";
 import Layout from "./components/Layout";
 
@@ -50,6 +51,13 @@ const VenturesPage = lazyWithRetry(() => import("./Pages/founder/VenturesPage"))
 const FounderValidationPage = lazyWithRetry(() => import("./Pages/founder/FounderValidationPage"));
 const FounderProductPage = lazyWithRetry(() => import("./Pages/founder/FounderProductPage"));
 const FounderLegalPage = lazyWithRetry(() => import("./Pages/founder/FounderLegalPage"));
+const FounderPitchesPage = lazyWithRetry(() => import("./Pages/founder/FounderPitchesPage"));
+const FounderOrdersPage = lazyWithRetry(() => import("./Pages/founder/FounderOrdersPage"));
+const ExpertDiscoveryPage = lazyWithRetry(() => import("./Pages/founder/ExpertDiscoveryPage"));
+const ExpertProfilePage = lazyWithRetry(() => import("./Pages/expert/ExpertProfilePage"));
+const TeamWorkforcePage = lazyWithRetry(() => import("./Pages/founder/TeamWorkforcePage"));
+const TalentProfilePage = lazyWithRetry(() => import("./Pages/founder/TalentProfilePage"));
+const TeamInvitationsPage = lazyWithRetry(() => import("./Pages/jobseeker/TeamInvitationsPage"));
 
 // Admin routes
 const AdminWaitlistPage = lazyWithRetry(() => import("./Pages/admin/AdminWaitlistPage"));
@@ -68,8 +76,14 @@ const ProviderListingPreviewPage = lazyWithRetry(() => import("./Pages/provider/
 const ProviderOrdersPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrdersPage"));
 const ProviderOrderDetailPage = lazyWithRetry(() => import("./Pages/provider/ProviderOrderDetailPage"));
 const ProviderDispatchPage = lazyWithRetry(() => import("./Pages/provider/ProviderDispatchPage"));
-// JobSeekerSetupPage not implemented; route removed
+const EmployerJobsPage = lazyWithRetry(() => import("./Pages/shared/EmployerJobsPage"));
+const EmployerJobApplicationsPage = lazyWithRetry(() => import("./Pages/shared/EmployerJobApplicationsPage"));
+const JobSeekerJobsPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerJobsPage"));
+const JobSeekerApplicationDetailPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerApplicationDetailPage"));
 const JobSeekerDashboardPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerDashboardPage"));
+const JobSeekerSetupPage = lazyWithRetry(() => import("./Pages/jobseeker/JobSeekerSetupPage"));
+const InvestorDashboardPage = lazyWithRetry(() => import("./Pages/investor/InvestorDashboardPage"));
+const InvestorProfilePage = lazyWithRetry(() => import("./Pages/investor/InvestorProfilePage"));
 
 // Marketplace & Search
 const MarketplacePage = lazyWithRetry(() => import("./Pages/marketplace/MarketplacePage"));
@@ -177,13 +191,86 @@ function App() {
                   }
                 />
                 <Route
-                  path="/founder/legal"
+                  path="/founder/talent/:userId"
+                  element={<FounderRoute><TalentProfilePage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/team"
+                  element={<Navigate to="/founder/team/talent" replace />}
+                />
+                <Route
+                  path="/founder/team/talent"
+                  element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/team/members"
+                  element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/team/invitations"
+                  element={<FounderRoute><TeamWorkforcePage /></FounderRoute>}
+                />
+                <Route
+                  path="/job-seeker/invitations"
+                  element={<ProtectedRoute><RoleRoute allowedRoles={["job_seeker"]}><TeamInvitationsPage /></RoleRoute></ProtectedRoute>}
+                />
+                <Route
+                  path="/founder/experts"
+                  element={
+                    <FounderRoute>
+                      <ExpertDiscoveryPage />
+                    </FounderRoute>
+                  }
+                />
+                <Route
+                  path="/expert/profile"
                   element={
                     <ProtectedRoute>
-                      <FounderLegalPage />
+                      <RoleRoute allowedRoles={["expert"]}>
+                        <ExpertProfilePage />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/founder/orders"
+                  element={
+                    <FounderRoute>
+                      <FounderOrdersPage />
+                    </FounderRoute>
+                  }
+                />
+                <Route
+                  path="/founder/pitches"
+                  element={<Navigate to="/founder/fundraising/pitches" replace />}
+                />
+                <Route
+                  path="/founder/fundraising/pitches"
+                  element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/fundraising/investors"
+                  element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/fundraising/updates"
+                  element={<FounderRoute><FounderPitchesPage /></FounderRoute>}
+                />
+                <Route
+                  path="/founder/legal"
+                  element={<Navigate to="/founder/legal/guide" replace />}
+                />
+                {["/founder/legal/guide", "/founder/legal/templates", "/founder/legal/filings"].map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={
+                      <ProtectedRoute>
+                        <FounderLegalPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                ))}
                 <Route
                   path="/founder/outreach"
                   element={
@@ -283,14 +370,141 @@ function App() {
                   }
                 />
 
+                <Route
+                  path="/jobs/manage/new"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["founder", "INFRASTRUCTURE_PROVIDER"]}>
+                        <EmployerJobsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/jobs/manage"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["founder", "INFRASTRUCTURE_PROVIDER"]}>
+                        <EmployerJobsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/jobs/manage/:jobId/applications"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["founder", "INFRASTRUCTURE_PROVIDER"]}>
+                        <EmployerJobApplicationsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/investor/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorDashboardPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/settings"].map((path) => (
                   <Route
-                   path="/job-seeker/dashboard"
-                   element={
-                     <ProtectedRoute>
-                       <JobSeekerDashboardPage />
-                     </ProtectedRoute>
-                   }
+                    key={path}
+                    path={path}
+                    element={
+                      <ProtectedRoute>
+                        <RoleRoute allowedRoles={["investor"]}>
+                          <InvestorDashboardPage />
+                        </RoleRoute>
+                      </ProtectedRoute>
+                    }
                   />
+                ))}
+                <Route
+                  path="/investor/startups/:pitchId"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorDashboardPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/investor/deals/:dealId"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorDashboardPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/investor/profile"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["investor"]}>
+                        <InvestorProfilePage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/job-seeker/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerDashboardPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/job-seeker/jobs"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerJobsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/job-seeker/applications"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerJobsPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/job-seeker/applications/:applicationId"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerApplicationDetailPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/job-seeker/setup"
+                  element={
+                    <ProtectedRoute>
+                      <RoleRoute allowedRoles={["job_seeker"]}>
+                        <JobSeekerSetupPage />
+                      </RoleRoute>
+                    </ProtectedRoute>
+                  }
+                />
 
                 <Route
                   path="/marketplace"

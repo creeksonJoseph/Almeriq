@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Check, ChevronRight, Filter, Loader2 } from "lucide-react";
+import { Bell, Check, ChevronRight, Loader2 } from "lucide-react";
 import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
 
@@ -9,6 +9,10 @@ const TYPE_ICONS = {
   payment: "💰",
   system: "⚙️",
   alert: "⚠️",
+  job: "💼",
+  investment: "📈",
+  advisory: "🧭",
+  team: "👥",
 };
 
 export default function AlertsPage() {
@@ -25,7 +29,12 @@ export default function AlertsPage() {
       setLoading(true);
       try {
         const res = await listNotificationsApi();
-        setNotifications(res.data || res.notifications || res);
+        setNotifications((res.items || res.notifications || []).map(n => ({
+          ...n,
+          message: n.body,
+          time: n.created_at ? new Date(n.created_at).toLocaleString() : "",
+          actionUrl: n.link,
+        })));
       } catch (e) {
         setError(e.message);
       } finally {
@@ -35,16 +44,20 @@ export default function AlertsPage() {
     loadNotifications();
   }, []);
 
+  const filterTypes = { orders: "order", messages: "message", payments: "payment", system: "system", jobs: "job", investments: "investment", advisory: "advisory", teams: "team" };
   const filteredNotifications = filter === "unread"
-    ? notifications.filter(n => !n.read)
-    : notifications;
+    ? notifications.filter((n) => !n.read)
+    : filter === "all"
+      ? notifications
+      : notifications.filter((n) => n.type === filterTypes[filter]);
 
   const handleMarkRead = async (id) => {
     try {
       await markNotificationReadApi(id);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setSelectedNotification((current) => current?.id === id ? { ...current, read: true } : current);
     } catch (e) {
-      console.error("Failed to mark read", e);
+      setError(e.response?.data?.detail || e.message || "Failed to mark notification as read.");
     }
   };
 
@@ -53,8 +66,9 @@ export default function AlertsPage() {
     try {
       await markAllNotificationsReadApi();
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setSelectedNotification((current) => current ? { ...current, read: true } : current);
     } catch (e) {
-      console.error("Failed to mark all read", e);
+      setError(e.response?.data?.detail || e.message || "Failed to mark notifications as read.");
     } finally {
       setMarkAllLoading(false);
     }
@@ -91,9 +105,6 @@ export default function AlertsPage() {
           <p className="text-white/70 mt-1">Notifications, order updates, and system messages</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost">
-            <Filter className="w-4 h-4 mr-1" /> Filter
-          </Button>
           {unreadCount > 0 && (
             <Button onClick={handleMarkAllRead} disabled={markAllLoading}>
               <Check className="w-4 h-4 mr-1" />
@@ -105,7 +116,7 @@ export default function AlertsPage() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6">
-        {["all", "unread", "orders", "messages", "payments", "system"].map(f => (
+        {["all", "unread", "orders", "messages", "payments", "jobs", "investments", "advisory", "teams", "system"].map(f => (
           <Button
             key={f}
             variant={filter === f ? "primary" : "ghost"}
@@ -116,7 +127,7 @@ export default function AlertsPage() {
             {f.charAt(0).toUpperCase() + f.slice(1)}
             {f !== "all" && (
               <span className="px-1.5 py-0.2 rounded bg-surface text-[10px] font-mono">
-                {notifications.filter(n => f === "unread" ? !n.read : n.type === f).length}
+                {notifications.filter(n => f === "unread" ? !n.read : n.type === ({ orders: "order", messages: "message", payments: "payment", jobs: "job", investments: "investment", advisory: "advisory", teams: "team", system: "system" }[f])).length}
               </span>
             )}
           </Button>
@@ -124,6 +135,7 @@ export default function AlertsPage() {
       </div>
 
       {/* Notification List */}
+      {error && <div role="alert" className="rounded-lg border border-gold/40 bg-surface p-3 text-sm text-gold">{error}</div>}
       <div className="space-y-3">
         {filteredNotifications.length === 0 ? (
           <Card className="p-8 text-center">

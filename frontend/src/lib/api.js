@@ -65,6 +65,8 @@ export {
   createAssetApi,
   updateAssetApi,
   deleteAssetApi,
+  uploadAssetMediaApi,
+  deleteAssetMediaApi,
   listCoverageRegionsApi,
   updateCoverageRegionsApi,
 } from "./api/provider";
@@ -74,6 +76,8 @@ export {
   getMarketplaceProviderApi,
   listMarketplaceListingsApi,
   getMarketplaceListingApi,
+  createMarketplaceCheckoutApi,
+  createMarketplaceOrderApi,
   searchMarketplaceApi,
 } from "./api/marketplace";
 
@@ -83,9 +87,12 @@ export {
   confirmOrderApi,
   declineOrderApi,
   shipOrderApi,
+  dispatchOrderApi,
   updateOrderStatusApi,
   uploadWaybillApi,
   getWaybillApi,
+  listClientOrdersApi,
+  getClientOrderApi,
 } from "./api/orders";
 
 export {
@@ -96,9 +103,13 @@ export {
 
 export {
   listConversationsApi,
+  startProviderConversationApi,
   getConversationApi,
+  listMessagesApi,
   sendMessageApi,
   markMessagesReadApi,
+  startAdvisoryConversationApi,
+  startInvestmentConversationApi,
 } from "./api/conversations";
 
 export {
@@ -108,14 +119,39 @@ export {
 } from "./api/notifications";
 
 export {
+  getJobSeekerProfileApi,
+  saveJobSeekerProfileApi,
+  listJobsApi,
+  getJobApi,
+  listMyJobsApi,
+  createJobApi,
+  updateJobApi,
+  deleteJobApi,
+  applyToJobApi,
+  listMyJobApplicationsApi,
+  getMyJobApplicationApi,
+  withdrawJobApplicationApi,
+  listJobApplicationsApi,
+  reviewJobApplicationApi,
+} from "./api/job";
+
+export {
   getInvestorProfileApi,
   updateInvestorProfileApi,
   listInvestorStartupsApi,
   getInvestorStartupApi,
   createInvestmentApi,
-  getInvestmentApi,
-  signInvestmentApi,
-  completeInvestmentApi,
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
+  updateInvestorPortfolioApi,
 } from "./api/investor";
+export {
+  discoverTalentApi,
+  getTalentProfileApi,
+  inviteTalentApi,
+  listFounderTeamInvitationsApi,
+  listTeamMembersApi,
+  removeTeamMemberApi,
+  listMyTeamInvitationsApi,
+  respondToTeamInvitationApi,
+} from "./api/team";

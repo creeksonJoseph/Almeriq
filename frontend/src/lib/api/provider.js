@@ -30,6 +30,18 @@ export async function updateAssetApi(id, payload) {
   return res.data;
 }
 
+export async function uploadAssetMediaApi(id, files) {
+  const formData = new FormData();
+  files.forEach(file => formData.append("files", file));
+  const res = await apiClient.post(`/api/provider/assets/${id}/media`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+  return res.data;
+}
+
+export async function deleteAssetMediaApi(id, publicId) {
+  const res = await apiClient.delete(`/api/provider/assets/${id}/media`, { params: { public_id: publicId } });
+  return res.data;
+}
+
 export async function deleteAssetApi(id) {
   const res = await apiClient.delete(`/api/provider/assets/${id}`);
   return res.data;

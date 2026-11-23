@@ -5,7 +5,7 @@ import { Plus, Filter, Search, ChevronDown } from "lucide-react";
 import { Button, Card, Input, Pill, StatusPill, DataTable, Skeleton, SkeletonCard } from "../../components/ui";
 import { AssetCard } from "../../components/AssetCard";
 import { AssetGrid } from "../../components/AssetGrid";
-import { listAssetsApi, deleteAssetApi } from "../../lib/api";
+import { listAssetsApi, deleteAssetApi, createAssetApi } from "../../lib/api";
 
 const C = {
   bg: "#0c0e13",
@@ -62,7 +62,7 @@ const ProviderListingsPage = () => {
     const matchesStatus = filter.status === "all" || a.status?.toLowerCase() === filter.status;
     const matchesSearch = a.name?.toLowerCase().includes(watchSearch.toLowerCase()) ||
       a.category?.toLowerCase().includes(watchSearch.toLowerCase()) ||
-      a.serial?.toLowerCase().includes(watchSearch.toLowerCase());
+      a.client_asset_id?.toLowerCase().includes(watchSearch.toLowerCase()) || JSON.stringify(a.specs || {}).toLowerCase().includes(watchSearch.toLowerCase());
     return matchesCategory && matchesStatus && matchesSearch;
   });
 
@@ -72,6 +72,24 @@ const ProviderListingsPage = () => {
       setAssets(prev => prev.filter(a => a.id !== assetId));
     } catch (e) {
       setError(e.message);
+    }
+  };
+
+  const handleDuplicate = async (asset) => {
+    try {
+      const created = await createAssetApi({
+        name: asset.name + " (copy)",
+        category: asset.category,
+        kind: asset.kind,
+        description: asset.description,
+        specs: asset.specs,
+        price_monthly: asset.price_monthly,
+        quantity_capacity: asset.quantity_capacity,
+        telemetry_url: asset.telemetry_url,
+      });
+      setAssets(current => [created, ...current]);
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Unable to duplicate asset.");
     }
   };
 
@@ -187,7 +205,8 @@ const ProviderListingsPage = () => {
         <AssetGrid
           assets={filteredAssets}
           onDelete={confirmDelete}
-          onClearFilters={() => setFilter({ category: "all", status: "all", search: "" })}
+          onDuplicate={handleDuplicate}
+          onClearFilters={() => { setFilter({ category: "all", status: "all", search: "" }); searchForm.reset({ search: "" }); }}
         />
       </div>
 

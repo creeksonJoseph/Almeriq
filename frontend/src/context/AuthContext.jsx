@@ -4,7 +4,7 @@
  * JWT lives exclusively in HttpOnly cookies set by the backend.
  * JS never touches the token, eliminating XSS token theft.
  */
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import {
   getMeApi,
   loginApi,
@@ -32,6 +32,8 @@ const CANONICAL_ROLES = {
   INVESTOR: "INVESTOR",
   expert: "EXPERT",
   EXPERT: "EXPERT",
+  job_seeker: "JOB_SEEKER",
+  JOB_SEEKER: "JOB_SEEKER",
 };
 
 function normalizeUser(user) {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   RefreshCw,
   Copy,
@@ -19,12 +20,17 @@ const PRODUCT_TOOLS = [
   { id: "design", label: "4. Design", desc: "User journeys, features, and UI/UX guidelines" },
   { id: "test_improve", label: "5. Test and Improve", desc: "Plan for real user testing and feedback" },
   { id: "results_changes", label: "6. Results & Changes", desc: "Track results, failures, and required changes" },
+  { id: "idea_breakdown", label: "7. Idea Breakdown", desc: "Break the idea into users, workflows and screens" },
+  { id: "feature_prioritization", label: "8. Feature Prioritization", desc: "Decide what belongs in the first release" },
+  { id: "tech_stack", label: "9. Tech Stack", desc: "Choose a maintainable stack for the product" },
+  { id: "build_roadmap", label: "10. Build Roadmap", desc: "Plan the build in clear phases" },
 ];
 
 export default function FounderProductPage() {
+  const location = useLocation();
   const { showToast } = useToast();
   const { activeVenture } = useActiveIdea();
-  const [activeTab, setActiveTab] = useState("product_brief");
+  const [activeTab, setActiveTab] = useState(() => PRODUCT_TOOLS.some((tool) => tool.id === location.state?.autoSelectTool) ? location.state.autoSelectTool : "product_brief");
   const [brief, setBrief] = useState({
     idea: "",
     customer: "",
@@ -381,6 +387,12 @@ export default function FounderProductPage() {
                       ))}
                     </ul>
                   </div>
+                </div>
+              )}
+              {["idea_breakdown", "feature_prioritization", "tech_stack", "build_roadmap"].includes(activeTab) && currentData && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.02] p-5">
+                  <h3 className="mb-3 text-sm font-semibold text-[#f2ca50]">{PRODUCT_TOOLS.find((tool) => tool.id === activeTab)?.label}</h3>
+                  <pre className="whitespace-pre-wrap break-words text-sm leading-7 text-white/80">{JSON.stringify(currentData, null, 2)}</pre>
                 </div>
               )}
             </div>

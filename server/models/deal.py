@@ -15,6 +15,7 @@ class Deal(Base):
         Integer, ForeignKey("orders.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
     )
     payment_method: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    payment_status: Mapped[str] = mapped_column(Text, nullable=False, default="simulated", server_default="simulated")
     amount: Mapped[Optional[float]] = mapped_column(Numeric(12, 2), nullable=True)
     signature: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     signed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -35,6 +36,7 @@ class Deal(Base):
             "id": self.id,
             "order_id": self.order_id,
             "payment_method": self.payment_method,
+            "payment_status": self.payment_status,
             "amount": float(self.amount) if self.amount is not None else None,
             "signature": self.signature,
             "signed_at": self.signed_at,

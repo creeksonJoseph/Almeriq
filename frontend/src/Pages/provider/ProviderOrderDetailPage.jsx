@@ -1,25 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ChevronLeft, Download, Truck, CheckCircle, XCircle, AlertCircle, FileText, MapPin, DollarSign, Clock, Shield } from "lucide-react";
-import { Button, Card, StatusPill, Drawer, Skeleton, SkeletonText } from "../../components/ui";
+import { useParams, useNavigate } from "react-router-dom";
+import { Truck, CheckCircle, XCircle, Shield } from "lucide-react";
+import { Button, Card, Drawer, SkeletonText, SkeletonCard } from "../../components/ui";
 import { getOrderApi, getWaybillApi, updateOrderStatusApi } from "../../lib/api";
-
-const STATUS_STEPS = [
-  { key: "created", label: "Order Created", icon: FileText },
-  { key: "escrow", label: "Escrow Funded", icon: Shield },
-  { key: "review", label: "Provider Review", icon: AlertCircle },
-  { key: "confirmed", label: "Confirmed & Contracted", icon: CheckCircle },
-  { key: "dispatched", label: "Dispatched", icon: Truck },
-  { key: "delivered", label: "Delivered & Verified", icon: CheckCircle },
-];
 
 export default function ProviderOrderDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [waybill, setWaybill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [waybillOpen, setWaybillOpen] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     async function loadOrder() {
@@ -28,7 +21,7 @@ export default function ProviderOrderDetailPage() {
         const res = await getOrderApi(id);
         setOrder(res.data || res.order || res);
       } catch (e) {
-        console.error("Failed to load order", e);
+        setActionError(e.response?.data?.detail || e.message || "Failed to load order.");
       } finally {
         setLoading(false);
       }
@@ -38,6 +31,7 @@ export default function ProviderOrderDetailPage() {
 
   const handleAction = async (action) => {
     setActionLoading(action);
+    setActionError("");
     try {
       if (action === "confirm") await updateOrderStatusApi(id, "confirmed");
       else if (action === "decline") await updateOrderStatusApi(id, "declined");
@@ -45,19 +39,20 @@ export default function ProviderOrderDetailPage() {
       const res = await getOrderApi(id);
       setOrder(res.data || res.order || res);
     } catch (e) {
-      console.error("Action failed", e);
+      setActionError(e.response?.data?.detail || e.message || "Order action failed.");
     } finally {
       setActionLoading(null);
     }
   };
 
   const loadWaybill = async () => {
+    setActionError("");
     try {
       const res = await getWaybillApi(id);
       setWaybill(res.data || res.waybill || res);
       setWaybillOpen(true);
     } catch (e) {
-      console.error("Failed to load waybill", e);
+      setActionError(e.response?.data?.detail || e.message || "Failed to load waybill.");
     }
   };
 
@@ -75,7 +70,7 @@ export default function ProviderOrderDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[50vh] text-center">
         <p className="text-gold">Order not found</p>
-<Button variant="ghost" className="mt-4" onClick={() => window.history.back()}>
+<Button variant="ghost" className="mt-4" onClick={() => navigate("/provider/orders")}>
   Back to Orders
 </Button>
       </div>
@@ -90,7 +85,7 @@ export default function ProviderOrderDetailPage() {
     declined: { variant: "gold", label: "Declined", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
   }[order.status?.toLowerCase()] || { variant: "gold", label: "Pending Review", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" };
 
-  const currentStepIndex = STATUS_STEPS.findIndex(s => s.key === (order.currentStep || "review"));
+  const timeline = [...(order.events || [])].reverse();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -105,7 +100,7 @@ export default function ProviderOrderDetailPage() {
               <span className={`w-2 h-2 rounded-full ${statusConfig.color.replace("text-", "bg-")}`}></span>
               {statusConfig.label}
             </span>
-            <span className="text-white/60 text-sm">Escrow: {order.escrowStatus || "Funded"}</span>
+            <span className="text-white/60 text-sm">Payment: {order.paymentStatus || "not_started"}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -118,36 +113,24 @@ export default function ProviderOrderDetailPage() {
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Actual order event history */}
       <Card className="p-5">
         <h3 className="text-label-caps text-white/60 uppercase tracking-wider mb-4">ORDER TIMELINE</h3>
-        <div className="space-y-4">
-          {STATUS_STEPS.map((step, i) => {
-            const isCompleted = i < currentStepIndex;
-            const isCurrent = i === currentStepIndex;
-            const isFuture = i > currentStepIndex;
-            const stepData = order.timeline?.[step.key];
-            return (
-              <div key={step.key} className="flex items-start gap-3 relative">
-                <div className="relative flex-shrink-0 w-6">
-                  <div className={`w-2 h-2 rounded-full relative z-10 ${isCompleted ? "bg-gold" : isCurrent ? "bg-gold animate-pulse" : "bg-border"}`}></div>
-                  {i < STATUS_STEPS.length - 1 && <div className="absolute left-0.5 top-2 w-0.5 h-full bg-border"></div>}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <step.icon className={`w-4 h-4 shrink-0 ${isCompleted ? "text-gold" : isCurrent ? "text-gold" : "text-white/60"}`} />
-                    <span className={`font-medium text-sm ${isCompleted ? "text-text" : isCurrent ? "text-gold" : "text-white/60"}`}>{step.label}</span>
-                  </div>
-                  <div className={`text-label-caps text-[10px] ml-6 ${isCompleted ? "text-white/60" : isCurrent ? "text-gold/70" : "text-white/40"}`}>
-                    {stepData ? stepData.time : isFuture ? "—" : "Processing..."}
-                  </div>
+        {timeline.length === 0 ? <p className="text-sm text-white/50">No order events have been recorded yet.</p> : (
+          <div className="space-y-4">
+            {timeline.map((event) => (
+              <div key={event.id} className="flex items-start gap-3">
+                <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-gold" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-text">{(event.event_type || "update").replaceAll("_", " ")}</div>
+                  {event.note && <p className="mt-1 text-sm text-white/60">{event.note}</p>}
+                  <time className="mt-1 block text-xs text-white/40">{event.created_at ? new Date(event.created_at).toLocaleString() : "Time not available"}</time>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
-
       {/* Order Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Client & Asset */}
@@ -159,45 +142,42 @@ export default function ProviderOrderDetailPage() {
             </div>
             <div>
               <span className="font-semibold text-text">{order.clientName}</span>
-              <div className="text-sm text-white/60">{order.clientVenture || "—"}</div>
+              
             </div>
           </div>
           <div className="pt-3 border-t border-border space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <span className="text-sm font-medium text-text">{order.assetName}</span>
-                <div className="text-xs text-white/60">{order.assetSpecs || "CAT 336 Next-Gen Excavator · 6-mo operational lease"}</div>
+                <div className="text-xs text-white/60">{order.assetDetails || "No asset description provided."}</div>
               </div>
               <span className="font-mono font-semibold text-gold shrink-0">${order.amount}/mo</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><span className="text-white/60">Allocation:</span> <span className="font-mono text-text ml-2">{order.allocation || "3x 36-ton units"}</span></div>
-              <div><span className="text-white/60">Location:</span> <span className="font-mono text-text ml-2">{order.location || "Yard Bay 12"}</span></div>
-              <div><span className="text-white/60">Telemetry:</span> <span className="flex items-center gap-1 text-gold font-medium ml-2"><span className="w-1.5 h-1.5 rounded-full bg-gold"></span> Active</span></div>
-              <div><span className="text-white/60">Escrow:</span> <span className="font-mono text-text ml-2">{order.escrowId || "0x8892...B39F"}</span></div>
+              <div><span className="text-white/60">Allocation:</span> <span className="font-mono text-text ml-2">{order.allocation || "Not specified"}</span></div>
+              <div><span className="text-white/60">Location:</span> <span className="font-mono text-text ml-2">{order.providerLocation || "Not provided"}</span></div>
+              <div><span className="text-white/60">Telemetry:</span> {order.telemetryUrl ? <a href={order.telemetryUrl} target="_blank" rel="noreferrer" className="ml-2 text-gold hover:underline">Open telemetry</a> : <span className="ml-2 text-white/60">Not provided</span>}</div>
+              
             </div>
           </div>
         </Card>
 
         {/* Financial Summary */}
         <Card className="p-5 space-y-4">
-          <h3 className="text-label-caps text-white/60 uppercase tracking-wider">FINANCIAL SUMMARY</h3>
+          <h3 className="text-label-caps text-white/60 uppercase tracking-wider">ORDER VALUE & PAYMENT STATUS</h3>
           <div className="space-y-3 bg-surface-2 p-4 rounded-lg border border-border">
             <div className="flex justify-between text-sm"><span className="text-white/60">Monthly Lease Rate</span><span className="font-mono text-gold">${order.amount}/mo</span></div>
-            {order.duration && <div className="flex justify-between text-sm"><span className="text-white/60">Lease Duration</span><span className="font-mono text-text">{order.duration}</span></div>}
-            {order.escrowAmount && <div className="flex justify-between text-sm"><span className="text-white/60">Escrow Deposit</span><span className="font-mono text-gold">${order.escrowAmount}</span></div>}
-            {order.amount && <div className="flex justify-between text-sm"><span className="text-white/60">Platform Fee (2%)</span><span className="font-mono text-white/60">${(order.amount * 0.02).toLocaleString()}/mo</span></div>}
-            <div className="border-t border-border pt-3 flex justify-between">
-              <span className="font-semibold text-text">Total Commitment</span>
-              <span className="font-serif text-xl font-semibold text-gold">{order.amount && order.duration && order.escrowAmount ? `$${((order.amount * Number(order.duration) || 0) + Number(order.escrowAmount)).toLocaleString()}` : "—"}</span>
-            </div>
+            <div className="flex justify-between text-sm"><span className="text-white/60">Payment method</span><span className="font-mono text-text">{order.paymentMethod || "Not selected"}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">{order.paymentStatus || "not_started"}</span></div>
           </div>
           <div className="flex items-center gap-3 p-3 bg-surface-2 rounded-lg border border-border text-sm text-white/60">
             <Shield className="w-5 h-5 text-gold shrink-0" />
-            <span>Escrow and delivery details are shown from the order record.</span>
+            <span>This order is stored in the database. No payment has been collected and no escrow is active.</span>
           </div>
         </Card>
       </div>
+
+      {actionError && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">{actionError}</p>}
 
       {/* Actions */}
       <Card className="p-5">
@@ -214,7 +194,7 @@ export default function ProviderOrderDetailPage() {
             </>
           )}
           {order.status?.toLowerCase() === "confirmed" && (
-            <Button onClick={() => window.location.assign(`/provider/orders/${id}/dispatch`)} disabled={actionLoading === "ship"}>
+            <Button onClick={() => navigate(`/provider/orders/${id}/dispatch`)} disabled={actionLoading === "ship"}>
               <Truck className="w-4 h-4 mr-1" /> Initiate Dispatch
             </Button>
           )}
@@ -238,19 +218,31 @@ export default function ProviderOrderDetailPage() {
         className="md:w-[520px]"
       >
         <div className="space-y-4">
-          {waybill ? (
-            <>
-              {waybill.trackingNumber && <div className="font-mono text-sm text-gold">{waybill.trackingNumber}</div>}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {waybill.carrier && <div><span className="text-white/60">Carrier:</span> <span className="font-mono ml-2">{waybill.carrier}</span></div>}
-                {waybill.status && <div><span className="text-white/60">Status:</span> <span className="font-mono ml-2 text-gold">{waybill.status}</span></div>}
-                {waybill.pickupTime && <div><span className="text-white/60">Pickup:</span> <span className="font-mono ml-2">{waybill.pickupTime}</span></div>}
-                {waybill.eta && <div><span className="text-white/60">Est. Delivery:</span> <span className="font-mono ml-2">{waybill.eta}</span></div>}
-                {waybill.route && <div className="col-span-2"><span className="text-white/60">Route:</span> <span className="font-mono ml-2 block">{waybill.route}</span></div>}
-                {waybill.gps && <div className="col-span-2"><span className="text-white/60">GPS:</span> <span className="font-mono ml-2 block text-gold">{waybill.gps}</span></div>}
+          {waybill?.waybill_url ? (
+            <div className="space-y-4">
+              {waybill.tracking_number && (
+                <div>
+                  <span className="block text-xs uppercase tracking-wider text-white/50">Tracking number</span>
+                  <span className="font-mono text-sm text-gold">{waybill.tracking_number}</span>
+                </div>
+              )}
+              <div>
+                <span className="block text-xs uppercase tracking-wider text-white/50">Uploaded waybill</span>
+                <a href={waybill.waybill_url} target="_blank" rel="noreferrer" className="break-all text-sm text-gold hover:underline">
+                  {waybill.waybill_url}
+                </a>
               </div>
-              <Button className="w-full bg-[#1a1b21] !border-0" variant="ghost" onClick={() => window.print()}>Download Waybill PDF</Button>
-            </>
+              {waybill.uploaded_at && (
+                <div className="text-xs text-white/50">
+                  Uploaded {new Date(waybill.uploaded_at).toLocaleString()}
+                </div>
+              )}
+              <Button className="w-full bg-[#1a1b21] !border-0" variant="ghost" onClick={() => window.open(waybill.waybill_url, "_blank", "noopener,noreferrer")}>
+                Open Waybill
+              </Button>
+            </div>
+          ) : waybill ? (
+            <div className="flex items-center justify-center h-32 text-sm text-white/60">No waybill has been uploaded yet.</div>
           ) : (
             <div className="flex items-center justify-center h-32 text-white/60">Loading waybill...</div>
           )}

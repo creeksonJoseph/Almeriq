@@ -26,6 +26,10 @@ async def list_notifications(
     return items, unread_count
 
 
+async def mark_notification_read(notification_id: int, user_id: int, session: AsyncSession | None = None) -> dict | None:
+    return await notification_repo.mark_notification_read(notification_id, user_id, session=session)
+
+
 async def mark_all_notifications_read(
     user_id: int,
     session: AsyncSession | None = None,

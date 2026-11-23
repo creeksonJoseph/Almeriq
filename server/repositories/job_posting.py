@@ -11,9 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 async def create_job_posting(
-    provider_id: int,
     title: str,
     description: str,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
     location: str | None = None,
     role_type: str | None = None,
     salary_min: Optional[float] = None,
@@ -23,9 +24,10 @@ async def create_job_posting(
     session: AsyncSession | None = None,
 ) -> dict:
     """Create a new job posting."""
-    logger.info("[REPO-CREATE-JOB] Starting for provider_id: %s", provider_id)
+    logger.info("[REPO-CREATE-JOB] Creating posting for provider_id=%s founder_user_id=%s", provider_id, founder_user_id)
     posting = JobPosting(
         provider_id=provider_id,
+        founder_user_id=founder_user_id,
         title=title,
         description=description,
         location=location,
@@ -69,11 +71,17 @@ async def list_job_postings(
     limit: int = 50,
     offset: int = 0,
     session: AsyncSession | None = None,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
 ) -> list[dict]:
     """List job postings, newest first, optionally filtered by active status."""
     stmt = select(JobPosting).order_by(JobPosting.created_at.desc()).limit(limit).offset(offset)
     if is_active is not None:
         stmt = stmt.where(JobPosting.is_active == is_active)
+    if provider_id is not None:
+        stmt = stmt.where(JobPosting.provider_id == provider_id)
+    if founder_user_id is not None:
+        stmt = stmt.where(JobPosting.founder_user_id == founder_user_id)
 
     if session is not None:
         rows = (await session.execute(stmt)).scalars().all()
@@ -87,11 +95,17 @@ async def list_job_postings(
 async def count_job_postings(
     is_active: bool | None = None,
     session: AsyncSession | None = None,
+    provider_id: int | None = None,
+    founder_user_id: int | None = None,
 ) -> int:
     """Count job postings, optionally filtered by active status."""
     stmt = select(func.count()).select_from(JobPosting)
     if is_active is not None:
         stmt = stmt.where(JobPosting.is_active == is_active)
+    if provider_id is not None:
+        stmt = stmt.where(JobPosting.provider_id == provider_id)
+    if founder_user_id is not None:
+        stmt = stmt.where(JobPosting.founder_user_id == founder_user_id)
 
     if session is not None:
         return await session.scalar(stmt) or 0

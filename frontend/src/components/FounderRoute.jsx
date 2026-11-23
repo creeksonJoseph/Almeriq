@@ -23,7 +23,7 @@ export default function FounderRoute({ children }) {
   }
 
   if (user?.role !== "founder") {
-    return <Navigate to="/provider/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;

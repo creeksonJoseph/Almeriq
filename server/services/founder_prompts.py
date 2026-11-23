@@ -69,10 +69,26 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
         return f"Create a Results & Changes framework for {idea}. Return JSON with: key_metrics_to_track (array of strings), expected_feedback_themes (array of strings), pivot_or_persevere_criteria (array of strings)."
 
     if tool_key == "investor_update":
-        return f"Monthly investor update for {idea}. Return JSON with: subject, highlights, lowlights, kpis, asks, full_email."
+        context = payload.extra_params if isinstance(payload.extra_params, dict) else {}
+        return (
+            f"Draft a clear monthly investor update for this company: {idea}.\n"
+            f"Founder-provided facts and metrics: {json.dumps(context, ensure_ascii=False)}\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
+            "Do not invent numbers, milestones, customer names, revenue, or progress. If information is missing, mark it as [Add details] or leave the section out. "
+            "Separate wins from challenges and make asks specific. Return JSON with: subject (string), highlights (array of strings), "
+            "lowlights (array of strings), kpis (array of objects with metric, value, period), asks (array of strings), full_email (complete editable email draft)."
+        )
 
     if tool_key == "job_post":
-        return f"Job posting for {idea}. Return JSON with: title, role_summary, responsibilities, requirements, why_join_us."
+        context = payload.extra_params if isinstance(payload.extra_params, dict) else {}
+        return (
+            f"Draft a job post for this role: {idea}.\n"
+            f"Founder-provided role details: {json.dumps(context, ensure_ascii=False)}\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
+            "Do not invent salary, benefits, company facts, qualifications, or working arrangements. Use [Add details] where needed. "
+            "Return JSON with: title (string), role_summary (string), responsibilities (array of strings), "
+            "requirements (array of strings), why_join_us (string)."
+        )
 
     if tool_key == "market_analysis":
         return (
@@ -143,6 +159,45 @@ def get_tool_prompt(tool_key: str, payload: Any) -> str:
             f"  budget_allocation (array of objects: category string, percentage integer, notes string, must sum to 100),\n"
             f"  kpis (array of objects: metric string, target string, measurement_frequency string),\n"
             f"  quick_wins (array of 3-5 strings, things achievable in first 2 weeks)."
+        )
+
+    if tool_key == "idea_breakdown":
+        return (
+            f"Break this product idea into a practical first version: {idea}.\n"
+            f"Problem: {problem}\nSolution: {solution}\nCustomer: {customer}\nLocation: {location}\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
+            "Return JSON with: core_problem (string), primary_user (string), core_workflow (array of ordered steps), "
+            "key_screens (array of objects with screen and purpose), assumptions_to_validate (array of strings), "
+            "success_signals (array of strings), out_of_scope (array of strings)."
+        )
+
+    if tool_key == "feature_prioritization":
+        return (
+            f"Prioritize features for this product: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}.\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
+            "Return JSON with: must_have (array of objects with feature, user_value, reason), "
+            "should_have (array of objects with feature, user_value, reason), "
+            "could_have (array of objects with feature, user_value, reason), defer (array of strings), "
+            "prioritization_notes (string). Focus on a small MVP and explain trade-offs."
+        )
+
+    if tool_key == "tech_stack":
+        return (
+            f"Recommend a practical technology stack for: {idea}. Customer: {customer}. Location: {location}.\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
+            "Return JSON with: frontend (string), backend (string), database (string), hosting_and_infrastructure (string), "
+            "authentication (string), integrations (array of strings), security_notes (array of strings), "
+            "alternatives (array of objects with option and tradeoff), recommendation_rationale (string). "
+            "Prefer maintainable, cost-conscious choices for a small team. Do not assume a specific cloud provider."
+        )
+
+    if tool_key == "build_roadmap":
+        return (
+            f"Create a practical build roadmap for: {idea}. Customer: {customer}. Problem: {problem}. Solution: {solution}.\n"
+            f"{VOICE_AND_STYLE_GUIDELINES}\n"
+            "Return JSON with: phases (array of objects with phase, duration, tasks, deliverables, acceptance_criteria), "
+            "dependencies (array of strings), risks (array of strings), first_week_actions (array of strings). "
+            "Keep the roadmap focused on delivering and validating a small working product."
         )
 
     if tool_key in ("idea_validation", "validation_analysis"):

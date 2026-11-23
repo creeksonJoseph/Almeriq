@@ -19,7 +19,7 @@ const GOLD = "#f2ca50";
  * @param {string}  [props.href="#"]      - The href for the anchor wrapper.
  * @param {string}  [props.className=""] - Extra classes for the anchor wrapper.
  */
-export default function BrandLogo({ size = 28, showName = true, href = "#", className = "" }) {
+export default function BrandLogo({ size = 28, showName = true, href = "/", className = "" }) {
   return (
     <a
       href={href}

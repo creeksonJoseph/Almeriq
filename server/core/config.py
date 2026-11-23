@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     """Application configuration loaded from environment variables and .env files."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", ".env.dev", ".env.prod"),
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-flash-lite-latest"
 
+    # Cloudinary media storage
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+
     # Sentry
     SENTRY_DSN: str = ""
     SENTRY_ENVIRONMENT: str = "development"
@@ -96,6 +101,9 @@ UPSTASH_REDIS_URL = settings.UPSTASH_REDIS_URL
 UPSTASH_REDIS_TOKEN = settings.UPSTASH_REDIS_TOKEN
 GEMINI_API_KEY = settings.GEMINI_API_KEY
 GEMINI_MODEL = settings.GEMINI_MODEL
+CLOUDINARY_CLOUD_NAME = settings.CLOUDINARY_CLOUD_NAME
+CLOUDINARY_API_KEY = settings.CLOUDINARY_API_KEY
+CLOUDINARY_API_SECRET = settings.CLOUDINARY_API_SECRET
 SENTRY_DSN = settings.SENTRY_DSN
 SENTRY_ENVIRONMENT = settings.SENTRY_ENVIRONMENT
 SENTRY_TRACES_SAMPLE_RATE = settings.SENTRY_TRACES_SAMPLE_RATE

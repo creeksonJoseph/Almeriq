@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X, MapPin, DollarSign, Activity, ExternalLink } from "lucide-react";
 import { Button, Card, StatusPill, Modal, Skeleton, SkeletonText } from "../../components/ui";
-import { getAssetApi, getMarketplaceListingApi } from "../../lib/api";
+import { getAssetApi, getProviderProfileApi } from "../../lib/api";
 
 export default function ProviderListingPreviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [asset, setAsset] = useState(null);
+  const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -17,8 +18,9 @@ export default function ProviderListingPreviewPage() {
     async function loadAsset() {
       setLoading(true);
       try {
-        const res = await getAssetApi(id);
-        setAsset(res.data || res.asset || res);
+        const [assetRes, providerRes] = await Promise.all([getAssetApi(id), getProviderProfileApi()]);
+        setAsset(assetRes.data || assetRes.asset || assetRes);
+        setProvider(providerRes.data || providerRes.provider || providerRes);
       } catch (e) {
         setError(e.message);
       } finally {
@@ -28,11 +30,8 @@ export default function ProviderListingPreviewPage() {
     loadAsset();
   }, [id]);
 
-  const images = asset?.images || [
-    "https://images.unsplash.com/photo-1504307651254-35680f356bae?w=800",
-    "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800",
-    "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800",
-  ];
+  const media = asset?.media || [];
+  const activeMedia = media[galleryIndex];
 
   if (loading) {
     return (
@@ -83,16 +82,15 @@ export default function ProviderListingPreviewPage() {
       {/* Main Image Gallery */}
       <div className="relative">
         <div className="aspect-video w-full rounded-xl overflow-hidden bg-surface-2 border border-border">
-          <img
-            src={images[galleryIndex]}
-            alt={`${asset.name} - Image ${galleryIndex + 1}`}
-            className="w-full h-full object-cover cursor-zoom-in"
-            onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }}
-          />
+          {activeMedia?.resource_type === "video"
+            ? <video src={activeMedia.url} controls className="w-full h-full object-cover" />
+            : activeMedia
+              ? <img src={activeMedia.url} alt={asset.name} className="w-full h-full object-cover cursor-zoom-in" onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }} />
+              : <div className="flex h-full items-center justify-center text-sm text-white/45">No photos or videos uploaded yet.</div>}
         </div>
-        {images.length > 1 && (
+        {media.length > 1 && (
           <div className="flex justify-center gap-2 mt-3">
-            {images.map((_, i) => (
+            {media.map((item, i) => (
               <button
                 key={i}
                 onClick={() => setGalleryIndex(i)}
@@ -111,15 +109,15 @@ export default function ProviderListingPreviewPage() {
           <Card className="p-5">
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-xl bg-surface border border-gold/40 text-gold-soft font-serif font-bold text-xl flex items-center justify-center shrink-0 shadow-sm">
-                {asset.providerName?.slice(0,2).toUpperCase() || "TB"}
+                {(provider?.company_name || provider?.trading_name || "Provider").slice(0,2).toUpperCase()}
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="font-serif text-lg font-semibold text-text">{asset.providerName || "TerraBore Heavy Dynamics Inc."}</h2>
-                  <span className="text-gold" aria-label="Verified">✓</span>
-                  {asset.duns && <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">DUNS {asset.duns}</span>}
+                  <h2 className="font-serif text-lg font-semibold text-text">{provider?.company_name || provider?.trading_name || "Your provider profile"}</h2>
+                  {provider?.verified && <span className="text-gold" aria-label="Verified">✓</span>}
+                  {provider?.location && <span className="px-2 py-0.5 rounded bg-surface text-white/60 text-[10px] font-mono tracking-wide">{provider.location}</span>}
                 </div>
-                {asset.providerDescription && <p className="text-sm text-white/70 mt-1">{asset.providerDescription}</p>}
+                {provider?.about && <p className="text-sm text-white/70 mt-1">{provider.about}</p>}
               </div>
             </div>
           </Card>
@@ -142,26 +140,26 @@ export default function ProviderListingPreviewPage() {
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Quantity</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.quantity || "—"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.quantity_capacity ?? "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Location</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.location || "—"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{provider?.location || "Not provided"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Availability</span>
-                <span className="font-semibold text-text font-serif text-sm">{asset.availability || "—"}</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.status || "—"}</span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
                 <span className="text-white/40 block uppercase text-[9px] tracking-wider">Telemetry</span>
                 <span className="flex items-center gap-1.5 text-gold font-medium text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
-                  {asset.telemetry_status || "Not provided"}
+                  {asset.telemetry_url ? "URL provided" : "Not provided"}
                 </span>
               </div>
               <div className="bg-surface border border-border rounded-lg p-3">
-                <span className="text-white/40 block uppercase text-[9px] tracking-wider">Escrow</span>
-                <span className="font-semibold text-text font-serif text-sm">Bonded Ready</span>
+                <span className="text-white/40 block uppercase text-[9px] tracking-wider">Media files</span>
+                <span className="font-semibold text-text font-serif text-sm">{asset.media?.length || 0}</span>
               </div>
             </div>
           </Card>
@@ -173,7 +171,7 @@ export default function ProviderListingPreviewPage() {
               <StatusPill status={asset.status?.toLowerCase() || "available"} />
             </div>
             <div className="flex items-baseline gap-2 mb-4">
-              <span className="font-serif text-3xl font-semibold text-gold">${asset.rate || "14,500"}</span>
+              <span className="font-serif text-3xl font-semibold text-gold">${Number(asset.price_monthly || 0).toLocaleString()}</span>
               <span className="text-sm text-white/70">/ month</span>
             </div>
             <div className="flex items-center justify-between">
@@ -192,11 +190,11 @@ export default function ProviderListingPreviewPage() {
               <StatusPill status={asset.status?.toLowerCase() || "available"} />
             </div>
             <div className="space-y-3 text-sm">
-              {asset.providerName && <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{asset.providerName}</span></div>}
-              {asset.type && <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{asset.type}</span></div>}
+              {(provider?.company_name || provider?.trading_name) && <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="text-text">{provider.company_name || provider.trading_name}</span></div>}
+              {asset.kind && <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{asset.kind}</span></div>}
               {asset.category && <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{asset.category}</span></div>}
-              {asset.location && <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{asset.location}</span></div>}
-              {asset.rate && <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${asset.rate}/mo</span></div>}
+              {provider?.location && <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{provider.location}</span></div>}
+              {asset.price_monthly != null && <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${Number(asset.price_monthly).toLocaleString()}/mo</span></div>}
             </div>
           </Card>
 
@@ -207,14 +205,14 @@ export default function ProviderListingPreviewPage() {
       <Modal open={galleryOpen} onClose={() => setGalleryOpen(false)} ariaLabel="Image gallery" className="max-w-4xl p-0">
         <div className="relative">
           <div className="aspect-video w-full bg-black">
-            <img src={images[galleryIndex]} alt="" className="w-full h-full object-contain" />
+            {activeMedia?.resource_type === "video" ? <video src={activeMedia.url} controls className="w-full h-full object-contain" /> : <img src={activeMedia?.url} alt="" className="w-full h-full object-contain" />}
           </div>
-          {images.length > 1 && (
+          {media.length > 1 && (
             <>
-              <button onClick={() => setGalleryIndex(i => (i - 1 + images.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
+              <button onClick={() => setGalleryIndex(i => (i - 1 + media.length) % media.length)} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Previous">
                 <ChevronLeft className="w-6 h-6" />
               </button>
-              <button onClick={() => setGalleryIndex(i => (i + 1) % images.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
+              <button onClick={() => setGalleryIndex(i => (i + 1) % media.length)} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" aria-label="Next">
                 <ChevronRight className="w-6 h-6" />
               </button>
             </>
@@ -223,9 +221,9 @@ export default function ProviderListingPreviewPage() {
             <X className="w-6 h-6" />
           </button>
           <div className="flex justify-center gap-2 p-4 bg-black/50">
-            {images.map((img, i) => (
+            {media.map((item, i) => (
               <button key={i} onClick={() => setGalleryIndex(i)} className={`w-16 h-10 rounded overflow-hidden border-2 ${i === galleryIndex ? "border-gold" : "border-transparent"}`}>
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                {item.resource_type === "video" ? <video src={item.url} className="w-full h-full object-cover" /> : <img src={item.url} alt="" className="w-full h-full object-cover" />}
               </button>
             ))}
           </div>

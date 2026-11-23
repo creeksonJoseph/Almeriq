@@ -164,3 +164,12 @@ async def update_conversation_timestamp(
         async with async_session_factory() as s:
             await s.execute(stmt)
             await s.commit()
+
+async def get_last_message_for_conversation(conversation_id: int, session: AsyncSession | None = None) -> dict | None:
+    stmt = select(Message).where(Message.conversation_id == conversation_id).order_by(Message.created_at.desc()).limit(1)
+    if session is not None:
+        message = await session.scalar(stmt)
+        return message.to_dict() if message else None
+    async with async_session_factory() as db:
+        message = await db.scalar(stmt)
+        return message.to_dict() if message else None

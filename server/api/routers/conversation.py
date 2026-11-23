@@ -11,6 +11,12 @@ from services import conversation as svc
 router = APIRouter(prefix="/api", tags=["conversations"])
 
 
+@router.post("/conversations/with-provider/{provider_id}")
+async def start_provider_conversation(provider_id: int, response: Response, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.start_provider_conversation(provider_id=provider_id, user_id=current_user["id"], session=db)
+
+
 @router.get("/conversations", response_model=ConversationListResponse)
 async def list_conversations(
     response: Response,
@@ -60,3 +66,31 @@ async def mark_conversation_read(
     )
     response.headers["Cache-Control"] = "no-store"
     return {"marked": count}
+
+
+@router.post("/advisory-requests/{request_id}/conversation")
+async def start_advisory_conversation(
+    request_id: int,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Start messaging with the other party after an advisory request is accepted."""
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.start_advisory_conversation(
+        request_id=request_id, user_id=current_user["id"], session=db
+    )
+
+
+@router.post("/investment-requests/{investment_id}/conversation")
+async def start_investment_conversation(
+    investment_id: int,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Start messaging with the other party after an investor request is accepted."""
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.start_investment_conversation(
+        investment_id=investment_id, user_id=current_user["id"], session=db
+    )

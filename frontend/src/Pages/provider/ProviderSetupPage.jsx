@@ -432,7 +432,7 @@ export default function ProviderSetupPage() {
               </nav>
               <div className="mt-6 pt-4 border-t border-border">
                 <div className="text-[11px] text-white/40">
-                  Need assistance? Contact our <a href="#" className="text-gold hover:underline">provider support</a> desk.
+                  Need assistance? Contact the Almeriq support team for help with provider onboarding.
                 </div>
               </div>
             </Card>

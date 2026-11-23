@@ -86,6 +86,7 @@ class AssetUpdateRequest(BaseModel):
 
 
 class AssetResponse(AssetBase):
+    media: List[dict] = Field(default_factory=list)
     id: int
     provider_id: int
     status: str
@@ -147,6 +148,7 @@ class MarketplaceListingResponse(BaseModel):
     provider_verified: bool
     provider_location: Optional[str]
     provider_enclave_key: Optional[str]
+    media: List[dict] = Field(default_factory=list)
     created_at: datetime
 
     class Config:
@@ -198,6 +200,19 @@ class OrderCreateRequest(BaseModel):
     lease_amount: Optional[Decimal] = Field(default=None, ge=0)
 
 
+class MarketplaceCheckoutRequest(BaseModel):
+    asset_id: int
+    allocation: Optional[str] = None
+    payment_method: str = Field(default="visa", max_length=50)
+
+    @field_validator("payment_method")
+    @classmethod
+    def validate_payment_method(cls, value: str) -> str:
+        if value not in {"visa", "mastercard", "paypal", "mpesa"}:
+            raise ValueError("payment_method must be visa, mastercard, paypal, or mpesa")
+        return value
+
+
 class OrderStatusUpdateRequest(BaseModel):
     status: str = Field(..., max_length=30)
 
@@ -230,6 +245,18 @@ class OrderResponse(OrderBase):
     client_id: int
     provider_id: int
     asset_id: int
+    client_name: Optional[str] = None
+    client_email: Optional[str] = None
+    asset_name: Optional[str] = None
+    asset_category: Optional[str] = None
+    asset_details: Optional[str] = None
+    provider_name: Optional[str] = None
+    provider_location: Optional[str] = None
+    asset_telemetry_url: Optional[str] = None
+    deal_id: Optional[int] = None
+    payment_method: Optional[str] = None
+    payment_status: str = "not_started"
+    deal_amount: Optional[float] = None
     created_at: datetime
     updated_at: datetime
 
@@ -270,17 +297,36 @@ class OrderEventResponse(BaseModel):
 class DealCreateRequest(BaseModel):
     order_id: int
     payment_method: str = Field(..., max_length=50)
-    amount: Decimal = Field(..., ge=0)
+    amount: Decimal = Field(..., gt=0)
+
+    @field_validator("payment_method")
+    @classmethod
+    def validate_payment_method(cls, value: str) -> str:
+        if value not in {"visa", "mastercard", "paypal", "mpesa"}:
+            raise ValueError("payment_method must be visa, mastercard, paypal, or mpesa")
+        return value
 
 
 class DealSignRequest(BaseModel):
-    signature: str = Field(..., min_length=1)
+    signature: str = Field(..., min_length=1, max_length=100000)
+    payment_method: Optional[str] = Field(default=None, max_length=50)
+    amount: Optional[Decimal] = Field(default=None, gt=0)
+
+    @field_validator("payment_method")
+    @classmethod
+    def validate_payment_method(cls, value: str | None) -> str | None:
+        if value is not None and value not in {"visa", "mastercard", "paypal", "mpesa"}:
+            raise ValueError("payment_method must be visa, mastercard, paypal, or mpesa")
+        return value
 
 
 class DealResponse(BaseModel):
     id: int
     order_id: int
+    provider_name: Optional[str] = None
+    asset_name: Optional[str] = None
     payment_method: Optional[str]
+    payment_status: str = "simulated"
     amount: Optional[float]
     signature: Optional[str]
     signed_at: Optional[datetime]
