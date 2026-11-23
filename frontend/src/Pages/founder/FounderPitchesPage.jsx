@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useFounderPitches } from "../../hooks/useFounderPitches";
+import { useInvestorUpdateDraft } from "../../hooks/useInvestorUpdateDraft";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button, Card, Input, Select, Textarea, Skeleton, SkeletonText } from "../../components/ui";
-import { executeAiToolApi } from "../../lib/api/founder";
 
 const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", target_check_size: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
 
@@ -24,8 +24,7 @@ export default function FounderPitchesPage() {
   const [updateChallenges, setUpdateChallenges] = useState("");
   const [updateKpis, setUpdateKpis] = useState("");
   const [updateAsks, setUpdateAsks] = useState("");
-  const [investorUpdateDraft, setInvestorUpdateDraft] = useState("");
-  const [draftingUpdate, setDraftingUpdate] = useState(false);
+  const { draft: investorUpdateDraft, setDraft: setInvestorUpdateDraft, drafting: draftingUpdate, generate: generateUpdateDraft } = useInvestorUpdateDraft({ setError, setNotice });
 
   const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   const reset = () => { setForm(EMPTY); setDocumentsText(""); setEditingId(null); };
@@ -62,21 +61,15 @@ export default function FounderPitchesPage() {
     setNotice(""); setError("");
   };
 
-  const generateInvestorUpdate = async () => {
+  const generateInvestorUpdate = () => {
     const pitch = pitches.find((item) => String(item.id) === String(updatePitchId));
-    if (!pitch) { setError("Choose a startup pitch first."); return; }
-    setDraftingUpdate(true); setError(""); setNotice("");
-    try {
-      const response = await executeAiToolApi({
-        tool_key: "investor_update", idea: pitch.title, customer: "Current investors", location: pitch.location || "",
-        problem: pitch.summary || "", solution: pitch.traction || "",
-        extra_params: { period: updatePeriod || "Not specified", sector: pitch.sector, stage: pitch.stage, company_summary: pitch.summary, traction_so_far: pitch.traction, team: pitch.team_summary, founder_highlights: updateHighlights, challenges: updateChallenges, kpis: updateKpis, investor_asks: updateAsks },
-      });
-      const result = response.result || {};
-      setInvestorUpdateDraft(result.full_email || [result.subject, ...(result.highlights || []), ...(result.lowlights || []), ...(result.asks || [])].join("\n"));
-      setNotice("Investor update draft generated. Check every metric and statement before sending.");
-    } catch (err) { setError(err.message || "Unable to draft the investor update."); }
-    finally { setDraftingUpdate(false); }
+    return generateUpdateDraft(pitch, {
+      period: updatePeriod,
+      highlights: updateHighlights,
+      challenges: updateChallenges,
+      kpis: updateKpis,
+      asks: updateAsks,
+    });
   };
 
   const copyInvestorUpdate = async () => {
