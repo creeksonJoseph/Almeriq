@@ -4,7 +4,6 @@ import {
   ExternalLink,
   RotateCcw,
   AlertCircle,
-  Loader2,
   Copy,
   Check,
   Building2,
@@ -20,6 +19,7 @@ import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { COUNTRIES } from "../../lib/countries";
+import { Skeleton, SkeletonText } from "../../components/ui";
 
 // ── Plain English Starter Legal Templates ─────────────────────────────────────
 const LEGAL_TEMPLATES = [
@@ -625,14 +625,12 @@ export default function FounderLegalPage() {
 
               {/* Loading State when country is selected or refreshing */}
               {guideLoading && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.015] p-16 text-center space-y-4">
-                  <Loader2 size={36} className="mx-auto animate-spin text-[#f2ca50]" />
-                  <h3 className="font-serif text-xl font-medium text-white">
-                    Loading Official Registration Guide for {selectedCountry}...
-                  </h3>
-                  <p className="mx-auto max-w-md text-xs font-normal text-white leading-relaxed">
-                    Checking our database for official {selectedCountry} procedures. If this is the first search for this country, our system synthesizes the steps and saves them permanently for all founders.
-                  </p>
+                <div className="space-y-5 rounded-xl bg-surface p-6" aria-label="Loading registration guide" aria-busy="true">
+                  <Skeleton className="h-7 w-2/3 max-w-md" />
+                  <SkeletonText lines={3} />
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {[0, 1, 2, 3].map((item) => <div key={item} className="space-y-3 rounded-lg bg-surface-2 p-4"><Skeleton className="h-4 w-1/2" /><SkeletonText lines={3} /></div>)}
+                  </div>
                 </div>
               )}
 
@@ -963,7 +961,7 @@ export default function FounderLegalPage() {
             </section>
             <section className="space-y-4">
               <div><h2 className="font-serif text-2xl text-white">Your requests</h2><p className="mt-2 text-sm text-white/60">Reference numbers and submission history for your records.</p></div>
-              {filingLoading ? <p className="text-sm text-white/50">Loading requests…</p> : filings.length === 0 ? <div className="rounded border border-white/10 p-5 text-sm text-white/50">No registration requests yet.</div> : filings.map((filing) => <article key={filing.id} className="rounded border border-white/10 bg-white/[0.02] p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-white">{filing.filing_type === "company" ? filing.company_name : filing.ip_title}</strong><span className="text-xs text-[#f2ca50]">{filing.status}</span></div><p className="mt-1 text-xs text-white/50">{filing.ref_number} · {filing.filing_type === "company" ? filing.entity_type + " · " + filing.jurisdiction : filing.ip_type}</p><p className="mt-2 text-xs text-white/40">{filing.filed_at ? new Date(filing.filed_at).toLocaleString() : ""}</p><p className="mt-2 text-xs text-amber-200/70">Almeriq intake record only — no government application has been submitted.</p></article>)}
+              {filingLoading ? <div className="space-y-3" aria-busy="true">{[0, 1].map((item) => <div key={item} className="space-y-3 rounded border border-border bg-surface p-4"><Skeleton className="h-4 w-1/3" /><SkeletonText lines={2} /></div>)}</div> : filings.length === 0 ? <div className="rounded border border-white/10 p-5 text-sm text-white/50">No registration requests yet.</div> : filings.map((filing) => <article key={filing.id} className="rounded border border-white/10 bg-white/[0.02] p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-white">{filing.filing_type === "company" ? filing.company_name : filing.ip_title}</strong><span className="text-xs text-[#f2ca50]">{filing.status}</span></div><p className="mt-1 text-xs text-white/50">{filing.ref_number} · {filing.filing_type === "company" ? filing.entity_type + " · " + filing.jurisdiction : filing.ip_type}</p><p className="mt-2 text-xs text-white/40">{filing.filed_at ? new Date(filing.filed_at).toLocaleString() : ""}</p><p className="mt-2 text-xs text-amber-200/70">Almeriq intake record only — no government application has been submitted.</p></article>)}
             </section>
           </div>
         )}
