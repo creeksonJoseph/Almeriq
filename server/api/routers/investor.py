@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_current_user
 from core.db import get_db
+from core.roles import user_has_role
 from services import investor as svc
 from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate, StartupPitchCreateRequest, StartupPitchUpdateRequest, InvestorPortfolioUpdateRequest
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/api", tags=["investor"])
 
 
 def _require_role(current_user: dict, expected: str) -> int:
-    if str(current_user.get("role", "")).lower() != expected:
+    if not user_has_role(current_user, expected):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"{expected.capitalize()} account required",

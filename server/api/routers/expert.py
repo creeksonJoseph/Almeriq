@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import get_current_user
 from core.db import get_db
+from core.roles import user_has_role
 from schemas.expert import ExpertProfileUpdate, AdvisoryRequestCreate, AdvisoryRequestStatusUpdate
 from services import expert as svc
 
@@ -10,7 +11,7 @@ router = APIRouter(prefix="/api", tags=["experts"])
 
 
 def _role_user(user: dict, expected: str) -> int:
-    if str(user.get("role", "")).lower() != expected:
+    if not user_has_role(user, expected):
         raise HTTPException(status_code=403, detail=f"{expected.capitalize()} account required")
     return int(user["id"])
 

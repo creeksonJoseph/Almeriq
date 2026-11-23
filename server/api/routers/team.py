@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_current_user
 from core.db import get_db
+from core.roles import user_has_role
 from schemas.team import TeamInvitationCreate, TeamInvitationResponse
 from services import team as svc
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/api", tags=["teams"])
 
 
 def _require_role(user: dict, expected: str) -> int:
-    if str(user.get("role", "")).lower() != expected:
+    if not user_has_role(user, expected):
         raise HTTPException(status_code=403, detail=f"{expected.replace('_', ' ').capitalize()} account required")
     return int(user["id"])
 

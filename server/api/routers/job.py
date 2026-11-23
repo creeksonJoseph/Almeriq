@@ -4,6 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
+from core.roles import user_has_role
 from api.dependencies import get_current_user, get_current_job_owner
 from schemas.job import (
     JobApplicationCreateRequest,
@@ -22,7 +23,7 @@ from services import job as svc
 router = APIRouter(prefix="/api", tags=["jobs"])
 
 def _require_job_seeker(current_user: dict) -> int:
-    if str(current_user.get("role", "")).lower() != "job_seeker":
+    if not user_has_role(current_user, "job_seeker"):
         from fastapi import HTTPException
         raise HTTPException(status_code=403, detail="Job seeker account required")
     return int(current_user["id"])

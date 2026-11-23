@@ -4,6 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
+from core.roles import user_has_role
 from api.dependencies import get_current_provider_profile, get_current_user
 from schemas.provider import (
     OrderCreateRequest,
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/api", tags=["orders"])
 
 def _require_founder(current_user: dict) -> int:
     from fastapi import HTTPException
-    if str(current_user.get("role", "")).lower() != "founder":
+    if not user_has_role(current_user, "founder"):
         raise HTTPException(status_code=403, detail="Founder account required")
     return int(current_user["id"])
 
