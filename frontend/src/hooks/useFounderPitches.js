@@ -7,6 +7,7 @@ import {
   updateFounderInvestmentRequestApi,
   updateFounderPitchApi,
 } from "../lib/api/founder";
+import { startInvestmentConversationApi } from "../lib/api/conversations";
 
 export function useFounderPitches() {
   const [pitches, setPitches] = useState([]);
@@ -71,6 +72,8 @@ export function useFounderPitches() {
     }
   }, []);
 
+  const startConversation = useCallback((requestId) => startInvestmentConversationApi(requestId), []);
+
   const removePitch = useCallback(async (pitchId) => {
     setError("");
     setNotice("");
@@ -86,6 +89,6 @@ export function useFounderPitches() {
 
   return {
     pitches, requests, loading, saving, busyRequestId, error, notice,
-    load, savePitch, updateRequest, removePitch, setError, setNotice,
+    load, savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
   };
 }
