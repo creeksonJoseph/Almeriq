@@ -358,7 +358,7 @@ function MarketplaceListingCard({ listing, ordering, onView, onChat, onOrder, on
         {cover?.resource_type === "video"
           ? <video src={cover.url} muted playsInline className="h-full w-full object-cover" />
           : cover?.url
-            ? <img src={cover.url} alt={listing.name || "Infrastructure listing"} className="h-full w-full object-cover" />
+            ? <img src={cover.url} alt={listing.name || "Infrastructure listing"} loading="lazy" decoding="async" className="h-full w-full object-cover" />
             : <div className="flex h-full flex-col items-center justify-center gap-2 text-white/50"><ImageIcon size={24} /><span className="text-xs">No listing image</span></div>}
         {media.length > 1 && <span className="absolute bottom-3 right-3 rounded-md bg-black/75 px-2 py-1 text-xs text-white">{media.length} photos</span>}
       </button>
