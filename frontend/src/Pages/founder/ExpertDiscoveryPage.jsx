@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useExpertDiscovery } from "../../hooks/useExpertDiscovery";
 import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
-import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 import { useNavigate } from "react-router-dom";
 
 export default function ExpertDiscoveryPage() {
@@ -12,21 +11,12 @@ export default function ExpertDiscoveryPage() {
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [sending, setSending] = useState(false);
-  const { experts, requests, expertsLoading, requestsLoading, error, notice, sendRequest, setError } = useExpertDiscovery();
+  const { experts, requests, expertsLoading, requestsLoading, error, notice, sendRequest, openConversation, setError } = useExpertDiscovery();
 
   const visible = experts.filter((expert) => {
     const haystack = [expert.headline, expert.bio, expert.location, ...(expert.expertise || [])].join(" ").toLowerCase();
     return haystack.includes(query.toLowerCase());
   });
-
-  const openConversation = async (requestId) => {
-    try {
-      const conversation = await startAdvisoryConversationApi(requestId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to open this conversation.");
-    }
-  };
 
   const requestAdvice = async (event) => {
     event.preventDefault();
@@ -65,7 +55,7 @@ export default function ExpertDiscoveryPage() {
             const expert = experts.find((item) => item.user_id === request.expert_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div><p className="font-medium">{request.subject}</p><p className="mt-1 text-xs text-white/50">{expert?.headline || `Expert #${request.expert_id}`} · <span className="capitalize">{request.status.replaceAll("_", " ")}</span></p></div>
-              {["accepted", "completed"].includes(request.status) && <Button size="sm" onClick={() => openConversation(request.id)}>Open conversation</Button>}
+              {["accepted", "completed"].includes(request.status) && <Button size="sm" onClick={async () => { try { const conversation = await openConversation(request.id); navigate(`/messages?conversation=${conversation.id}`); } catch (err) { setError(err.message || "Unable to open this conversation."); } }}>Open conversation</Button>}
             </Card>;
           })}
         </section>
