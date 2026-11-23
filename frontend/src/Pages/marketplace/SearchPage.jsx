@@ -93,20 +93,20 @@ export default function SearchPage() {
   useEffect(() => {
     const initialQuery = new URLSearchParams(location.search).get("q") || "";
     searchForm.setValue("query", initialQuery);
-    if (initialQuery && providers.length) {
+    if (initialQuery && providers.length && !hasSearched) {
       setHasSearched(true);
       runSearch(initialQuery, activeCategory);
-    } else if (!initialQuery) {
-      setHasSearched(false);
+    } else if (!initialQuery && !hasSearched) {
       setResults([]);
     }
-  }, [location.search, providers]);
+  }, [location.search, providers, hasSearched]);
 
   const handleSearch = (event) => {
     event.preventDefault();
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     navigate({ pathname: "/search", search: params.toString() ? "?" + params.toString() : "" }, { replace: true });
+    runSearch(query, activeCategory);
   };
 
   const handleCategory = (category) => {
@@ -179,7 +179,7 @@ export default function SearchPage() {
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-white/60">Popular searches</span>
           {popularSearches.map((term) => (
-            <button key={term} type="button" onClick={() => { searchForm.setValue("query", term); navigate("/search?q=" + encodeURIComponent(term), { replace: true }); }}
+            <button key={term} type="button" onClick={() => { searchForm.setValue("query", term); navigate("/search?q=" + encodeURIComponent(term), { replace: true }); runSearch(term, activeCategory); }}
               className="rounded-lg bg-surface px-3 py-2 text-text transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-gold">{term}</button>
           ))}
         </div>
