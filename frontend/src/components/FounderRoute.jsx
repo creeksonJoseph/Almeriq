@@ -7,7 +7,7 @@ export default function FounderRoute({ children }) {
   const { isLoggedIn, loading, user, updateUser } = useAuth();
   const location = useLocation();
 
-  if (loading) return <RouteSkeleton variant="dashboard" />;
+  if (loading) return <RouteSkeleton />;
 
   if (!isLoggedIn) {
     return <Navigate to="/login" state={{ from: location }} replace />;
