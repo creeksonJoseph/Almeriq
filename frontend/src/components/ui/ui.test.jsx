@@ -66,4 +66,9 @@ describe("Shared form controls", () => {
     render(<Select aria-label="Country"><option value="ke">Kenya</option></Select>);
     expect(screen.getByRole("combobox", { name: /country/i })).toHaveClass("alq-select");
   });
+
+  it("does not apply text-field styling to checkbox inputs", () => {
+    render(<Input type="checkbox" aria-label="Active" />);
+    expect(screen.getByRole("checkbox", { name: /active/i })).not.toHaveClass("alq-input");
+  });
 });
