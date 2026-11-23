@@ -281,7 +281,18 @@ export default function MarketplacePage() {
             <h2 className="font-serif text-2xl font-semibold text-text">Available infrastructure</h2>
             <p className="mt-1 text-sm text-white/60">Compare listings and contact providers directly.</p>
           </div>
-          <p className="text-xs text-white/60">{visibleListings.length} {visibleListings.length === 1 ? "listing" : "listings"}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-white/70">
+              <span>Sort by</span>
+              <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} className="alq-input min-h-10 w-auto">
+                <option value="featured">Featured</option>
+                <option value="price_asc">Price: low to high</option>
+                <option value="price_desc">Price: high to low</option>
+                <option value="provider">Provider name</option>
+              </select>
+            </label>
+            <p className="text-xs text-white/60">{visibleListings.length} {visibleListings.length === 1 ? "listing" : "listings"}</p>
+          </div>
         </div>
         {visibleListings.length ? (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
