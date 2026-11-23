@@ -52,7 +52,8 @@ export function useExpertDiscovery() {
   return {
     experts,
     requests,
-    loading: expertsLoading || requestsLoading,
+    expertsLoading,
+    requestsLoading,
     error: error || expertsError || requestsError,
     notice,
     sendRequest,
