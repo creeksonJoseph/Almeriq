@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useFounderPitches } from "../../hooks/useFounderPitches";
 import { useLocation, useNavigate } from "react-router-dom";
-import { apiClient } from "../../lib/client";
+
 import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
 import { executeAiToolApi } from "../../lib/api/founder";
@@ -11,15 +12,13 @@ export default function FounderPitchesPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const pageView = location.pathname.includes("/investors") ? "investors" : location.pathname.includes("/updates") ? "updates" : "pitches";
-  const [pitches, setPitches] = useState([]);
-  const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [documentsText, setDocumentsText] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const {
+    pitches, requests, loading, saving, error, notice,
+    savePitch, updateRequest, removePitch, setError, setNotice,
+  } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
   const [updatePeriod, setUpdatePeriod] = useState("");
   const [updateHighlights, setUpdateHighlights] = useState("");
@@ -29,29 +28,12 @@ export default function FounderPitchesPage() {
   const [investorUpdateDraft, setInvestorUpdateDraft] = useState("");
   const [draftingUpdate, setDraftingUpdate] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [pitchResponse, requestResponse] = await Promise.all([
-        apiClient.get("/api/founder/pitches"),
-        apiClient.get("/api/founder/investment-requests"),
-      ]);
-      const pitchData = pitchResponse.data;
-      setPitches(Array.isArray(pitchData) ? pitchData : pitchData.items || []);
-      setRequests(requestResponse.data?.items || []);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to load your pitches.");
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
-
   const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   const reset = () => { setForm(EMPTY); setDocumentsText(""); setEditingId(null); };
 
   const submit = async (event) => {
     event.preventDefault();
-    setSaving(true); setError(""); setNotice("");
+    setError(""); setNotice("");
     const amount = form.ask_amount === "" ? null : Number(form.ask_amount);
     if (!form.title.trim() || (amount !== null && (!Number.isFinite(amount) || amount < 0))) {
       setError("Enter a pitch title and a valid non-negative funding ask."); setSaving(false); return;
@@ -69,12 +51,9 @@ export default function FounderPitchesPage() {
       documents,
     };
     try {
-      if (editingId) await apiClient.put(`/api/founder/pitches/${editingId}`, payload);
-      else await apiClient.post("/api/founder/pitches", payload);
-      reset(); setNotice(editingId ? "Pitch updated." : "Pitch published to investor discovery."); await load();
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to save this pitch.");
-    } finally { setSaving(false); }
+      await savePitch(editingId, payload);
+      reset();
+    } catch { /* The feature hook owns and exposes the request error. */ }
   };
 
   const edit = (pitch) => {
@@ -115,26 +94,13 @@ export default function FounderPitchesPage() {
     }
   };
 
-  const updateRequest = async (requestId, status) => {
-    setError(""); setNotice("");
-    try {
-      const { data } = await apiClient.patch(`/api/founder/investment-requests/${requestId}`, { status });
-      setRequests((items) => items.map((item) => item.id === requestId ? { ...item, ...data } : item));
-      setNotice(`Investor request marked ${status.replaceAll("_", " ")}.`);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to update this investor request.");
-    }
-  };
-
   const remove = async (pitchId) => {
     if (!window.confirm("Delete this startup pitch?")) return;
     setError(""); setNotice("");
     try {
-      await apiClient.delete(`/api/founder/pitches/${pitchId}`);
+      await removePitch(pitchId);
       if (editingId === pitchId) reset();
-      setPitches((items) => items.filter((item) => item.id !== pitchId));
-      setNotice("Pitch deleted.");
-    } catch (err) { setError(err.response?.data?.detail || "Unable to delete this pitch."); }
+    } catch { /* The feature hook owns and exposes the request error. */ }
   };
 
   return (
