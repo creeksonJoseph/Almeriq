@@ -36,7 +36,7 @@ export default function FounderPitchesPage() {
     setError(""); setNotice("");
     const amount = form.ask_amount === "" ? null : Number(form.ask_amount);
     if (!form.title.trim() || (amount !== null && (!Number.isFinite(amount) || amount < 0))) {
-      setError("Enter a pitch title and a valid non-negative funding ask."); setSaving(false); return;
+      setError("Enter a pitch title and a valid non-negative funding ask."); return;
     }
     const documents = documentsText.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
       const [title, ...urlParts] = line.split("|");
