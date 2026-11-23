@@ -518,7 +518,7 @@ export default function FounderLegalPage() {
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => loadGuide(selectedCountry, true)}
+                      onClick={() => refreshGuide}
                       disabled={guideLoading}
                       className="inline-flex items-center gap-2 rounded border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-white/[0.08] disabled:opacity-50 cursor-pointer"
                     >
@@ -583,7 +583,7 @@ export default function FounderLegalPage() {
                   <div className="pt-2 flex justify-center">
                     <button
                       type="button"
-                      onClick={() => loadGuide(selectedCountry, true)}
+                      onClick={() => refreshGuide}
                       className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-all hover:bg-[#e2ba40] cursor-pointer"
                     >
                       <RotateCcw size={13} />
