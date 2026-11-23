@@ -202,7 +202,7 @@ export default function MarketplacePage() {
             </div>
           </Card>
           <Card className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ImageIcon size={18} /></div>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><Layers size={18} /></div>
             <div>
               <p className="text-xs font-medium text-white/60">Infrastructure types</p>
               <p className="text-xl font-semibold text-text">{physicalCount} physical / {digitalCount} digital</p>
