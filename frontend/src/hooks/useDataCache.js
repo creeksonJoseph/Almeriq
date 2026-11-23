@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchWithSWR, getCached, invalidate, setCached } from "../lib/client";
+import { fetchWithSWR, getCached, setCached } from "../lib/client";
 
 /**
  * Stale-while-revalidate data hook.
@@ -29,7 +29,7 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
     }
     setError("");
 
-    fetchWithSWR(key, fetcher)
+    fetchWithSWR(key, fetcher, { force: revision > 0 })
       .then((next) => {
         if (active) setData(next);
       })
@@ -45,8 +45,7 @@ export function useDataCache(key, fetcher, { enabled = true } = {}) {
 
   const refresh = useCallback(() => {
     if (!enabled || !key) return;
-    invalidate(key);
-    setLoading(true);
+    setLoading(getCached(key) === null);
     setRevision((current) => current + 1);
   }, [enabled, key]);
 
