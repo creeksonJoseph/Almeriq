@@ -57,6 +57,14 @@ const preferencesSchema = z.object({
   engagement: z.string().max(500).optional(),
 });
 
+const providerSetupSchema = z.object({
+  info: providerSchema,
+  physicalAssets: z.array(physicalAssetSchema).default([]),
+  digitalAssets: z.array(digitalAssetSchema).default([]),
+  coverage: coverageSchema,
+  preferences: preferencesSchema,
+});
+
 const STEPS = [
   { id: "info", label: "Provider Info", icon: Building2, schema: providerSchema },
   { id: "physical", label: "Physical Fleet", icon: MapPin, schema: physicalAssetSchema },
@@ -71,13 +79,7 @@ export default function ProviderSetupPage() {
   const [pendingDeletions, setPendingDeletions] = useState([]);
 
   const methods = useForm({
-    resolver: zodResolver(z.object({
-      info: providerSchema,
-      physicalAssets: z.array(physicalAssetSchema).default([]),
-      digitalAssets: z.array(digitalAssetSchema).default([]),
-      coverage: coverageSchema,
-      preferences: preferencesSchema,
-    })),
+    resolver: zodResolver(providerSetupSchema),
     defaultValues: {
       info: { name: "", location: "", type: "COMPANY", about: "" },
       physicalAssets: [],
@@ -93,7 +95,7 @@ export default function ProviderSetupPage() {
 
   const workflow = useProviderSetupWorkflow({
     methods, navigate, coverageToApi, pendingDeletions, setPendingDeletions,
-    schemas: { final: z.object({ info: providerSchema, physicalAssets: z.array(physicalAssetSchema), digitalAssets: z.array(digitalAssetSchema), coverage: coverageSchema, preferences: preferencesSchema }) },
+    finalSchema: providerSetupSchema,
   });
   const { loading, saving, handleSaveDraft, handleComplete } = workflow;
 
