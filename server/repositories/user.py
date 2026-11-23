@@ -224,3 +224,20 @@ async def update_user_role(
         await s.commit()
         user = res.scalar_one_or_none()
         return user.to_dict() if user else None
+
+
+async def get_user_names_by_ids(
+    user_ids: list[int],
+    session: AsyncSession | None = None,
+) -> dict[int, str | None]:
+    """Fetch only display names for a set of users in one query."""
+    ids = set(user_ids)
+    if not ids:
+        return {}
+    stmt = select(User.id, User.full_name).where(User.id.in_(ids))
+    if session is not None:
+        rows = (await session.execute(stmt)).all()
+    else:
+        async with async_session_factory() as db:
+            rows = (await db.execute(stmt)).all()
+    return {user_id: full_name for user_id, full_name in rows}
