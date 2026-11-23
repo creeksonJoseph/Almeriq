@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from schemas.provider import MarketplaceCheckoutRequest, MarketplaceListingDetailResponse, MarketplaceListingListResponse, OrderCreateRequest, OrderResponse
 from api.dependencies import get_current_user
 from core.db import get_db
+from core.roles import user_has_role
 from sqlalchemy.ext.asyncio import AsyncSession
 from services import order as order_service
 from services import deal as deal_service
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/api", tags=["marketplace"])
 
 def _require_founder(current_user: dict) -> int:
     from fastapi import HTTPException
-    if str(current_user.get("role", "")).lower() != "founder":
+    if not user_has_role(current_user, "founder"):
         raise HTTPException(status_code=403, detail="Founder account required to place marketplace orders")
     return int(current_user["id"])
 

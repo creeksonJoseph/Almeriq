@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Response, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from core.db import async_session_factory, get_db
+from core.roles import normalize_role
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.waitlist import Waitlist
 from api.dependencies import get_current_admin_user
@@ -26,7 +27,7 @@ class AdminRoleUpdateRequest(BaseModel):
 
 
 def _normalize_role(role: str) -> str:
-    normalized = role.strip().upper().replace(" ", "_")
+    normalized = normalize_role(role).upper()
     if normalized not in VALID_USER_ROLES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

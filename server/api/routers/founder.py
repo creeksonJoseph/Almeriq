@@ -7,6 +7,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from api.dependencies import get_current_user
+from core.roles import user_has_role
 from repositories.founder_ai_cache import (
     compute_content_hash,
     get_cached_tool_result,
@@ -45,7 +46,7 @@ router = APIRouter(tags=["founder"])
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def _require_founder(current_user: dict) -> int:
-    if current_user.get("role") != "founder":
+    if not user_has_role(current_user, "founder"):
         logger.warning(
             f"Non-founder user attempted founder workspace access",
             extra={"user_id": current_user.get("id"), "role": current_user.get("role")}
