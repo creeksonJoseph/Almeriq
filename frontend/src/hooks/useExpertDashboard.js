@@ -48,7 +48,7 @@ export function useExpertDashboard() {
       return data;
     } catch (requestError) {
       setError(requestError.message || "Unable to update request.");
-      throw requestError;
+      return null;
     } finally {
       setBusyId(null);
     }
