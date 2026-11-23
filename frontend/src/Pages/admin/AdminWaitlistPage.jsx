@@ -13,7 +13,6 @@ import {
   Briefcase,
   Truck,
   ArrowLeft,
-  Loader2,
   Calendar,
   Mail,
   User,
