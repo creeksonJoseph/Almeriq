@@ -172,7 +172,7 @@ export default function JobSeekerJobsPage() {
         {pageView === "applications" && (
         <section className="space-y-4">
           <div><h2 className="font-serif text-2xl">My applications</h2><p className="mt-1 text-sm text-white/50">Keep track of where each application stands.</p></div>
-          {applications.length === 0 ? <Card className="p-6 text-sm text-white/55">You have not applied to any roles yet.</Card> :
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="flex items-center gap-4 p-5"><div className="flex-1 space-y-2"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-3 w-1/2" /></div><Skeleton className="h-8 w-24 rounded-xl" /></Card>)}</div> : applications.length === 0 ? <Card className="p-6 text-sm text-white/55">You have not applied to any roles yet.</Card> :
             <Card className="divide-y divide-border p-0">
               {applications.map((application) => (
                 <div key={application.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
