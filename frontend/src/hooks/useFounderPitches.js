@@ -66,7 +66,7 @@ export function useFounderPitches() {
       return data;
     } catch (requestError) {
       setError(requestError.message || "Unable to update this investor request.");
-      throw requestError;
+      return null;
     } finally {
       setBusyRequestId(null);
     }
