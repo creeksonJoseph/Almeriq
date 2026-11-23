@@ -29,6 +29,7 @@ export default function AppSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const role = user?.role || "founder";
+  const isFounder = String(role).toLowerCase() === "founder";
 
   const isCurrentActive = (itemPath) => {
     if (itemPath.includes("?tab=")) {
@@ -127,7 +128,7 @@ export default function AppSidebar({
           </div>
 
           {/* ── APEX CONTEXT SWITCHER: Active Venture ── */}
-          {role === "founder" && (
+          {isFounder && (
             <div className="pt-3 pb-1">
               <ActiveIdeaDropdown variant="sidebar" collapsed={isCollapsed} />
             </div>
@@ -180,7 +181,7 @@ export default function AppSidebar({
           </div>
 
           {/* GROUP 2: Founder Tools */}
-          {role === "founder" && (
+          {isFounder && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
