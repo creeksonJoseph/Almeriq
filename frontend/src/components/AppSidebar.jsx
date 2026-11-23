@@ -36,6 +36,15 @@ export default function AppSidebar({
     if (itemPath === "/investor/dashboard") {
       return location.pathname.startsWith("/investor/") && location.pathname !== "/investor/profile";
     }
+    if (itemPath === "/founder/legal/guide") {
+      return location.pathname.startsWith("/founder/legal/");
+    }
+    if (itemPath === "/founder/team/talent") {
+      return location.pathname.startsWith("/founder/team/");
+    }
+    if (itemPath === "/founder/fundraising/pitches") {
+      return location.pathname.startsWith("/founder/fundraising/");
+    }
     if (itemPath.includes("?tab=")) {
       const tabParam = itemPath.split("?tab=")[1];
       const searchParams = new URLSearchParams(location.search);
