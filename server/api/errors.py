@@ -109,18 +109,27 @@ async def catch_all_handler(request: Request, exc: Exception) -> JSONResponse:
 
 
 def _is_4xx_event(event: dict[str, Any]) -> bool:
-    """Inspect a Sentry event to determine if it represents a 4xx client error."""
-    request_info = event.get("request", {}) or {}
-    # Check for an ALIMERIQError or HTTPException with status < 500 in the exception
+    """Drop only events positively identified as client-side validation/HTTP errors.
+
+    Sentry event exception values usually contain a type and message, not the
+    exception instance's status_code. Never infer that every HTTPException is
+    a 4xx: doing so silently drops HTTPException(500) events.
+    """
     exception = event.get("exception", {}) or {}
     values = exception.get("values", [])
-    for val in values:
-        type_name = val.get("type", "")
-        if type_name in ("ALIMERIQError", "HTTPException", "StarletteHTTPException"):
-            # Check the status code from the exception's stack/locals or message
-            # ALIMERIQError instances carry status_code; HTTPException carries status_code
+    response_context = (event.get("contexts", {}) or {}).get("response", {}) or {}
+    request_info = event.get("request", {}) or {}
+    for value in values:
+        type_name = value.get("type", "")
+        if type_name in ("RequestValidationError", "ValidationError"):
             return True
-    # Also check the event's transaction/URL pattern for 4xx-like paths
+        if type_name in ("ALIMERIQError", "HTTPException", "StarletteHTTPException"):
+            status = value.get("status_code") or response_context.get("status_code") or request_info.get("status_code")
+            try:
+                if status is not None and int(status) < 500:
+                    return True
+            except (TypeError, ValueError):
+                continue
     return False
 
 
@@ -138,6 +147,8 @@ def sentry_before_send(event: dict[str, Any], hint: dict[str, Any] | None) -> di
         if isinstance(exc_value, ALIMERIQError) and exc_value.status_code < 500:
             return None
         if isinstance(exc_value, HTTPException) and exc_value.status_code < 500:
+            return None
+        if isinstance(exc_value, (RequestValidationError, PydanticValidationError)):
             return None
 
     # Also drop events that are clearly 4xx based on event data
