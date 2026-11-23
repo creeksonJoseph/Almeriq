@@ -3,9 +3,11 @@ import {
   getProviderProfileApi, updateProviderProfileApi, listCoverageRegionsApi,
   updateCoverageRegionsApi, listAssetsApi, createAssetApi, updateAssetApi, deleteAssetApi,
 } from "../lib/api";
+import { useToast } from "../context/ToastContext";
 
 /** Owns provider onboarding persistence and server synchronization. */
-export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, schemas, pendingDeletions, setPendingDeletions }) {
+export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, finalSchema, pendingDeletions, setPendingDeletions }) {
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -44,13 +46,14 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, sch
         })));
       } catch (error) {
         console.error("Failed to load provider setup", error);
+        toast.error("Unable to load your provider setup. Please refresh and try again.");
       } finally {
         if (active) setLoading(false);
       }
     }
     loadProfile();
     return () => { active = false; };
-  }, [methods, coverageToApi]);
+  }, [methods, coverageToApi, toast]);
 
   const persistAssets = useCallback(async (data) => {
     const toNum = (value) => value != null && value !== "" && !Number.isNaN(Number(value)) ? Number(value) : null;
@@ -99,16 +102,17 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, sch
       await saveProfileAndCoverage(data);
       await persistAssets(data);
       const { failed } = await deletePendingAssets();
-      if (failed.length) window.alert("Some assets could not be deleted. Draft partially saved.");
+      if (failed.length) toast.error("Some assets could not be deleted. Draft partially saved.");
+      else toast.success("Provider setup draft saved.");
     } catch (error) {
       console.error("Provider setup draft save failed", error);
-      window.alert("Some draft data failed to save.");
+      toast.error("Some draft data failed to save.");
     } finally { setSaving(false); }
-  }, [methods, saveProfileAndCoverage, persistAssets, deletePendingAssets]);
+  }, [methods, saveProfileAndCoverage, persistAssets, deletePendingAssets, toast]);
 
   const handleComplete = useCallback(async () => {
     const data = methods.getValues();
-    const result = schemas.final.safeParse(data);
+    const result = finalSchema.safeParse(data);
     if (!result.success) {
       result.error.issues.forEach((issue) => methods.setError(issue.path.join("."), { message: issue.message }));
       return;
@@ -119,14 +123,16 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, sch
       await persistAssets(data);
       const { failed } = await deletePendingAssets();
       if (failed.length) {
-        window.alert("Some assets could not be deleted. Please retry.");
+        toast.error("Some assets could not be deleted. Please retry.");
         return;
       }
+      toast.success("Provider profile completed.");
       navigate("/provider/dashboard");
     } catch (error) {
       console.error("Provider setup completion failed", error);
+      toast.error(error.message || "Unable to complete provider setup.");
     } finally { setSaving(false); }
-  }, [methods, schemas, saveProfileAndCoverage, persistAssets, deletePendingAssets, navigate]);
+  }, [methods, finalSchema, saveProfileAndCoverage, persistAssets, deletePendingAssets, navigate, toast]);
 
   return { loading, saving, handleSaveDraft, handleComplete };
 }
