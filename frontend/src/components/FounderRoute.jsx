@@ -22,7 +22,7 @@ export default function FounderRoute({ children }) {
     return <OnboardingWizard user={user} onComplete={(nextUser) => updateUser(nextUser)} />;
   }
 
-  if (user?.role !== "founder") {
+  if (String(user?.role || "").toLowerCase() !== "founder") {
     return <Navigate to="/dashboard" replace />;
   }
 
