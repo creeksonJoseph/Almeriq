@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useExpertDiscovery } from "../../hooks/useExpertDiscovery";
-import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
+import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 import { startAdvisoryConversationApi } from "../../lib/api/conversations";
 import { useNavigate } from "react-router-dom";
 
@@ -73,7 +73,7 @@ export default function ExpertDiscoveryPage() {
           <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">Request advice from {selected.headline || "this expert"}</h2><Button variant="ghost" onClick={() => setSelected(null)}>Close</Button></div>
           <form onSubmit={requestAdvice} className="space-y-4">
             <label className="block space-y-2"><span className="text-sm">What do you need help with?</span><Input value={subject} onChange={(event) => setSubject(event.target.value)} maxLength={200} placeholder="e.g. Review our fundraising strategy" required /></label>
-            <label className="block space-y-2"><span className="text-sm">Describe the request</span><textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={4} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Share context, goals and the kind of help you need." required /></label>
+            <label className="block space-y-2"><span className="text-sm">Describe the request</span><Textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={4} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Share context, goals and the kind of help you need." required /></label>
             <label className="block space-y-2"><span className="text-sm">Indicative budget (optional)</span><Input value={budget} onChange={(event) => setBudget(event.target.value)} placeholder="Amount" /></label>
             <div className="flex justify-end"><Button type="submit" disabled={sending}>{sending ? "Sending…" : "Send advisory request"}</Button></div>
           </form>
