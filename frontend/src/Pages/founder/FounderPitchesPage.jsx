@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useFounderPitches } from "../../hooks/useFounderPitches";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
+import { Button, Card, Input, Select, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 import { startInvestmentConversationApi } from "../../lib/api/conversations";
 import { executeAiToolApi } from "../../lib/api/founder";
 
@@ -114,15 +114,15 @@ export default function FounderPitchesPage() {
         <Card className="space-y-4 p-6">
           <div><h2 className="font-serif text-xl">Draft an investor update</h2><p className="mt-1 text-sm text-white/55">Generate an editable monthly update from details you provide. Missing metrics will not be invented.</p></div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-1 text-sm"><span>Startup</span><select value={updatePitchId} onChange={(event) => setUpdatePitchId(event.target.value)} className="w-full rounded-lg border border-border bg-surface-2 p-3"><option value="">Choose a pitch</option>{pitches.map((pitch) => <option key={pitch.id} value={pitch.id}>{pitch.title}</option>)}</select></label>
+            <label className="space-y-1 text-sm"><span>Startup</span><Select value={updatePitchId} onChange={(event) => setUpdatePitchId(event.target.value)} className="w-full rounded-lg border border-border bg-surface-2 p-3"><option value="">Choose a pitch</option>{pitches.map((pitch) => <option key={pitch.id} value={pitch.id}>{pitch.title}</option>)}</Select></label>
             <label className="space-y-1 text-sm"><span>Update period</span><Input value={updatePeriod} onChange={(event) => setUpdatePeriod(event.target.value)} placeholder="e.g. November 2026" /></label>
           </div>
-          <label className="block space-y-1 text-sm"><span>Highlights / progress</span><textarea value={updateHighlights} onChange={(event) => setUpdateHighlights(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Wins, product milestones, customer progress…" /></label>
-          <label className="block space-y-1 text-sm"><span>Challenges / lowlights</span><textarea value={updateChallenges} onChange={(event) => setUpdateChallenges(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="What did not go as planned?" /></label>
-          <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
-          <label className="block space-y-1 text-sm"><span>What you need from investors</span><textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
+          <label className="block space-y-1 text-sm"><span>Highlights / progress</span><Textarea value={updateHighlights} onChange={(event) => setUpdateHighlights(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Wins, product milestones, customer progress…" /></label>
+          <label className="block space-y-1 text-sm"><span>Challenges / lowlights</span><Textarea value={updateChallenges} onChange={(event) => setUpdateChallenges(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="What did not go as planned?" /></label>
+          <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><Textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
+          <label className="block space-y-1 text-sm"><span>What you need from investors</span><Textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
           <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
-          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
+          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><Textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
         </Card>
         
         )}
@@ -131,7 +131,7 @@ export default function FounderPitchesPage() {
           <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
           <form onSubmit={submit} className="space-y-4">
             <label className="block space-y-2"><span className="text-sm">Startup / pitch title</span><Input name="title" value={form.title} onChange={update} maxLength={200} required placeholder="Company or product name" /></label>
-            <label className="block space-y-2"><span className="text-sm">Summary</span><textarea name="summary" value={form.summary} onChange={update} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Problem, solution, traction and what you're building." /></label>
+            <label className="block space-y-2"><span className="text-sm">Summary</span><Textarea name="summary" value={form.summary} onChange={update} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Problem, solution, traction and what you're building." /></label>
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block space-y-2"><span className="text-sm">Sector</span><Input name="sector" value={form.sector} onChange={update} placeholder="Fintech" /></label>
               <label className="block space-y-2"><span className="text-sm">Stage</span><Input name="stage" value={form.stage} onChange={update} placeholder="Pre-seed" /></label>
@@ -144,9 +144,9 @@ export default function FounderPitchesPage() {
               <label className="block space-y-2"><span className="text-sm">Pitch deck URL</span><Input name="pitch_deck_url" value={form.pitch_deck_url} onChange={update} placeholder="https://…" /></label>
               <label className="block space-y-2"><span className="text-sm">Financials / data room URL</span><Input name="financials_url" value={form.financials_url} onChange={update} placeholder="https://…" /></label>
             </div>
-            <label className="block space-y-2"><span className="text-sm">Traction</span><textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
-            <label className="block space-y-2"><span className="text-sm">Team summary</span><textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
-            <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
+            <label className="block space-y-2"><span className="text-sm">Traction</span><Textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
+            <label className="block space-y-2"><span className="text-sm">Team summary</span><Textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
+            <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><Textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
             <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Update pitch" : "Publish pitch"}</Button></div>
           </form>
         </Card>
