@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, X, MapPin, Search, ShieldCheck, SlidersHorizontal, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, MapPin, Search, ShieldCheck, Image as ImageIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonCard, SkeletonText, EmptyState } from "../../components/ui";
 import { listMarketplaceListingsApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
@@ -179,7 +179,7 @@ export default function MarketplacePage() {
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ImageIcon size={18} /></div>
             <div>
               <p className="text-xs font-medium text-white/60">Available listings</p>
-              <p className="text-xl font-semibold text-text">{listings.length}</p>
+              <p className="text-xl font-semibold text-text">{availableCount}</p>
             </div>
           </Card>
           <Card className="flex items-center gap-3 p-4">
@@ -193,12 +193,12 @@ export default function MarketplacePage() {
       </header>
 
       <section aria-label="Search and filter listings" className="space-y-4">
-        <form onSubmit={searchForm.handleSubmit(() => {})} className="flex flex-col gap-3 sm:flex-row">
+        <form onSubmit={searchForm.handleSubmit((values) => navigate("/search?q=" + encodeURIComponent(values.query.trim())))} className="flex flex-col gap-3 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
             <input {...searchForm.register("query")} aria-label="Search marketplace listings" placeholder="Search by asset, provider or location" className="alq-input min-h-12 w-full pl-10" />
           </div>
-          <Button type="button" variant="ghost" onClick={() => setFiltersOpen((open) => !open)} className="shrink-0">
+          <Button type="submit" variant="primary" className="shrink-0">Search</Button>\n          <Button type="button" variant="ghost" onClick={() => setFiltersOpen((open) => !open)} className="shrink-0">
             {filtersOpen ? "Hide filters" : "Filters" + (activeFilterCount ? " (" + activeFilterCount + ")" : "")}
           </Button>
         </form>
