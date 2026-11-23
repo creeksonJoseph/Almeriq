@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
-import { Card, Skeleton, SkeletonText } from "./index";
+import Card from "./Card.jsx";
+import Skeleton, { SkeletonText } from "./Skeleton.jsx";
 
 function HeaderSkeleton({ wide = true }) {
   return (
