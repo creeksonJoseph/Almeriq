@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Search, SlidersHorizontal, MapPin, ShieldCheck, Zap, ChevronLeft,
-  ChevronRight, X, MessageSquare, ShoppingCart, Box, Truck, Satellite,
-  Sun, Cpu, Package, RotateCcw
+  Search, MapPin, ShieldCheck, ChevronLeft, ChevronRight, X, Box, Package
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Skeleton, SkeletonText } from "../../components/ui";
@@ -33,16 +31,6 @@ const CATEGORY_TERMS = {
   transport: ["truck", "transport", "logistics"],
   containers: ["container", "edge"],
   solar: ["solar", "renewable"],
-};
-
-const CATEGORY_ICONS = {
-  compute: Cpu,
-  satellites: Satellite,
-  power: Zap,
-  excavation: Box,
-  transport: Truck,
-  containers: Package,
-  solar: Sun,
 };
 
 function MarketplaceSkeleton() {
@@ -225,7 +213,7 @@ export default function MarketplacePage() {
       </header>
 
       <section className="space-y-4" aria-label="Search and filter listings">
-        <form onSubmit={searchForm.handleSubmit(() => {})} className="flex flex-col gap-3 sm:flex-row">
+        <form onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-3 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" aria-hidden="true" />
             <input
