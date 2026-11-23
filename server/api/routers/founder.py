@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from api.dependencies import get_current_user
 from core.roles import user_has_role
@@ -170,9 +170,11 @@ async def analyze(
 @router.get("/founder/ventures", response_model=list[VentureOut])
 @router.get("/api/founder/ventures", response_model=list[VentureOut])
 async def ventures_list(
+    response: Response,
     current_user: dict = Depends(get_current_user),
 ) -> list[dict]:
     user_id = _require_founder(current_user)
+    response.headers["Cache-Control"] = "private, max-age=30"
     logger.info("GET /founder/ventures", extra={"user_id": user_id})
     return await list_ventures(user_id)
 
