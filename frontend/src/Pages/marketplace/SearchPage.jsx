@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Search, ChevronRight, MapPin, Zap, Satellite, Box, Sun, Truck, Layers, MessageSquare, ShoppingCart } from "lucide-react";
+import { Search, ChevronRight, MapPin, MessageSquare, ShoppingCart } from "lucide-react";
 import { Button, Card, Pill, Input, Skeleton, SkeletonCard, SkeletonText } from "../../components/ui";
 import { searchMarketplaceApi, listMarketplaceProvidersApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
