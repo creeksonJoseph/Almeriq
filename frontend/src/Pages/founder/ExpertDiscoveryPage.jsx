@@ -12,7 +12,7 @@ export default function ExpertDiscoveryPage() {
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [sending, setSending] = useState(false);
-  const { experts, requests, loading, error, notice, sendRequest, setError } = useExpertDiscovery();
+  const { experts, requests, expertsLoading, requestsLoading, error, notice, sendRequest, setError } = useExpertDiscovery();
 
   const visible = experts.filter((expert) => {
     const haystack = [expert.headline, expert.bio, expert.location, ...(expert.expertise || [])].join(" ").toLowerCase();
@@ -50,7 +50,7 @@ export default function ExpertDiscoveryPage() {
         <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expertise, location or keywords…" />
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
-        {loading ? <div className="grid gap-4 md:grid-cols-2" aria-busy="true">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : visible.length === 0 ? <Card className="p-6 text-sm text-white/50">No active expert profiles match that search.</Card> : <div className="grid gap-4 md:grid-cols-2">{visible.map((expert) => (
+        {expertsLoading ? <div className="grid gap-4 md:grid-cols-2" aria-busy="true">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : visible.length === 0 ? <Card className="p-6 text-sm text-white/50">No active expert profiles match that search.</Card> : <div className="grid gap-4 md:grid-cols-2">{visible.map((expert) => (
           <Card key={expert.id} className="space-y-3 p-5">
             <div><h2 className="font-serif text-xl">{expert.headline || "Independent expert"}</h2><p className="mt-1 text-xs text-gold">{expert.expertise?.join(" · ") || "Expertise not listed"}</p></div>
             <p className="text-sm text-white/65">{expert.bio || "No bio provided."}</p>
@@ -61,7 +61,7 @@ export default function ExpertDiscoveryPage() {
         ))}</div>}
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Your advisory requests</h2>
-          {requests.length === 0 ? <Card className="p-5 text-sm text-white/50">You haven't contacted an expert yet.</Card> : requests.map((request) => {
+          {requestsLoading ? <div className="space-y-3" aria-busy="true">{[0, 1].map((item) => <Card key={item} className="space-y-2 p-4"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-3 w-1/2" /></Card>)}</div> : requests.length === 0 ? <Card className="p-5 text-sm text-white/50">You haven't contacted an expert yet.</Card> : requests.map((request) => {
             const expert = experts.find((item) => item.user_id === request.expert_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div><p className="font-medium">{request.subject}</p><p className="mt-1 text-xs text-white/50">{expert?.headline || `Expert #${request.expert_id}`} · <span className="capitalize">{request.status.replaceAll("_", " ")}</span></p></div>
