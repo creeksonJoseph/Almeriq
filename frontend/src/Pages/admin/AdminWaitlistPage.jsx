@@ -121,13 +121,7 @@ export default function AdminWaitlistPage() {
   }, [data.items, search, selectedRole]);
 
   // Wait for auth initialization before evaluating access
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] w-full">
-        <div className="w-8 h-8 border-2 border-[#C9A15A] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (authLoading) return <RouteSkeleton variant="table" />;
 
   // Guard: Admin only
   if (!user?.is_admin) {
@@ -245,8 +239,9 @@ export default function AdminWaitlistPage() {
 
       <div className="overflow-hidden rounded-2xl border border-[#282a2f] bg-[#12121a]">
         {loading ? (
-          <div className="flex min-h-64 items-center justify-center">
-            <Loader2 size={24} className="animate-spin text-[#f2ca50]" />
+          <div className="space-y-4 p-6" aria-label="Loading waitlist" aria-busy="true">
+            <div className="flex gap-4 border-b border-border pb-3">{[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-3 flex-1" />)}</div>
+            {[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className="flex items-center gap-4"><Skeleton className="h-9 w-9 rounded-full" />{[0, 1, 2, 3].map((cell) => <Skeleton key={cell} className="h-3 flex-1" />)}</div>)}
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
