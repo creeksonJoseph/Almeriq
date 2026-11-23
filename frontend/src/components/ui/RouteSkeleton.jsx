@@ -124,10 +124,10 @@ export default function RouteSkeleton({ variant }) {
   const routeVariant = variant || (
     /marketplace|\/search/.test(pathname) ? "marketplace" :
     /messages/.test(pathname) ? "inbox" :
-    /orders|alerts|applications|waitlist/.test(pathname) ? "table" :
-    /setup|profile|checkout|intake|edit|new|talent/.test(pathname) ? "form" :
+    /orders|alerts|applications|waitlist|team\\/members|team\\/invitations/.test(pathname) ? "table" :
+    /setup|profile|checkout|intake|edit|new/.test(pathname) ? "form" :
     /dashboard|investor/.test(pathname) ? "dashboard" :
-    /listings|ventures|experts|jobs/.test(pathname) ? "grid" : "default"
+    /listings|ventures|experts|jobs|team\\/talent/.test(pathname) ? "grid" : "default"
   );
 
   return (
