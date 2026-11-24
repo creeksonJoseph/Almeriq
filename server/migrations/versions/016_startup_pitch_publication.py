@@ -29,8 +29,6 @@ def upgrade() -> None:
           AND trim(stage) <> ''
           AND location IS NOT NULL
           AND trim(location) <> ''
-          AND ask_amount IS NOT NULL
-          AND ask_amount > 0
     """)
 
 
