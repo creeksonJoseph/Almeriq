@@ -102,14 +102,14 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="h-[calc(100vh-200px)] flex items-center justify-center">
+      <div className="flex-1 min-h-0 flex items-center justify-center">
         <SkeletonText lines={3} />
       </div>
     );
   }
 
   return (
-    <div className="messages-layout h-[calc(100vh-200px)] flex flex-col">
+    <div className="messages-layout flex flex-1 min-h-0 min-w-0 flex-col">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-border shrink-0">
         <div>
@@ -126,9 +126,9 @@ export default function MessagesPage() {
       {error && <p role="alert" className="mx-4 mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
 
       {/* Conversation List + Chat View */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
         {/* Conversation List (Sidebar on desktop, Drawer on mobile) */}
-        <div className={`w-full lg:w-96 flex-shrink-0 border-r border-border bg-surface flex flex-col ${mobileDrawerOpen ? "fixed inset-0 z-50 lg:static lg:z-auto" : "hidden lg:flex"}`}>
+        <div className={`w-full lg:w-96 flex-shrink-0 min-h-0 border-r border-border bg-surface flex flex-col ${mobileDrawerOpen ? "fixed inset-0 z-50 lg:static lg:z-auto" : "hidden lg:flex"}`}>
           {/* Mobile Header */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
             <h2 className="font-serif text-lg font-semibold text-text">Messages</h2>
@@ -165,7 +165,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Chat View */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 min-h-0 flex flex-col min-w-0">
           {activeConversation ? (
             <ChatView
               conversation={activeConversation}
