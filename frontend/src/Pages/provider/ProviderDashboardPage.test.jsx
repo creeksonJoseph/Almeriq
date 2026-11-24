@@ -29,6 +29,7 @@ vi.mock("../../lib/api", () => ({
   listAssetsApi: vi.fn(),
   listConversationsApi: vi.fn(),
   getProviderOrderSummaryApi: vi.fn(),
+  getConversationSummaryApi: vi.fn(),
 }));
 
 import ProviderDashboardPage from "./ProviderDashboardPage.jsx";
@@ -38,6 +39,7 @@ describe("ProviderDashboardPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(api.getProviderOrderSummaryApi).mockResolvedValue({ total_orders: 0, open_orders: 0, pending_review: 0, priced_orders: 0 });
+    vi.mocked(api.getConversationSummaryApi).mockResolvedValue({ unread_conversations: 0 });
   });
 
   it("shows loading skeletons then renders dashboard", async () => {
