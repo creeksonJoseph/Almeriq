@@ -495,6 +495,10 @@ async def test_provider_order_summary_counts_all_orders_and_priced_records(sessi
         "total_orders": 3,
         "open_orders": 2,
         "pending_review": 1,
+        "confirmed": 1,
+        "shipped": 0,
+        "completed": 1,
+        "declined": 0,
         "priced_orders": 2,
     }
 
