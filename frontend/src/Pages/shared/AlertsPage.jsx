@@ -15,6 +15,7 @@ const TYPE_META = {
 
 const ROLE_TYPES = {
   founder: ["order", "message", "job", "investment", "advisory", "team"],
+  user: ["order", "message"],
   INVESTOR: ["message", "investment"],
   INFRASTRUCTURE_PROVIDER: ["order", "message", "job"],
   JOB_SEEKER: ["message", "job", "team"],
@@ -27,7 +28,7 @@ const PAGE_SIZE = 25;
 export default function AlertsPage() {
   const { user } = useAuth();
   const role = user?.role || "founder";
-  const availableTypes = ROLE_TYPES[role] || ROLE_TYPES.founder;
+  const availableTypes = ROLE_TYPES[role] || ROLE_TYPES.user;
   const [notifications, setNotifications] = useState([]);
   const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
