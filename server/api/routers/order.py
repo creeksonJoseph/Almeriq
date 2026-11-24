@@ -1,13 +1,12 @@
 """api/routers/order.py - Provider order endpoints."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
 from core.roles import user_has_role
 from api.dependencies import get_current_provider_profile, get_current_user
 from schemas.provider import (
-    OrderCreateRequest,
     OrderDetailResponse,
     OrderListResponse,
     OrderResponse,
