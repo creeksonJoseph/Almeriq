@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Bell, Check, ChevronRight, Loader2, Package, MessageSquare, Briefcase, TrendingUp, Compass, Users } from "lucide-react";
 import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
@@ -47,6 +47,7 @@ export default function AlertsPage() {
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
         unread_only: filter === "unread",
+        type: !["all", "unread"].includes(filter) ? filter : undefined,
       });
       const items = (res.items || []).filter((item) => availableTypes.includes(item.type));
       setNotifications(items);
@@ -61,10 +62,7 @@ export default function AlertsPage() {
 
   useEffect(() => { loadNotifications(); }, [loadNotifications]);
 
-  const filteredNotifications = useMemo(() => {
-    if (filter === "all" || filter === "unread") return notifications;
-    return notifications.filter((item) => item.type === filter);
-  }, [filter, notifications]);
+  const filteredNotifications = notifications;
 
   const markRead = async (notification) => {
     if (notification.read) return;
