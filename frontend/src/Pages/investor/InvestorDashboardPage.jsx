@@ -13,7 +13,7 @@ export default function InvestorDashboardPage() {
   const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : pathname.includes("/updates") ? "updates" : "overview";
   const workspace = useInvestorWorkspace({ navigate });
   const {
-    profile, setProfile, startups, startupTotal, loadingMoreStartups, loadMoreStartups, requests, updates, loading, busyPitch,
+    profile, setProfile, startups, startupTotal, loadingMoreStartups, loadMoreStartups, requests, updates, loading, busyPitch, load,
     error, notice, settingsSaving, saveSettings,
     openConversation, savePortfolio, expressInterest,
   } = workspace;
