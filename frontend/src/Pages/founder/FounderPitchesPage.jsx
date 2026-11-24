@@ -16,7 +16,7 @@ export default function FounderPitchesPage() {
   const [editingId, setEditingId] = useState(null);
   const {
     pitches, requests, loading, saving, busyRequestId, error, notice,
-    savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
+    savePitch, updateRequest, removePitch, setPitchPublication, startConversation, setError, setNotice,
   } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
   const [updatePeriod, setUpdatePeriod] = useState("");
@@ -90,7 +90,7 @@ export default function FounderPitchesPage() {
     <main className="min-h-screen bg-bg px-4 py-10 text-text">
       <div className="mx-auto max-w-5xl space-y-6">
         <nav aria-label="Fundraising" className="flex flex-wrap gap-2 border-b border-border pb-3">{[["pitches","Pitch management","/founder/fundraising/pitches"],["investors","Investor interest","/founder/fundraising/investors"],["updates","Investor updates","/founder/fundraising/updates"]].map(([key,label,path]) => <Button key={key} size="sm" variant={pageView === key ? "primary" : "ghost"} onClick={() => navigate(path)}>{label}</Button>)}</nav>
-        <header><p className="text-xs uppercase tracking-widest text-gold">Founder workspace</p><h1 className="mt-2 font-serif text-3xl">Fundraising pitches</h1><p className="mt-2 text-sm text-white/60">Publish a concise startup profile for investors to discover.</p></header>
+        <header><p className="text-xs uppercase tracking-widest text-gold">Founder workspace</p><h1 className="mt-2 font-serif text-3xl">Fundraising pitches</h1><p className="mt-2 text-sm text-white/60">Save a draft, review it, then publish it when it is ready for investors to discover.</p></header>
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
         {pageView === "updates" && (
@@ -130,17 +130,17 @@ export default function FounderPitchesPage() {
             <label className="block space-y-2"><span className="text-sm">Traction</span><Textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
             <label className="block space-y-2"><span className="text-sm">Team summary</span><Textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
             <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><Textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
-            <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Update pitch" : "Publish pitch"}</Button></div>
+            <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Save changes" : "Save draft"}</Button></div>
           </form>
         </Card>
         
         )}
         {pageView === "pitches" && (
-        <section className="space-y-3"><h2 className="font-serif text-xl">Your published pitches</h2>
-          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={2} /><Skeleton className="h-9 w-32 rounded-xl" /></Card>)}</div> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
+        <section className="space-y-3"><h2 className="font-serif text-xl">Your pitches</h2>
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={2} /><Skeleton className="h-9 w-32 rounded-xl" /></Card>)}</div> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't created a startup pitch yet.</Card> : pitches.map((pitch) => (
             <Card key={pitch.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div className="min-w-0 flex-1"><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-sm text-white/60">{pitch.sector || "Sector not set"} · {pitch.stage || "Stage not set"}{pitch.ask_amount != null ? ` · Ask: ${pitch.ask_amount}` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-white/50">{pitch.summary || "No summary added."}</p></div>
-              <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
+              <div className="flex flex-wrap gap-2"><span className="self-center text-xs capitalize text-white/50">{pitch.status || "published"}</span>{pitch.status === "published" ? <Button size="sm" variant="ghost" onClick={() => setPitchPublication(pitch.id, false)}>Unpublish</Button> : <Button size="sm" onClick={() => setPitchPublication(pitch.id, true)}>Publish</Button>}<Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
             </Card>
           ))}
         </section>
