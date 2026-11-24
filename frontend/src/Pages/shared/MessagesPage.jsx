@@ -87,16 +87,39 @@ export default function MessagesPage() {
     }
   };
 
-  // Keep open conversations fresh without requiring a manual page reload.
+  // Refresh inbox metadata even when no conversation is currently open.
+  useEffect(() => {
+    let cancelled = false;
+    const refreshConversations = async () => {
+      try {
+        const result = await listConversationsApi();
+        if (cancelled) return;
+        const items = result.items || result.conversations || [];
+        setConversations(items.map((conv) => ({
+          ...conv,
+          otherParty: { name: conv.other_participant?.full_name || conv.other_participant?.email || "User" },
+          lastMessage: conv.last_message?.body || "",
+          time: conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "",
+          unread: conv.unread_count || 0,
+        })));
+      } catch {
+        // Keep the last successful inbox snapshot during transient failures.
+      }
+    };
+    const intervalId = window.setInterval(refreshConversations, 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  // Refresh messages in the active conversation without a manual page reload.
   useEffect(() => {
     if (!activeConversation?.id) return undefined;
     let cancelled = false;
     const refresh = async () => {
       try {
-        const [messageResult, conversationResult] = await Promise.all([
-          listMessagesApi(activeConversation.id),
-          listConversationsApi(),
-        ]);
+        const messageResult = await listMessagesApi(activeConversation.id);
         if (cancelled) return;
         const freshMessages = (messageResult.items || messageResult.messages || []).map((message) => ({
           ...message,
@@ -110,16 +133,6 @@ export default function MessagesPage() {
           freshMessages.forEach((message) => byId.set(message.id, message));
           return [...byId.values()].sort((a, b) => new Date(a.created_at || a.time) - new Date(b.created_at || b.time));
         });
-        const items = conversationResult.items || conversationResult.conversations || [];
-        setConversations((current) => current.map((conversation) => {
-          const fresh = items.find((item) => item.id === conversation.id);
-          return fresh ? {
-            ...conversation,
-            unread: fresh.unread_count || 0,
-            lastMessage: fresh.last_message?.body || conversation.lastMessage,
-            time: fresh.last_message_at ? new Date(fresh.last_message_at).toLocaleString() : conversation.time,
-          } : conversation;
-        }));
       } catch {
         // A transient polling failure should not interrupt composing or sending.
       }
