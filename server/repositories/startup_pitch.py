@@ -71,11 +71,14 @@ async def list_startup_pitches(
     founder_id: int | None = None,
     limit: int | None = None,
     offset: int = 0,
+    published_only: bool = False,
     session: AsyncSession | None = None,
 ) -> list[dict]:
     stmt = select(StartupPitch).order_by(StartupPitch.created_at.desc())
     if founder_id is not None:
         stmt = stmt.where(StartupPitch.founder_id == founder_id)
+    if published_only:
+        stmt = stmt.where(StartupPitch.status == "published")
     if limit is not None:
         stmt = stmt.limit(limit)
     stmt = stmt.offset(offset)
@@ -89,11 +92,14 @@ async def list_startup_pitches(
 
 async def count_startup_pitches(
     founder_id: int | None = None,
+    published_only: bool = False,
     session: AsyncSession | None = None,
 ) -> int:
     stmt = select(func.count()).select_from(StartupPitch)
     if founder_id is not None:
         stmt = stmt.where(StartupPitch.founder_id == founder_id)
+    if published_only:
+        stmt = stmt.where(StartupPitch.status == "published")
     if session is not None:
         return await session.scalar(stmt) or 0
     async with async_session_factory() as db:
