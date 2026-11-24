@@ -267,7 +267,7 @@ export default function ProviderOrdersPage() {
                 );
               }},
               { key: "timestamp", header: "Timestamp", render: (row) => (
-                <span className="font-mono text-[#ffffff]/60 text-[12px]">{row.timestamp || "—"}</span>
+                <span className="font-mono text-[#ffffff]/60 text-[12px]">{row.created_at ? new Date(row.created_at).toLocaleString() : "—"}</span>
               )},
               { key: "action", header: "Inspect", render: (row) => (
                 <button onClick={() => openDrawer(row)} className="text-[#f2ca50] hover:text-[#e2ba40] p-1">
