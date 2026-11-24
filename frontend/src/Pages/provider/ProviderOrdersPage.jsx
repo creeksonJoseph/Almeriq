@@ -1,19 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Download, Plus, Filter, ChevronRight, Search } from "lucide-react";
-import { Button, Card, Input, StatusPill, DataTable, Skeleton, SkeletonText, SkeletonCard, Drawer } from "../../components/ui";
+import { ChevronRight, Search } from "lucide-react";
+import { Button, Card, DataTable, Skeleton, SkeletonText, SkeletonCard, Drawer } from "../../components/ui";
 import { listOrdersApi, getOrderApi, getProviderOrderSummaryApi } from "../../lib/api";
-
-const C = {
-  bg: "#0c0e13",
-  surface: "#111318",
-  surfaceLow: "#1a1b21",
-  surfaceContainer: "#1e2025",
-  surfaceHigh: "#282a2f",
-  gold: "#f2ca50",
-  text: "#ffffff",
-  border: "#282a2f",
-};
 
 const STATUS_CONFIG = {
   pending: { variant: "gold", label: "Pending" },
