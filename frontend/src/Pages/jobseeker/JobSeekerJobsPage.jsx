@@ -155,7 +155,7 @@ export default function JobSeekerJobsPage() {
                   </div>
                   <p className="whitespace-pre-line text-sm leading-6 text-white/70">{job.description}</p>
                   {job.requirements && <div><p className="text-xs font-semibold uppercase tracking-wider text-white/40">Requirements</p><p className="mt-1 whitespace-pre-line text-sm text-white/60">{job.requirements}</p></div>}
-                  {(job.salary_min != null || job.salary_max != null) && <p className="text-sm text-white/60">Salary range: {job.salary_min ?? "—"} – {job.salary_max ?? "—"}</p>}
+                  {(job.salary_min != null || job.salary_max != null) && <p className="text-sm text-white/60">Salary range: {job.salary_min ?? "—"} – {job.salary_max ?? "—"} · currency not specified</p>}
                   {!appliedJobIds.has(job.id) && <label className="block space-y-2"><span className="text-xs text-white/50">Cover letter (optional)</span><textarea value={coverLetters[job.id] || ""} onChange={(event) => setCoverLetters((items) => ({ ...items, [job.id]: event.target.value }))} rows={3} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Briefly explain why you're a good fit." /></label>}
                   <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">
                     <span className="text-xs text-white/40">Job #{job.id}</span>
