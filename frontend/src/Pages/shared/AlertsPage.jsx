@@ -1,217 +1,164 @@
-import React, { useEffect, useState } from "react";
-import { Bell, Check, ChevronRight, Loader2, Package, MessageSquare, CreditCard, Settings, AlertTriangle, Briefcase, TrendingUp, Compass, Users } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Bell, Check, ChevronRight, Loader2, Package, MessageSquare, Briefcase, TrendingUp, Compass, Users } from "lucide-react";
 import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
-const TYPE_ICONS = {
-  order: Package,
-  message: MessageSquare,
-  payment: CreditCard,
-  system: Settings,
-  alert: AlertTriangle,
-  job: Briefcase,
-  investment: TrendingUp,
-  advisory: Compass,
-  team: Users,
+const TYPE_META = {
+  order: { label: "Orders", icon: Package },
+  message: { label: "Messages", icon: MessageSquare },
+  job: { label: "Jobs", icon: Briefcase },
+  investment: { label: "Investments", icon: TrendingUp },
+  advisory: { label: "Advisory", icon: Compass },
+  team: { label: "Team", icon: Users },
 };
 
+const ROLE_TYPES = {
+  founder: ["order", "message", "job", "investment", "advisory", "team"],
+  INVESTOR: ["message", "investment"],
+  INFRASTRUCTURE_PROVIDER: ["order", "message", "job"],
+  JOB_SEEKER: ["message", "job", "team"],
+  EXPERT: ["message", "advisory"],
+  ADMIN: Object.keys(TYPE_META),
+};
+
+const PAGE_SIZE = 25;
+
 export default function AlertsPage() {
+  const { user } = useAuth();
+  const role = user?.role || "founder";
+  const availableTypes = ROLE_TYPES[role] || ROLE_TYPES.founder;
   const [notifications, setNotifications] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [page, setPage] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [markAllLoading, setMarkAllLoading] = useState(false);
 
-  useEffect(() => {
-    async function loadNotifications() {
-      setLoading(true);
-      try {
-        const res = await listNotificationsApi();
-        setNotifications((res.items || res.notifications || []).map(n => ({
-          ...n,
-          message: n.body,
-          time: n.created_at ? new Date(n.created_at).toLocaleString() : "",
-          actionUrl: n.link,
-        })));
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadNotifications();
-  }, []);
-
-  const filterTypes = { orders: "order", messages: "message", payments: "payment", system: "system", jobs: "job", investments: "investment", advisory: "advisory", teams: "team" };
-  const filteredNotifications = filter === "unread"
-    ? notifications.filter((n) => !n.read)
-    : filter === "all"
-      ? notifications
-      : notifications.filter((n) => n.type === filterTypes[filter]);
-
-  const handleMarkRead = async (id) => {
+  const loadNotifications = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      await markNotificationReadApi(id);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-      setSelectedNotification((current) => current?.id === id ? { ...current, read: true } : current);
+      const res = await listNotificationsApi({
+        limit: PAGE_SIZE,
+        offset: page * PAGE_SIZE,
+        unread_only: filter === "unread",
+      });
+      const items = (res.items || []).filter((item) => availableTypes.includes(item.type));
+      setNotifications(items);
+      setTotal(res.total || 0);
+      setUnreadCount(res.unread_count || 0);
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || "Failed to mark notification as read.");
+      setError(e.response?.data?.detail || e.message || "Unable to load alerts.");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, filter, availableTypes.join("|")]);
+
+  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+
+  const filteredNotifications = useMemo(() => {
+    if (filter === "all" || filter === "unread") return notifications;
+    return notifications.filter((item) => item.type === filter);
+  }, [filter, notifications]);
+
+  const markRead = async (notification) => {
+    if (notification.read) return;
+    try {
+      await markNotificationReadApi(notification.id);
+      setNotifications((items) => items.map((item) => item.id === notification.id ? { ...item, read: true } : item));
+      setSelectedNotification((item) => item?.id === notification.id ? { ...item, read: true } : item);
+      setUnreadCount((count) => Math.max(0, count - 1));
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message || "Failed to mark alert as read.");
     }
   };
 
-  const handleMarkAllRead = async () => {
+  const markAllRead = async () => {
     setMarkAllLoading(true);
     try {
       await markAllNotificationsReadApi();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      setSelectedNotification((current) => current ? { ...current, read: true } : current);
+      setNotifications((items) => items.map((item) => ({ ...item, read: true })));
+      setSelectedNotification((item) => item ? { ...item, read: true } : item);
+      setUnreadCount(0);
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || "Failed to mark notifications as read.");
+      setError(e.response?.data?.detail || e.message || "Failed to mark alerts as read.");
     } finally {
       setMarkAllLoading(false);
     }
   };
 
-  const openDrawer = (notification) => {
+  const openNotification = (notification) => {
     setSelectedNotification(notification);
-    if (!notification.read) handleMarkRead(notification.id);
     setDrawerOpen(true);
+    markRead(notification);
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   if (loading) {
-    return (
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 space-y-6">
-        <div className="flex items-center justify-between">
-          <SkeletonText lines={2} className="max-w-xl" />
-          <div className="flex gap-2"><Skeleton className="h-9 w-24" /><Skeleton className="h-9 w-32" /></div>
-        </div>
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => <Skeleton className="h-20 w-full rounded-lg" key={i} />)}
-        </div>
-      </div>
-    );
+    return <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <SkeletonText lines={2} className="max-w-xl" />
+      {[...Array(5)].map((_, index) => <Skeleton className="h-20 w-full rounded-lg" key={index} />)}
+    </div>;
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="font-serif text-3xl font-semibold text-text">Alerts</h1>
-          <p className="text-white/70 mt-1">Notifications, order updates, and system messages</p>
+          <p className="mt-1 text-sm text-white/60">Updates related to your work on Almeriq.</p>
         </div>
-        <div className="flex items-center gap-2">
-          {unreadCount > 0 && (
-            <Button onClick={handleMarkAllRead} disabled={markAllLoading}>
-              <Check className="w-4 h-4 mr-1" />
-              {markAllLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Mark All Read (${unreadCount})`}
-            </Button>
-          )}
-        </div>
+        {unreadCount > 0 && <Button onClick={markAllRead} disabled={markAllLoading}>
+          {markAllLoading ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}
+          Mark all read ({unreadCount})
+        </Button>}
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6">
-        {["all", "unread", "orders", "messages", "payments", "jobs", "investments", "advisory", "teams", "system"].map(f => (
-          <Button
-            key={f}
-            variant={filter === f ? "primary" : "ghost"}
-            size="sm"
-            className="shrink-0"
-            onClick={() => setFilter(f)}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-            {f !== "all" && (
-              <span className="px-1.5 py-0.2 rounded bg-surface text-[10px] font-mono">
-                {notifications.filter(n => f === "unread" ? !n.read : n.type === ({ orders: "order", messages: "message", payments: "payment", jobs: "job", investments: "investment", advisory: "advisory", teams: "team", system: "system" }[f])).length}
-              </span>
-            )}
+      <div className="flex flex-wrap gap-2">
+        {["all", "unread", ...availableTypes].map((type) => (
+          <Button key={type} size="sm" variant={filter === type ? "primary" : "ghost"} onClick={() => { setFilter(type); setPage(0); }}>
+            {type === "all" ? "All" : type === "unread" ? "Unread" : TYPE_META[type].label}
           </Button>
         ))}
       </div>
 
-      {/* Notification List */}
       {error && <div role="alert" className="rounded-lg border border-gold/40 bg-surface p-3 text-sm text-gold">{error}</div>}
       <div className="space-y-3">
-        {filteredNotifications.length === 0 ? (
-          <Card className="p-8 text-center">
-            <Bell className="w-12 h-12 text-gold mx-auto mb-4" />
-            <p className="text-white/70">No notifications{filter !== "all" ? ` in ${filter}` : ""}</p>
-          </Card>
-        ) : (
-          filteredNotifications.map(notification => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onClick={() => openDrawer(notification)}
-            />
-          ))
-        )}
+        {filteredNotifications.length === 0 ? <Card className="p-8 text-center">
+          <Bell className="mx-auto mb-4 h-10 w-10 text-gold" />
+          <p className="text-sm text-white/65">{filter === "all" ? "You're all caught up." : "No alerts in this category."}</p>
+        </Card> : filteredNotifications.map((notification) => {
+          const Icon = TYPE_META[notification.type]?.icon || Bell;
+          return <Card key={notification.id} className={`flex cursor-pointer items-start gap-4 p-4 transition-colors ${!notification.read ? "border-gold/30 bg-surface-2" : "hover:bg-surface"}`} onClick={() => openNotification(notification)}>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-2"><Icon className="h-5 w-5 text-gold" /></div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2"><h3 className="truncate font-semibold text-text">{notification.title}</h3><span className="shrink-0 text-xs text-white/50">{notification.created_at ? new Date(notification.created_at).toLocaleString() : ""}</span></div>
+              <p className="mt-1 line-clamp-2 text-sm text-white/65">{notification.body}</p>
+              <div className="mt-2 flex items-center gap-2"><Pill variant="white" className="text-[10px]">{TYPE_META[notification.type]?.label || notification.type}</Pill>{!notification.read && <span className="h-2 w-2 rounded-full bg-gold" />}</div>
+            </div>
+            <ChevronRight className="shrink-0 text-white/50" />
+          </Card>;
+        })}
       </div>
 
-      {/* Detail Drawer */}
-      <Drawer
-        open={drawerOpen}
-        onClose={() => { setDrawerOpen(false); setSelectedNotification(null); }}
-        title="Notification Details"
-        side="right"
-      >
-        {selectedNotification && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              {(() => { const TypeIcon = TYPE_ICONS[selectedNotification.type] || Bell; return <TypeIcon className="h-6 w-6 text-gold" aria-hidden="true" />; })()}
-              <div>
-                <h3 className="font-serif text-lg font-semibold text-text">{selectedNotification.title}</h3>
-                <span className={`text-label-caps text-xs ${selectedNotification.read ? "text-white/60" : "text-gold"}`}>
-                  {selectedNotification.read ? "Read" : "Unread"} · {selectedNotification.time}
-                </span>
-              </div>
-            </div>
-            <div className="pt-4 border-t border-border">
-              <p className="text-text whitespace-pre-wrap">{selectedNotification.message}</p>
-            </div>
-            {selectedNotification.actionUrl && (
-              <Button className="w-full" onClick={() => { window.location.href = selectedNotification.actionUrl; setDrawerOpen(false); }}>
-                <ChevronRight className="w-4 h-4 mr-1" /> {selectedNotification.actionLabel || "View Details"}
-              </Button>
-            )}
-            {!selectedNotification.read && (
-              <Button variant="ghost" className="w-full" onClick={() => handleMarkRead(selectedNotification.id)}>
-                Mark as Read
-              </Button>
-            )}
-          </div>
-        )}
+      {pageCount > 1 && <div className="flex items-center justify-between border-t border-border pt-4">
+        <p className="text-xs text-white/50">Page {page + 1} of {pageCount} · {total} alerts</p>
+        <div className="flex gap-2"><Button size="sm" variant="ghost" disabled={page === 0} onClick={() => setPage((value) => value - 1)}>Previous</Button><Button size="sm" variant="ghost" disabled={page + 1 >= pageCount} onClick={() => setPage((value) => value + 1)}>Next</Button></div>
+      </div>}
+
+      <Drawer open={drawerOpen} onClose={() => { setDrawerOpen(false); setSelectedNotification(null); }} title="Alert details" side="right">
+        {selectedNotification && <div className="space-y-4">
+          <div><h3 className="font-serif text-lg font-semibold text-text">{selectedNotification.title}</h3><p className="mt-1 text-xs text-white/50">{selectedNotification.read ? "Read" : "Unread"} · {selectedNotification.created_at ? new Date(selectedNotification.created_at).toLocaleString() : ""}</p></div>
+          <div className="border-t border-border pt-4"><p className="whitespace-pre-wrap text-sm text-text">{selectedNotification.body}</p></div>
+          {selectedNotification.link && <Button className="w-full" onClick={() => { window.location.assign(selectedNotification.link); }}>View details <ChevronRight className="ml-1 h-4 w-4" /></Button>}
+        </div>}
       </Drawer>
     </div>
-  );
-}
-
-function NotificationItem({ notification, onClick }) {
-  return (
-    <Card
-      className={`p-4 flex items-start gap-4 cursor-pointer transition-colors ${!notification.read ? "bg-surface-2 border-gold/30" : "hover:bg-surface"}`}
-      onClick={onClick}
-    >
-      <div className="w-10 h-10 rounded-lg bg-surface-2 border border-border flex items-center justify-center shrink-0 text-2xl">
-        {TYPE_ICONS[notification.type] || Bell}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <h4 className={`font-semibold text-text truncate ${!notification.read ? "" : "text-white/60"}`}>{notification.title}</h4>
-          <span className="text-xs font-mono text-white/60 shrink-0">{notification.time}</span>
-        </div>
-        <p className="text-sm text-white/70 line-clamp-2 mt-1">{notification.message}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <Pill variant="white" className="text-[10px]">{notification.type}</Pill>
-          {!notification.read && <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />}
-        </div>
-      </div>
-      <ChevronRight className="text-white/60 shrink-0" />
-    </Card>
   );
 }
