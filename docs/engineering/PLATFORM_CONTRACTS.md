@@ -81,7 +81,7 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 | POST/GET | `/api/provider/assets` | cookie + provider | Assets |
 | GET/PUT/DELETE | `/api/provider/assets/:id` | cookie + provider (ownership) | Asset CRUD |
 | GET/POST | `/api/provider/coverage-regions` | cookie + provider | Coverage regions |
-| GET/POST | `/api/provider/orders` | cookie + provider | Orders |
+| GET | `/api/provider/orders` | cookie + provider | Orders |
 | GET/PATCH | `/api/provider/orders/:id` | cookie + provider (ownership) | Order status |
 | POST | `/api/provider/orders/:id/waybill` | cookie + provider | Waybill upload |
 
