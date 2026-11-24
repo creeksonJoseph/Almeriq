@@ -43,6 +43,14 @@ class UserOnboardingRequest(BaseModel):
     id_number: str | None = Field(default=None, max_length=100)
     role: str | None = Field(default=None, max_length=50)
 
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: str | None) -> str | None:
+        allowed = {"FOUNDER", "INVESTOR", "INFRASTRUCTURE_PROVIDER", "JOB_SEEKER", "EXPERT"}
+        if value is not None and value.strip().upper() not in allowed:
+            raise ValueError("Choose a supported account role")
+        return value.strip().upper() if value is not None else None
+
 
 class UserResponse(BaseModel):
     id: int
