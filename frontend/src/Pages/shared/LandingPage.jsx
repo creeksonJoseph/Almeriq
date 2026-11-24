@@ -1,6 +1,7 @@
 /**
  * Pages/LandingPage.jsx - Primary Landing & Waitlist Page for ALIMERIQ.
  */
+import { useEffect } from "react";
 import { Hero, EcosystemSection, CapabilitiesSection, WaitlistFormSection, Footer } from "../../components/landing/LandingSections";
 
 export default function LandingPage() {
