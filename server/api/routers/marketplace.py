@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Response, status
-from schemas.provider import MarketplaceCheckoutRequest, MarketplaceListingDetailResponse, MarketplaceListingListResponse, OrderResponse
+from schemas.provider import MarketplaceCheckoutRequest, MarketplaceListingDetailResponse, MarketplaceListingListResponse
 from api.dependencies import get_current_user
 from core.db import get_db
 from core.roles import user_has_role
