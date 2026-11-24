@@ -216,16 +216,11 @@ def _match_pitch_to_investor(pitch: dict, profile: dict | None) -> tuple[int | N
         if any(value in location for value in geographies):
             score += 15
             reasons.append(f"Geography match: {pitch['location']}")
-    minimum = profile.get("check_size_min")
-    maximum = profile.get("check_size_max")
-    ask = pitch.get("target_check_size")
-    if (minimum is not None or maximum is not None) and ask is not None:
-        possible += 20
-        if (minimum is None or float(ask) >= float(minimum)) and (maximum is None or float(ask) <= float(maximum)):
-            score += 20
-            reasons.append("Target investor check size fits your range")
+    # Monetary matching is intentionally omitted until pitches and investor
+    # profiles store a currency. Comparing bare numbers across currencies would
+    # produce misleading match scores.
     if possible == 0:
-        return None, ["Add sectors, stages, geography or check-size preferences for a match score."]
+        return None, ["Add sector, stage or geography preferences for a match score."]
     return round(score / possible * 100), reasons or ["No matching criteria found; review the pitch details."]
 
 
