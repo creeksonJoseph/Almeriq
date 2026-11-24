@@ -22,7 +22,7 @@ export default function ProviderDashboardPage() {
           getProviderProfileApi(),
           listOrdersApi(),
           listAssetsApi(),
-          listConversationsApi({ limit: 5 }),
+          listConversationsApi({ limit: 100 }),
         ]);
         setProfile(profileRes);
         setOrders(ordersRes?.items || ordersRes?.data?.items || ordersRes?.orders || ordersRes);
@@ -125,7 +125,7 @@ export default function ProviderDashboardPage() {
 
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Unread Enquiries</span>
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Unread Conversations</span>
           </div>
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{unreadEnquiries}</div>
