@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import pytest
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from models.base import Base
 from models.investor_profile import InvestorProfile
+from models.conversation import Conversation
+from models.message import Message
+from repositories import conversation as conversation_repo
 from repositories import notification as notification_repo
 from repositories import user as user_repo
 
@@ -78,3 +82,37 @@ async def test_notification_listing_returns_filtered_total_and_paginates(session
 
     assert len(items) == 2
     assert total == 3
+
+
+@pytest.mark.asyncio
+async def test_unread_conversation_summary_counts_all_inbox_pages(session):
+    user_id = await _user(session, "inbox-owner@example.com", "FOUNDER")
+    sender_one = await _user(session, "inbox-sender-one@example.com", "INVESTOR")
+    sender_two = await _user(session, "inbox-sender-two@example.com", "EXPERT")
+    conversation_one = Conversation(
+        participant_a_id=min(user_id, sender_one),
+        participant_b_id=max(user_id, sender_one),
+    )
+    conversation_two = Conversation(
+        participant_a_id=min(user_id, sender_two),
+        participant_b_id=max(user_id, sender_two),
+    )
+    session.add_all([conversation_one, conversation_two])
+    await session.flush()
+
+    session.add_all([
+        Message(conversation_id=conversation_one.id, sender_id=sender_one, body="Unread one"),
+        Message(conversation_id=conversation_one.id, sender_id=user_id, body="My reply"),
+        Message(
+            conversation_id=conversation_one.id,
+            sender_id=sender_one,
+            body="Already read",
+            read_at=datetime.now(timezone.utc),
+        ),
+        Message(conversation_id=conversation_two.id, sender_id=sender_two, body="Unread two"),
+    ])
+    await session.flush()
+
+    assert await conversation_repo.count_unread_conversations(user_id, session=session) == 2
+    assert await conversation_repo.count_unread_conversations(sender_one, session=session) == 1
+
