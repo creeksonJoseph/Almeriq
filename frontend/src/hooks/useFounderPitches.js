@@ -46,7 +46,7 @@ export function useFounderPitches() {
         setNotice("Pitch updated.");
       } else {
         await createFounderPitchApi(payload);
-        setNotice("Pitch published to investor discovery.");
+        setNotice("Draft saved. Review it and publish when it is ready.");
       }
       await load({ silent: true });
     } catch (requestError) {
