@@ -537,3 +537,15 @@ body {
     size: auto;
   }
 }
+
+
+/* Keep structural dividers and legacy white-border utilities on the same
+   restrained dark border used by the shared form controls and cards. */
+:where(
+  [class~="border-border"],
+  [class~="divide-border"],
+  [class*="border-white"],
+  [class*="divide-white"]
+) {
+  border-color: var(--color-border) !important;
+}
