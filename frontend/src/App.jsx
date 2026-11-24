@@ -408,7 +408,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/settings"].map((path) => (
+                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/updates", "/investor/settings"].map((path) => (
                   <Route
                     key={path}
                     path={path}
