@@ -461,3 +461,40 @@ async def test_end_to_end_buyer_provider_lifecycle(session):
         await session.commit()
         assert exc.value.status_code == status.HTTP_404_NOT_FOUND
 
+
+@pytest.mark.asyncio
+async def test_provider_order_summary_counts_all_orders_and_priced_records(session):
+    buyer_id = await _make_user(session, "summary-buyer@example.com", role="user")
+    provider_id = await _make_provider(
+        session, await _make_user(session, "summary-provider@example.com")
+    )
+    asset_id = await _make_asset(session, provider_id)
+
+    pending = await order_service.create_order(
+        provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
+        allocation="pending", lease_amount=100.0, session=session,
+    )
+    confirmed = await order_service.create_order(
+        provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
+        allocation="confirmed", lease_amount=150.0, session=session,
+    )
+    completed = await order_service.create_order(
+        provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
+        allocation="completed", lease_amount=None, session=session,
+    )
+    await order_repo.update_order_status(
+        confirmed["id"], provider_id, "confirmed", session=session
+    )
+    await order_repo.update_order_status(
+        completed["id"], provider_id, "completed", session=session
+    )
+    await session.commit()
+
+    summary = await order_repo.get_provider_order_summary(provider_id, session=session)
+    assert summary == {
+        "total_orders": 3,
+        "open_orders": 2,
+        "pending_review": 1,
+        "priced_orders": 2,
+    }
+
