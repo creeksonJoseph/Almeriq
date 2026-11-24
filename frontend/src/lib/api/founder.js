@@ -199,6 +199,15 @@ export async function createInvestorUpdateApi(pitchId, payload) {
   }
 }
 
+export async function updateInvestorUpdateApi(updateId, payload) {
+  try {
+    const { data } = await apiClient.put(`/api/founder/updates/${encodeURIComponent(updateId)}`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to update this investor update draft");
+  }
+}
+
 export async function publishInvestorUpdateApi(updateId) {
   try {
     const { data } = await apiClient.post(`/api/founder/updates/${encodeURIComponent(updateId)}/publish`);
