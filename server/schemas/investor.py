@@ -36,7 +36,6 @@ class InvestorProfileResponse(BaseModel):
     contact_formats: list[str] = Field(default_factory=list)
     preferred_payment_methods: list[str] = Field(default_factory=lambda: ["visa"])
     notify_deal_updates: bool = True
-    notify_valuation_changes: bool = True
     notify_messages: bool = True
 
 
@@ -81,7 +80,6 @@ class InvestorProfileUpdateRequest(BaseModel):
     contact_formats: Optional[list[str]] = Field(default=None, max_length=10)
     preferred_payment_methods: Optional[list[str]] = Field(default=None, max_length=4)
     notify_deal_updates: Optional[bool] = None
-    notify_valuation_changes: Optional[bool] = None
     notify_messages: Optional[bool] = None
 
     @field_validator("preferred_payment_methods")
