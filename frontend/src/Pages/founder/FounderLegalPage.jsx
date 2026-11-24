@@ -551,7 +551,7 @@ export default function FounderLegalPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-colors hover:bg-[#e2ba40] shadow-sm cursor-pointer"
                       >
-                        <span>Official Registry Portal</span>
+                        <span>Suggested Registry Portal</span>
                         <ExternalLink size={13} />
                       </a>
                     )}
@@ -596,7 +596,7 @@ export default function FounderLegalPage() {
               {/* Loaded Country Guidance Content */}
               {!guideLoading && !guideError && guide && (
                 <div className="space-y-12">
-                  {/* Metric Data Strip: Expected Time, Fees, Registry for THIS country */}
+                  {/* Metric Data Strip: Estimated Timeline, Fees, Registry for THIS country */}
                   <section className="rounded-2xl border border-[#f2ca50]/25 bg-[#f2ca50]/[0.04] p-5 sm:p-6">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
@@ -608,9 +608,10 @@ export default function FounderLegalPage() {
                         </p>
                       </div>
                       <span className="hidden text-[10px] font-mono uppercase tracking-wider text-white/50 sm:block">
-                        Official guidance
+                        AI-generated guide
                       </span>
                     </div>
+                    <p className="mb-4 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-5 text-amber-100/80">AI-generated guidance, not live government data. Verify the registry, portal URL, fees, requirements and timelines directly with the relevant authority before acting.</p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
@@ -638,7 +639,7 @@ export default function FounderLegalPage() {
 
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Estimated Government Fees
+                        Estimated Fees · Confirm with Registry
                       </span>
                       <span className="mt-1 block font-mono text-sm font-semibold text-white">
                         {guide.estimated_cost || "Standard government fee"}
