@@ -151,7 +151,7 @@ export default function ProviderOrderDetailPage() {
                 <span className="text-sm font-medium text-text">{order.assetName}</span>
                 <div className="text-xs text-white/60">{order.assetDetails || "No asset description provided."}</div>
               </div>
-              <span className="font-mono font-semibold text-gold shrink-0">${order.amount}/mo · currency not specified</span>
+              <span className="font-mono font-semibold text-gold shrink-0">{order.amount}/mo · currency not specified</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><span className="text-white/60">Allocation:</span> <span className="font-mono text-text ml-2">{order.allocation || "Not specified"}</span></div>
