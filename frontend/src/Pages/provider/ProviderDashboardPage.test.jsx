@@ -28,6 +28,7 @@ vi.mock("../../lib/api", () => ({
   listOrdersApi: vi.fn(),
   listAssetsApi: vi.fn(),
   listConversationsApi: vi.fn(),
+  getProviderOrderSummaryApi: vi.fn(),
 }));
 
 import ProviderDashboardPage from "./ProviderDashboardPage.jsx";
@@ -43,6 +44,7 @@ describe("ProviderDashboardPage", () => {
     vi.mocked(api.listOrdersApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listConversationsApi).mockResolvedValue({ items: [] });
+    vi.mocked(api.getProviderOrderSummaryApi).mockResolvedValue({ total_orders: 0, open_orders: 0, pending_review: 0, priced_orders: 0 });
 
     render(
       <MemoryRouter>
