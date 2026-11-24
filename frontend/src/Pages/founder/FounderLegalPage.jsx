@@ -696,7 +696,7 @@ export default function FounderLegalPage() {
                                   {step.step_number || idx + 1}. {step.title}
                                 </h3>
                                 <span className="text-[10px] font-mono text-[#f2ca50]">
-                                  {step.online_process || "Online"}
+                                  {step.online_process || "Process not specified"}
                                 </span>
                               </div>
 
