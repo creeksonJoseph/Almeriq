@@ -53,6 +53,10 @@ async def start_provider_conversation(provider_id: int, user_id: int, session: A
     return await conversation_repo.get_or_create_conversation(user_id, profile["user_id"], session=session)
 
 
+async def count_unread_conversations(user_id: int, session: AsyncSession) -> int:
+    return await conversation_repo.count_unread_conversations(user_id=user_id, session=session)
+
+
 async def get_conversation(
     conversation_id: int,
     user_id: int,
