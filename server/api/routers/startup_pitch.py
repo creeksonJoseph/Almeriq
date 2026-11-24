@@ -20,6 +20,6 @@ async def list_startup_pitches(
 ):
     """List startup pitches, newest first. Public read."""
     response.headers["Cache-Control"] = "public, max-age=30"
-    pitches = await svc.list_startup_pitches(session=db)
-    sliced = pitches[offset : offset + limit]
-    return {"items": sliced, "total": len(pitches)}
+    pitches = await svc.list_startup_pitches(status="active", session=db)
+    total = await svc.count_startup_pitches(status="active", session=db)
+    return {"items": pitches[offset : offset + limit], "total": total}
