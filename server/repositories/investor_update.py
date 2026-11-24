@@ -68,3 +68,28 @@ async def publish_investor_update(update_id: int, founder_id: int, session: Asyn
         item = (await db.execute(stmt)).scalar_one_or_none()
         await db.commit()
         return item.to_dict() if item else None
+
+
+async def update_investor_update(update_id: int, founder_id: int, period: str, content: str, session: AsyncSession | None = None) -> dict | None:
+    stmt = select(InvestorUpdate).where(
+        InvestorUpdate.id == update_id,
+        InvestorUpdate.founder_id == founder_id,
+        InvestorUpdate.status == "draft",
+    )
+    if session is not None:
+        item = await session.scalar(stmt)
+        if item is None:
+            return None
+        item.period = period
+        item.content = content
+        await session.flush()
+        return item.to_dict()
+    async with async_session_factory() as db:
+        item = await db.scalar(stmt)
+        if item is None:
+            return None
+        item.period = period
+        item.content = content
+        await db.commit()
+        await db.refresh(item)
+        return item.to_dict()
