@@ -52,7 +52,7 @@ export function useFounderPitches() {
         setNotice("Pitch updated.");
       } else {
         await createFounderPitchApi(payload);
-        setNotice("Pitch published to investor discovery.");
+        setNotice("Pitch saved as a draft. Publish it when it is ready.");
       }
       await load({ silent: true });
     } catch (requestError) {
