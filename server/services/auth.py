@@ -124,6 +124,11 @@ async def authenticate_google_user(credential: str) -> tuple[dict, str]:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Google account token is missing email or sub identifier",
         )
+    if payload.get("email_verified") not in (True, "true"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google account email must be verified before sign-in",
+        )
 
     # Never accept an ID token issued for a different OAuth client.
     if GOOGLE_CLIENT_ID and payload.get("aud") != GOOGLE_CLIENT_ID:
