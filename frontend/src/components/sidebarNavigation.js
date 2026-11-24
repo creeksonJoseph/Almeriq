@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 
 export const COMMUNICATION_NAV = [
-  { key: "messages", label: "Messages", path: "/messages", icon: MessageSquare, roles: ["FOUNDER", "INVESTOR", "EXPERT", "INFRASTRUCTURE_PROVIDER"] },
+  { key: "messages", label: "Messages", path: "/messages", icon: MessageSquare, roles: ["FOUNDER", "INVESTOR", "EXPERT", "INFRASTRUCTURE_PROVIDER", "JOB_SEEKER"] },
   { key: "alerts", label: "Alerts", path: "/alerts", icon: Bell, roles: ["FOUNDER", "INVESTOR", "EXPERT", "INFRASTRUCTURE_PROVIDER", "JOB_SEEKER"] },
 ];
 
