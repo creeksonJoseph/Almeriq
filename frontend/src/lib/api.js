@@ -55,7 +55,7 @@ export {
   executeAiToolApi,
 } from "./api/founder";
 
-export { getAdminWaitlistApi, updateAdminRoleApi } from "./api/admin";
+export { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi } from "./api/admin";
 
 export {
   getProviderProfileApi,
