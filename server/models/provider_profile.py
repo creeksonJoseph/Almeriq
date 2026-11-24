@@ -21,6 +21,8 @@ class ProviderProfile(Base):
     about: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     engagement_preferences: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    verified_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     enclave_key: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -45,6 +47,8 @@ class ProviderProfile(Base):
             "about": self.about,
             "engagement_preferences": self.engagement_preferences,
             "verified": self.verified,
+            "verified_at": self.verified_at,
+            "verified_by": self.verified_by,
             "enclave_key": self.enclave_key,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
