@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, Response, status
-from schemas.provider import MarketplaceCheckoutRequest, MarketplaceListingDetailResponse, MarketplaceListingListResponse, OrderCreateRequest, OrderResponse
+from schemas.provider import MarketplaceCheckoutRequest, MarketplaceListingDetailResponse, MarketplaceListingListResponse, OrderResponse
 from api.dependencies import get_current_user
 from core.db import get_db
 from core.roles import user_has_role
@@ -20,37 +20,6 @@ def _require_founder(current_user: dict) -> int:
         raise HTTPException(status_code=403, detail="Founder account required to place marketplace orders")
     return int(current_user["id"])
 
-
-
-@router.post("/marketplace/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_marketplace_order(
-    body: OrderCreateRequest,
-    response: Response,
-    current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> dict:
-    """Create an order as an authenticated marketplace buyer."""
-    listing = await svc.get_marketplace_listing(body.asset_id)
-    if not listing or listing.get("status") != "available":
-        from fastapi import HTTPException
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing is not available")
-    if listing.get("provider_id") is None:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing provider not found")
-    client_id = _require_founder(current_user)
-    provider = await provider_repo.get_provider_profile_by_id(listing["provider_id"], session=db)
-    if provider and provider.get("user_id") == client_id:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You cannot place an order for your own listing")
-    response.headers["Cache-Control"] = "no-store"
-    return await order_service.create_order(
-        provider_id=listing["provider_id"],
-        client_id=client_id,
-        asset_id=body.asset_id,
-        allocation=body.allocation,
-        lease_amount=listing.get("price_monthly"),
-        session=db,
-    )
 
 
 @router.post("/marketplace/checkout", status_code=status.HTTP_201_CREATED)
