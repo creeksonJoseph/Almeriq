@@ -228,6 +228,8 @@ export default function SearchPage() {
               {sortedResults.map((result) => <SearchResultCard key={result.id} result={result} ordering={orderingId === result.id}
                 onChat={() => handleChat(result)} onOrder={() => handleOrder(result)} onView={() => navigate("/listings/" + result.id)} />)}
             </div>
+          ) : error ? (
+            <Card className="space-y-3 p-8 text-center"><p className="font-medium">Search could not be completed</p><p className="text-sm text-white/50">{error}</p><Button onClick={() => runSearch(query, activeCategory)}>Retry search</Button></Card>
           ) : (
             <EmptyState title="No matching listings" description="Try a different search or choose another category." actionLabel="Clear search" onAction={() => { searchForm.setValue("query", ""); setActiveCategory("all"); setResults([]); setHasSearched(false); navigate("/search", { replace: true }); }} />
           )}
