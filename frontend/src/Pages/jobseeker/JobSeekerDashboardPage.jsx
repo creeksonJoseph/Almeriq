@@ -16,7 +16,10 @@ export default function JobSeekerDashboardPage() {
     async function loadDashboard() {
       try {
         const [profileResult, jobsResult, applicationsResult] = await Promise.all([
-          getJobSeekerProfileApi(),
+          getJobSeekerProfileApi().catch((requestError) => {
+            if (requestError.status === 404 || requestError.response?.status === 404) return null;
+            throw requestError;
+          }),
           listJobsApi({ is_active: true, limit: 100 }),
           listMyJobApplicationsApi(),
         ]);
