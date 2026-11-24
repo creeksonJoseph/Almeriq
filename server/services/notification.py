@@ -12,6 +12,7 @@ async def list_notifications(
     unread_only: bool = False,
     limit: int = 50,
     offset: int = 0,
+    notification_type: str | None = None,
     session: AsyncSession | None = None,
 ) -> tuple[list[dict], int, int]:
     """Return page items, total matching items, and total unread count."""
@@ -20,6 +21,7 @@ async def list_notifications(
         unread_only=unread_only,
         limit=limit,
         offset=offset,
+        notification_type=notification_type,
         session=session,
     )
     unread_count = await notification_repo.get_unread_count(user_id, session=session)
