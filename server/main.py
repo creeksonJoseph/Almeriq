@@ -107,6 +107,11 @@ async def lifespan(app: FastAPI):
             migration_state["after"],
             migration_state["upgraded"],
         )
+        if not migration_state["upgraded"]:
+            raise RuntimeError(
+                f"Database revision {migration_state['after']} does not match "
+                f"the application migration heads {expected_heads}"
+            )
     except Exception:
         logging.exception("Alembic startup check failed; refusing to serve with an unknown schema state")
         raise
