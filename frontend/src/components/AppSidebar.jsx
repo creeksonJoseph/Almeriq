@@ -31,6 +31,7 @@ export default function AppSidebar({
   const role = user?.role || "founder";
   const normalizedRole = String(role).trim().toUpperCase();
   const isFounder = normalizedRole === "FOUNDER";
+  const isAdmin = Boolean(user?.is_admin);
 
   const isCurrentActive = (itemPath) => {
     if (itemPath === "/investor/dashboard") {
@@ -185,6 +186,17 @@ export default function AppSidebar({
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Admin controls are separate from role workspaces. */}
+          {isAdmin && (
+            <div>
+              {!isCollapsed && <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">Administration</p>}
+              <button type="button" onClick={() => handleNavClick("/admin/waitlist")} title={isCollapsed ? "Admin console" : undefined} className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${isCollapsed ? "justify-center px-0 h-9" : "h-9"} ${location.pathname.startsWith("/admin") ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold" : "text-white hover:bg-white/[0.05]"}`}>
+                <ShieldCheck size={16} className="shrink-0 text-[#C9A15A]" />
+                {!isCollapsed && <span className="truncate">Admin console</span>}
+              </button>
             </div>
           )}
 
