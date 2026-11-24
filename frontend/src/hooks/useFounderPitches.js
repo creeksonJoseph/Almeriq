@@ -7,12 +7,16 @@ import {
   updateFounderInvestmentRequestApi,
   updateFounderPitchApi,
   setFounderPitchPublicationApi,
+  listFounderInvestorUpdatesApi,
+  createFounderInvestorUpdateApi,
+  publishFounderInvestorUpdateApi,
 } from "../lib/api/founder";
 import { startInvestmentConversationApi } from "../lib/api/conversations";
 
 export function useFounderPitches() {
   const [pitches, setPitches] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [investorUpdates, setInvestorUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [busyRequestId, setBusyRequestId] = useState(null);
@@ -22,14 +26,17 @@ export function useFounderPitches() {
   const load = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     setError("");
-    const [pitchResult, requestResult] = await Promise.allSettled([
+    const [pitchResult, requestResult, updateResult] = await Promise.allSettled([
       listFounderPitchesApi(),
       listFounderInvestmentRequestsApi(),
+      listFounderInvestorUpdatesApi(),
     ]);
     if (pitchResult.status === "fulfilled") setPitches(pitchResult.value);
     else setError(pitchResult.reason.message || "Unable to load your pitches.");
     if (requestResult.status === "fulfilled") setRequests(requestResult.value);
     else setError((current) => current || requestResult.reason.message || "Unable to load investor interest.");
+    if (updateResult.status === "fulfilled") setInvestorUpdates(updateResult.value);
+    else setError((current) => current || updateResult.reason.message || "Unable to load investor updates.");
     if (!silent) setLoading(false);
   }, []);
 
@@ -55,6 +62,20 @@ export function useFounderPitches() {
       setSaving(false);
     }
   }, [load]);
+
+  const saveInvestorUpdate = useCallback(async (payload) => {
+    const created = await createFounderInvestorUpdateApi(payload);
+    setInvestorUpdates((items) => [created, ...items]);
+    setNotice("Investor update saved as a draft.");
+    return created;
+  }, []);
+
+  const publishInvestorUpdate = useCallback(async (updateId) => {
+    const published = await publishFounderInvestorUpdateApi(updateId);
+    setInvestorUpdates((items) => items.map((item) => item.id === updateId ? { ...item, ...published } : item));
+    setNotice(`Update shared with ${published.notified_investors || 0} interested investor(s).`);
+    return published;
+  }, []);
 
   const updateRequest = useCallback(async (requestId, status) => {
     setBusyRequestId(requestId);
@@ -103,7 +124,7 @@ export function useFounderPitches() {
   }, []);
 
   return {
-    pitches, requests, loading, saving, busyRequestId, error, notice,
-    load, savePitch, updateRequest, removePitch, setPitchPublication, startConversation, setError, setNotice,
+    pitches, requests, investorUpdates, loading, saving, busyRequestId, error, notice,
+    load, savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, startConversation, setError, setNotice,
   };
 }
