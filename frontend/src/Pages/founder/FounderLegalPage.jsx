@@ -615,10 +615,10 @@ export default function FounderLegalPage() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Official Registry
+                        Suggested Registry
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white truncate">
-                        {guide.regulatory_body || "Government Company Registry"}
+                        {guide.regulatory_body || "Not provided"}
                       </span>
                       <span className="text-[11px] text-white/70 truncate block">
                         {guide.country_name || selectedCountry}
@@ -627,13 +627,13 @@ export default function FounderLegalPage() {
 
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Expected Time
+                        Estimated Timeline
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
-                        {guide.estimated_timeline || "3 to 7 business days"}
+                        {guide.estimated_timeline || "Not provided"}
                       </span>
                       <span className="text-[11px] font-mono text-[#f2ca50]">
-                        Standard queue
+                        Confirm with registry
                       </span>
                     </div>
 
@@ -642,10 +642,10 @@ export default function FounderLegalPage() {
                         Estimated Fees · Confirm with Registry
                       </span>
                       <span className="mt-1 block font-mono text-sm font-semibold text-white">
-                        {guide.estimated_cost || "Standard government fee"}
+                        {guide.estimated_cost || "Not provided"}
                       </span>
                       <span className="text-[11px] text-white/70">
-                        Official registry fee
+                        Confirm directly with registry
                       </span>
                     </div>
 
@@ -654,10 +654,10 @@ export default function FounderLegalPage() {
                         Company Type
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
-                        Private Limited Company (Ltd)
+                        Confirm locally
                       </span>
                       <span className="text-[11px] font-mono text-[#f2ca50]">
-                        {guide.source === "database" ? "Saved in Database" : "Freshly Generated"}
+                        {guide.source === "database" ? "Cached AI guidance" : "AI-generated"}
                       </span>
                       </div>
                     </div>
