@@ -29,3 +29,22 @@ export async function updateAdminRoleApi(role) {
     throw apiErr(e, "Unable to update your role");
   }
 }
+
+
+export async function getAdminProvidersApi() {
+  try {
+    const { data } = await apiClient.get("/admin/providers");
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to load provider verification queue");
+  }
+}
+
+export async function updateAdminProviderVerificationApi(providerId, verified) {
+  try {
+    const { data } = await apiClient.patch(`/admin/providers/${encodeURIComponent(providerId)}/verification`, { verified });
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to update provider verification");
+  }
+}
