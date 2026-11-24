@@ -69,16 +69,25 @@ export default function MessagesPage() {
           if (current) setActiveConversation((previous) => ({ ...previous, ...current }));
           const messageResult = await listMessagesApi(activeConversation.id);
           if (cancelled) return;
-          setMessages((messageResult.items || messageResult.messages || []).map((message) => ({
+          const refreshedMessages = (messageResult.items || messageResult.messages || []).map((message) => ({
             ...message,
             content: message.content || message.body || "",
             own: String(message.sender_id) === String(user?.id),
             senderName: message.sender?.full_name || message.sender?.email,
             time: message.time || message.created_at,
-          })));
-          await markMessagesReadApi(activeConversation.id);
-          if (!cancelled) {
-            setConversations((previous) => previous.map((item) => item.id === activeConversation.id ? { ...item, unread: 0 } : item));
+          }));
+          setMessages((previous) => {
+            const unchanged = previous.length === refreshedMessages.length &&
+              previous.every((message, index) => message.id === refreshedMessages[index]?.id &&
+                message.content === refreshedMessages[index]?.content &&
+                message.read_at === refreshedMessages[index]?.read_at);
+            return unchanged ? previous : refreshedMessages;
+          });
+          if (current?.unread > 0) {
+            await markMessagesReadApi(activeConversation.id);
+            if (!cancelled) {
+              setConversations((previous) => previous.map((item) => item.id === activeConversation.id ? { ...item, unread: 0 } : item));
+            }
           }
         }
       } catch {
