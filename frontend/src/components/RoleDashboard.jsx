@@ -1,28 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ArrowRight,
-  ArrowUpRight,
-  BookOpen,
   BriefcaseBusiness,
   Building2,
   CheckCircle2,
   Clock3,
-  Compass,
   Cpu,
   Boxes,
   Home,
-  Lightbulb,
   Scale,
   Search,
-  Send,
-  Settings,
   Target,
   TrendingUp,
   UserRound,
-  X,
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { listVenturesApi } from "../lib/api";
 
 const ROLE_DATA = {
   founder: {
@@ -128,26 +120,6 @@ const NAV_ITEMS = [
   ["discover", "Discover", Search],
   ["profile", "Profile", UserRound],
 ];
-
-function StatCard({ stat }) {
-  const [label, value, note, tone] = stat;
-  return (
-    <div className="min-w-0 rounded-xl border border-white/10 bg-[#141417] p-4 sm:p-5">
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <span className="truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
-          {label}
-        </span>
-        <span
-          className={`h-2 w-2 shrink-0 rounded-full ${tone === "gold" ? "bg-[#f2ca50]" : "bg-white/40"}`}
-        />
-      </div>
-      <p className="font-display text-2xl font-semibold text-white sm:text-3xl">
-        {value}
-      </p>
-      <p className="mt-1 text-xs text-white/50">{note}</p>
-    </div>
-  );
-}
 
 import { useActiveIdea } from "../context/IdeaContext";
 
