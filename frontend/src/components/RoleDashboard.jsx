@@ -22,96 +22,24 @@ const ROLE_DATA = {
     title: "Build with momentum.",
     subtitle: "Turn your next idea into a company people can believe in.",
     icon: Building2,
-    stats: [
-      ["Idea validation", "68%", "Strong early signal", "gold"],
-      ["Active tasks", "08", "3 due this week", "white"],
-      ["Capital target", "$250k", "Seed round", "gold"],
-      ["Team members", "04", "2 roles open", "white"],
-    ],
-    primaryTitle: "Your build plan",
-    primaryCopy:
-      "Keep the next important moves visible and turn progress into proof.",
-    rows: [
-      ["Validate customer problem", "In progress", "Today"],
-      ["Prepare investor one-pager", "Ready", "Tomorrow"],
-      ["Find a product designer", "Open role", "This week"],
-    ],
-    secondaryTitle: "Capital readiness",
-    secondaryCopy: "Your company profile is 72% ready for investor matching.",
-    secondaryAction: "Complete company profile",
   },
   investor: {
     label: "Investor workspace",
     title: "Find what is worth backing.",
-    subtitle:
-      "A focused view of promising companies, active conversations, and your portfolio.",
+    subtitle: "A focused view of promising companies, active conversations, and your portfolio.",
     icon: TrendingUp,
-    stats: [
-      ["New deal flow", "24", "+6 this week", "gold"],
-      ["Deployed capital", "$1.2m", "Across 8 companies", "white"],
-      ["Avg. response", "2d", "Down from 4d", "gold"],
-      ["Saved companies", "12", "4 new updates", "white"],
-    ],
-    primaryTitle: "Deal flow",
-    primaryCopy: "Companies aligned with your sectors and stage preferences.",
-    rows: [
-      ["Neonix · Health tech", "Series A", "$2.4m ask"],
-      ["Harvestly · Agriculture", "Seed", "$800k ask"],
-      ["Ledgerly · Fintech", "Series A", "$3.1m ask"],
-    ],
-    secondaryTitle: "Portfolio pulse",
-    secondaryCopy: "3 portfolio companies shared updates this week.",
-    secondaryAction: "Review updates",
   },
   infrastructure: {
     label: "Infrastructure workspace",
     title: "Put your assets to work.",
-    subtitle:
-      "Manage listings, requests, and the companies looking for what you provide.",
+    subtitle: "Manage listings, requests, and the companies looking for what you provide.",
     icon: Building2,
-    stats: [
-      ["Active listings", "18", "All systems live", "gold"],
-      ["Utilization", "74%", "+12% this month", "white"],
-      ["Monthly revenue", "$84k", "Across 11 orders", "gold"],
-      ["Open requests", "07", "2 need response", "white"],
-    ],
-    primaryTitle: "Open requests",
-    primaryCopy:
-      "Companies looking for equipment, connectivity, and operating capacity.",
-    rows: [
-      ["Terraforge · Excavators", "Needs quote", "Nairobi"],
-      ["OrbitLink · Satellite", "New request", "Lagos"],
-      ["Voltway · Solar arrays", "In review", "Accra"],
-    ],
-    secondaryTitle: "Listing health",
-    secondaryCopy:
-      "Your listings are performing above the marketplace average.",
-    secondaryAction: "Manage listings",
   },
   job_seeker: {
     label: "Talent workspace",
     title: "Make your next move count.",
-    subtitle:
-      "Stay close to roles and teams that match the work you want to do.",
+    subtitle: "Stay close to roles and teams that match the work you want to do.",
     icon: BriefcaseBusiness,
-    stats: [
-      ["Profile strength", "82%", "Add 2 more skills", "gold"],
-      ["New matches", "14", "+5 this week", "white"],
-      ["Applications", "06", "2 awaiting reply", "gold"],
-      ["Interviews", "02", "Next one Friday", "white"],
-    ],
-    primaryTitle: "Recommended for you",
-    primaryCopy:
-      "Roles and teams selected from your skills, location, and interests.",
-    rows: [
-      ["Product Designer · Neonix", "Matched 94%", "Remote"],
-      ["UX Engineer · Terraforge", "Matched 88%", "Nairobi"],
-      ["Design Lead · Harvestly", "Matched 81%", "Hybrid"],
-    ],
-    secondaryTitle: "Profile momentum",
-    secondaryCopy:
-      "Adding a portfolio link could increase your match rate by 18%.",
-    secondaryAction: "Improve profile",
   },
 };
 
