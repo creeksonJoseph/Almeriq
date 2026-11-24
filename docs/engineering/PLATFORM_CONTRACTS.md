@@ -148,7 +148,7 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 | Role | Can access |
 |------|------------|
 | `user` (default) | Public routes, dashboard, chat, notifications, checkout |
-| `INFRASTRUCTURE_PROVIDER` | `/api/provider/*`, `/api/deals`, `/api/marketplace/orders` (create) |
+| `INFRASTRUCTURE_PROVIDER` | `/api/provider/*`, provider-owned deal and fulfillment actions |
 | `JOB_SEEKER` | `/api/jobs/*` (apply), `/api/job-seeker/profile` |
 | `INVESTOR` | `/api/investor/profile`, `/api/startup-pitches/:id/invest`, `/api/investments/:id/sign`, `/api/investor/portfolio` |
 | `FOUNDER` | `/api/jobs/*` (create/manage own), `/api/startup-pitches/*` (create/manage own) |
