@@ -346,7 +346,7 @@ async def update_investor_portfolio(
             type="investment",
             title="Investor updated their portfolio",
             body="An investor recorded a portfolio entry for your startup. This is an investor-reported record, not a payment confirmation.",
-            link="/founder/pitches",
+            link="/founder/fundraising/pitches",
             session=session,
         )
     return updated
