@@ -1,11 +1,25 @@
 from __future__ import annotations
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from models.base import Base
+from models.notification import Notification
+from models.user import User
 
 from models.investor_profile import InvestorProfile
 from repositories import notification as notification_repo
 from repositories import user as user_repo
+
+
+@pytest.fixture
+async def session():
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    async with factory() as db:
+        yield db
+    await engine.dispose()
 
 
 async def _user(session: AsyncSession, email: str, role: str) -> int:
