@@ -152,8 +152,8 @@ export default function JobSeekerSetupPage() {
               <label className="block space-y-2"><span className="text-sm font-medium">Employment types</span><Input name="job_types" value={form.job_types} onChange={updateField} placeholder="full_time, contract, internship" /><span className="text-xs text-white/50">Use full_time, part_time, contract, freelance or internship.</span></label>
               <label className="block space-y-2"><span className="text-sm font-medium">Preferred location</span><Input name="preferred_location" value={form.preferred_location} onChange={updateField} placeholder="Nairobi, Remote, or Anywhere" /></label>
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block space-y-2"><span className="text-sm font-medium">Minimum salary expectation</span><Input name="salary_min" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
-                <label className="block space-y-2"><span className="text-sm font-medium">Maximum salary expectation</span><Input name="salary_max" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
+                <label className="block space-y-2"><span className="text-sm font-medium" >Minimum salary expectation · currency not specified</span><Input name="salary_min" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
+                <label className="block space-y-2"><span className="text-sm font-medium" >Maximum salary expectation · currency not specified</span><Input name="salary_max" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
               </div>
               <label className="flex items-center gap-3 text-sm"><input type="checkbox" name="remote_only" checked={form.remote_only} onChange={updateField} className="accent-gold" />Only show remote opportunities</label>
             </div>
