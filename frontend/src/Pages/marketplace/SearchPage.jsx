@@ -154,8 +154,6 @@ export default function SearchPage() {
   };
 
   const sortedResults = useMemo(() => [...results].sort((a, b) => {
-    if (sortMode === "price_asc") return Number(a.price_monthly || 0) - Number(b.price_monthly || 0);
-    if (sortMode === "price_desc") return Number(b.price_monthly || 0) - Number(a.price_monthly || 0);
     return 0;
   }), [results, sortMode]);
 
@@ -220,8 +218,6 @@ export default function SearchPage() {
               <span>Sort by</span>
               <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} className="alq-input min-h-10 w-auto">
                 <option value="relevance">Relevance</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
               </select>
             </label>
           </div>
