@@ -37,6 +37,7 @@ import * as api from "../../lib/api";
 describe("ProviderDashboardPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(api.getProviderOrderSummaryApi).mockResolvedValue({ total_orders: 0, open_orders: 0, pending_review: 0, priced_orders: 0 });
   });
 
   it("shows loading skeletons then renders dashboard", async () => {
