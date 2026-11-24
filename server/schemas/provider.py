@@ -407,4 +407,5 @@ class NotificationResponse(BaseModel):
 
 class NotificationListResponse(BaseModel):
     items: List[NotificationResponse]
+    total: int = 0
     unread_count: int
