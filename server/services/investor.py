@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -126,6 +128,13 @@ async def update_founder_pitch(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="ask_amount cannot be negative",
         )
+    current = await pitch_repo.get_startup_pitch(pitch_id, founder_id=founder_id, session=session)
+    if not current:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    # Editing a published pitch returns it to draft until the founder republishes.
+    if current.get("status") == "active" and values:
+        values["status"] = "draft"
+        values["published_at"] = None
     pitch = await pitch_repo.update_startup_pitch(
         pitch_id, founder_id, session=session, **values
     )
@@ -134,6 +143,29 @@ async def update_founder_pitch(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Startup pitch not found",
         )
+    return pitch
+
+
+async def publish_founder_pitch(pitch_id: int, founder_id: int, session: AsyncSession | None = None) -> dict:
+    pitch = await pitch_repo.get_startup_pitch(pitch_id, founder_id=founder_id, session=session)
+    if not pitch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    required = ("title", "summary", "sector", "stage", "location", "ask_amount")
+    missing = [field for field in required if pitch.get(field) is None or (isinstance(pitch.get(field), str) and not pitch[field].strip())]
+    if missing or float(pitch.get("ask_amount") or 0) <= 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Complete the title, summary, sector, stage, location and a positive funding ask before publishing.")
+    return await pitch_repo.update_startup_pitch(
+        pitch_id, founder_id, session=session, status="active",
+        published_at=datetime.now(timezone.utc),
+    )
+
+
+async def unpublish_founder_pitch(pitch_id: int, founder_id: int, session: AsyncSession | None = None) -> dict:
+    pitch = await pitch_repo.update_startup_pitch(
+        pitch_id, founder_id, session=session, status="draft", published_at=None
+    )
+    if not pitch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
     return pitch
 
 
@@ -154,7 +186,7 @@ async def delete_founder_pitch(
 
 async def get_investor_pitch(pitch_id: int, session: AsyncSession | None = None) -> dict:
     pitch = await pitch_repo.get_startup_pitch(pitch_id, session=session)
-    if not pitch:
+    if not pitch or pitch.get("status") != "active":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
     return pitch
 
@@ -203,18 +235,18 @@ async def list_all_pitches(
     offset: int = 0,
     session: AsyncSession | None = None,
 ) -> dict:
-    items = await pitch_repo.list_startup_pitches(
-        limit=limit, offset=offset, session=session
-    )
-    total = await pitch_repo.count_startup_pitches(session=session)
+    # Rank all published pitches before pagination so the strongest matches
+    # are not hidden on later pages.
+    eligible = await pitch_repo.list_startup_pitches(status="active", session=session)
+    total = len(eligible)
     if investor_id is not None:
         profile = await profile_repo.get_investor_profile_by_user_id(investor_id, session=session)
-        for pitch in items:
+        for pitch in eligible:
             score, reasons = _match_pitch_to_investor(pitch, profile)
             pitch["match_score"] = score
             pitch["match_reasons"] = reasons
-        items.sort(key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1, reverse=True)
-    return {"items": items, "total": total}
+        eligible.sort(key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1, reverse=True)
+    return {"items": eligible[offset:offset + limit], "total": total}
 
 
 async def upsert_investor_profile(
