@@ -68,7 +68,6 @@ export default function MarketplacePage() {
     async function loadListings() {
       setLoading(true);
       setError("");
-      setError("");
       try {
         const response = await listMarketplaceListingsApi({ limit: 50 });
         if (!cancelled) {
