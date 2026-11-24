@@ -13,7 +13,7 @@ export default function InvestorDashboardPage() {
   const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : pathname.includes("/updates") ? "updates" : "overview";
   const workspace = useInvestorWorkspace({ navigate });
   const {
-    profile, setProfile, startups, requests, updates, loading, busyPitch,
+    profile, setProfile, startups, startupTotal, loadingMoreStartups, loadMoreStartups, requests, updates, loading, busyPitch,
     error, notice, settingsSaving, saveSettings,
     openConversation, savePortfolio, expressInterest,
   } = workspace;
@@ -192,6 +192,7 @@ export default function InvestorDashboardPage() {
               {activeOpportunityId === pitch.id && <div className="mt-4 grid gap-4 border-t border-white/10 pt-4 md:grid-cols-2"><div className="space-y-2"><h4 className="text-sm font-medium">Company profile</h4><p className="text-sm text-white/65">{pitch.summary || "No company summary supplied."}</p>{pitch.location && <p className="text-xs text-white/45">Location: {pitch.location}</p>}{pitch.ask_amount != null && <p className="text-sm text-white/55">Funding round ask: {Number(pitch.ask_amount).toLocaleString()}</p>}{pitch.target_check_size != null && <p className="text-sm text-white/55">Target investor check: {Number(pitch.target_check_size).toLocaleString()}</p>}</div><div className="space-y-2"><h4 className="text-sm font-medium">Traction, team & materials</h4><p className="text-sm text-white/55">{pitch.traction || "No traction details supplied."}</p><p className="text-sm text-white/55">{pitch.team_summary || "No team summary supplied."}</p><div className="flex flex-wrap gap-3 text-sm">{pitch.website_url && <a className="text-[#C9A15A] underline" href={pitch.website_url} target="_blank" rel="noreferrer">Website</a>}{pitch.pitch_deck_url && <a className="text-[#C9A15A] underline" href={pitch.pitch_deck_url} target="_blank" rel="noreferrer">Pitch deck</a>}{pitch.financials_url && <a className="text-[#C9A15A] underline" href={pitch.financials_url} target="_blank" rel="noreferrer">Financials</a>}{(pitch.documents || []).map((doc,index) => <a key={index} className="text-[#C9A15A] underline" href={doc.url} target="_blank" rel="noreferrer">{doc.title}</a>)}</div></div></div>}
             </Card>
           ))}
+          {startups.length < startupTotal && <div className="flex justify-center pt-2"><Button variant="ghost" disabled={loadingMoreStartups} onClick={loadMoreStartups}>{loadingMoreStartups ? "Loading…" : "Load more pitches"}</Button></div>}
         </section>
 
         
