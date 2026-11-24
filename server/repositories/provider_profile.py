@@ -126,3 +126,34 @@ async def update_provider_profile(
         await s.commit()
         profile = res.scalar_one_or_none()
         return profile.to_dict() if profile else None
+
+async def list_provider_profiles(
+    verified: bool | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    session: AsyncSession | None = None,
+) -> list[dict]:
+    """List provider profiles for the admin verification queue."""
+    stmt = select(ProviderProfile).order_by(ProviderProfile.created_at.desc()).limit(limit).offset(offset)
+    if verified is not None:
+        stmt = stmt.where(ProviderProfile.verified == verified)
+    if session is not None:
+        return [profile.to_dict() for profile in (await session.scalars(stmt)).all()]
+    async with async_session_factory() as db:
+        return [profile.to_dict() for profile in (await db.scalars(stmt)).all()]
+
+
+async def update_provider_verification(
+    profile_id: int,
+    verified: bool,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    """Set provider verification from the admin review workflow."""
+    stmt = update(ProviderProfile).where(ProviderProfile.id == profile_id).values(verified=verified).returning(ProviderProfile)
+    if session is not None:
+        profile = (await session.execute(stmt)).scalar_one_or_none()
+        return profile.to_dict() if profile else None
+    async with async_session_factory() as db:
+        profile = (await db.execute(stmt)).scalar_one_or_none()
+        await db.commit()
+        return profile.to_dict() if profile else None
