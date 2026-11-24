@@ -516,7 +516,7 @@ function ProfileSummary({ user, role, onEdit }) {
           label="Role"
           value={role.label}
         />
-        <Info label="Status" value="Verified account" />
+        <Info label="Status" value={user?.onboarding_completed ? "Profile completed" : "Setup incomplete"} />
       </div>
       <button
         type="button"
