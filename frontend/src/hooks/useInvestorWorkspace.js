@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
-  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi,
+  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi, listInvestorUpdatesApi,
 } from "../lib/api";
 import { startInvestmentConversationApi } from "../lib/api/conversations";
 
@@ -10,6 +10,7 @@ export function useInvestorWorkspace({ navigate }) {
   const [profile, setProfile] = useState(null);
   const [startups, setStartups] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyPitch, setBusyPitch] = useState(null);
   const [error, setError] = useState("");
@@ -20,10 +21,11 @@ export function useInvestorWorkspace({ navigate }) {
     setLoading(true);
     setError("");
     try {
-      const [profileResult, startupResult, requestResult] = await Promise.all([
+      const [profileResult, startupResult, requestResult, updateResult] = await Promise.all([
         getInvestorProfileApi().catch((err) => { if (err.status === 404) return null; throw err; }),
         listInvestorStartupsApi(),
         listInvestorPortfolioApi(),
+        listInvestorUpdatesApi().catch((err) => { setError(err.message || "Unable to load shared investor updates."); return { items: [] }; }),
       ]);
       setProfile(profileResult ? {
         preferred_payment_methods: ["visa"], notify_deal_updates: true,
@@ -31,7 +33,8 @@ export function useInvestorWorkspace({ navigate }) {
       } : null);
       setStartups(startupResult?.items || []);
       setRequests(requestResult?.items || []);
-      return { profile: profileResult, startups: startupResult?.items || [], requests: requestResult?.items || [] };
+      setUpdates(updateResult?.items || []);
+      return { profile: profileResult, startups: startupResult?.items || [], requests: requestResult?.items || [], updates: updateResult?.items || [] };
     } catch (err) {
       setError(err.message || "Unable to load your investor workspace.");
       return null;
@@ -108,7 +111,7 @@ export function useInvestorWorkspace({ navigate }) {
   }, []);
 
   return {
-    profile, setProfile, startups, requests, setRequests, loading, busyPitch,
+    profile, setProfile, startups, requests, setRequests, updates, loading, busyPitch,
     error, setError, notice, setNotice, settingsSaving, load, saveSettings,
     openConversation, savePortfolio, expressInterest,
   };
