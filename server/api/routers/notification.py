@@ -17,13 +17,17 @@ async def list_notifications(
     response: Response,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    unread_only: bool = Query(default=False),\n    limit: int = Query(default=50, ge=1, le=100),\n    offset: int = Query(default=0, ge=0),
+    unread_only: bool = Query(default=False),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List notifications for the current user."""
     response.headers["Cache-Control"] = "private, no-cache"
     items, total, unread_count = await svc.list_notifications(
         user_id=current_user["id"],
         unread_only=unread_only,
+        limit=limit,
+        offset=offset,
         session=db,
     )
     return {"items": items, "total": total, "unread_count": unread_count}
