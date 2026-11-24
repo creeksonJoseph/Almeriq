@@ -39,7 +39,7 @@ Everything we share about the product, code, business plans, and finances is pri
 Both parties promise not to share this private information with anyone else, and to use it only to evaluate this project.
 
 4. HOW LONG THIS LASTS:
-This agreement protects secrets for 2 years from the date information is shared.
+This agreement protects secrets for [insert an agreed duration] from the date information is shared.
 
 5. GOVERNING LAW:
 This agreement follows the standard business laws of the place where the company is registered.`,
@@ -52,7 +52,7 @@ This agreement follows the standard business laws of the place where the company
     content: `INVENTIONS AND INTELLECTUAL PROPERTY AGREEMENT
 
 1. COMPANY OWNS ALL WORK:
-All code, designs, ideas, and work you create for the startup belong 100% to the company.
+Work ownership depends on local law and a valid written assignment. Identify the work covered, the people assigning it, and any agreed exceptions.
 
 2. NO OUTSIDE CLAIMS:
 You confirm that the work you do here does not belong to any former school, employer, or past project.
@@ -74,7 +74,7 @@ The investor gives the startup money today in exchange for shares when the compa
 Sets the maximum price the investor pays when their investment turns into shares.
 
 3. DISCOUNT RATE:
-Standard 20% discount so early investors get a lower share price than later investors.
+Insert the discount, if any, that both sides negotiate and approve in the final agreement.
 
 4. WHAT HAPPENS IN A SALE:
 If the company is sold, the investor gets their money back or gets shares in the sale.`,
@@ -90,7 +90,7 @@ If the company is sold, the investor gets their money back or gets shares in the
 The founders agree on what percentage of the company each person owns.
 
 2. VESTING (4 YEARS WITH 1-YEAR CLIFF):
-Founders earn their shares over 4 years. If someone leaves during the first year, they do not keep any shares. This keeps everyone committed.
+Use a vesting schedule that all founders agree to. A four-year schedule with a one-year cliff is one common example, not a legal requirement.
 
 3. ALL IDEAS BELONG TO THE COMPANY:
 All code, domain names, and prototypes created before today belong to the company.
@@ -161,19 +161,19 @@ const THESIS_PILLARS = [
     index: "01",
     title: "Keep Your Personal Money Safe",
     category: "Personal Protection",
-    desc: "If your business owes money or gets into a legal dispute, your personal savings, phone, laptop, and home are safe. The company owes the money, not you.",
+    desc: "A limited liability company can separate many business debts from personal assets. Personal guarantees, misconduct, director duties, and local law can create exceptions.",
   },
   {
     index: "02",
     title: "Take Money From Investors",
     category: "Ready for Funding",
-    desc: "Investors cannot wire money to your personal bank account. Registering lets you create company shares and sign standard investment contracts like SAFEs.",
+    desc: "Investors often expect clear company ownership records and written investment terms. The right structure depends on the deal and local law.",
   },
   {
     index: "03",
     title: "Open Business Bank Accounts and Stripe",
     category: "Payments and Banking",
-    desc: "Payment services like Stripe and business banks require official company paperwork before they let you take payments from customers around the world.",
+    desc: "Banks and payment providers may ask for company documents, tax details, or other checks. Requirements vary by provider and country.",
   },
   {
     index: "04",
