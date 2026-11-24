@@ -28,6 +28,7 @@ const ROLE_BADGES = {
   Investor: { bg: "bg-gold/15 text-gold border-gold/30", icon: TrendingUp },
   "Job Seeker": { bg: "bg-gold/15 text-gold border-gold/30", icon: Briefcase },
   "Infrastructure Provider": { bg: "bg-gold/15 text-gold border-gold/30", icon: Truck },
+  Expert: { bg: "bg-gold/15 text-gold border-gold/30", icon: ShieldCheck },
 };
 
 const USER_ROLES = [
@@ -36,6 +37,7 @@ const USER_ROLES = [
   { value: "INVESTOR", label: "Investor" },
   { value: "JOB_SEEKER", label: "Job Seeker" },
   { value: "INFRASTRUCTURE_PROVIDER", label: "Infrastructure Provider" },
+  { value: "EXPERT", label: "Expert / Advisor" },
 ];
 
 function toUserRole(role) {
@@ -222,7 +224,7 @@ export default function AdminWaitlistPage() {
             value: data.total || data.items.length,
             subtext: "All registered users",
           },
-          ...["Founder", "Investor", "Job Seeker", "Infrastructure Provider"].map((r) => {
+          ...["Founder", "Investor", "Job Seeker", "Infrastructure Provider", "Expert"].map((r) => {
             const count = (data.items || []).filter((i) => i.role?.toLowerCase() === r.toLowerCase()).length;
             return {
               label: `${r}s`,
@@ -249,7 +251,7 @@ export default function AdminWaitlistPage() {
           />
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          {["all", "founder", "investor", "job seeker", "infrastructure provider"].map((roleKey) => (
+          {["all", "founder", "investor", "job seeker", "infrastructure provider", "expert"].map((roleKey) => (
             <button
               key={roleKey}
               type="button"
