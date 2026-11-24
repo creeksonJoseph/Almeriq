@@ -14,21 +14,15 @@ def upgrade() -> None:
     # for existing rows while making all newly created pitches drafts by default.
     op.add_column(
         "startup_pitches",
-        sa.Column("status", sa.Text(), nullable=False, server_default="published"),
+        sa.Column("status", sa.Text(), nullable=False, server_default="draft"),
     )
     op.add_column(
         "startup_pitches",
         sa.Column("published_at", sa.DateTime(timezone=True), nullable=True),
     )
     op.execute(
-        "UPDATE startup_pitches SET published_at = created_at "
-        "WHERE status = 'published' AND published_at IS NULL"
-    )
-    op.alter_column(
-        "startup_pitches",
-        "status",
-        existing_type=sa.Text(),
-        server_default="draft",
+        "UPDATE startup_pitches SET status = 'published', published_at = created_at "
+        "WHERE published_at IS NULL"
     )
     op.create_index(
         "ix_startup_pitches_status", "startup_pitches", ["status"], unique=False
