@@ -216,7 +216,7 @@ async def list_public_assets(
         stmt = (
             select(Asset, ProviderProfile)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.is_active == True, ProviderProfile.verified == True)
+            .where(Asset.is_active == True)
         )
         count_stmt = (
             select(func.count())
@@ -294,7 +294,7 @@ async def get_public_asset_detail(
         stmt = (
             select(Asset, ProviderProfile)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.id == asset_id, Asset.is_active == True, ProviderProfile.verified == True)
+            .where(Asset.id == asset_id, Asset.is_active == True)
         )
         result = await s.execute(stmt)
         row = result.first()
