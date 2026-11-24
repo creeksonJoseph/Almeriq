@@ -157,7 +157,7 @@ export default function ProviderOrdersPage() {
             const rows = filteredOrders.map((order) => [order.id, order.clientName, order.assetName, order.status, order.amount || order.lease_amount].join(","));
             window.open(`data:text/csv;charset=utf-8,${encodeURIComponent(["Order ID,Client,Asset,Status,Amount", ...rows].join("\n"))}`, "_blank");
           }}>
-            Export CSV
+            Export loaded orders
           </Button>
           <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" disabled={!orders.some(order => order.status?.toLowerCase() === "confirmed")} onClick={() => {
             const nextOrder = orders.find(order => order.status?.toLowerCase() === "confirmed");
