@@ -8,7 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import {
-  WORKSPACE_NAV,
+  COMMUNICATION_NAV,
   FOUNDER_STUDIO_NAV,
   JOB_SEEKER_NAV,
   INVESTOR_NAV,
@@ -150,15 +150,16 @@ export default function AppSidebar({
 
         {/* ── SCROLLABLE NAVIGATION BODY ── */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-4 no-scrollbar">
-          {/* GROUP 1: Workspace Essentials */}
-          <div>
+          {/* Communication links are shown only for roles with a real messaging or notification workflow. */}
+          {COMMUNICATION_NAV.some((item) => item.roles.includes(normalizedRole)) && (
+            <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Workspace
+                  Communication
                 </p>
               )}
               <div className="space-y-0.5">
-                {WORKSPACE_NAV.map((item) => {
+                {COMMUNICATION_NAV.filter((item) => item.roles.includes(normalizedRole)).map((item) => {
                   const Icon = item.icon;
                   const active = isCurrentActive(item.path);
                   return (
@@ -178,27 +179,21 @@ export default function AppSidebar({
                       {active && !isCollapsed && (
                         <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
                       )}
-                      <Icon
-                        size={16}
-                        className={`shrink-0 transition-colors ${
-                          active
-                            ? "text-[#C9A15A]"
-                            : "text-white/70 group-hover:text-white"
-                        }`}
-                      />
+                      <Icon size={16} className={`shrink-0 transition-colors ${active ? "text-[#C9A15A]" : "text-white/70 group-hover:text-white"}`} />
                       {!isCollapsed && <span className="truncate">{item.label}</span>}
                     </button>
                   );
                 })}
               </div>
-          </div>
+            </div>
+          )}
 
           {/* GROUP 2: Founder Tools */}
           {isFounder && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Founder Studio
+                  Founder Workspace
                 </p>
               )}
               <div className="space-y-0.5">
