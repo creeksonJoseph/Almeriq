@@ -16,7 +16,7 @@ export default function FounderPitchesPage() {
   const [editingId, setEditingId] = useState(null);
   const {
     pitches, requests, loading, saving, busyRequestId, error, notice,
-    savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
+    savePitch, updateRequest, removePitch, setPitchPublished, startConversation, setError, setNotice,
   } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
   const [updatePeriod, setUpdatePeriod] = useState("");
@@ -111,7 +111,7 @@ export default function FounderPitchesPage() {
         )}
         {pageView === "pitches" && (
         <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
+          <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch draft"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
           <form onSubmit={submit} className="space-y-4">
             <label className="block space-y-2"><span className="text-sm">Startup / pitch title</span><Input name="title" value={form.title} onChange={update} maxLength={200} required placeholder="Company or product name" /></label>
             <label className="block space-y-2"><span className="text-sm">Summary</span><Textarea name="summary" value={form.summary} onChange={update} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Problem, solution, traction and what you're building." /></label>
@@ -130,17 +130,17 @@ export default function FounderPitchesPage() {
             <label className="block space-y-2"><span className="text-sm">Traction</span><Textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
             <label className="block space-y-2"><span className="text-sm">Team summary</span><Textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
             <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><Textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
-            <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Update pitch" : "Publish pitch"}</Button></div>
+            <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Save changes" : "Save as draft"}</Button></div>
           </form>
         </Card>
         
         )}
         {pageView === "pitches" && (
-        <section className="space-y-3"><h2 className="font-serif text-xl">Your published pitches</h2>
+        <section className="space-y-3"><h2 className="font-serif text-xl">Your pitches</h2>
           {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={2} /><Skeleton className="h-9 w-32 rounded-xl" /></Card>)}</div> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
             <Card key={pitch.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div className="min-w-0 flex-1"><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-sm text-white/60">{pitch.sector || "Sector not set"} · {pitch.stage || "Stage not set"}{pitch.ask_amount != null ? ` · Ask: ${pitch.ask_amount}` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-white/50">{pitch.summary || "No summary added."}</p></div>
-              <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
+              <div className="flex flex-wrap items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-wider ${pitch.status === "active" ? "border-emerald-400/30 text-emerald-300" : "border-white/15 text-white/50"}`}>{pitch.status === "active" ? "Published" : "Draft"}</span>{pitch.status === "active" ? <Button size="sm" variant="ghost" onClick={() => setPitchPublished(pitch.id, false)}>Unpublish</Button> : <Button size="sm" onClick={() => setPitchPublished(pitch.id, true)}>Publish</Button>}<Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
             </Card>
           ))}
         </section>
