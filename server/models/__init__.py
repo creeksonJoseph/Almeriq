@@ -20,6 +20,7 @@ from .notification import Notification
 from .investor_profile import InvestorProfile
 from .startup_pitch import StartupPitch
 from .investment import Investment
+from .investor_update import InvestorUpdate
 from .job_posting import JobPosting
 from .job_application import JobApplication
 from .job_seeker_profile import JobSeekerProfile
@@ -34,7 +35,7 @@ __all__ = [
     "CompanyRegistrationGuide",
     "ProviderProfile", "Asset", "CoverageRegion", "Order", "OrderEvent",
     "Deal", "Conversation", "Message", "Notification",
-    "InvestorProfile", "StartupPitch", "Investment",
+    "InvestorProfile", "StartupPitch", "Investment", "InvestorUpdate",
     "JobPosting", "JobApplication", "JobSeekerProfile", "ExpertProfile", "AdvisoryRequest",
     "TeamInvitation", "TeamMembership",
 ]
