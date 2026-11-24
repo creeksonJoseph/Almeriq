@@ -87,6 +87,50 @@ export default function MessagesPage() {
     }
   };
 
+  // Keep open conversations fresh without requiring a manual page reload.
+  useEffect(() => {
+    if (!activeConversation?.id) return undefined;
+    let cancelled = false;
+    const refresh = async () => {
+      try {
+        const [messageResult, conversationResult] = await Promise.all([
+          listMessagesApi(activeConversation.id),
+          listConversationsApi(),
+        ]);
+        if (cancelled) return;
+        const freshMessages = (messageResult.items || messageResult.messages || []).map((message) => ({
+          ...message,
+          content: message.content || message.body || "",
+          own: message.sender_id === user?.id,
+          senderName: message.sender?.full_name || message.sender?.email,
+          time: message.time || message.created_at,
+        }));
+        setMessages((current) => {
+          const byId = new Map(current.map((message) => [message.id, message]));
+          freshMessages.forEach((message) => byId.set(message.id, message));
+          return [...byId.values()].sort((a, b) => new Date(a.created_at || a.time) - new Date(b.created_at || b.time));
+        });
+        const items = conversationResult.items || conversationResult.conversations || [];
+        setConversations((current) => current.map((conversation) => {
+          const fresh = items.find((item) => item.id === conversation.id);
+          return fresh ? {
+            ...conversation,
+            unread: fresh.unread_count || 0,
+            lastMessage: fresh.last_message?.body || conversation.lastMessage,
+            time: fresh.last_message_at ? new Date(fresh.last_message_at).toLocaleString() : conversation.time,
+          } : conversation;
+        }));
+      } catch {
+        // A transient polling failure should not interrupt composing or sending.
+      }
+    };
+    const intervalId = window.setInterval(refresh, 8000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [activeConversation?.id, user?.id]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
