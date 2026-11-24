@@ -150,3 +150,28 @@ async def delete_startup_pitch(
         result = await db.execute(stmt)
         await db.commit()
         return result.rowcount > 0
+
+
+async def set_startup_pitch_status(
+    pitch_id: int,
+    founder_id: int,
+    status_value: str,
+    published_at,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    stmt = (
+        update(StartupPitch)
+        .where(
+            StartupPitch.id == pitch_id,
+            StartupPitch.founder_id == founder_id,
+        )
+        .values(status=status_value, published_at=published_at)
+        .returning(StartupPitch)
+    )
+    if session is not None:
+        pitch = (await session.execute(stmt)).scalar_one_or_none()
+        return pitch.to_dict() if pitch else None
+    async with async_session_factory() as db:
+        pitch = (await db.execute(stmt)).scalar_one_or_none()
+        await db.commit()
+        return pitch.to_dict() if pitch else None
