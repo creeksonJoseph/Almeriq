@@ -9,7 +9,7 @@ from repositories import startup_pitch as pitch_repo
 from repositories import notification as notification_repo
 
 
-CONNECTED_STATUSES = {"accepted", "in_discussion", "invested"}
+CONNECTED_STATUSES = {"accepted", "in_discussion", "invested", "investor_reported"}
 
 
 async def create_founder_update(founder_id: int, pitch_id: int, period: str, content: str, session: AsyncSession | None = None) -> dict:
