@@ -245,6 +245,19 @@ async def list_founder_investor_updates(
     return {"items": await update_svc.list_founder_updates(founder_id, pitch_id, session=db)}
 
 
+@router.put("/founder/updates/{update_id}")
+async def update_founder_investor_update(
+    update_id: int,
+    body: InvestorUpdateCreateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    return await update_svc.update_founder_update(
+        update_id, founder_id, body.period, body.content, session=db
+    )
+
+
 @router.post("/founder/updates/{update_id}/publish")
 async def publish_founder_investor_update(
     update_id: int,
