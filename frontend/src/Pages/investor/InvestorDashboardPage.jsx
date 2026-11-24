@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import { useInvestorWorkspace } from "../../hooks/useInvestorWorkspace";
+import { listInvestorUpdatesApi } from "../../lib/api/founder";
 
 const DEAL_ROOM_TEMPLATES = [{"title":"Mutual NDA","description":"Confidentiality terms for founders and prospective investors.","body":"MUTUAL NON-DISCLOSURE AGREEMENT\n\nDate: [DATE]\n\nParties: [FOUNDER / COMPANY LEGAL NAME] and [INVESTOR LEGAL NAME]\n\nPurpose. The parties may exchange confidential information solely to evaluate a potential investment or business relationship (the Purpose).\n\nConfidential Information. Includes non-public business, product, technical, financial, customer, operational and strategic information disclosed in any form, excluding information the recipient can show was public without breach, already lawfully known, independently developed, or lawfully received without confidentiality duty.\n\nRecipient obligations. The recipient will use the information only for the Purpose, protect it with reasonable care, and disclose it only to representatives who need to know and are bound by confidentiality obligations.\n\nRequired disclosure. A recipient may disclose information where legally required, giving notice where lawful.\n\nTerm. Confidentiality obligations continue for [2] years from disclosure; trade secrets remain protected while legally qualifying as trade secrets.\n\nNo licence or obligation. No intellectual-property licence is granted and neither party is required to proceed with a transaction.\n\nReturn / destruction. On written request, return or destroy confidential information subject to lawful archival copies.\n\nGoverning law: [JURISDICTION]\n\nSigned: ____________________  Date: __________\n[FOUNDER / COMPANY]\n\nSigned: ____________________  Date: __________\n[INVESTOR]\n\nSTARTER TEMPLATE ONLY. Obtain legal review and tailor to the governing law."},{"title":"Founder Agreement","description":"Outline founder roles, equity intentions and decision-making.","body":"FOUNDERS' AGREEMENT — DISCUSSION DRAFT\n\nCompany: [COMPANY NAME / FORMATION STATUS]\nDate: [DATE]\nFounders: [FULL LEGAL NAMES]\n\n1. Purpose and business. The founders intend to build [BUSINESS DESCRIPTION].\n\n2. Roles and time commitment. [FOUNDER A: ROLE / COMMITMENT]. [FOUNDER B: ROLE / COMMITMENT].\n\n3. Proposed ownership. [FOUNDER A: %]. [FOUNDER B: %]. These are proposed allocations only until properly approved, documented and issued under applicable law.\n\n4. Vesting and leaver terms. [VESTING SCHEDULE, CLIFF, GOOD-LEAVER / BAD-LEAVER TERMS].\n\n5. Intellectual property. Each founder will identify relevant pre-existing IP and agree in a separate written instrument how company-related IP is assigned or licensed to the company.\n\n6. Decisions. Ordinary decisions: [PROCESS]. Reserved matters requiring consent: [LIST].\n\n7. Expenses and compensation. [APPROVAL AND REIMBURSEMENT RULES].\n\n8. Confidentiality and conflicts. Founders will protect company confidential information and disclose material conflicts.\n\n9. Departure and dispute resolution. [NOTICE, BUYBACK / TRANSFER, MEDIATION AND DISPUTE PROCESS].\n\n10. Governing law: [JURISDICTION]\n\nAcknowledged for discussion: ____________________ [FOUNDER] Date: ______\nAcknowledged for discussion: ____________________ [FOUNDER] Date: ______\n\nDISCUSSION DRAFT ONLY. It does not issue shares or replace constitutional, employment, IP-assignment or shareholder documents. Obtain independent legal and tax advice."},{"title":"Term Sheet","description":"Capture proposed investment economics and key conditions.","body":"NON-BINDING INVESTMENT TERM SHEET\n\nDate: [DATE]\nCompany: [LEGAL NAME / JURISDICTION]\nInvestor: [LEGAL NAME]\nRound: [PRE-SEED / SEED / SERIES A / OTHER]\n\nInvestment amount: [CURRENCY AND AMOUNT]\nInstrument: [EQUITY / SAFE / CONVERTIBLE NOTE / OTHER]\nPre-money valuation: [AMOUNT OR NOT APPLICABLE]\nPost-money valuation: [AMOUNT OR NOT APPLICABLE]\nProposed ownership / conversion mechanics: [DETAILS]\nUse of proceeds: [DETAILS]\nBoard / observer rights: [DETAILS]\nInformation rights: [DETAILS]\nPro-rata / participation rights: [DETAILS]\nConditions precedent: [DUE DILIGENCE, APPROVALS, DEFINITIVE DOCUMENTS]\nTarget closing date: [DATE]\nExclusivity (if any): [PERIOD / NONE]\n\nNon-binding effect. This term sheet records current discussion points only. No party is obliged to complete the investment until definitive agreements are negotiated, approved and signed.\n\nPotential binding clauses (only if expressly selected and legally reviewed): confidentiality, exclusivity, expenses, governing law and dispute resolution. Mark each clause intended to bind: [SPECIFY].\n\nGoverning law for any expressly binding clauses: [JURISDICTION]\n\nAcknowledged for discussion: ____________________ [COMPANY] Date: ______\nAcknowledged for discussion: ____________________ [INVESTOR] Date: ______\n\nSTARTER TEMPLATE ONLY. Investment terms and securities laws vary; obtain qualified legal advice."}];
 
@@ -21,7 +22,17 @@ export default function InvestorDashboardPage() {
   const [editingInvestment, setEditingInvestment] = useState(null);
   const [confirmationStep, setConfirmationStep] = useState(1);
   const [startupQuery, setStartupQuery] = useState("");
+  const [sharedUpdates, setSharedUpdates] = useState([]);
+  const [updatesError, setUpdatesError] = useState("");
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
+
+  useEffect(() => {
+    let cancelled = false;
+    listInvestorUpdatesApi()
+      .then((items) => { if (!cancelled) setSharedUpdates(items); })
+      .catch((loadError) => { if (!cancelled) setUpdatesError(loadError.message || "Unable to load founder updates."); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const preferredMethod = profile?.preferred_payment_methods?.[0];
@@ -125,6 +136,19 @@ export default function InvestorDashboardPage() {
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
         {!profile?.firm_name && <Card className="border border-[#C9A15A]/20 bg-[#C9A15A]/5 p-4 text-sm text-white/70">Complete your investor profile so founders can understand your investment focus.</Card>}
+        {pageView === "overview" && (
+          <section className="space-y-3">
+            <h2 className="font-serif text-xl">Updates from founders</h2>
+            {updatesError && <p role="alert" className="text-sm text-red-300">{updatesError}</p>}
+            {sharedUpdates.length === 0 ? <Card className="p-5 text-sm text-white/50">Published updates from founders you have contacted will appear here.</Card> : sharedUpdates.map((item) => (
+              <Card key={item.id} className="space-y-2 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-medium">{item.pitch_title}</h3><span className="text-xs text-white/45">{item.period}</span></div>
+                <p className="whitespace-pre-wrap text-sm text-white/70">{item.content}</p>
+                {item.published_at && <p className="text-xs text-white/40">Shared {new Date(item.published_at).toLocaleString()}</p>}
+              </Card>
+            ))}
+          </section>
+        )}
         {["overview", "portfolio", "analytics"].includes(pageView) && (
         <section className="space-y-3">
           <h2 className="font-serif text-xl">{pageView === "analytics" ? "Portfolio analytics" : pageView === "overview" ? "Investor overview" : "Portfolio"}</h2>
