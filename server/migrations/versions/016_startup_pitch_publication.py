@@ -13,12 +13,25 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("startup_pitches", sa.Column("status", sa.Text(), nullable=False, server_default="active"))
+    op.add_column("startup_pitches", sa.Column("status", sa.Text(), nullable=False, server_default="draft"))
     op.add_column("startup_pitches", sa.Column("published_at", sa.DateTime(timezone=True), nullable=True))
     op.create_index("ix_startup_pitches_status", "startup_pitches", ["status"])
-    op.execute("UPDATE startup_pitches SET published_at = updated_at WHERE status = 'active'")
-    with op.batch_alter_table("startup_pitches") as batch_op:
-        batch_op.alter_column("status", existing_type=sa.Text(), server_default="draft")
+    op.execute("""
+        UPDATE startup_pitches
+        SET status = 'active', published_at = updated_at
+        WHERE title IS NOT NULL
+          AND trim(title) <> ''
+          AND summary IS NOT NULL
+          AND trim(summary) <> ''
+          AND sector IS NOT NULL
+          AND trim(sector) <> ''
+          AND stage IS NOT NULL
+          AND trim(stage) <> ''
+          AND location IS NOT NULL
+          AND trim(location) <> ''
+          AND ask_amount IS NOT NULL
+          AND ask_amount > 0
+    """)
 
 
 def downgrade() -> None:
