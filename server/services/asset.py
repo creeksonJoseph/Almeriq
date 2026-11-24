@@ -271,7 +271,6 @@ async def list_public_assets(
             asset_dict["provider_name"] = provider.company_name or provider.trading_name or "Unknown"
             asset_dict["provider_verified"] = provider.verified
             asset_dict["provider_location"] = provider.location
-            asset_dict["provider_enclave_key"] = provider.enclave_key
             items.append(asset_dict)
 
         return items, count or 0
@@ -305,7 +304,6 @@ async def get_public_asset_detail(
         asset_dict["provider_name"] = provider.company_name or provider.trading_name or "Unknown"
         asset_dict["provider_verified"] = provider.verified
         asset_dict["provider_location"] = provider.location
-        asset_dict["provider_enclave_key"] = provider.enclave_key
         asset_dict["provider_about"] = provider.about
         return asset_dict
 
