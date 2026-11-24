@@ -4,6 +4,8 @@ import {
   deleteFounderPitchApi,
   listFounderInvestmentRequestsApi,
   listFounderPitchesApi,
+  publishFounderPitchApi,
+  unpublishFounderPitchApi,
   updateFounderInvestmentRequestApi,
   updateFounderPitchApi,
 } from "../lib/api/founder";
@@ -72,6 +74,22 @@ export function useFounderPitches() {
     }
   }, []);
 
+  const setPitchPublished = useCallback(async (pitchId, published) => {
+    setError("");
+    setNotice("");
+    try {
+      const updated = published
+        ? await publishFounderPitchApi(pitchId)
+        : await unpublishFounderPitchApi(pitchId);
+      setPitches((items) => items.map((item) => item.id === pitchId ? { ...item, ...updated } : item));
+      setNotice(published ? "Pitch published to investor discovery." : "Pitch moved back to drafts.");
+      return updated;
+    } catch (requestError) {
+      setError(requestError.message || "Unable to change pitch visibility.");
+      throw requestError;
+    }
+  }, []);
+
   const startConversation = useCallback((requestId) => startInvestmentConversationApi(requestId), []);
 
   const removePitch = useCallback(async (pitchId) => {
@@ -89,6 +107,6 @@ export function useFounderPitches() {
 
   return {
     pitches, requests, loading, saving, busyRequestId, error, notice,
-    load, savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
+    load, savePitch, updateRequest, removePitch, setPitchPublished, startConversation, setError, setNotice,
   };
 }
