@@ -563,7 +563,7 @@ export default function ProviderSetupPage() {
                       <span className="text-[11px] text-white/40">Suggested tags:</span>
                       <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">YC / Seed+ Startups</span>
                       <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">Min 3-Month Lease</span>
-                      <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">Telemetry-Bonded Escrow</span>
+                      <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">Telemetry-linked monitoring</span>
                     </div>
                   </div>
                 </Card>
