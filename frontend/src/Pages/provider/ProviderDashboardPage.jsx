@@ -70,7 +70,7 @@ export default function ProviderDashboardPage() {
   const companyName = profile?.company_name || profile?.trading_name || profile?.name || "your provider account";
   const activeListings = assets?.filter(asset => asset.is_active).length || 0;
   const pendingOrders = orders?.filter(o => o.status?.toLowerCase() === "pending_review").length || 0;
-  const totalRequestedValue = orders?.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0) || 0;
+  const pricedOrderCount = orders?.filter((order) => order.lease_amount != null || order.amount != null).length || 0;
   const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
   
 
