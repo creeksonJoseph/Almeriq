@@ -202,3 +202,40 @@ export async function deleteFounderPitchApi(id) {
 
 /** ETag-aware read for the authenticated user's venture history. */
 export const getVenturesCachedApi = (etag) => apiFetch("/founder/ventures", { etag });
+
+
+export async function listFounderInvestorUpdatesApi() {
+  try {
+    const { data } = await apiClient.get("/api/founder/investor-updates");
+    return data?.items || [];
+  } catch (e) {
+    throw apiErr(e, "Unable to load investor updates");
+  }
+}
+
+export async function createFounderInvestorUpdateApi(payload) {
+  try {
+    const { data } = await apiClient.post("/api/founder/investor-updates", payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to save investor update");
+  }
+}
+
+export async function publishFounderInvestorUpdateApi(id) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/investor-updates/${encodeURIComponent(id)}/publish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to share investor update");
+  }
+}
+
+export async function listInvestorUpdatesApi() {
+  try {
+    const { data } = await apiClient.get("/api/investor/updates");
+    return data?.items || [];
+  } catch (e) {
+    throw apiErr(e, "Unable to load shared investor updates");
+  }
+}
