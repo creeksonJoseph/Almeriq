@@ -129,7 +129,7 @@ describe("FounderPitchesPage pitch creation", () => {
       target: { value: "-100" },
     });
 
-    fireEvent.submit(screen.getByRole("button", { name: /publish pitch/i }).closest("form"));
+    fireEvent.submit(screen.getByRole("button", { name: /save as draft/i }).closest("form"));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/enter a pitch title and a valid non-negative funding ask/i);
