@@ -125,6 +125,32 @@ async def delete_pitch(
     )
 
 
+
+
+@router.post("/founder/pitches/{pitch_id}/publish")
+async def publish_founder_pitch(
+    pitch_id: int,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.set_founder_pitch_publication(pitch_id, founder_id, True, session=db)
+
+
+@router.post("/founder/pitches/{pitch_id}/unpublish")
+async def unpublish_founder_pitch(
+    pitch_id: int,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.set_founder_pitch_publication(pitch_id, founder_id, False, session=db)
+
+
 @router.get("/investor/startups/{pitch_id}")
 async def get_investor_startup(
     pitch_id: int,
