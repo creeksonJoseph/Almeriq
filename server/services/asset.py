@@ -222,7 +222,7 @@ async def list_public_assets(
             select(func.count())
             .select_from(Asset)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.is_active == True, ProviderProfile.verified == True)
+            .where(Asset.is_active == True)
         )
 
         if category:
