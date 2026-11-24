@@ -110,7 +110,7 @@ export default function ProviderOrdersPage() {
     );
   }
 
-  const monthlyOrderRates = orders.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0);
+  const pricedOrderCount = orders.filter((order) => order.lease_amount != null || order.amount != null).length;
 
   return (
     <div className={`min-h-screen bg-[#0c0e13] text-[#ffffff] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-10`}>
@@ -142,7 +142,7 @@ export default function ProviderOrdersPage() {
         <KPICard label="Total Orders" value={orders.length} icon="Receipt" />
         <KPICard label="Pending Review" value={orders.filter(o => o.status?.toLowerCase() === "pending_review").length} icon="AlertCircle" highlight />
         <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status?.toLowerCase() === "shipped").length} icon="Truck" />
-        <KPICard label="Combined Monthly Rates · Currency Not Specified" value={monthlyOrderRates > 0 ? monthlyOrderRates.toLocaleString() : "—"} icon="Lock" />
+        <KPICard label="Orders with a Listed Rate" value={pricedOrderCount} icon="Lock" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
