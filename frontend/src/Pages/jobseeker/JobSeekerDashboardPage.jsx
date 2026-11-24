@@ -18,7 +18,10 @@ export default function JobSeekerDashboardPage() {
       setError("");
       try {
         const [profileResult, jobsResult, applicationsResult] = await Promise.all([
-          getJobSeekerProfileApi(),
+          getJobSeekerProfileApi().catch((profileError) => {
+            if (profileError.response?.status === 404) return null;
+            throw profileError;
+          }),
           listJobsApi({ is_active: true, limit: 100 }),
           listMyJobApplicationsApi(),
         ]);
