@@ -17,7 +17,8 @@ def upgrade() -> None:
     op.add_column("startup_pitches", sa.Column("published_at", sa.DateTime(timezone=True), nullable=True))
     op.create_index("ix_startup_pitches_status", "startup_pitches", ["status"])
     op.execute("UPDATE startup_pitches SET published_at = updated_at WHERE status = 'active'")
-    op.alter_column("startup_pitches", "status", server_default="draft")
+    with op.batch_alter_table("startup_pitches") as batch_op:
+        batch_op.alter_column("status", existing_type=sa.Text(), server_default="draft")
 
 
 def downgrade() -> None:
