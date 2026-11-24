@@ -10,10 +10,10 @@ export default function InvestorDashboardPage() {
   const location = useLocation();
   const params = useParams();
   const pathname = location.pathname;
-  const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : "overview";
+  const pageView = pathname.includes("/startups") ? "startups" : pathname.includes("/deals") ? "deals" : pathname.includes("/portfolio") ? "portfolio" : pathname.includes("/analytics") ? "analytics" : pathname.includes("/resources") ? "resources" : pathname.includes("/settings") ? "settings" : pathname.includes("/updates") ? "updates" : "overview";
   const workspace = useInvestorWorkspace({ navigate });
   const {
-    profile, setProfile, startups, requests, loading, busyPitch,
+    profile, setProfile, startups, requests, updates, loading, busyPitch,
     error, notice, settingsSaving, saveSettings,
     openConversation, savePortfolio, expressInterest,
   } = workspace;
@@ -117,7 +117,7 @@ export default function InvestorDashboardPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white">
       <div className="mx-auto max-w-5xl space-y-6">
-        <nav aria-label="Investor workspace" className="flex flex-wrap gap-2 border-b border-white/10 pb-3 text-sm">{[["overview","Overview","/investor/dashboard"],["startups","Discover startups","/investor/startups"],["deals","Deal pipeline","/investor/deals"],["portfolio","Portfolio","/investor/portfolio"],["analytics","Analytics","/investor/analytics"],["resources","Documents & templates","/investor/resources"],["settings","Settings","/investor/settings"]].map(([key,label,path]) => <button key={key} type="button" onClick={() => navigate(path)} className={"rounded-lg px-3 py-2 transition-colors " + (pageView === key ? "bg-[#C9A15A]/15 text-[#E8D6A8]" : "text-white/60 hover:bg-white/5 hover:text-white")}>{label}</button>)}</nav>
+        <nav aria-label="Investor workspace" className="flex flex-wrap gap-2 border-b border-white/10 pb-3 text-sm">{[["overview","Overview","/investor/dashboard"],["startups","Discover startups","/investor/startups"],["deals","Deal pipeline","/investor/deals"],["portfolio","Portfolio","/investor/portfolio"],["analytics","Analytics","/investor/analytics"],["resources","Documents & templates","/investor/resources"],["updates","Founder updates","/investor/updates"],["settings","Settings","/investor/settings"]].map(([key,label,path]) => <button key={key} type="button" onClick={() => navigate(path)} className={"rounded-lg px-3 py-2 transition-colors " + (pageView === key ? "bg-[#C9A15A]/15 text-[#E8D6A8]" : "text-white/60 hover:bg-white/5 hover:text-white")}>{label}</button>)}</nav>
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div><p className="text-xs uppercase tracking-widest text-[#C9A15A]">Investor workspace</p><h1 className="mt-2 font-serif text-3xl">Investor Dashboard</h1><p className="mt-2 text-sm text-white/60">Discover startups and manage founder conversations.</p></div>
           <Button className="bg-[#C9A15A] text-[#111318] hover:bg-[#E8D6A8]" onClick={() => navigate("/investor/profile")}>{profile ? "Edit Profile" : "Complete Profile"}</Button>
@@ -166,6 +166,21 @@ export default function InvestorDashboardPage() {
         </section>
 
         
+        )}
+
+        {pageView === "updates" && (
+          <section className="space-y-3">
+            <h2 className="font-serif text-xl">Updates from connected startups</h2>
+            {updates.length === 0 ? <Card className="p-6 text-sm text-white/55">No founder updates have been shared with you yet. Updates appear here when a founder accepts your interest or moves the conversation into discussion and shares an update.</Card> : updates.map((item) => (
+              <Card key={item.id} className="space-y-3 p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div><p className="text-xs uppercase tracking-wider text-[#C9A15A]">{item.pitch?.title || "Connected startup"}</p><h3 className="mt-1 font-serif text-lg">{item.period}</h3></div>
+                  <p className="text-xs text-white/40">{item.published_at ? new Date(item.published_at).toLocaleString() : ""}</p>
+                </div>
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-white/75">{item.content}</div>
+              </Card>
+            ))}
+          </section>
         )}
 
         {pageView === "startups" && (
