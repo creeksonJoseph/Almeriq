@@ -27,6 +27,10 @@ class AdminRoleUpdateRequest(BaseModel):
     role: str
 
 
+class ProviderVerificationUpdateRequest(BaseModel):
+    verified: bool
+
+
 def _normalize_role(role: str) -> str:
     normalized = normalize_role(role).upper()
     if normalized not in VALID_USER_ROLES:
@@ -57,6 +61,38 @@ async def get_waitlist_participants(
         "total": len(entries),
         "items": entries,
     }
+
+
+@router.get("/providers", status_code=200)
+async def list_provider_review_queue(
+    verified: bool | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """List provider profiles for admin verification review."""
+    items = await provider_repo.list_provider_profiles(
+        verified=verified, limit=min(max(limit, 1), 100), offset=max(offset, 0), session=db
+    )
+    return {"items": items}
+
+
+@router.patch("/providers/{provider_id}/verification", status_code=200)
+async def update_provider_verification(
+    provider_id: int,
+    body: ProviderVerificationUpdateRequest,
+    admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Verify or revoke verification for a provider profile."""
+    profile = await provider_repo.update_provider_verification(
+        profile_id=provider_id, verified=body.verified, session=db
+    )
+    if not profile:
+        raise HTTPException(status_code=404, detail="Provider profile not found")
+    await db.commit()
+    return {"message": "Provider verification updated", "provider": profile}
 
 
 @router.patch("/me/role", status_code=200)
