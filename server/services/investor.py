@@ -413,3 +413,85 @@ async def update_founder_request(
         session=session,
     )
     return updated
+
+
+async def create_founder_investor_update(
+    founder_id: int,
+    pitch_id: int,
+    period: str,
+    content: str,
+    session: AsyncSession,
+) -> dict:
+    from repositories import investor_update as update_repo
+
+    pitch = await pitch_repo.get_startup_pitch(pitch_id, founder_id=founder_id, session=session)
+    if not pitch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    return await update_repo.create_update(founder_id, pitch_id, period.strip(), content.strip(), session)
+
+
+async def list_founder_investor_updates(founder_id: int, session: AsyncSession) -> list[dict]:
+    from repositories import investor_update as update_repo
+    return await update_repo.list_founder_updates(founder_id, session)
+
+
+async def edit_founder_investor_update(
+    update_id: int,
+    founder_id: int,
+    period: str,
+    content: str,
+    session: AsyncSession,
+) -> dict:
+    from repositories import investor_update as update_repo
+
+    updated = await update_repo.update_draft(update_id, founder_id, period.strip(), content.strip(), session)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Draft update not found. Published updates are read-only.",
+        )
+    return updated
+
+
+async def publish_founder_investor_update(
+    update_id: int,
+    founder_id: int,
+    session: AsyncSession,
+) -> dict:
+    from repositories import investor_update as update_repo
+    from repositories import investment as investment_repo
+
+    draft = await update_repo.get_update(update_id, founder_id, session)
+    if not draft:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investor update not found")
+    pitch = await pitch_repo.get_startup_pitch(draft["pitch_id"], founder_id=founder_id, session=session)
+    if not pitch or pitch.get("status") != "published":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Publish the startup pitch before sharing an investor update.",
+        )
+    published = await update_repo.publish_update(update_id, founder_id, session)
+    if not published:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Only draft updates can be published")
+    interested = await investment_repo.list_investments(founder_id=founder_id, session=session)
+    recipients = {
+        item["investor_id"] for item in interested
+        if item["pitch_id"] == draft["pitch_id"]
+        and item["status"] in {"pending", "accepted", "in_discussion", "invested"}
+    }
+    for investor_id in recipients:
+        await notification_repo.create_notification(
+            user_id=investor_id,
+            type="investment",
+            title=f"New update from {pitch['title']}",
+            body=f"The founder shared an update for {draft['period']}.",
+            link="/investor/updates",
+            session=session,
+        )
+    published["notified_investors"] = len(recipients)
+    return published
+
+
+async def list_investor_updates(investor_id: int, session: AsyncSession) -> list[dict]:
+    from repositories import investor_update as update_repo
+    return await update_repo.list_investor_updates(investor_id, session)
