@@ -150,10 +150,10 @@ async def publish_founder_pitch(pitch_id: int, founder_id: int, session: AsyncSe
     pitch = await pitch_repo.get_startup_pitch(pitch_id, founder_id=founder_id, session=session)
     if not pitch:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
-    required = ("title", "summary", "sector", "stage", "location", "ask_amount")
+    required = ("title", "summary", "sector", "stage", "location")
     missing = [field for field in required if pitch.get(field) is None or (isinstance(pitch.get(field), str) and not pitch[field].strip())]
-    if missing or float(pitch.get("ask_amount") or 0) <= 0:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Complete the title, summary, sector, stage, location and a positive funding ask before publishing.")
+    if missing:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Complete the title, summary, sector, stage and location before publishing. The funding ask is optional.")
     return await pitch_repo.update_startup_pitch(
         pitch_id, founder_id, session=session, status="active",
         published_at=datetime.now(timezone.utc),
