@@ -226,7 +226,7 @@ export default function ProviderDashboardPage() {
                   <StatusPill status={asset.status?.toLowerCase() || "available"} />
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#f2ca50] font-mono">{asset.rate || asset.price_monthly || "—"} / mo</span>
+                  <span className="text-[#f2ca50] font-mono">{asset.rate || asset.price_monthly || "—"} / mo · currency not specified</span>
                   <Link to={`/provider/listings/${asset.id}/edit`} className="text-xs font-mono text-[#ffffff]/60 hover:text-[#f2ca50]">
                     Edit
                   </Link>
