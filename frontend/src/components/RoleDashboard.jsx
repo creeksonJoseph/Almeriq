@@ -6,7 +6,6 @@ import {
   BriefcaseBusiness,
   Building2,
   CheckCircle2,
-  ChevronRight,
   Clock3,
   Compass,
   Cpu,
@@ -24,7 +23,6 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { listVenturesApi } from "../lib/api";
-import { StatStrip } from "./ui/BorderlessPrimitives";
 
 const ROLE_DATA = {
   founder: {
@@ -147,49 +145,6 @@ function StatCard({ stat }) {
         {value}
       </p>
       <p className="mt-1 text-xs text-white/50">{note}</p>
-    </div>
-  );
-}
-
-function WorkspacePanel({ data }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-[#12121a] p-5 sm:p-6">
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
-            Workspace signal
-          </p>
-          <h2 className="mt-1 font-display text-xl font-semibold text-white">
-            {data.primaryTitle}
-          </h2>
-        </div>
-        <p className="max-w-sm text-xs leading-relaxed text-white/50 sm:text-right">
-          {data.primaryCopy}
-        </p>
-      </div>
-      <div className="divide-y divide-white/10">
-        {data.rows.map(([title, status, meta]) => (
-          <button
-            key={title}
-            type="button"
-            className="flex w-full items-center gap-3 py-4 text-left transition-colors hover:bg-white/3"
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/6 text-[#f2ca50]">
-              <CheckCircle2 size={15} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-white">
-                {title}
-              </span>
-              <span className="mt-1 block text-xs text-white/45">{meta}</span>
-            </span>
-            <span className="hidden rounded-full bg-white/6 px-2.5 py-1 text-[10px] font-semibold text-white/60 sm:block">
-              {status}
-            </span>
-            <ChevronRight size={16} className="shrink-0 text-white/35" />
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
@@ -368,40 +323,11 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
         user?.role === "founder" ? (
           <FounderWorkspaceOverview />
         ) : (
-          <>
-            <StatStrip
-              items={role.stats.map(([label, value, note, tone]) => ({
-                label,
-                value,
-                subtext: note,
-                valueColor: tone === "gold" ? "text-[#f2ca50]" : "text-white/80",
-              }))}
-              className="mb-6"
-            />
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
-              <WorkspacePanel data={role} />
-              <div className="rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-5 sm:p-6">
-                <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f2ca50]/15 text-[#f2ca50]">
-                  <Target size={19} />
-                </div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2ca50]">
-                  Next best action
-                </p>
-                <h2 className="mt-2 font-display text-xl font-semibold text-white">
-                  {role.secondaryTitle}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-white">
-                  {role.secondaryCopy}
-                </p>
-                <button
-                  type="button"
-                  className="mt-6 text-xs font-semibold text-[#f2ca50] hover:text-white"
-                >
-                  {role.secondaryAction}
-                </button>
-              </div>
-            </div>
-          </>
+          <EmptyState
+            icon={role.icon}
+            title="Open your workspace"
+            copy="This account's live metrics and activity are shown in its dedicated workspace. No sample figures are presented here."
+          />
         )
       )}
 
