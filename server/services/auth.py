@@ -125,10 +125,24 @@ async def authenticate_google_user(credential: str) -> tuple[dict, str]:
             detail="Google account token is missing email or sub identifier",
         )
 
-    # Optional aud check if GOOGLE_CLIENT_ID is configured
-    if GOOGLE_CLIENT_ID and payload.get("aud") != GOOGLE_CLIENT_ID:
-        # Note: log warning or enforce client_id match
-        pass
+    # Google ID tokens must be issued for this application. Fail closed if
+    # the client ID is missing or the token audience does not match.
+    if not GOOGLE_CLIENT_ID:
+        logger.error("GOOGLE_CLIENT_ID is not configured; rejecting Google sign-in")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google sign-in is not configured",
+        )
+    if payload.get("aud") != GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google credential was issued for a different application",
+        )
+    if str(payload.get("email_verified", "")).lower() not in {"true", "1"}:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google email address has not been verified",
+        )
 
     user = await user_repo.get_user_by_google_id(google_sub)
     if not user:
