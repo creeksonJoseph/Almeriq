@@ -344,7 +344,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
             <div className="text-xs font-mono text-gold">No payment is processed in this demo</div>
           </div>
           <div className="font-serif text-2xl font-bold text-gold">
-            ${formatAmount(amount)} <span className="text-label-caps text-white/60">USD</span>
+            {formatAmount(amount)} <span className="text-label-caps text-white/60">Currency not specified</span>
           </div>
         </div>
       </Card>
@@ -437,7 +437,7 @@ function CompleteStep({ orderId, providerName, amount, formatAmount, onDone }) {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="font-medium text-text">{providerName}</span></div>
-          <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">${formatAmount(amount)}</span></div>
+          <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">{formatAmount(amount)}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">simulated</span></div>
         </div>
       </Card>
