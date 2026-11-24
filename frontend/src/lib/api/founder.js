@@ -181,6 +181,24 @@ export async function updateFounderInvestmentRequestApi(id, status) {
   }
 }
 
+export async function createInvestorUpdateApi(pitchId, payload) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/pitches/${encodeURIComponent(pitchId)}/updates`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to save this investor update");
+  }
+}
+
+export async function publishInvestorUpdateApi(updateId) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/updates/${encodeURIComponent(updateId)}/publish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to share this investor update");
+  }
+}
+
 export async function publishFounderPitchApi(id) {
   try {
     const { data } = await apiClient.post(`/api/founder/pitches/${id}/publish`);
