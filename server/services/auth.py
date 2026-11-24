@@ -189,17 +189,26 @@ async def update_onboarding(
     """
     from core.roles import normalize_role
 
+    existing_user = await user_repo.get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User record not found",
+        )
+
     allowed_roles = {"founder", "investor", "infrastructure_provider", "job_seeker", "expert"}
-    normalized_role = normalize_role(role)
+    normalized_role = normalize_role(role if role is not None else existing_user.get("role"))
     if role is not None and normalized_role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Choose a supported account role.",
         )
 
-    # Role selection alone completes role onboarding; identity fields are
-    # profile details and are not represented as verified identity.
-    is_complete = normalized_role in allowed_roles
+    effective_name = full_name if full_name is not None else existing_user.get("full_name")
+    # Completing onboarding requires both a supported workspace role and a
+    # name. National ID data is not proof of verification and is not required
+    # to mark the profile complete.
+    is_complete = normalized_role in allowed_roles and bool(effective_name and effective_name.strip())
     updated_user = await user_repo.update_user_onboarding(
         user_id=user_id,
         full_name=full_name,
