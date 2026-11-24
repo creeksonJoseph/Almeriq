@@ -20,6 +20,7 @@ async def list_notifications(
     unread_only: bool = Query(default=False),
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    notification_type: str | None = Query(default=None, alias="type"),
 ) -> dict:
     """List notifications for the current user."""
     response.headers["Cache-Control"] = "private, no-cache"
@@ -28,6 +29,7 @@ async def list_notifications(
         unread_only=unread_only,
         limit=limit,
         offset=offset,
+        notification_type=notification_type,
         session=db,
     )
     return {"items": items, "total": total, "unread_count": unread_count}
