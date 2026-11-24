@@ -56,7 +56,7 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, fin
   }, [methods, coverageToApi, toast]);
 
   const persistAssets = useCallback(async (data) => {
-    const toNum = (value) => value != null && value !== "" && !Number.isNaN(Number(value)) ? Number(value) : null;
+    const toNum = (value) => value != null && value !== "" && !Number.isNaN(Number(String(value).replace(/,/g, ""))) ? Number(String(value).replace(/,/g, "")) : null;
     const saveAsset = async (asset, kind, index, fieldPath) => {
       const payload = {
         name: asset.name, category: asset.category, kind, client_asset_id: asset.client_asset_id,
