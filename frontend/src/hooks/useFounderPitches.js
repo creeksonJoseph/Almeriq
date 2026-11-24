@@ -42,8 +42,11 @@ export function useFounderPitches() {
     setNotice("");
     try {
       if (id) {
+        const wasPublished = pitches.some((pitch) => pitch.id === id && pitch.status === "active");
         await updateFounderPitchApi(id, payload);
-        setNotice("Pitch updated.");
+        setNotice(wasPublished
+          ? "Changes saved as a draft. Publish the pitch again when the updated details are ready."
+          : "Pitch updated.");
       } else {
         await createFounderPitchApi(payload);
         setNotice("Draft saved. Review it and publish when it is ready.");
@@ -55,7 +58,7 @@ export function useFounderPitches() {
     } finally {
       setSaving(false);
     }
-  }, [load]);
+  }, [load, pitches]);
 
   const updateRequest = useCallback(async (requestId, status) => {
     setBusyRequestId(requestId);
