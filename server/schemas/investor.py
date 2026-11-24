@@ -212,3 +212,14 @@ class InvestorPortfolioUpdateRequest(BaseModel):
         if value is not None and value not in {"low", "medium", "high"}:
             raise ValueError("Risk level must be low, medium, or high")
         return value
+
+
+class InvestorUpdateCreateRequest(BaseModel):
+    pitch_id: int = Field(gt=0)
+    period: str = Field(min_length=2, max_length=120)
+    content: str = Field(min_length=20, max_length=20000)
+
+
+class InvestorUpdateEditRequest(BaseModel):
+    period: str = Field(min_length=2, max_length=120)
+    content: str = Field(min_length=20, max_length=20000)
