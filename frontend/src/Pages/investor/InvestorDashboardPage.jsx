@@ -91,20 +91,16 @@ export default function InvestorDashboardPage() {
   const requestedPitchIds = new Set(requests.map((request) => request.pitch_id));
   const investedItems = requests.filter((request) => request.status === "invested" && Number(request.investment_amount) > 0);
   const valuedItems = investedItems.filter((request) => request.current_value != null);
-  const totalInvested = investedItems.reduce((sum, item) => sum + Number(item.investment_amount || 0), 0);
-  const valuedInvested = valuedItems.reduce((sum, item) => sum + Number(item.investment_amount || 0), 0);
-  const currentPortfolioValue = valuedItems.reduce((sum, item) => sum + Number(item.current_value || 0), 0);
-  const portfolioRoi = valuedInvested > 0 ? ((currentPortfolioValue - valuedInvested) / valuedInvested) * 100 : null;
-  const returnAssumption = profile?.target_return_percent == null ? null : Number(profile.target_return_percent);
-  const projectedValue = returnAssumption == null || currentPortfolioValue <= 0 ? null : currentPortfolioValue * (1 + returnAssumption / 100);
+  // Portfolio amounts have no stored currency yet. Never add values across
+  // positions or calculate aggregate ROI until each record has a currency.
   const stageExposure = investedItems.reduce((groups, item) => {
     const stage = item.pitch?.stage || "Unspecified";
-    groups[stage] = (groups[stage] || 0) + Number(item.investment_amount || 0);
+    groups[stage] = (groups[stage] || 0) + 1;
     return groups;
   }, {});
   const maxStageExposure = Math.max(1, ...Object.values(stageExposure));
-  const riskExposure = investedItems.reduce((groups, item) => { const level = ["low", "medium", "high"].includes(item.risk_level) ? item.risk_level : "unclassified"; groups[level] = (groups[level] || 0) + Number(item.investment_amount || 0); return groups; }, {});
-  const riskTotal = Object.values(riskExposure).reduce((sum, amount) => sum + amount, 0);
+  const riskExposure = investedItems.reduce((groups, item) => { const level = ["low", "medium", "high"].includes(item.risk_level) ? item.risk_level : "unclassified"; groups[level] = (groups[level] || 0) + 1; return groups; }, {});
+  const riskTotal = Object.values(riskExposure).reduce((sum, count) => sum + count, 0);
   const documentedStartups = startups.filter((pitch) => pitch.website_url || pitch.pitch_deck_url || pitch.financials_url || (pitch.documents || []).length > 0);
   const visibleStartups = startups.filter((pitch) =>
     [pitch.title, pitch.summary, pitch.sector, pitch.stage, pitch.location]
@@ -130,24 +126,24 @@ export default function InvestorDashboardPage() {
           <h2 className="font-serif text-xl">{pageView === "analytics" ? "Portfolio analytics" : pageView === "overview" ? "Investor overview" : "Portfolio"}</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="p-4"><p className="text-xs text-white/45">Recorded investments</p><p className="mt-2 text-2xl font-semibold">{investedItems.length}</p></Card>
-            <Card className="p-4"><p className="text-xs text-white/45">Amount invested</p><p className="mt-2 text-2xl font-semibold">{totalInvested.toLocaleString()}</p></Card>
-            <Card className="p-4"><p className="text-xs text-white/45">Current value (valued positions)</p><p className="mt-2 text-2xl font-semibold">{currentPortfolioValue.toLocaleString()}</p></Card>
-            <Card className="p-4"><p className="text-xs text-white/45">ROI on valued positions</p><p className="mt-2 text-2xl font-semibold">{portfolioRoi == null ? "—" : portfolioRoi.toFixed(1) + "%"}</p></Card>
+            <Card className="p-4"><p className="text-xs text-white/45">Priced positions</p><p className="mt-2 text-2xl font-semibold">{investedItems.filter((item) => item.investment_amount != null).length}</p></Card>
+            <Card className="p-4"><p className="text-xs text-white/45">Positions with current value</p><p className="mt-2 text-2xl font-semibold">{valuedItems.length}</p></Card>
+            <Card className="p-4"><p className="text-xs text-white/45">Portfolio totals</p><p className="mt-2 text-sm font-semibold">Unavailable</p></Card>
           </div>
-          {pageView === "portfolio" && projectedValue != null && <Card className="p-4"><p className="text-xs text-white/45">Illustrative 12-month value projection</p><p className="mt-2 text-xl font-semibold">{projectedValue.toLocaleString()}</p><p className="mt-1 text-xs text-white/45">Uses your self-entered {returnAssumption}% annual return assumption; not a forecast or guarantee.</p></Card>}
-          {pageView === "analytics" && Object.keys(stageExposure).length > 0 && <Card className="p-4"><h3 className="font-medium">Portfolio stage exposure</h3><div className="mt-3 space-y-2">{Object.entries(stageExposure).map(([stage, amount]) => <div key={stage} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="text-white/65">{stage}</span><span>{amount.toLocaleString()}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#C9A15A]" style={{ width: (amount / maxStageExposure * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Stage exposure is a simple portfolio breakdown, not a formal risk rating.</p></Card>}
-          {pageView === "analytics" && investedItems.length > 0 && <Card className="p-4"><h3 className="font-medium">Risk distribution</h3><div className="mt-3 space-y-2">{["low", "medium", "high", "unclassified"].filter((level) => riskExposure[level]).map((level) => <div key={level} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="capitalize text-white/65">{level}</span><span>{riskTotal > 0 ? (riskExposure[level] / riskTotal * 100).toFixed(0) : 0}% · {riskExposure[level].toLocaleString()}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-[#C9A15A]" style={{ width: (riskExposure[level] / Math.max(1, riskTotal) * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Based on your own risk labels for each portfolio entry; Almeriq does not assess investment risk.</p></Card>}
+
+          {pageView === "analytics" && Object.keys(stageExposure).length > 0 && <Card className="p-4"><h3 className="font-medium">Portfolio stage exposure</h3><div className="mt-3 space-y-2">{Object.entries(stageExposure).map(([stage, amount]) => <div key={stage} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="text-white/65">{stage}</span><span>{amount} position(s)</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#C9A15A]" style={{ width: (amount / maxStageExposure * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Stage exposure is a simple portfolio breakdown, not a formal risk rating.</p></Card>}
+          {pageView === "analytics" && investedItems.length > 0 && <Card className="p-4"><h3 className="font-medium">Risk distribution</h3><div className="mt-3 space-y-2">{["low", "medium", "high", "unclassified"].filter((level) => riskExposure[level]).map((level) => <div key={level} className="space-y-1"><div className="flex items-center justify-between text-sm"><span className="capitalize text-white/65">{level}</span><span>{riskTotal > 0 ? (riskExposure[level] / riskTotal * 100).toFixed(0) : 0}% · {riskExposure[level]} position(s)</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-[#C9A15A]" style={{ width: (riskExposure[level] / Math.max(1, riskTotal) * 100) + "%" }} /></div></div>)}</div><p className="mt-2 text-xs text-white/40">Based on your own risk labels for each portfolio entry; Almeriq does not assess investment risk.</p></Card>}
           {pageView === "portfolio" && <div className="space-y-3 border-t border-white/10 pt-4">
             <h3 className="font-serif text-xl">Portfolio positions</h3>
             {investedItems.length === 0 ? <Card className="p-5 text-sm text-white/50">You have not recorded any investment positions yet.</Card> : investedItems.map((item) => {
               const pitch = item.pitch || startups.find((startup) => startup.id === item.pitch_id);
               return <Card key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                <div><h4 className="font-medium">{pitch?.title || "Startup pitch #" + item.pitch_id}</h4><p className="mt-1 text-xs text-white/50">Recorded amount: {Number(item.investment_amount || 0).toLocaleString()} · Status: {item.status}</p>{item.current_value != null && <p className="mt-1 text-xs text-white/45">Current value: {Number(item.current_value).toLocaleString()}</p>}</div>
+                <div><h4 className="font-medium">{pitch?.title || "Startup pitch #" + item.pitch_id}</h4><p className="mt-1 text-xs text-white/50">Recorded amount: {Number(item.investment_amount || 0).toLocaleString()} · currency not specified · Status: {item.status}</p>{item.current_value != null && <p className="mt-1 text-xs text-white/45">Current value: {Number(item.current_value).toLocaleString()} · currency not specified</p>}</div>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/investor/deals/" + item.id)}>Open deal room</Button>
               </Card>;
             })}
           </div>}
-          {pageView !== "analytics" && <p className="text-xs text-white/40">Portfolio figures are manually recorded by you. Almeriq does not process or verify investment transfers.</p>}
+          {pageView !== "analytics" && <p className="text-xs text-white/40">Portfolio amounts are manually recorded by you and have no currency attached. Almeriq does not process or verify investment transfers; cross-position totals and ROI are therefore not calculated.</p>}
         </section>
 
         
