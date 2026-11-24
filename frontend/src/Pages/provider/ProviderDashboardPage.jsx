@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, StatusPill, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
-import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi, getProviderOrderSummaryApi } from "../../lib/api";
+import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi, getProviderOrderSummaryApi, getConversationSummaryApi } from "../../lib/api";
 
 export default function ProviderDashboardPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
   const [orderSummary, setOrderSummary] = useState({ total_orders: 0, open_orders: 0, pending_review: 0, priced_orders: 0 });
+  const [unreadConversationCount, setUnreadConversationCount] = useState(0);
   const [assets, setAssets] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,15 +20,17 @@ export default function ProviderDashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const [profileRes, ordersRes, assetsRes, conversationsRes, orderSummaryRes] = await Promise.all([
+        const [profileRes, ordersRes, assetsRes, conversationsRes, orderSummaryRes, conversationSummaryRes] = await Promise.all([
           getProviderProfileApi(),
           listOrdersApi(),
           listAssetsApi(),
           listConversationsApi({ limit: 100 }),
           getProviderOrderSummaryApi(),
+          getConversationSummaryApi(),
         ]);
         setProfile(profileRes);
         setOrderSummary(orderSummaryRes);
+        setUnreadConversationCount(conversationSummaryRes.unread_conversations || 0);
         setOrders(ordersRes?.items || ordersRes?.data?.items || ordersRes?.orders || ordersRes);
         setAssets(assetsRes?.items || assetsRes?.data?.items || assetsRes?.assets || assetsRes);
         setConversations(conversationsRes?.items || conversationsRes?.data?.items || conversationsRes?.conversations || conversationsRes);
@@ -76,7 +79,7 @@ export default function ProviderDashboardPage() {
   const activeListings = assets?.filter(asset => asset.is_active).length || 0;
   const pendingOrders = orderSummary.pending_review;
   const pricedOrderCount = orderSummary.priced_orders;
-  const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
+  const unreadEnquiries = unreadConversationCount;
   
 
   return (
