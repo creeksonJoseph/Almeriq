@@ -10,6 +10,8 @@ vi.mock("../../lib/api/founder", () => ({
   createFounderPitchApi: vi.fn(),
   updateFounderPitchApi: vi.fn(),
   updateFounderInvestmentRequestApi: vi.fn(),
+  publishFounderPitchApi: vi.fn(),
+  unpublishFounderPitchApi: vi.fn(),
   deleteFounderPitchApi: vi.fn(),
 }));
 
@@ -27,6 +29,7 @@ const listRequests = vi.mocked(founderApi.listFounderInvestmentRequestsApi);
 const createPitch = vi.mocked(founderApi.createFounderPitchApi);
 const updatePitch = vi.mocked(founderApi.updateFounderPitchApi);
 const deletePitch = vi.mocked(founderApi.deleteFounderPitchApi);
+const publishPitch = vi.mocked(founderApi.publishFounderPitchApi);
 
 const PITCH = {
   id: 1,
@@ -58,6 +61,7 @@ beforeEach(() => {
   createPitch.mockResolvedValue({});
   updatePitch.mockResolvedValue({});
   deletePitch.mockResolvedValue(undefined);
+  publishPitch.mockResolvedValue({ id: 1, status: "active" });
 });
 
 afterEach(() => {
@@ -65,8 +69,14 @@ afterEach(() => {
 });
 
 describe("FounderPitchesPage pitch creation", () => {
-  it("publishes a new pitch via POST and shows success notice", async () => {
-    pitchList();
+  it("saves a new pitch as a draft and publishes it in a separate action", async () => {
+    listPitches.mockResolvedValueOnce([]).mockResolvedValue([{
+      ...PITCH,
+      id: 7,
+      title: "Acme AI",
+      status: "draft",
+    }]);
+    listRequests.mockResolvedValue([]);
     render(<MemoryRouter><FounderPitchesPage /></MemoryRouter>);
 
     await waitFor(() => expect(screen.getByText(/create a pitch/i)).toBeInTheDocument());
@@ -86,14 +96,21 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.change(screen.getByPlaceholderText(/optional amount/i), {
       target: { value: "50000" },
     });
+    fireEvent.change(screen.getByPlaceholderText(/nairobi, kenya/i), {
+      target: { value: "Nairobi, Kenya" },
+    });
 
-    fireEvent.click(screen.getByText(/publish pitch/i));
+    fireEvent.click(screen.getByRole("button", { name: /save as draft/i }));
 
     await waitFor(() => {
       expect(createPitch).toHaveBeenCalledWith(
         expect.objectContaining({ title: "Acme AI", ask_amount: 50000 }),
       );
     });
+    await waitFor(() => expect(screen.getByText(/draft saved/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
+
+    await waitFor(() => expect(publishPitch).toHaveBeenCalledWith(7));
     await waitFor(() => {
       expect(screen.getByText(/pitch published to investor discovery/i)).toBeInTheDocument();
     });
