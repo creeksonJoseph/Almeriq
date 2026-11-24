@@ -183,7 +183,7 @@ export default function ProviderDashboardPage() {
                   </div>
                 )},
                 { key: "amount", header: "Amount", render: (row) => (
-                  <span className="font-serif text-lg font-semibold text-[#f2ca50]">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-[#ffffff]/60 font-normal">/mo</span></span>
+                  <span className="font-serif text-lg font-semibold text-[#f2ca50]">{(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-[#ffffff]/60 font-normal">/mo · currency not specified</span></span>
                 )},
                 { key: "status", header: "Status", render: (row) => (
                   <StatusPill status={row.status?.toLowerCase() || "pending"} />
