@@ -14,6 +14,7 @@ export default function FounderPitchesPage() {
   const [form, setForm] = useState(EMPTY);
   const [documentsText, setDocumentsText] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [previewPitch, setPreviewPitch] = useState(null);
   const {
     pitches, requests, investorUpdates, loading, saving, busyRequestId, error, notice,
     savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, editInvestorUpdate, startConversation, setError, setNotice,
@@ -169,9 +170,20 @@ export default function FounderPitchesPage() {
           {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={2} /><Skeleton className="h-9 w-32 rounded-xl" /></Card>)}</div> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't created a startup pitch yet.</Card> : pitches.map((pitch) => (
             <Card key={pitch.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div className="min-w-0 flex-1"><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-sm text-white/60">{pitch.sector || "Sector not set"} · {pitch.stage || "Stage not set"}{pitch.ask_amount != null ? ` · Ask: ${pitch.ask_amount}` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-white/50">{pitch.summary || "No summary added."}</p></div>
-              <div className="flex flex-wrap gap-2"><span className="self-center text-xs capitalize text-white/50">{pitch.status || "published"}</span>{pitch.status === "published" ? <Button size="sm" variant="ghost" onClick={() => setPitchPublication(pitch.id, false)}>Unpublish</Button> : <Button size="sm" onClick={() => setPitchPublication(pitch.id, true)}>Publish</Button>}<Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
+              <div className="flex flex-wrap gap-2"><span className="self-center text-xs capitalize text-white/50">{pitch.status || "published"}</span>{pitch.status === "published" ? <Button size="sm" variant="ghost" onClick={() => setPitchPublication(pitch.id, false)}>Unpublish</Button> : <Button size="sm" onClick={() => setPitchPublication(pitch.id, true)}>Publish</Button>}<Button size="sm" variant="ghost" onClick={() => setPreviewPitch(pitch)}>Preview</Button><Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
             </Card>
           ))}
+          {previewPitch && <Card className="space-y-3 border border-gold/30 p-6">
+            <div className="flex items-center justify-between gap-3"><h3 className="font-serif text-xl">Investor preview</h3><Button size="sm" variant="ghost" onClick={() => setPreviewPitch(null)}>Close preview</Button></div>
+            <div><h4 className="text-lg font-semibold">{previewPitch.title}</h4><p className="mt-1 text-sm text-white/55">{[previewPitch.sector, previewPitch.stage, previewPitch.location].filter(Boolean).join(" · ") || "Company details not added"}</p></div>
+            <p className="whitespace-pre-wrap text-sm text-white/75">{previewPitch.summary || "No summary provided."}</p>
+            {previewPitch.ask_amount != null && <p className="text-sm">Funding ask: {Number(previewPitch.ask_amount).toLocaleString()}</p>}
+            {previewPitch.target_check_size != null && <p className="text-sm">Target check size: {Number(previewPitch.target_check_size).toLocaleString()}</p>}
+            {previewPitch.traction && <div><p className="text-xs uppercase tracking-wide text-white/45">Traction</p><p className="mt-1 whitespace-pre-wrap text-sm">{previewPitch.traction}</p></div>}
+            {previewPitch.team_summary && <div><p className="text-xs uppercase tracking-wide text-white/45">Team</p><p className="mt-1 whitespace-pre-wrap text-sm">{previewPitch.team_summary}</p></div>}
+            <div className="flex flex-wrap gap-3 text-sm">{[["Website", previewPitch.website_url], ["Pitch deck", previewPitch.pitch_deck_url], ["Financials", previewPitch.financials_url], ...(previewPitch.documents || []).map((document) => [document.title, document.url])].filter(([, url]) => url).map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer" className="text-gold underline">{label}</a>)}</div>
+            <p className="text-xs text-white/45">Visibility: {previewPitch.status === "published" ? "Visible to investors" : "Draft - only you can see it"}</p>
+          </Card>}
         </section>
         
         )}
