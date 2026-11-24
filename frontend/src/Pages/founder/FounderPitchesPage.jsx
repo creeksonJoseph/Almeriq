@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useFounderPitches } from "../../hooks/useFounderPitches";
 import { useInvestorUpdateDraft } from "../../hooks/useInvestorUpdateDraft";
-import { createInvestorUpdateApi, listFounderInvestorUpdatesApi, publishInvestorUpdateApi } from "../../lib/api";
+import { createInvestorUpdateApi, updateInvestorUpdateApi, listFounderInvestorUpdatesApi, publishInvestorUpdateApi } from "../../lib/api";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button, Card, Input, Select, Textarea, Skeleton, SkeletonText } from "../../components/ui";
@@ -98,14 +98,14 @@ export default function FounderPitchesPage() {
       return;
     }
     try {
-      const saved = await createInvestorUpdateApi(Number(updatePitchId), {
-        period: updatePeriod.trim(),
-        content: investorUpdateDraft.trim(),
-      });
+      const payload = { period: updatePeriod.trim(), content: investorUpdateDraft.trim() };
+      const saved = savedUpdateId
+        ? await updateInvestorUpdateApi(savedUpdateId, payload)
+        : await createInvestorUpdateApi(Number(updatePitchId), payload);
       setSavedUpdateId(saved.id);
       setSavedUpdateContent(saved.content);
       setUpdatePublished(false);
-      setSavedUpdates((items) => [saved, ...items]);
+      setSavedUpdates((items) => [saved, ...items.filter((item) => item.id !== saved.id)]);
       setNotice("Investor update draft saved.");
       setError("");
     } catch (requestError) {
