@@ -55,6 +55,7 @@ export {
   executeAiToolApi,
   listFounderInvestorUpdatesApi,
   createInvestorUpdateApi,
+  updateInvestorUpdateApi,
   publishInvestorUpdateApi,
 } from "./api/founder";
 
