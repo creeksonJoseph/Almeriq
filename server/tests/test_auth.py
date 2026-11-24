@@ -157,3 +157,27 @@ async def test_get_user_profile_missing(session):
     with pytest.raises(HTTPException) as exc:
         await auth_service.get_user_profile(user_id=999999)
     assert exc.value.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_update_onboarding_role_selection_completes_onboarding(session):
+    user, _ = await auth_service.register_user(
+        email="role-only@example.com", password="SecurePassword123!"
+    )
+    updated = await auth_service.update_onboarding(
+        user_id=user["id"], role="INFRASTRUCTURE_PROVIDER"
+    )
+    assert updated["role"] == "INFRASTRUCTURE_PROVIDER"
+    assert updated["onboarding_completed"] is True
+
+
+@pytest.mark.asyncio
+async def test_update_onboarding_rejects_unsupported_role(session):
+    user, _ = await auth_service.register_user(
+        email="invalid-role@example.com", password="SecurePassword123!"
+    )
+    with pytest.raises(HTTPException) as exc:
+        await auth_service.update_onboarding(
+            user_id=user["id"], role="super_admin"
+        )
+    assert exc.value.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
