@@ -185,13 +185,31 @@ async def update_onboarding(
     Phase 2: Save wizard onboarding responses.
     Completion is derived here (§1 — business rules live in services, not routers).
     """
-    is_complete = bool(role or (full_name and id_number))
+    allowed_roles = {
+        "FOUNDER", "INVESTOR", "INFRASTRUCTURE_PROVIDER", "JOB_SEEKER", "EXPERT"
+    }
+    if role is not None and role.strip().upper() not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Choose one of the supported account roles",
+        )
+
+    existing_user = await user_repo.get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User record not found")
+
+    next_name = full_name.strip() if full_name is not None else (existing_user.get("full_name") or "")
+    next_id_number = id_number.strip() if id_number is not None else (existing_user.get("id_number") or "")
+    next_role = role.strip().upper() if role is not None else (existing_user.get("role") or "")
+    # Onboarding is complete only after the user has supplied a name, identity
+    # number and a supported role. This is data collection, not identity verification.
+    is_complete = bool(next_name and next_id_number and next_role in allowed_roles)
     updated_user = await user_repo.update_user_onboarding(
         user_id=user_id,
         full_name=full_name,
         nationality=nationality,
         id_number=id_number,
-        role=role,
+        role=role.strip().upper() if role is not None else None,
         onboarding_completed=is_complete,
     )
     if not updated_user:
