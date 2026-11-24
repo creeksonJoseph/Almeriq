@@ -77,10 +77,12 @@ async def list_orders(
 
 @router.get("/provider/orders/summary")
 async def get_provider_order_summary(
+    response: Response,
     profile: dict = Depends(get_current_provider_profile),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Return all-time provider order counts for dashboard metrics."""
+    response.headers["Cache-Control"] = "private, no-store"
     return await svc.get_provider_order_summary(provider_id=profile["id"], session=db)
 
 
