@@ -92,10 +92,7 @@ export default function MarketplacePage() {
       const queryMatch = !normalizedQuery || searchable.includes(normalizedQuery);
       const locationMatch = !filters.location || String(listing.provider_location || "").toLowerCase().includes(filters.location.toLowerCase());
       const kindMatch = filters.kind === "all" || String(listing.kind || "").toLowerCase() === filters.kind;
-      const price = Number(listing.price_monthly || 0);
-      const minMatch = filters.minPrice === "" || price >= Number(filters.minPrice);
-      const maxMatch = filters.maxPrice === "" || price <= Number(filters.maxPrice);
-      return categoryMatch && queryMatch && locationMatch && kindMatch && minMatch && maxMatch;
+      return categoryMatch && queryMatch && locationMatch && kindMatch;
     });
     return filtered.sort((a, b) => {
       if (sortMode === "price_asc") return Number(a.price_monthly || 0) - Number(b.price_monthly || 0);
@@ -105,7 +102,7 @@ export default function MarketplacePage() {
     });
   }, [listings, activeCategory, query, filters, sortMode]);
 
-  const activeFilterCount = [filters.location, filters.kind !== "all" ? filters.kind : "", filters.minPrice, filters.maxPrice]
+  const activeFilterCount = [filters.location, filters.kind !== "all" ? filters.kind : ""]
     .filter(Boolean).length;
   const availableCount = listings.filter((listing) => String(listing.status || "available").toLowerCase() === "available").length;
   const verifiedCount = listings.filter((listing) => listing.verified || listing.provider_verified).length;
@@ -258,17 +255,9 @@ export default function MarketplacePage() {
                 <option value="all">All types</option><option value="physical">Physical</option><option value="digital">Digital</option>
               </select>
             </label>
-            <label className="space-y-1.5 text-sm text-text">
-              <span className="font-medium">Minimum monthly price</span>
-              <input type="number" min="0" value={filters.minPrice} onChange={(event) => setFilters((current) => ({ ...current, minPrice: event.target.value }))} className="alq-input w-full" placeholder="No minimum" />
-            </label>
-            <label className="space-y-1.5 text-sm text-text">
-              <span className="font-medium">Maximum monthly price</span>
-              <input type="number" min="0" value={filters.maxPrice} onChange={(event) => setFilters((current) => ({ ...current, maxPrice: event.target.value }))} className="alq-input w-full" placeholder="No maximum" />
-            </label>
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2 xl:col-span-4">
               <Button variant="ghost" onClick={() => setFilters({ location: "", kind: "all", minPrice: "", maxPrice: "" })}>Clear filters</Button>
-              <p className="text-xs text-white/60">Filters update the listings as you change them.</p>
+              <p className="text-xs text-white/60">Filters update the listings as you change them. Price sorting and price ranges are unavailable because listing currency is not recorded.</p>
             </div>
           </Card>
         )}
@@ -309,8 +298,6 @@ export default function MarketplacePage() {
               <span>Sort by</span>
               <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} className="alq-input min-h-10 w-auto">
                 <option value="featured">Featured</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
                 <option value="provider">Provider name</option>
               </select>
             </label>
