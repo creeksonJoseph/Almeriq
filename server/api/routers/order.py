@@ -53,25 +53,6 @@ async def get_client_order(
 
 
 
-@router.post("/provider/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_order(
-    response: Response,
-    body: OrderCreateRequest,
-    profile: dict = Depends(get_current_provider_profile),
-    db: AsyncSession = Depends(get_db),
-) -> dict:
-    """Create an order for one of the provider's assets."""
-    response.headers["Cache-Control"] = "no-store"
-    return await svc.create_order(
-        provider_id=profile["id"],
-        client_id=profile["user_id"],
-        asset_id=body.asset_id,
-        allocation=body.allocation,
-        lease_amount=body.lease_amount,
-        session=db,
-    )
-
-
 @router.get("/provider/orders", response_model=OrderListResponse)
 async def list_orders(
     response: Response,
