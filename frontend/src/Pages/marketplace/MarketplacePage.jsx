@@ -51,6 +51,7 @@ export default function MarketplacePage() {
   const [orderingId, setOrderingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState("all");
   const [sortMode, setSortMode] = useState("featured");
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -67,6 +68,7 @@ export default function MarketplacePage() {
     async function loadListings() {
       setLoading(true);
       setError("");
+      setError("");
       try {
         const response = await listMarketplaceListingsApi({ limit: 50 });
         if (!cancelled) {
@@ -81,7 +83,7 @@ export default function MarketplacePage() {
     }
     loadListings();
     return () => { cancelled = true; };
-  }, []);
+  }, [retryCount]);
 
   const visibleListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -310,6 +312,8 @@ export default function MarketplacePage() {
                 onImageClick={openGallery} />
             ))}
           </div>
+        ) : error ? (
+          <Card className="space-y-3 p-8 text-center"><p className="font-medium">Listings could not be loaded</p><p className="text-sm text-white/50">{error}</p><Button onClick={() => setRetryCount((count) => count + 1)}>Retry</Button></Card>
         ) : (
           <EmptyState title="No listings found" description="Try another category or remove some filters to see more infrastructure." actionLabel="Clear all filters" onAction={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setFilters({ location: "", kind: "all" }); }} />
         )}
