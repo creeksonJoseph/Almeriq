@@ -9,20 +9,24 @@ export default function JobSeekerDashboardPage() {
   const [openJobs, setOpenJobs] = useState(0);
   const [applicationCount, setApplicationCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     async function loadDashboard() {
       try {
         const [profileResult, jobsResult, applicationsResult] = await Promise.all([
-          getJobSeekerProfileApi().catch(() => null),
+          getJobSeekerProfileApi(),
           listJobsApi({ is_active: true, limit: 100 }),
           listMyJobApplicationsApi(),
         ]);
         if (cancelled) return;
         setProfile(profileResult);
-        setOpenJobs(jobsResult.total || 0);
-        setApplicationCount(applicationsResult.total || 0);
+        setOpenJobs(jobsResult.total ?? jobsResult.items?.length ?? 0);
+        setApplicationCount(applicationsResult.total ?? applicationsResult.items?.length ?? 0);
+        setError("");
+      } catch (requestError) {
+        if (!cancelled) setError(requestError.response?.data?.detail || requestError.message || "Unable to load your dashboard. Please try again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,6 +49,8 @@ export default function JobSeekerDashboardPage() {
             <Button onClick={() => navigate("/job-seeker/jobs")}>Find jobs</Button>
           </div>
         </header>
+
+        {error && <Card className="border border-red-500/30 p-4 text-sm text-red-300" role="alert">{error}<Button className="ml-3" size="sm" variant="ghost" onClick={() => window.location.reload()}>Retry</Button></Card>}
 
         <div className="grid gap-4 sm:grid-cols-3">
           <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : openJobs}</p></Card>
