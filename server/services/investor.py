@@ -154,6 +154,26 @@ async def delete_founder_pitch(
 
 async def get_investor_pitch(pitch_id: int, session: AsyncSession | None = None) -> dict:
     pitch = await pitch_repo.get_startup_pitch(pitch_id, session=session)
+    if not pitch or pitch.get("status") != "published":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    return pitch
+
+
+async def set_founder_pitch_publication(
+    pitch_id: int,
+    founder_id: int,
+    publish: bool,
+    session: AsyncSession | None = None,
+) -> dict:
+    from datetime import datetime, timezone
+
+    pitch = await pitch_repo.set_startup_pitch_status(
+        pitch_id=pitch_id,
+        founder_id=founder_id,
+        status_value="published" if publish else "draft",
+        published_at=datetime.now(timezone.utc) if publish else None,
+        session=session,
+    )
     if not pitch:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
     return pitch
@@ -203,18 +223,23 @@ async def list_all_pitches(
     offset: int = 0,
     session: AsyncSession | None = None,
 ) -> dict:
-    items = await pitch_repo.list_startup_pitches(
-        limit=limit, offset=offset, session=session
+    # Rank the complete eligible set before slicing. Sorting a single page
+    # produces inconsistent results when the best match lives on a later page.
+    eligible = await pitch_repo.list_startup_pitches(
+        limit=None, offset=0, published_only=True, session=session
     )
-    total = await pitch_repo.count_startup_pitches(session=session)
+    total = len(eligible)
     if investor_id is not None:
         profile = await profile_repo.get_investor_profile_by_user_id(investor_id, session=session)
-        for pitch in items:
+        for pitch in eligible:
             score, reasons = _match_pitch_to_investor(pitch, profile)
             pitch["match_score"] = score
             pitch["match_reasons"] = reasons
-        items.sort(key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1, reverse=True)
-    return {"items": items, "total": total}
+        eligible.sort(
+            key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1,
+            reverse=True,
+        )
+    return {"items": eligible[offset : offset + limit], "total": total}
 
 
 async def upsert_investor_profile(
