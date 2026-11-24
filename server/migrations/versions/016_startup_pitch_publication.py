@@ -15,10 +15,12 @@ depends_on = None
 def upgrade() -> None:
     op.add_column("startup_pitches", sa.Column("status", sa.Text(), nullable=False, server_default="active"))
     op.add_column("startup_pitches", sa.Column("published_at", sa.DateTime(timezone=True), nullable=True))
+    op.create_index("ix_startup_pitches_status", "startup_pitches", ["status"])
     op.execute("UPDATE startup_pitches SET published_at = updated_at WHERE status = 'active'")
     op.alter_column("startup_pitches", "status", server_default="draft")
 
 
 def downgrade() -> None:
+    op.drop_index("ix_startup_pitches_status", table_name="startup_pitches")
     op.drop_column("startup_pitches", "published_at")
     op.drop_column("startup_pitches", "status")
