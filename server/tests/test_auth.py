@@ -192,3 +192,59 @@ async def test_update_onboarding_rejects_unsupported_role(session):
             user_id=user["id"], role="super_admin"
         )
     assert exc.value.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio
+async def test_google_auth_rejects_wrong_oauth_audience(monkeypatch):
+    class FakeResponse:
+        status_code = 200
+        def json(self):
+            return {
+                "sub": "google-subject",
+                "email": "person@example.com",
+                "email_verified": True,
+                "aud": "wrong-client",
+            }
+
+    class FakeClient:
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, *args):
+            return None
+        async def get(self, *args, **kwargs):
+            return FakeResponse()
+
+    monkeypatch.setattr(auth_service.httpx, "AsyncClient", lambda **kwargs: FakeClient())
+    monkeypatch.setattr(auth_service, "GOOGLE_CLIENT_ID", "expected-client")
+
+    with pytest.raises(HTTPException) as exc:
+        await auth_service.authenticate_google_user("fake-token")
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.asyncio
+async def test_google_auth_rejects_unverified_email(monkeypatch):
+    class FakeResponse:
+        status_code = 200
+        def json(self):
+            return {
+                "sub": "google-subject",
+                "email": "person@example.com",
+                "email_verified": False,
+                "aud": "expected-client",
+            }
+
+    class FakeClient:
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, *args):
+            return None
+        async def get(self, *args, **kwargs):
+            return FakeResponse()
+
+    monkeypatch.setattr(auth_service.httpx, "AsyncClient", lambda **kwargs: FakeClient())
+    monkeypatch.setattr(auth_service, "GOOGLE_CLIENT_ID", "expected-client")
+
+    with pytest.raises(HTTPException) as exc:
+        await auth_service.authenticate_google_user("fake-token")
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
