@@ -15,8 +15,8 @@ export default function FounderPitchesPage() {
   const [documentsText, setDocumentsText] = useState("");
   const [editingId, setEditingId] = useState(null);
   const {
-    pitches, requests, loading, saving, busyRequestId, error, notice,
-    savePitch, updateRequest, removePitch, setPitchPublication, startConversation, setError, setNotice,
+    pitches, requests, investorUpdates, loading, saving, busyRequestId, error, notice,
+    savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, startConversation, setError, setNotice,
   } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
   const [updatePeriod, setUpdatePeriod] = useState("");
@@ -72,6 +72,27 @@ export default function FounderPitchesPage() {
     });
   };
 
+  const saveInvestorUpdateDraft = async () => {
+    const pitch = pitches.find((item) => String(item.id) === String(updatePitchId));
+    if (!pitch || !investorUpdateDraft.trim() || !updatePeriod.trim()) {
+      setError("Choose a pitch, enter an update period, and generate or write the update content.");
+      return;
+    }
+    try {
+      await saveInvestorUpdate({ pitch_id: pitch.id, period: updatePeriod.trim(), content: investorUpdateDraft.trim() });
+    } catch (saveError) {
+      setError(saveError.message || "Unable to save this update.");
+    }
+  };
+
+  const publishSavedInvestorUpdate = async (updateId) => {
+    try {
+      await publishInvestorUpdate(updateId);
+    } catch (publishError) {
+      setError(publishError.message || "Unable to share this update.");
+    }
+  };
+
   const copyInvestorUpdate = async () => {
     if (!investorUpdateDraft) return;
     try { await navigator.clipboard.writeText(investorUpdateDraft); setNotice("Investor update copied."); }
@@ -105,7 +126,8 @@ export default function FounderPitchesPage() {
           <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><Textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
           <label className="block space-y-1 text-sm"><span>What you need from investors</span><Textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
           <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
-          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><Textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
+          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><div className="flex gap-2"><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button><Button type="button" size="sm" onClick={saveInvestorUpdateDraft}>Save update</Button></div></div><Textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
+          <div className="space-y-3 border-t border-border pt-4"><h3 className="text-sm font-medium">Saved updates</h3>{investorUpdates.length === 0 ? <p className="text-sm text-white/50">No saved investor updates yet.</p> : investorUpdates.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"><div><p className="text-sm font-medium">{item.period}</p><p className="text-xs capitalize text-white/50">{item.status} · {pitches.find((pitch) => pitch.id === item.pitch_id)?.title || `Pitch #${item.pitch_id}`}</p></div>{item.status === "draft" && <Button type="button" size="sm" onClick={() => publishSavedInvestorUpdate(item.id)}>Share with interested investors</Button>}</div>)}</div>
         </Card>
         
         )}
