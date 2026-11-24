@@ -39,6 +39,7 @@ export default function ProviderOrdersPage() {
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailError, setDetailError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -103,13 +104,14 @@ export default function ProviderOrdersPage() {
   ], [orderSummary]);
 
   const openDrawer = async (order) => {
+    setDetailError("");
     setSelectedOrder(order);
     setDrawerOpen(true);
     try {
       const detail = await getOrderApi(order.id);
       setSelectedOrder(detail.data || detail.order || detail);
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || "Unable to load order details.");
+      setDetailError(e.response?.data?.detail || e.message || "Unable to load order details.");
     }
   };
 
@@ -292,6 +294,7 @@ export default function ProviderOrdersPage() {
           side="right"
           className="md:w-[520px]"
         >
+          {detailError && <p role="alert" className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{detailError}</p>}
           {selectedOrder && <OrderDetailDrawer order={selectedOrder} navigate={navigate} />}
         </Drawer>
       </div>
