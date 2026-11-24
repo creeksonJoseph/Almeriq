@@ -156,7 +156,7 @@ export async function createFounderPitchApi(payload) {
     const { data } = await apiClient.post("/api/founder/pitches", payload);
     return data;
   } catch (e) {
-    throw apiErr(e, "Unable to publish this pitch");
+    throw apiErr(e, "Unable to save this pitch");
   }
 }
 
