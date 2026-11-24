@@ -30,6 +30,7 @@ export default function ProviderOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [ordersTotal, setOrdersTotal] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState("");
   const [orderSummary, setOrderSummary] = useState({ total_orders: 0, open_orders: 0, pending_review: 0, confirmed: 0, shipped: 0, completed: 0, declined: 0, priced_orders: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -75,7 +76,7 @@ export default function ProviderOrdersPage() {
       });
       setOrdersTotal(res.total ?? ordersTotal);
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || "Unable to load more orders.");
+      setLoadMoreError(e.response?.data?.detail || e.message || "Unable to load more orders.");
     } finally {
       setLoadingMore(false);
     }
@@ -279,7 +280,8 @@ export default function ProviderOrdersPage() {
             emptyMessage="No orders found matching your filters."
             rowKey={(row) => row.id}
           />
-          {orders.length < ordersTotal && <div className="flex justify-center border-t border-[#282a2f] p-4"><Button variant="ghost" disabled={loadingMore} onClick={loadMoreOrders}>{loadingMore ? "Loading…" : `Load more orders (${orders.length} of ${ordersTotal})`}</Button></div>}
+          {loadMoreError && <p role="alert" className="border-t border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{loadMoreError}</p>}
+          {orders.length < ordersTotal && <div className="flex justify-center border-t border-[#282a2f] p-4"><Button variant="ghost" disabled={loadingMore} onClick={loadMoreOrders}>{loadingMore ? "Loading…" : "Load more orders"}</Button></div>}
         </div>
 
         {/* Order Detail Drawer */}
