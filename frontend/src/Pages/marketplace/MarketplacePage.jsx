@@ -311,7 +311,7 @@ export default function MarketplacePage() {
             ))}
           </div>
         ) : (
-          <EmptyState title="No listings found" description="Try another category or remove some filters to see more infrastructure." actionLabel="Clear all filters" onAction={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setFilters({ location: "", kind: "all", minPrice: "", maxPrice: "" }); }} />
+          <EmptyState title="No listings found" description="Try another category or remove some filters to see more infrastructure." actionLabel="Clear all filters" onAction={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setFilters({ location: "", kind: "all" }); }} />
         )}
               {listings.length < totalListings && <div className="flex justify-center pt-2"><Button variant="ghost" disabled={loadingMoreListings} onClick={loadMoreListings}>{loadingMoreListings ? "Loading…" : "Load more listings"}</Button></div>}
       </section>
