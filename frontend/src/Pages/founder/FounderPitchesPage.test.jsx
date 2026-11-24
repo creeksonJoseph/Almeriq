@@ -54,7 +54,6 @@ const pitchList = (payload = []) => {
   listPitches.mockResolvedValue(payload);
   listRequests.mockResolvedValue([]);
   founderApi.listFounderInvestorUpdatesApi.mockResolvedValue([]);
-  founderApi.listFounderInvestorUpdatesApi.mockResolvedValue([]);
 };
 
 beforeEach(() => {
@@ -62,6 +61,7 @@ beforeEach(() => {
   window.confirm = vi.fn(() => true);
   listPitches.mockResolvedValue([]);
   listRequests.mockResolvedValue([]);
+  founderApi.listFounderInvestorUpdatesApi.mockResolvedValue([]);
   createPitch.mockResolvedValue({});
   updatePitch.mockResolvedValue({});
   deletePitch.mockResolvedValue(undefined);
