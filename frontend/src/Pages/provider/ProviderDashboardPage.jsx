@@ -11,10 +11,12 @@ export default function ProviderDashboardPage() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
+      setError(null);
       try {
         const [profileRes, ordersRes, assetsRes, conversationsRes] = await Promise.all([
           getProviderProfileApi(),
@@ -33,7 +35,7 @@ export default function ProviderDashboardPage() {
       }
     }
     loadData();
-  }, []);
+  }, [retryCount]);
 
   if (loading) {
     return (
@@ -61,7 +63,7 @@ export default function ProviderDashboardPage() {
       <div className="flex items-center justify-center min-h-[50vh] text-center px-4 sm:px-6 lg:px-8">
         <div>
           <p className="text-[#f2ca50] mb-4 text-sm sm:text-base">Failed to load dashboard: {error}</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <Button onClick={() => setRetryCount((count) => count + 1)}>Retry</Button>
         </div>
       </div>
     );
