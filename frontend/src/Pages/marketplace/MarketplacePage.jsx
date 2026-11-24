@@ -46,6 +46,8 @@ export default function MarketplacePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [listings, setListings] = useState([]);
+  const [totalListings, setTotalListings] = useState(0);
+  const [loadingMoreListings, setLoadingMoreListings] = useState(false);
   const [orderingId, setOrderingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,7 +69,10 @@ export default function MarketplacePage() {
       setError("");
       try {
         const response = await listMarketplaceListingsApi({ limit: 50 });
-        if (!cancelled) setListings(getListings(response));
+        if (!cancelled) {
+          setListings(getListings(response));
+          setTotalListings(response?.total ?? getListings(response).length);
+        }
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail || err.message || "We could not load marketplace listings.");
       } finally {
@@ -106,6 +111,24 @@ export default function MarketplacePage() {
   const verifiedCount = listings.filter((listing) => listing.verified || listing.provider_verified).length;
   const physicalCount = listings.filter((listing) => String(listing.kind || "").toLowerCase() === "physical").length;
   const digitalCount = listings.filter((listing) => String(listing.kind || "").toLowerCase() === "digital").length;
+
+  const loadMoreListings = async () => {
+    if (loadingMoreListings || listings.length >= totalListings) return;
+    setLoadingMoreListings(true);
+    try {
+      const response = await listMarketplaceListingsApi({ limit: 50, offset: listings.length });
+      const nextItems = getListings(response);
+      setListings((current) => {
+        const seen = new Set(current.map((item) => item.id));
+        return [...current, ...nextItems.filter((item) => !seen.has(item.id))];
+      });
+      setTotalListings(response?.total ?? totalListings);
+    } catch (requestError) {
+      setError(requestError.response?.data?.detail || requestError.message || "Unable to load more listings.");
+    } finally {
+      setLoadingMoreListings(false);
+    }
+  };
 
   const handleOrder = async (listing) => {
     if (!user) {
@@ -305,6 +328,7 @@ export default function MarketplacePage() {
         ) : (
           <EmptyState title="No listings found" description="Try another category or remove some filters to see more infrastructure." actionLabel="Clear all filters" onAction={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setFilters({ location: "", kind: "all", minPrice: "", maxPrice: "" }); }} />
         )}
+              {listings.length < totalListings && <div className="flex justify-center pt-2"><Button variant="ghost" disabled={loadingMoreListings} onClick={loadMoreListings}>{loadingMoreListings ? "Loading…" : "Load more listings"}</Button></div>}
       </section>
 
       {galleryOpen && galleryImages.length > 0 && (
