@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from repositories import order as order_repo
+from repositories import asset as asset_repo
 from repositories import order_event as order_event_repo
 from repositories import provider_profile as provider_repo
 from repositories import notification as notification_repo
@@ -58,8 +59,16 @@ async def create_order(
     lease_amount: float | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Create a new order for a provider's asset."""
+    """Create an order only for an active asset owned by the selected provider."""
     import uuid
+    asset = await asset_repo.get_asset_by_id(asset_id, provider_id=provider_id, session=session)
+    if not asset:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+    if not asset.get("is_active") or asset.get("status") != "available":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This listing is not available for new orders")
+    # The stored listing price is authoritative; callers cannot choose their own
+    # lease amount for a marketplace order.
+    lease_amount = asset.get("price_monthly")
     order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
     order = await order_repo.create_order(
         order_id=order_id,
