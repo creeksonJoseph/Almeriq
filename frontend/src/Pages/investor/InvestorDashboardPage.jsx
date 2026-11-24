@@ -20,6 +20,7 @@ export default function InvestorDashboardPage() {
   const signatureCanvasRef = useRef(null);
   const [editingInvestment, setEditingInvestment] = useState(null);
   const [confirmationStep, setConfirmationStep] = useState(1);
+  const [startupQuery, setStartupQuery] = useState("");
   const [portfolioForm, setPortfolioForm] = useState({ investment_amount: "", current_value: "", ownership_percent: "", investment_date: "", notes: "", risk_level: "medium", payment_method: "visa", signature_data: "" });
 
   useEffect(() => {
