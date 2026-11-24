@@ -181,6 +181,15 @@ export async function updateFounderInvestmentRequestApi(id, status) {
   }
 }
 
+export async function listFounderInvestorUpdatesApi(pitchId) {
+  try {
+    const { data } = await apiClient.get(`/api/founder/pitches/${encodeURIComponent(pitchId)}/updates`);
+    return data?.items || [];
+  } catch (e) {
+    throw apiErr(e, "Unable to load saved investor updates");
+  }
+}
+
 export async function createInvestorUpdateApi(pitchId, payload) {
   try {
     const { data } = await apiClient.post(`/api/founder/pitches/${encodeURIComponent(pitchId)}/updates`, payload);
