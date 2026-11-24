@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from services import order as order_service
 from services import deal as deal_service
 from services import marketplace as svc
+from repositories import provider_profile as provider_repo
 
 router = APIRouter(prefix="/api", tags=["marketplace"])
 
@@ -36,10 +37,15 @@ async def create_marketplace_order(
     if listing.get("provider_id") is None:
         from fastapi import HTTPException
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing provider not found")
+    client_id = _require_founder(current_user)
+    provider = await provider_repo.get_provider_profile_by_id(listing["provider_id"], session=db)
+    if provider and provider.get("user_id") == client_id:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You cannot place an order for your own listing")
     response.headers["Cache-Control"] = "no-store"
     return await order_service.create_order(
         provider_id=listing["provider_id"],
-        client_id=_require_founder(current_user),
+        client_id=client_id,
         asset_id=body.asset_id,
         allocation=body.allocation,
         lease_amount=listing.get("price_monthly"),
@@ -75,9 +81,13 @@ async def create_marketplace_checkout(
         )
 
     # The listing price is authoritative; never trust a client-submitted lease amount.
+    client_id = _require_founder(current_user)
+    provider = await provider_repo.get_provider_profile_by_id(listing["provider_id"], session=db)
+    if provider and provider.get("user_id") == client_id:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You cannot place an order for your own listing")
     order = await order_service.create_order(
         provider_id=listing["provider_id"],
-        client_id=_require_founder(current_user),
+        client_id=client_id,
         asset_id=body.asset_id,
         allocation=body.allocation,
         lease_amount=listing["price_monthly"],
