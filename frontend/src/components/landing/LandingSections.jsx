@@ -61,8 +61,8 @@ const CAPABILITIES = [
   {
     num: "06",
     color: C.gold,
-    title: "Emerging Market Payment Rails",
-    desc: "Built for founders across Africa, Asia, and Latin America with multi-currency clearing (KES, INR, BRL, AED, USD) and resilient UX."
+    title: "Marketplace payment workflow",
+    desc: "Record order terms and a preferred payment method during simulated checkout. Live payment processing and escrow are not enabled yet."
   }
 ];
 
