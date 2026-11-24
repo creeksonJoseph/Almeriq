@@ -7,6 +7,11 @@ vi.mock("../../lib/api/founder", () => ({
   executeAiToolApi: vi.fn(),
   listFounderPitchesApi: vi.fn(),
   listFounderInvestmentRequestsApi: vi.fn(),
+  listFounderInvestorUpdatesApi: vi.fn(),
+  createFounderInvestorUpdateApi: vi.fn(),
+  updateFounderInvestorUpdateApi: vi.fn(),
+  publishFounderInvestorUpdateApi: vi.fn(),
+  setFounderPitchPublicationApi: vi.fn(),
   createFounderPitchApi: vi.fn(),
   updateFounderPitchApi: vi.fn(),
   updateFounderInvestmentRequestApi: vi.fn(),
@@ -48,6 +53,8 @@ const PITCH = {
 const pitchList = (payload = []) => {
   listPitches.mockResolvedValue(payload);
   listRequests.mockResolvedValue([]);
+  founderApi.listFounderInvestorUpdatesApi.mockResolvedValue([]);
+  founderApi.listFounderInvestorUpdatesApi.mockResolvedValue([]);
 };
 
 beforeEach(() => {
@@ -65,7 +72,7 @@ afterEach(() => {
 });
 
 describe("FounderPitchesPage pitch creation", () => {
-  it("publishes a new pitch via POST and shows success notice", async () => {
+  it("saves a new pitch as a draft via POST and shows success notice", async () => {
     pitchList();
     render(<MemoryRouter><FounderPitchesPage /></MemoryRouter>);
 
@@ -87,7 +94,7 @@ describe("FounderPitchesPage pitch creation", () => {
       target: { value: "50000" },
     });
 
-    fireEvent.click(screen.getByText(/publish pitch/i));
+    fireEvent.click(screen.getByText(/save draft/i));
 
     await waitFor(() => {
       expect(createPitch).toHaveBeenCalledWith(
@@ -95,7 +102,7 @@ describe("FounderPitchesPage pitch creation", () => {
       );
     });
     await waitFor(() => {
-      expect(screen.getByText(/pitch published to investor discovery/i)).toBeInTheDocument();
+      expect(screen.getByText(/pitch saved as a draft/i)).toBeInTheDocument();
     });
   });
 
@@ -112,7 +119,7 @@ describe("FounderPitchesPage pitch creation", () => {
       target: { value: "-100" },
     });
 
-    fireEvent.submit(screen.getByRole("button", { name: /publish pitch/i }).closest("form"));
+    fireEvent.submit(screen.getByRole("button", { name: /save draft/i }).closest("form"));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/enter a pitch title and a valid non-negative funding ask/i);
@@ -146,7 +153,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.change(screen.getByPlaceholderText(/company or product name/i), {
       target: { value: "Updated Pitch" },
     });
-    fireEvent.click(screen.getByText(/update pitch/i));
+    fireEvent.click(screen.getByText(/save changes/i));
 
     await waitFor(() => {
       expect(updatePitch).toHaveBeenCalledWith(
