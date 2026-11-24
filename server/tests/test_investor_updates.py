@@ -70,7 +70,9 @@ async def test_pending_interest_does_not_grant_investor_update_access(session):
         founder_id, pitch["id"], "November 2026", "Private update draft.",
         session=session,
     )
-    await update_service.publish_founder_update(draft["id"], founder_id, session=session)
+    with pytest.raises(HTTPException) as exc:
+        await update_service.publish_founder_update(draft["id"], founder_id, session=session)
+    assert exc.value.status_code == 409
     assert await update_service.list_investor_updates(investor_id, session=session) == []
 
 
