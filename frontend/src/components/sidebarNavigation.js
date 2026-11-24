@@ -3,13 +3,13 @@ import {
   ShieldCheck, TrendingUp, UserRound, Building2, MessageSquare, Bell, Package, Mail, Store,
 } from "lucide-react";
 
-export const WORKSPACE_NAV = [
-  { key: "overview", label: "Overview", path: "/dashboard", icon: Home },
-  { key: "messages", label: "Messages", path: "/messages", icon: MessageSquare },
-  { key: "alerts", label: "Alerts", path: "/alerts", icon: Bell },
+export const COMMUNICATION_NAV = [
+  { key: "messages", label: "Messages", path: "/messages", icon: MessageSquare, roles: ["FOUNDER", "INVESTOR", "EXPERT", "INFRASTRUCTURE_PROVIDER"] },
+  { key: "alerts", label: "Alerts", path: "/alerts", icon: Bell, roles: ["FOUNDER", "INVESTOR", "EXPERT", "INFRASTRUCTURE_PROVIDER", "JOB_SEEKER"] },
 ];
 
 export const FOUNDER_STUDIO_NAV = [
+  { key: "founder-dashboard", label: "Dashboard", path: "/dashboard", icon: Home },
   // Distinct venture-building tools remain directly accessible.
   { key: "ventures", label: "Saved Ventures", path: "/founder/ventures", icon: BookOpen },
   { key: "business-builder", label: "AI Business Builder", path: "/founder/analysis", icon: TrendingUp },
