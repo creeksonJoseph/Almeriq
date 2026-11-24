@@ -9,6 +9,7 @@ import {
   setFounderPitchPublicationApi,
   listFounderInvestorUpdatesApi,
   createFounderInvestorUpdateApi,
+  updateFounderInvestorUpdateApi,
   publishFounderInvestorUpdateApi,
 } from "../lib/api/founder";
 import { startInvestmentConversationApi } from "../lib/api/conversations";
@@ -70,6 +71,13 @@ export function useFounderPitches() {
     return created;
   }, []);
 
+  const editInvestorUpdate = useCallback(async (updateId, payload) => {
+    const updated = await updateFounderInvestorUpdateApi(updateId, payload);
+    setInvestorUpdates((items) => items.map((item) => item.id === updateId ? { ...item, ...updated } : item));
+    setNotice("Investor update draft saved.");
+    return updated;
+  }, []);
+
   const publishInvestorUpdate = useCallback(async (updateId) => {
     const published = await publishFounderInvestorUpdateApi(updateId);
     setInvestorUpdates((items) => items.map((item) => item.id === updateId ? { ...item, ...published } : item));
@@ -125,6 +133,6 @@ export function useFounderPitches() {
 
   return {
     pitches, requests, investorUpdates, loading, saving, busyRequestId, error, notice,
-    load, savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, startConversation, setError, setNotice,
+    load, savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, editInvestorUpdate, startConversation, setError, setNotice,
   };
 }
