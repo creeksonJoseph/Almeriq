@@ -341,7 +341,19 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const activeNav = searchParams.get("tab") || "overview";
-  const role = ROLE_DATA[user?.role] || ROLE_DATA.founder;
+  const role = ROLE_DATA[user?.role] || {
+    label: "Workspace",
+    title: "Your workspace.",
+    subtitle: "Your workspace activity will appear here as you use Alimeriq.",
+    icon: Home,
+    stats: [],
+    primaryTitle: "Workspace activity",
+    primaryCopy: "Activity will appear here when you create or receive records.",
+    rows: [],
+    secondaryTitle: "Next steps",
+    secondaryCopy: "Complete your profile and explore the available workspace tools.",
+    secondaryAction: "Open profile",
+  };
   const RoleIcon = role.icon;
   const firstName =
     user?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
