@@ -107,8 +107,9 @@ async def lifespan(app: FastAPI):
             migration_state["after"],
             migration_state["upgraded"],
         )
-    except Exception as exc:
-        logging.exception("Alembic startup check failed: %s", exc)
+    except Exception:
+        logging.exception("Alembic startup check failed; refusing to serve with an unknown schema state")
+        raise
     yield
     await close_db()
 
