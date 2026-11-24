@@ -39,7 +39,7 @@ function matchesCategory(listing, category) {
 
 function formatPrice(value) {
   if (value == null || value === "") return "Price on request";
-  return "$" + Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " / month";
+  return Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " / month · currency not specified";
 }
 
 export default function MarketplacePage() {
