@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import { getAdminWaitlistApi, updateAdminRoleApi } from "../../lib/api";
+import { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi } from "../../lib/api";
 import { StatStrip } from "../../components/ui/BorderlessPrimitives";
 import { Skeleton, RouteSkeleton } from "../../components/ui";
 
@@ -62,6 +62,9 @@ export default function AdminWaitlistPage() {
   const { user, loading: authLoading, updateUser } = useAuth();
   const { showToast } = useToast();
   const [data, setData] = useState({ total: 0, items: [] });
+  const [providers, setProviders] = useState([]);
+  const [providersLoading, setProvidersLoading] = useState(true);
+  const [verificationBusyId, setVerificationBusyId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
@@ -77,6 +80,31 @@ export default function AdminWaitlistPage() {
       showToast(err.message || "Failed to load waitlist records.", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProviders = async () => {
+    setProvidersLoading(true);
+    try {
+      const result = await getAdminProvidersApi();
+      setProviders(result.items || []);
+    } catch (err) {
+      showToast(err.message || "Failed to load provider profiles.", "error");
+    } finally {
+      setProvidersLoading(false);
+    }
+  };
+
+  const handleProviderVerification = async (provider) => {
+    setVerificationBusyId(provider.id);
+    try {
+      const result = await updateAdminProviderVerificationApi(provider.id, !provider.verified);
+      setProviders((items) => items.map((item) => item.id === provider.id ? result.provider : item));
+      showToast(result.provider.verified ? "Provider verified. Their active listings are now marked verified." : "Provider verification revoked.", "success");
+    } catch (err) {
+      showToast(err.message || "Unable to update provider verification.", "error");
+    } finally {
+      setVerificationBusyId(null);
     }
   };
 
@@ -97,6 +125,7 @@ export default function AdminWaitlistPage() {
   useEffect(() => {
     if (user?.is_admin) {
       fetchWaitlist();
+      fetchProviders();
     }
   }, [user?.is_admin]);
 
@@ -307,6 +336,23 @@ export default function AdminWaitlistPage() {
           </div>
         )}
       </div>
+      <section className="mt-10 space-y-4">
+        <div>
+          <h2 className="font-display text-xl font-semibold text-white">Provider verification</h2>
+          <p className="mt-1 text-sm text-white/50">Review provider profiles before marking them as verified. Active listings can still be discovered while unverified.</p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-[#282a2f] bg-[#12121a]">
+          {providersLoading ? <div className="p-6 text-sm text-white/45">Loading provider profiles…</div> : providers.length === 0 ? <div className="p-6 text-sm text-white/45">No provider profiles have been created yet.</div> : <div className="overflow-x-auto"><table className="w-full text-left text-xs">
+            <thead className="border-b border-[#1e2025] text-white/45"><tr><th className="px-5 py-3">Provider</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Action</th></tr></thead>
+            <tbody className="divide-y divide-white/5">{providers.map((provider) => <tr key={provider.id}>
+              <td className="px-5 py-4"><p className="font-medium text-white">{provider.company_name || provider.trading_name || `Provider #${provider.id}`}</p><p className="mt-1 text-white/40">{provider.about || "No provider description supplied."}</p></td>
+              <td className="px-5 py-4 text-white/60">{provider.location || "Not provided"}</td>
+              <td className="px-5 py-4"><span className={provider.verified ? "text-emerald-300" : "text-amber-200"}>{provider.verified ? "Verified" : "Not verified"}</span></td>
+              <td className="px-5 py-4"><button type="button" disabled={verificationBusyId === provider.id} onClick={() => handleProviderVerification(provider)} className="rounded-lg border border-[#f2ca50]/30 px-3 py-2 font-semibold text-[#f2ca50] disabled:opacity-50">{verificationBusyId === provider.id ? "Saving…" : provider.verified ? "Revoke" : "Mark verified"}</button></td>
+            </tr>)}</tbody>
+          </table></div>}
+        </div>
+      </section>
     </div>
   );
 }
