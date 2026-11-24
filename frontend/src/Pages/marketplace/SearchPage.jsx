@@ -274,8 +274,8 @@ function SearchResultCard({ result, onChat, onOrder, onView, ordering }) {
       <div className="flex items-center gap-2 text-sm text-white/70"><MapPin size={14} className="shrink-0 text-gold" /><span>{result.provider_location || "Location not provided"}</span></div>
       <p className="line-clamp-2 min-h-12 text-sm leading-6 text-white/80">{result.description || "Contact the provider for more information."}</p>
       <div className="mt-auto border-t border-border pt-4">
-        <p className="text-xs text-white/60">Monthly price</p>
-        <p className="mt-1 font-serif text-xl font-semibold text-gold">{result.price_monthly != null ? "$" + Number(result.price_monthly).toLocaleString() + " / month" : "Price on request"}</p>
+        <p className="text-xs text-white/60">Monthly amount · currency not specified</p>
+        <p className="mt-1 font-serif text-xl font-semibold text-gold">{result.price_monthly != null ? Number(result.price_monthly).toLocaleString() + " / month · currency not specified" : "Price on request"}</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <Button variant="ghost" size="sm" onClick={onView}>View details</Button>
