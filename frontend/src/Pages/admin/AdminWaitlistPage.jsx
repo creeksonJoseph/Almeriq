@@ -98,6 +98,7 @@ export default function AdminWaitlistPage() {
   };
 
   const handleProviderVerification = async (provider) => {
+    if (!provider.verified && !window.confirm("Have you independently checked this provider's business identity and supporting evidence? Almeriq does not collect verification documents yet.")) return;
     setVerificationBusyId(provider.id);
     try {
       const result = await updateAdminProviderVerificationApi(provider.id, !provider.verified);
@@ -341,7 +342,7 @@ export default function AdminWaitlistPage() {
       <section className="mt-10 space-y-4">
         <div>
           <h2 className="font-display text-xl font-semibold text-white">Provider verification</h2>
-          <p className="mt-1 text-sm text-white/50">Review provider profiles before marking them as verified. Active listings can still be discovered while unverified.</p>
+          <p className="mt-1 text-sm text-white/50">Review provider profiles before marking them as verified. Verification must be based on checks completed outside Almeriq; supporting-document collection is not available yet. Active listings remain discoverable while unverified.</p>
         </div>
         <div className="overflow-hidden rounded-2xl border border-[#282a2f] bg-[#12121a]">
           {providersLoading ? <div className="p-6 text-sm text-white/45">Loading provider profiles…</div> : providers.length === 0 ? <div className="p-6 text-sm text-white/45">No provider profiles have been created yet.</div> : <div className="overflow-x-auto"><table className="w-full text-left text-xs">
