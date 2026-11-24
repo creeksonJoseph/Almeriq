@@ -109,7 +109,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-200px)] flex flex-col">
+    <div className="messages-layout h-[calc(100vh-200px)] flex flex-col">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-border shrink-0">
         <div>
