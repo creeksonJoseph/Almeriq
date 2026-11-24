@@ -15,7 +15,7 @@ async def list_notifications(
     session: AsyncSession | None = None,
 ) -> tuple[list[dict], int]:
     """List notifications for a user, returning items and total unread count."""
-    items, _total = await notification_repo.list_notifications(
+    items, total = await notification_repo.list_notifications(
         user_id,
         unread_only=unread_only,
         limit=limit,
@@ -23,7 +23,7 @@ async def list_notifications(
         session=session,
     )
     unread_count = await notification_repo.get_unread_count(user_id, session=session)
-    return items, unread_count
+    return items, total, unread_count
 
 
 async def mark_notification_read(notification_id: int, user_id: int, session: AsyncSession | None = None) -> dict | None:
