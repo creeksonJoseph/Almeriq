@@ -279,8 +279,8 @@ function AmountStep({ amount, onBack, onNext, loading, formatAmount }) {
         <span className="text-label-caps text-gold">FIXED AMOUNT</span>
       </div>
       <div className="rounded-xl border-2 border-gold bg-surface-2 px-5 py-6 text-center">
-        <p className="font-mono text-3xl font-bold text-gold">${formatAmount(amount)}</p>
-        <p className="mt-2 text-xs text-white/50">Monthly lease amount set by the provider's listing</p>
+        <p className="font-mono text-3xl font-bold text-gold">{formatAmount(amount)}</p>
+        <p className="mt-2 text-xs text-white/50">Monthly amount set by the provider's listing · currency not specified</p>
       </div>
       <div className="rounded-xl border border-border bg-surface-2 p-4 flex items-start gap-3">
         <Shield className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
