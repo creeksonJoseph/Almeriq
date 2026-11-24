@@ -138,7 +138,7 @@ export default function InvestorDashboardPage() {
             {investedItems.length === 0 ? <Card className="p-5 text-sm text-white/50">You have not recorded any investor-reported positions yet.</Card> : investedItems.map((item) => {
               const pitch = item.pitch || startups.find((startup) => startup.id === item.pitch_id);
               return <Card key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                <div><h4 className="font-medium">{pitch?.title || "Startup pitch #" + item.pitch_id}</h4><p className="mt-1 text-xs text-white/50">Recorded amount: {Number(item.investment_amount || 0).toLocaleString()} · currency not specified · Status: {["invested", "investor_reported"].includes(item.status) ? "Investor reported · demo record" : item.status}</p>{item.current_value != null && <p className="mt-1 text-xs text-white/45">Current value: {Number(item.current_value).toLocaleString()} · currency not specified · currency not specified</p>}</div>
+                <div><h4 className="font-medium">{pitch?.title || "Startup pitch #" + item.pitch_id}</h4><p className="mt-1 text-xs text-white/50">Recorded amount: {Number(item.investment_amount || 0).toLocaleString()} · currency not specified · Status: {["invested", "investor_reported"].includes(item.status) ? "Investor reported · demo record" : item.status}</p>{item.current_value != null && <p className="mt-1 text-xs text-white/45">Current value: {Number(item.current_value).toLocaleString()} · currency not specified</p>}</div>
                 <Button size="sm" variant="ghost" onClick={() => navigate("/investor/deals/" + item.id)}>Open deal room</Button>
               </Card>;
             })}
