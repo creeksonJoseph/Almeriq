@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Input, SkeletonCard, EmptyState } from "../../components/ui";
-import { searchMarketplaceApi, listMarketplaceProvidersApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
+import { searchMarketplaceApi, listMarketplaceProvidersApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 const SEARCH_CATEGORIES = [
