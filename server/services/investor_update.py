@@ -31,6 +31,22 @@ async def list_founder_updates(founder_id: int, pitch_id: int | None = None, ses
     return await update_repo.list_founder_investor_updates(founder_id, pitch_id=pitch_id, session=session)
 
 
+async def update_founder_update(update_id: int, founder_id: int, period: str, content: str, session: AsyncSession | None = None) -> dict:
+    item = await update_repo.get_investor_update(update_id, founder_id=founder_id, session=session)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investor update not found")
+    if item["status"] != "draft":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Published investor updates cannot be edited")
+    clean_period = period.strip()
+    clean_content = content.strip()
+    if not clean_period or not clean_content:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Update period and content are required")
+    updated = await update_repo.update_investor_update(update_id, founder_id, clean_period, clean_content, session=session)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This update is no longer editable")
+    return updated
+
+
 async def publish_founder_update(update_id: int, founder_id: int, session: AsyncSession | None = None) -> dict:
     item = await update_repo.get_investor_update(update_id, founder_id=founder_id, session=session)
     if not item:
