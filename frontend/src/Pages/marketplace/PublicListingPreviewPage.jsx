@@ -197,7 +197,7 @@ export default function PublicListingPreviewPage() {
               <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{listing.kind || "Not specified"}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{listing.category}</span></div>
               <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{listing.provider_location || "Location not provided"}</span></div>
-              <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${Number(listing.price_monthly || 0).toLocaleString()}/mo</span></div>
+              <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">{Number(listing.price_monthly || 0).toLocaleString()}/mo · currency not specified</span></div>
             </div>
             <div className="pt-3 border-t border-border">
               <div className="flex items-center gap-2 text-gold text-sm font-medium">
