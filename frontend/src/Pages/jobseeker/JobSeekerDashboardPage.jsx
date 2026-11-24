@@ -10,6 +10,7 @@ export default function JobSeekerDashboardPage() {
   const [applicationCount, setApplicationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,7 +37,7 @@ export default function JobSeekerDashboardPage() {
     }
     loadDashboard();
     return () => { cancelled = true; };
-  }, []);
+  }, [retryCount]);
 
   return (
     <main className="min-h-screen bg-bg px-4 py-10 text-text">
@@ -53,12 +54,12 @@ export default function JobSeekerDashboardPage() {
           </div>
         </header>
 
-        {error && <Card className="border border-red-500/30 p-4 text-sm text-red-300" role="alert">{error}<Button className="ml-3" size="sm" variant="ghost" onClick={() => window.location.reload()}>Retry</Button></Card>}
+        {error && <Card className="border border-red-500/30 p-4 text-sm text-red-300" role="alert">{error}<Button className="ml-3" size="sm" variant="ghost" onClick={() => { setLoading(true); setRetryCount((count) => count + 1); }}>Retry</Button></Card>}
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : openJobs}</p></Card>
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications sent</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : applicationCount}</p></Card>
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile visibility</p><p className="mt-2 text-lg font-semibold">{loading ? "—" : profile?.is_active ? "Visible" : "Hidden"}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading || error ? "—" : openJobs}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications sent</p><p className="mt-2 text-3xl font-semibold">{loading || error ? "—" : applicationCount}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile visibility</p><p className="mt-2 text-lg font-semibold">{loading || error ? "—" : profile?.is_active ? "Visible" : "Hidden"}</p></Card>
         </div>
 
         <Card className="p-6">
