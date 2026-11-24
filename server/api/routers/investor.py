@@ -7,7 +7,7 @@ from api.dependencies import get_current_user
 from core.db import get_db
 from core.roles import user_has_role
 from services import investor as svc
-from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate, StartupPitchCreateRequest, StartupPitchUpdateRequest, InvestorPortfolioUpdateRequest
+from schemas.investor import InvestorProfileUpdateRequest, InvestmentRequestCreate, InvestmentRequestStatusUpdate, StartupPitchCreateRequest, StartupPitchUpdateRequest, InvestorPortfolioUpdateRequest, InvestorUpdateCreateRequest, InvestorUpdateEditRequest
 
 router = APIRouter(prefix="/api", tags=["investor"])
 
@@ -225,6 +225,67 @@ async def update_investor_portfolio(
     return await svc.update_investor_portfolio(
         investment_id, investor_id, body.model_dump(exclude_unset=True), session=db
     )
+
+
+
+
+@router.post("/founder/investor-updates", status_code=status.HTTP_201_CREATED)
+async def create_founder_investor_update(
+    body: InvestorUpdateCreateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    return await svc.create_founder_investor_update(
+        founder_id, body.pitch_id, body.period, body.content, db
+    )
+
+
+@router.get("/founder/investor-updates")
+async def list_founder_investor_updates(
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    response.headers["Cache-Control"] = "private, no-store"
+    return {"items": await svc.list_founder_investor_updates(founder_id, db)}
+
+
+@router.put("/founder/investor-updates/{update_id}")
+async def edit_founder_investor_update(
+    update_id: int,
+    body: InvestorUpdateEditRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    return await svc.edit_founder_investor_update(
+        update_id, founder_id, body.period, body.content, db
+    )
+
+
+@router.post("/founder/investor-updates/{update_id}/publish")
+async def publish_founder_investor_update(
+    update_id: int,
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    founder_id = _require_role(current_user, "founder")
+    response.headers["Cache-Control"] = "no-store"
+    return await svc.publish_founder_investor_update(update_id, founder_id, db)
+
+
+@router.get("/investor/updates")
+async def list_investor_updates(
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    investor_id = _require_role(current_user, "investor")
+    response.headers["Cache-Control"] = "private, no-store"
+    return {"items": await svc.list_investor_updates(investor_id, db)}
 
 
 @router.get("/founder/investment-requests")
