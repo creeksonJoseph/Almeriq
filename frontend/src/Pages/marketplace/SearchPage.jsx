@@ -139,13 +139,13 @@ export default function SearchPage() {
     setOrderingId(result.id);
     setError("");
     try {
-      const order = await createMarketplaceOrderApi({
+      const checkout = await createMarketplaceCheckoutApi({
         asset_id: result.id,
         allocation: "Requested through search",
-        lease_amount: result.price_monthly,
+        payment_method: "visa",
       });
-      const deal = await createDealApi({ order_id: order.id, payment_method: "visa", amount: result.price_monthly || 0 });
-      navigate("/checkout/" + deal.id);
+      if (!checkout?.deal?.id) throw new Error("Checkout could not be started. Please try again.");
+      navigate("/checkout/" + checkout.deal.id);
     } catch (err) {
       setError(err.response?.data?.detail || err.message || "Unable to start this order.");
     } finally {
