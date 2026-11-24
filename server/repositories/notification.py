@@ -72,6 +72,7 @@ async def list_notifications(
     unread_only: bool = False,
     limit: int = 50,
     offset: int = 0,
+    notification_type: str | None = None,
     session: AsyncSession | None = None,
 ) -> tuple[list[dict], int]:
     """List notifications for a user."""
@@ -81,6 +82,9 @@ async def list_notifications(
     if unread_only:
         stmt = stmt.where(Notification.read == False)
         count_stmt = count_stmt.where(Notification.read == False)
+    if notification_type:
+        stmt = stmt.where(Notification.type == notification_type)
+        count_stmt = count_stmt.where(Notification.type == notification_type)
 
     stmt = stmt.order_by(Notification.created_at.desc()).limit(limit).offset(offset)
 
