@@ -81,7 +81,6 @@ export {
   listMarketplaceListingsApi,
   getMarketplaceListingApi,
   createMarketplaceCheckoutApi,
-  createMarketplaceOrderApi,
   searchMarketplaceApi,
 } from "./api/marketplace";
 
