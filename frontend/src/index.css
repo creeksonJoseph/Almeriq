@@ -554,6 +554,7 @@ body {
 /* All form submission actions share the primary Alimeriq gold treatment.
    Disabled submits stay gold but are visibly subdued; secondary buttons are untouched. */
 button[type="submit"],
+form button:not([type]),
 input[type="submit"] {
   background-color: var(--color-gold) !important;
   color: var(--color-bg) !important;
@@ -562,11 +563,13 @@ input[type="submit"] {
 }
 
 button[type="submit"]:not(:disabled):hover,
+form button:not([type]):not(:disabled):hover,
 input[type="submit"]:not(:disabled):hover {
   background-color: #e2ba40 !important;
 }
 
 button[type="submit"]:disabled,
+form button:not([type]):disabled,
 input[type="submit"]:disabled {
   background-color: var(--color-gold) !important;
   color: var(--color-bg) !important;
@@ -575,6 +578,7 @@ input[type="submit"]:disabled {
 }
 
 button[type="submit"]:focus-visible,
+form button:not([type]):focus-visible,
 input[type="submit"]:focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 3px;
