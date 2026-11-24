@@ -26,6 +26,10 @@ async def list_orders(
     )
 
 
+async def get_provider_order_summary(provider_id: int, session: AsyncSession) -> dict:
+    return await order_repo.get_provider_order_summary(provider_id=provider_id, session=session)
+
+
 async def list_client_orders(
     client_id: int,
     limit: int = 100,
