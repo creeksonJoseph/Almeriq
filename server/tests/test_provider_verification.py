@@ -37,6 +37,8 @@ async def test_admin_provider_verification_is_audited_and_revocable(session: Asy
     assert verified["verified"] is True
     assert verified["verified_at"] is not None
     assert verified["verified_by"] == admin_user["id"]
+    assert verified["verification_reviewed_at"] is not None
+    assert verified["verification_reviewed_by"] == admin_user["id"]
 
     revoked = await provider_repo.update_provider_verification(
         profile_id=profile["id"], verified=False, verified_by=admin_user["id"], session=session
@@ -44,3 +46,5 @@ async def test_admin_provider_verification_is_audited_and_revocable(session: Asy
     assert revoked["verified"] is False
     assert revoked["verified_at"] is None
     assert revoked["verified_by"] is None
+    assert revoked["verification_reviewed_at"] is not None
+    assert revoked["verification_reviewed_by"] == admin_user["id"]
