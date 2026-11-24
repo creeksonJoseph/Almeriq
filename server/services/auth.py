@@ -125,10 +125,12 @@ async def authenticate_google_user(credential: str) -> tuple[dict, str]:
             detail="Google account token is missing email or sub identifier",
         )
 
-    # Optional aud check if GOOGLE_CLIENT_ID is configured
+    # Never accept an ID token issued for a different OAuth client.
     if GOOGLE_CLIENT_ID and payload.get("aud") != GOOGLE_CLIENT_ID:
-        # Note: log warning or enforce client_id match
-        pass
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google OAuth token was issued for a different application",
+        )
 
     user = await user_repo.get_user_by_google_id(google_sub)
     if not user:
@@ -185,7 +187,19 @@ async def update_onboarding(
     Phase 2: Save wizard onboarding responses.
     Completion is derived here (§1 — business rules live in services, not routers).
     """
-    is_complete = bool(role or (full_name and id_number))
+    from core.roles import normalize_role
+
+    allowed_roles = {"founder", "investor", "provider", "job_seeker", "expert"}
+    normalized_role = normalize_role(role)
+    if role is not None and normalized_role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Choose a supported account role.",
+        )
+
+    # Role selection alone completes role onboarding; identity fields are
+    # profile details and are not represented as verified identity.
+    is_complete = normalized_role in allowed_roles
     updated_user = await user_repo.update_user_onboarding(
         user_id=user_id,
         full_name=full_name,
