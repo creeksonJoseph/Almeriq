@@ -141,33 +141,50 @@ RESP=$(curl -s -w "\n%{http_code}" -X GET "$BASE/api/search?q=excavator")
 HTTP=$(echo "$RESP" | tail -1)
 assert_status "GET /api/search (public)" "200" "$HTTP"
 
-# ── 14. Create order (needed before deal flow) ─────────────────────────
+# ── 14. Register a founder buyer for marketplace checkout ────────────
 echo ""
-echo "--- 14. Create order ---"
-RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/provider/orders" \
+echo "--- 14. Register founder buyer ---"
+RUN_ID=$(date +%s)
+FOUNDER_EMAIL="founder-smoke-${RUN_ID}@example.com"
+RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d '{"asset_id":'$ASSET_ID',"allocation":"3x 36-ton units","lease_amount":"14500"}' \
-  -b /tmp/cookies.txt -c /tmp/cookies.txt)
+  -d '{"email":"'${FOUNDER_EMAIL}'","password":"SecurePass123!"}')
 HTTP=$(echo "$RESP" | tail -1)
-assert_status_any "POST /api/provider/orders" "200" "201" "$HTTP"
-ORDER_ID=$(echo "$RESP" | sed '$d' | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || echo "")
+assert_status "Register founder buyer" "201" "$HTTP"
 
-# ── 15. Create order via deal flow ─────────────────────────
-echo ""
-echo "--- 15. Create deal for order ---"
-RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/deals" \
+RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"order_id":'$ORDER_ID',"payment_method":"card","amount":"14500"}' \
-  -b /tmp/cookies.txt -c /tmp/cookies.txt)
+  -d '{"email":"'${FOUNDER_EMAIL}'","password":"SecurePass123!"}' \
+  -c /tmp/founder-cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
-assert_status_any "POST /api/deals" "200" "201" "$HTTP"
-DEAL_ID=$(echo "$RESP" | sed '$d' | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || echo "")
+assert_status "Login founder buyer" "200" "$HTTP"
+
+RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/onboarding" \
+  -H "Content-Type: application/json" \
+  -d '{"full_name":"Smoke Test Founder","nationality":"KE","id_number":"SMOKE-'${RUN_ID}'","role":"FOUNDER"}' \
+  -b /tmp/founder-cookies.txt -c /tmp/founder-cookies.txt)
+HTTP=$(echo "$RESP" | tail -1)
+assert_status "Onboard founder buyer" "200" "$HTTP"
+
+# ── 15. Atomic marketplace checkout creates order and deal ────────────
+echo ""
+echo "--- 15. Marketplace checkout ---"
+RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/marketplace/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{"asset_id":'${ASSET_ID}',"allocation":"3x 36-ton units","payment_method":"card"}' \
+  -b /tmp/founder-cookies.txt -c /tmp/founder-cookies.txt)
+HTTP=$(echo "$RESP" | tail -1)
+assert_status "POST /api/marketplace/checkout" "201" "$HTTP"
+BODY=$(echo "$RESP" | sed '$d')
+ORDER_ID=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('order',{}).get('id',''))" 2>/dev/null || echo "")
+DEAL_ID=$(echo "$BODY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('deal',{}).get('id',''))" 2>/dev/null || echo "")
+if [ -n "$ORDER_ID" ] && [ -n "$DEAL_ID" ]; then ok "Checkout returned both order and deal"; else fail "Checkout did not return both order and deal"; fi
 
 # ── 16. Get deal ─────────────────────────────────────────
 echo ""
 echo "--- 16. Get deal ---"
 RESP=$(curl -s -L -w "\n%{http_code}" -X GET "$BASE/api/deals/$DEAL_ID" \
-  -b /tmp/cookies.txt -c /tmp/cookies.txt)
+  -b /tmp/founder-cookies.txt -c /tmp/founder-cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status_any "GET /api/deals/{id}" "200" "201" "$HTTP"
 
@@ -177,7 +194,7 @@ echo "--- 17. Sign deal ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/deals/$DEAL_ID/sign" \
   -H "Content-Type: application/json" \
   -d '{"signature":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}' \
-  -b /tmp/cookies.txt -c /tmp/cookies.txt)
+  -b /tmp/founder-cookies.txt -c /tmp/founder-cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status_any "POST /api/deals/{id}/sign" "200" "201" "$HTTP"
 
