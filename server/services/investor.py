@@ -485,7 +485,7 @@ async def publish_founder_investor_update(
             type="investment",
             title=f"New update from {pitch['title']}",
             body=f"The founder shared an update for {draft['period']}.",
-            link="/investor/updates",
+            link="/investor/dashboard",
             session=session,
         )
     published["notified_investors"] = len(recipients)
