@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, StatusPill, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
-import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi } from "../../lib/api";
+import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi, getProviderOrderSummaryApi } from "../../lib/api";
 
 export default function ProviderDashboardPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [orderSummary, setOrderSummary] = useState({ total_orders: 0, open_orders: 0, pending_review: 0, priced_orders: 0 });
   const [assets, setAssets] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,13 +19,15 @@ export default function ProviderDashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const [profileRes, ordersRes, assetsRes, conversationsRes] = await Promise.all([
+        const [profileRes, ordersRes, assetsRes, conversationsRes, orderSummaryRes] = await Promise.all([
           getProviderProfileApi(),
           listOrdersApi(),
           listAssetsApi(),
           listConversationsApi({ limit: 100 }),
+          getProviderOrderSummaryApi(),
         ]);
         setProfile(profileRes);
+        setOrderSummary(orderSummaryRes);
         setOrders(ordersRes?.items || ordersRes?.data?.items || ordersRes?.orders || ordersRes);
         setAssets(assetsRes?.items || assetsRes?.data?.items || assetsRes?.assets || assetsRes);
         setConversations(conversationsRes?.items || conversationsRes?.data?.items || conversationsRes?.conversations || conversationsRes);
@@ -71,8 +74,8 @@ export default function ProviderDashboardPage() {
 
   const companyName = profile?.company_name || profile?.trading_name || profile?.name || "your provider account";
   const activeListings = assets?.filter(asset => asset.is_active).length || 0;
-  const pendingOrders = orders?.filter(o => o.status?.toLowerCase() === "pending_review").length || 0;
-  const pricedOrderCount = orders?.filter((order) => order.lease_amount != null || order.amount != null).length || 0;
+  const pendingOrders = orderSummary.pending_review;
+  const pricedOrderCount = orderSummary.priced_orders;
   const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
   
 
@@ -115,7 +118,7 @@ export default function ProviderDashboardPage() {
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Open Orders</span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orders?.filter(order => !["completed", "declined"].includes(order.status?.toLowerCase())).length || 0}</div>
+            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orderSummary.open_orders}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
               <span>{pendingOrders} awaiting review</span>
             </div>
