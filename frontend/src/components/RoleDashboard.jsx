@@ -407,34 +407,24 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
 
       {/* TASKS TAB */}
       {activeNav === "tasks" && (
-        <div className="grid grid-cols-1 gap-5">
-          <WorkspacePanel data={role} />
-        </div>
+        <EmptyState
+          icon={CheckCircle2}
+          title="Your task list is ready to build"
+          copy="Tasks will appear here once they are created from your venture plan. No sample tasks are shown as real work."
+        />
       )}
 
       {/* CAPITAL READINESS TAB */}
       {activeNav === "capital" && (
-        <div className="max-w-3xl rounded-2xl border border-[#f2ca50]/30 bg-[#f2ca50]/6 p-6 sm:p-8">
-          <Target size={26} className="text-[#f2ca50]" />
-          <h2 className="mt-3 font-display text-2xl font-semibold text-white">
-            {role.secondaryTitle}
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-white">
-            {role.secondaryCopy}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              to="/founder/analysis"
-              className="inline-flex items-center rounded-xl bg-gradient-to-r from-[#C9A15A] to-[#E8D6A8] px-5 py-2.5 text-xs font-semibold text-[#0A0A0B]"
-            >
-              Generate AI Strategy & Plan
-            </Link>
-            <Link
-              to="/founder/validation"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10"
-            >
-              Check Validation Score
-            </Link>
+        <div className="max-w-3xl space-y-4">
+          <EmptyState
+            icon={Target}
+            title="Capital readiness"
+            copy="Almeriq does not calculate a verified capital-readiness score yet. Review your saved venture analysis and validation evidence before preparing a fundraising pitch."
+          />
+          <div className="flex flex-wrap gap-3">
+            <Link to="/founder/analysis" className="alq-submit px-5 py-2.5 text-xs">Review AI strategy</Link>
+            <Link to="/founder/validation" className="rounded-xl border border-white/20 px-5 py-2.5 text-xs font-semibold text-white">Review validation</Link>
           </div>
         </div>
       )}
