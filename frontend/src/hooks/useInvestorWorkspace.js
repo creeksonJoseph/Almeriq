@@ -27,7 +27,7 @@ export function useInvestorWorkspace({ navigate }) {
       ]);
       setProfile(profileResult ? {
         preferred_payment_methods: ["visa"], notify_deal_updates: true,
-        notify_valuation_changes: true, notify_messages: true, ...profileResult,
+        notify_messages: true, ...profileResult,
       } : null);
       setStartups(startupResult?.items || []);
       setRequests(requestResult?.items || []);
@@ -47,7 +47,6 @@ export function useInvestorWorkspace({ navigate }) {
       const updated = await updateInvestorProfileApi({
         preferred_payment_methods: profile.preferred_payment_methods || [],
         notify_deal_updates: Boolean(profile.notify_deal_updates),
-        notify_valuation_changes: Boolean(profile.notify_valuation_changes),
         notify_messages: Boolean(profile.notify_messages),
       });
       setProfile((current) => ({ ...current, ...updated }));
