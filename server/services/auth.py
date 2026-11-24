@@ -189,7 +189,7 @@ async def update_onboarding(
     """
     from core.roles import normalize_role
 
-    allowed_roles = {"founder", "investor", "provider", "job_seeker", "expert"}
+    allowed_roles = {"founder", "investor", "infrastructure_provider", "job_seeker", "expert"}
     normalized_role = normalize_role(role)
     if role is not None and normalized_role not in allowed_roles:
         raise HTTPException(
