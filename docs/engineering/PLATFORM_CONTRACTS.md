@@ -90,7 +90,7 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 |--------|------|------|-------------|
 | GET | `/api/marketplace/listings` | none | Browse listings |
 | GET | `/api/marketplace/listings/:id` | none | Listing detail |
-| POST | `/api/marketplace/orders` | cookie | Create order |
+| POST | `/api/marketplace/checkout` | cookie + founder | Create order and deal atomically |
 
 ### Orders (provider role)
 | Method | Path | Auth | Description |
