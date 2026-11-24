@@ -160,7 +160,7 @@ async def test_get_user_profile_missing(session):
 
 
 @pytest.mark.asyncio
-async def test_update_onboarding_role_selection_completes_onboarding(session):
+async def test_update_onboarding_role_alone_does_not_complete_onboarding(session):
     user, _ = await auth_service.register_user(
         email="role-only@example.com", password="SecurePassword123!"
     )
@@ -168,6 +168,17 @@ async def test_update_onboarding_role_selection_completes_onboarding(session):
         user_id=user["id"], role="INFRASTRUCTURE_PROVIDER"
     )
     assert updated["role"] == "INFRASTRUCTURE_PROVIDER"
+    assert updated["onboarding_completed"] is False
+
+
+@pytest.mark.asyncio
+async def test_update_onboarding_requires_role_and_name(session):
+    user, _ = await auth_service.register_user(
+        email="complete-onboarding@example.com", password="SecurePassword123!"
+    )
+    updated = await auth_service.update_onboarding(
+        user_id=user["id"], role="INFRASTRUCTURE_PROVIDER", full_name="Ada Provider"
+    )
     assert updated["onboarding_completed"] is True
 
 
