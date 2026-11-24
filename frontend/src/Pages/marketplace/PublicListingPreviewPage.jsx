@@ -164,7 +164,7 @@ export default function PublicListingPreviewPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="text-label-caps text-white/60 uppercase tracking-wider block mb-1">RESERVE RATE</span>
-                <div className="font-serif text-2xl font-semibold text-gold">${Number(listing.price_monthly || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-sans text-white/60 font-normal">/mo</span></div>
+                <div className="font-serif text-2xl font-semibold text-gold">{Number(listing.price_monthly || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-sm font-sans text-white/60 font-normal">/mo · currency not specified</span></div>
               </div>
               <Button onClick={handleOrder} disabled={dealLoading || listing.status !== "available" || !(Number(listing.price_monthly) > 0)} className="w-full sm:w-auto h-11 px-6">{dealLoading ? "Starting order..." : Number(listing.price_monthly) > 0 ? "Order now" : "Price unavailable"}</Button>
             </div>
