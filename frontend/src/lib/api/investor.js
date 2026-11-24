@@ -91,3 +91,13 @@ export async function updateInvestorPortfolioApi(id, payload) {
     throw apiErr(e, "Failed to update portfolio tracking");
   }
 }
+
+
+export async function listInvestorUpdatesApi() {
+  try {
+    const { data } = await apiClient.get("/api/investor/updates");
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Failed to load investor updates");
+  }
+}
