@@ -31,11 +31,13 @@ async def list_client_orders(
     response: Response,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List orders placed by the current founder."""
     client_id = _require_founder(current_user)
     response.headers["Cache-Control"] = "private, no-store"
-    items, total = await svc.list_client_orders(client_id=client_id, session=db)
+    items, total = await svc.list_client_orders(client_id=client_id, limit=limit, offset=offset, session=db)
     return {"items": items, "total": total}
 
 
@@ -59,12 +61,16 @@ async def list_orders(
     profile: dict = Depends(get_current_provider_profile),
     db: AsyncSession = Depends(get_db),
     status: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List orders for the current provider."""
     response.headers["Cache-Control"] = "private, max-age=30"
     items, total = await svc.list_orders(
         provider_id=profile["id"],
         status=status,
+        limit=limit,
+        offset=offset,
         session=db,
     )
     return {"items": items, "total": total}
