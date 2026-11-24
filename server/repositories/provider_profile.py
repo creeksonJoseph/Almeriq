@@ -156,6 +156,8 @@ async def update_provider_verification(
         "verified": verified,
         "verified_at": datetime.now(timezone.utc) if verified else None,
         "verified_by": verified_by if verified else None,
+        "verification_reviewed_at": datetime.now(timezone.utc),
+        "verification_reviewed_by": verified_by,
     }
     stmt = update(ProviderProfile).where(ProviderProfile.id == profile_id).values(**values).returning(ProviderProfile)
     if session is not None:
