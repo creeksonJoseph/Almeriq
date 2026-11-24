@@ -181,6 +181,24 @@ export async function updateFounderInvestmentRequestApi(id, status) {
   }
 }
 
+export async function publishFounderPitchApi(id) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/pitches/${id}/publish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to publish this pitch");
+  }
+}
+
+export async function unpublishFounderPitchApi(id) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/pitches/${id}/unpublish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to unpublish this pitch");
+  }
+}
+
 export async function deleteFounderPitchApi(id) {
   try {
     await apiClient.delete(`/api/founder/pitches/${encodeURIComponent(id)}`);
