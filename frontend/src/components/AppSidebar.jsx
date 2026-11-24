@@ -151,43 +151,7 @@ export default function AppSidebar({
 
         {/* ── SCROLLABLE NAVIGATION BODY ── */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-4 no-scrollbar">
-          {/* Communication links are shown only for roles with a real messaging or notification workflow. */}
-          {COMMUNICATION_NAV.some((item) => item.roles.includes(normalizedRole)) && (
-            <div>
-              {!isCollapsed && (
-                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Communication
-                </p>
-              )}
-              <div className="space-y-0.5">
-                {COMMUNICATION_NAV.filter((item) => item.roles.includes(normalizedRole)).map((item) => {
-                  const Icon = item.icon;
-                  const active = isCurrentActive(item.path);
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => handleNavClick(item.path)}
-                      title={isCollapsed ? item.label : undefined}
-                      className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
-                        isCollapsed ? "justify-center px-0 h-9" : "h-9"
-                      } ${
-                        active
-                          ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
-                          : "text-white hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      {active && !isCollapsed && (
-                        <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
-                      )}
-                      <Icon size={16} className={`shrink-0 transition-colors ${active ? "text-[#C9A15A]" : "text-white/70 group-hover:text-white"}`} />
-                      {!isCollapsed && <span className="truncate">{item.label}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+
 
           {/* Admin controls are separate from role workspaces. */}
           {isAdmin && (
@@ -458,6 +422,45 @@ export default function AppSidebar({
               </div>
             </div>
           )}
+
+          {/* Communication links sit after the role workspace so primary tasks remain the first navigation priority. */}
+          {COMMUNICATION_NAV.some((item) => item.roles.includes(normalizedRole)) && (
+            <div>
+              {!isCollapsed && (
+                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  Communication
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {COMMUNICATION_NAV.filter((item) => item.roles.includes(normalizedRole)).map((item) => {
+                  const Icon = item.icon;
+                  const active = isCurrentActive(item.path);
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => handleNavClick(item.path)}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                        isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                      } ${
+                        active
+                          ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                          : "text-white hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      {active && !isCollapsed && (
+                        <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                      )}
+                      <Icon size={16} className={`shrink-0 transition-colors ${active ? "text-[#C9A15A]" : "text-white/70 group-hover:text-white"}`} />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* ── FOOTER TIER: User Identity & Quick Settings ── */}
