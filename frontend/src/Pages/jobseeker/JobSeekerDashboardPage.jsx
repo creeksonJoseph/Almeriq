@@ -19,7 +19,7 @@ export default function JobSeekerDashboardPage() {
       try {
         const [profileResult, jobsResult, applicationsResult] = await Promise.all([
           getJobSeekerProfileApi().catch((profileError) => {
-            if (profileError.response?.status === 404) return null;
+            if (profileError.status === 404 || profileError.response?.status === 404) return null;
             throw profileError;
           }),
           listJobsApi({ is_active: true, limit: 100 }),
@@ -30,7 +30,7 @@ export default function JobSeekerDashboardPage() {
         setOpenJobs(Number(jobsResult.total ?? jobsResult.items?.length ?? 0));
         setApplicationCount(Number(applicationsResult.total ?? applicationsResult.items?.length ?? 0));
       } catch (loadError) {
-        if (!cancelled) setError(loadError.response?.data?.detail || loadError.message || "We couldn't load your dashboard. Please try again.");
+        if (!cancelled) setError(loadError.detail || loadError.response?.data?.detail || loadError.message || "We couldn't load your dashboard. Please try again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
