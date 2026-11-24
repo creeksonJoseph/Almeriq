@@ -2,7 +2,7 @@
 from __future__ import annotations
 import logging
 from typing import Optional
-from sqlalchemy import select, update, func, delete
+from sqlalchemy import select, update, func, delete, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.order import Order
@@ -159,6 +159,23 @@ async def list_orders(
         orders = result.all()
         count = await s.scalar(count_stmt)
         return [_order_with_details(row) for row in orders], count or 0
+
+
+async def get_provider_order_summary(provider_id: int, session: AsyncSession) -> dict:
+    """Return accurate provider order counts without relying on the paginated order list."""
+    stmt = select(
+        func.count(Order.id),
+        func.coalesce(func.sum(case((Order.status.notin_(("completed", "declined")), 1), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.status == "pending_review", 1), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.lease_amount.is_not(None), 1), else_=0)), 0),
+    ).where(Order.provider_id == provider_id)
+    total, open_count, pending_count, priced_count = (await session.execute(stmt)).one()
+    return {
+        "total_orders": int(total or 0),
+        "open_orders": int(open_count or 0),
+        "pending_review": int(pending_count or 0),
+        "priced_orders": int(priced_count or 0),
+    }
 
 
 async def update_order_status(
