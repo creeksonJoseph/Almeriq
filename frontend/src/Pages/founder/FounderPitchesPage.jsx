@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFounderPitches } from "../../hooks/useFounderPitches";
 import { useInvestorUpdateDraft } from "../../hooks/useInvestorUpdateDraft";
+import { createInvestorUpdateApi, listFounderInvestorUpdatesApi, publishInvestorUpdateApi } from "../../lib/api";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button, Card, Input, Select, Textarea, Skeleton, SkeletonText } from "../../components/ui";
@@ -24,7 +25,23 @@ export default function FounderPitchesPage() {
   const [updateChallenges, setUpdateChallenges] = useState("");
   const [updateKpis, setUpdateKpis] = useState("");
   const [updateAsks, setUpdateAsks] = useState("");
+  const [savedUpdateId, setSavedUpdateId] = useState(null);
+  const [savedUpdateContent, setSavedUpdateContent] = useState("");
+  const [updatePublished, setUpdatePublished] = useState(false);
+  const [savedUpdates, setSavedUpdates] = useState([]);
+  const [updatesLoading, setUpdatesLoading] = useState(false);
   const { draft: investorUpdateDraft, setDraft: setInvestorUpdateDraft, drafting: draftingUpdate, generate: generateUpdateDraft } = useInvestorUpdateDraft({ setError, setNotice });
+
+  useEffect(() => {
+    if (!updatePitchId) { setSavedUpdates([]); return; }
+    let cancelled = false;
+    setUpdatesLoading(true);
+    listFounderInvestorUpdatesApi(updatePitchId)
+      .then((items) => { if (!cancelled) setSavedUpdates(items); })
+      .catch((requestError) => { if (!cancelled) setError(requestError.message || "Unable to load saved investor updates."); })
+      .finally(() => { if (!cancelled) setUpdatesLoading(false); });
+    return () => { cancelled = true; };
+  }, [updatePitchId, setError]);
 
   const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   const reset = () => { setForm(EMPTY); setDocumentsText(""); setEditingId(null); };
@@ -63,6 +80,9 @@ export default function FounderPitchesPage() {
 
   const generateInvestorUpdate = () => {
     const pitch = pitches.find((item) => String(item.id) === String(updatePitchId));
+    setSavedUpdateId(null);
+    setSavedUpdateContent("");
+    setUpdatePublished(false);
     return generateUpdateDraft(pitch, {
       period: updatePeriod,
       highlights: updateHighlights,
@@ -70,6 +90,43 @@ export default function FounderPitchesPage() {
       kpis: updateKpis,
       asks: updateAsks,
     });
+  };
+
+  const saveInvestorUpdate = async () => {
+    if (!updatePitchId || !updatePeriod.trim() || !investorUpdateDraft.trim()) {
+      setError("Choose a startup, enter an update period and generate or write the update first.");
+      return;
+    }
+    try {
+      const saved = await createInvestorUpdateApi(Number(updatePitchId), {
+        period: updatePeriod.trim(),
+        content: investorUpdateDraft.trim(),
+      });
+      setSavedUpdateId(saved.id);
+      setSavedUpdateContent(saved.content);
+      setUpdatePublished(false);
+      setSavedUpdates((items) => [saved, ...items]);
+      setNotice("Investor update draft saved.");
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to save investor update.");
+    }
+  };
+
+  const publishInvestorUpdate = async () => {
+    if (!savedUpdateId || investorUpdateDraft.trim() !== savedUpdateContent) {
+      setError("Save the latest edits as a draft before publishing.");
+      return;
+    }
+    try {
+      const published = await publishInvestorUpdateApi(savedUpdateId);
+      setUpdatePublished(true);
+      setSavedUpdates((items) => items.map((item) => item.id === published.id ? published : item));
+      setNotice("Investor update shared with connected investors. They will receive an in-app notification.");
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to share investor update. Make sure this pitch has an accepted investor relationship.");
+    }
   };
 
   const copyInvestorUpdate = async () => {
@@ -105,7 +162,8 @@ export default function FounderPitchesPage() {
           <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><Textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
           <label className="block space-y-1 text-sm"><span>What you need from investors</span><Textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
           <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
-          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><Textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
+          {investorUpdateDraft && <div className="space-y-3 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable update</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy text</Button></div><Textarea value={investorUpdateDraft} disabled={updatePublished} onChange={(event) => { setInvestorUpdateDraft(event.target.value); setSavedUpdateId(null); setSavedUpdateContent(""); setUpdatePublished(false); }} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /><div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="ghost" disabled={updatePublished} onClick={saveInvestorUpdate}>Save draft</Button><Button type="button" disabled={!savedUpdateId || updatePublished || investorUpdateDraft.trim() !== savedUpdateContent} onClick={publishInvestorUpdate}>Share with connected investors</Button></div><p className="text-xs text-white/45">Sharing publishes this update to investors whose interest request you have accepted or moved into discussion. They receive an in-app notification; no email is sent.</p></div>}
+          <div className="space-y-2 border-t border-border pt-4"><h3 className="text-sm font-medium">Saved updates</h3>{updatesLoading ? <p className="text-xs text-white/45">Loading update history…</p> : savedUpdates.length === 0 ? <p className="text-xs text-white/45">No saved updates for this startup yet.</p> : savedUpdates.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3"><div><p className="text-sm font-medium">{item.period}</p><p className="text-xs text-white/45">{item.status === "published" ? "Shared with connected investors" : "Draft"}{item.published_at ? ` · ${new Date(item.published_at).toLocaleDateString()}` : ""}</p></div>{item.status === "draft" && <Button size="sm" variant="ghost" onClick={() => { setSavedUpdateId(item.id); setSavedUpdateContent(item.content); setInvestorUpdateDraft(item.content); setUpdatePeriod(item.period); setUpdatePublished(false); }}>Open draft</Button>}</div>)}</div>
         </Card>
         
         )}
