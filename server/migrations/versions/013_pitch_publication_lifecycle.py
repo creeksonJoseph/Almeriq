@@ -3,8 +3,8 @@
 from alembic import op
 import sqlalchemy as sa
 
-revision = "013_pitch_publication_lifecycle"
-down_revision = "012_investor_matching_portfolio"
+revision = "016_pitch_publication_lifecycle"
+down_revision = "015_job_posting_owner_constraints"
 branch_labels = None
 depends_on = None
 
