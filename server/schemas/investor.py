@@ -180,6 +180,11 @@ class StartupPitchUpdateRequest(BaseModel):
         return value
 
 
+class InvestorUpdateCreateRequest(BaseModel):
+    period: str = Field(min_length=1, max_length=100)
+    content: str = Field(min_length=1, max_length=20000)
+
+
 class InvestorPortfolioUpdateRequest(BaseModel):
     investment_amount: float = Field(gt=0)
     current_value: Optional[float] = Field(default=None, ge=0)
