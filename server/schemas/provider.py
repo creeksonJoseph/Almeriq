@@ -147,7 +147,6 @@ class MarketplaceListingResponse(BaseModel):
     provider_name: str
     provider_verified: bool
     provider_location: Optional[str]
-    provider_enclave_key: Optional[str]
     media: List[dict] = Field(default_factory=list)
     created_at: datetime
 
