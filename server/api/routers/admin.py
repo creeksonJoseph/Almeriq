@@ -20,6 +20,7 @@ VALID_USER_ROLES = {
     "INVESTOR",
     "JOB_SEEKER",
     "INFRASTRUCTURE_PROVIDER",
+    "EXPERT",
 }
 
 
@@ -36,7 +37,7 @@ def _normalize_role(role: str) -> str:
     if normalized not in VALID_USER_ROLES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Role must be ADMIN, FOUNDER, INVESTOR, JOB_SEEKER, or INFRASTRUCTURE_PROVIDER",
+            detail="Role must be ADMIN, FOUNDER, INVESTOR, JOB_SEEKER, INFRASTRUCTURE_PROVIDER, or EXPERT",
         )
     return normalized
 
