@@ -223,7 +223,7 @@ export default function ProviderOrdersPage() {
                 <span className="font-mono text-[#ffffff]/60">{row.allocation || "—"}</span>
               )},
               { key: "amount", header: "Lease Amount", render: (row) => (
-                <span className="font-mono font-bold text-[#f2ca50] text-sm">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-normal text-[#ffffff]/60">/mo</span></span>
+                <span className="font-mono font-bold text-[#f2ca50] text-sm">{(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-normal text-[#ffffff]/60">/mo · currency not specified</span></span>
               )},
               { key: "status", header: "Status", render: (row) => {
                 const config = STATUS_CONFIG[row.status?.toLowerCase()] || STATUS_CONFIG.pending;
@@ -328,7 +328,7 @@ function OrderDetailDrawer({ order, navigate }) {
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-[#ffffff]/60">Lease Amount:</span>
-          <span className="font-mono font-bold text-[#f2ca50]">${(order.amount || order.lease_amount || 0).toLocaleString()}/mo</span>
+          <span className="font-mono font-bold text-[#f2ca50]">{(order.amount || order.lease_amount || 0).toLocaleString()}/mo · currency not specified</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-[#ffffff]/60">Payment status:</span>
