@@ -88,7 +88,7 @@ async def update_provider_verification(
 ) -> dict:
     """Verify or revoke verification for a provider profile."""
     profile = await provider_repo.update_provider_verification(
-        profile_id=provider_id, verified=body.verified, session=db
+        profile_id=provider_id, verified=body.verified, verified_by=admin_user["id"], session=db
     )
     if not profile:
         raise HTTPException(status_code=404, detail="Provider profile not found")
