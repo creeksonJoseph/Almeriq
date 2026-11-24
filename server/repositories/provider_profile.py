@@ -1,5 +1,7 @@
 """repositories/provider_profile.py - SQLAlchemy 2.0 repository for ProviderProfile model."""
 from __future__ import annotations
+
+from datetime import datetime, timezone
 import logging
 from typing import Optional
 from sqlalchemy import select, update
@@ -146,10 +148,16 @@ async def list_provider_profiles(
 async def update_provider_verification(
     profile_id: int,
     verified: bool,
+    verified_by: int | None = None,
     session: AsyncSession | None = None,
 ) -> dict | None:
-    """Set provider verification from the admin review workflow."""
-    stmt = update(ProviderProfile).where(ProviderProfile.id == profile_id).values(verified=verified).returning(ProviderProfile)
+    """Set provider verification and record the admin reviewer."""
+    values = {
+        "verified": verified,
+        "verified_at": datetime.now(timezone.utc) if verified else None,
+        "verified_by": verified_by if verified else None,
+    }
+    stmt = update(ProviderProfile).where(ProviderProfile.id == profile_id).values(**values).returning(ProviderProfile)
     if session is not None:
         profile = (await session.execute(stmt)).scalar_one_or_none()
         return profile.to_dict() if profile else None
