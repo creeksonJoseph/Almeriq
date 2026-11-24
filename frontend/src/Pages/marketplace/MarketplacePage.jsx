@@ -58,7 +58,7 @@ export default function MarketplacePage() {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const galleryTouchStart = useRef(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState({ location: "", kind: "all", minPrice: "", maxPrice: "" });
+  const [filters, setFilters] = useState({ location: "", kind: "all" });
   const searchForm = useForm({ defaultValues: { query: "" } });
   const query = searchForm.watch("query");
 
@@ -95,8 +95,6 @@ export default function MarketplacePage() {
       return categoryMatch && queryMatch && locationMatch && kindMatch;
     });
     return filtered.sort((a, b) => {
-      if (sortMode === "price_asc") return Number(a.price_monthly || 0) - Number(b.price_monthly || 0);
-      if (sortMode === "price_desc") return Number(b.price_monthly || 0) - Number(a.price_monthly || 0);
       if (sortMode === "provider") return String(a.provider_name || a.name || "").localeCompare(String(b.provider_name || b.name || ""));
       return 0;
     });
