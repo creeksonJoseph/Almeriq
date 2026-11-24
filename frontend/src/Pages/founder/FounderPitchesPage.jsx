@@ -16,9 +16,10 @@ export default function FounderPitchesPage() {
   const [editingId, setEditingId] = useState(null);
   const {
     pitches, requests, investorUpdates, loading, saving, busyRequestId, error, notice,
-    savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, startConversation, setError, setNotice,
+    savePitch, updateRequest, removePitch, setPitchPublication, saveInvestorUpdate, publishInvestorUpdate, editInvestorUpdate, startConversation, setError, setNotice,
   } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
+  const [editingUpdateId, setEditingUpdateId] = useState(null);
   const [updatePeriod, setUpdatePeriod] = useState("");
   const [updateHighlights, setUpdateHighlights] = useState("");
   const [updateChallenges, setUpdateChallenges] = useState("");
@@ -79,7 +80,13 @@ export default function FounderPitchesPage() {
       return;
     }
     try {
-      await saveInvestorUpdate({ pitch_id: pitch.id, period: updatePeriod.trim(), content: investorUpdateDraft.trim() });
+      const payload = { period: updatePeriod.trim(), content: investorUpdateDraft.trim() };
+      if (editingUpdateId) {
+        await editInvestorUpdate(editingUpdateId, payload);
+        setEditingUpdateId(null);
+      } else {
+        await saveInvestorUpdate({ pitch_id: pitch.id, ...payload });
+      }
     } catch (saveError) {
       setError(saveError.message || "Unable to save this update.");
     }
@@ -127,7 +134,7 @@ export default function FounderPitchesPage() {
           <label className="block space-y-1 text-sm"><span>What you need from investors</span><Textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
           <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
           {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><div className="flex gap-2"><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button><Button type="button" size="sm" onClick={saveInvestorUpdateDraft}>Save update</Button></div></div><Textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
-          <div className="space-y-3 border-t border-border pt-4"><h3 className="text-sm font-medium">Saved updates</h3>{investorUpdates.length === 0 ? <p className="text-sm text-white/50">No saved investor updates yet.</p> : investorUpdates.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"><div><p className="text-sm font-medium">{item.period}</p><p className="text-xs capitalize text-white/50">{item.status} · {pitches.find((pitch) => pitch.id === item.pitch_id)?.title || `Pitch #${item.pitch_id}`}</p></div>{item.status === "draft" && <Button type="button" size="sm" onClick={() => publishSavedInvestorUpdate(item.id)}>Share with interested investors</Button>}</div>)}</div>
+          <div className="space-y-3 border-t border-border pt-4"><h3 className="text-sm font-medium">Saved updates</h3>{investorUpdates.length === 0 ? <p className="text-sm text-white/50">No saved investor updates yet.</p> : investorUpdates.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"><div><p className="text-sm font-medium">{item.period}</p><p className="text-xs capitalize text-white/50">{item.status} · {pitches.find((pitch) => pitch.id === item.pitch_id)?.title || `Pitch #${item.pitch_id}`}</p></div>{item.status === "draft" && <div className="flex gap-2"><Button type="button" size="sm" variant="ghost" onClick={() => { setEditingUpdateId(item.id); setUpdatePitchId(String(item.pitch_id)); setUpdatePeriod(item.period); setInvestorUpdateDraft(item.content); }}>Edit draft</Button><Button type="button" size="sm" onClick={() => publishSavedInvestorUpdate(item.id)}>Share with interested investors</Button></div>}</div>)}</div>
         </Card>
         
         )}
