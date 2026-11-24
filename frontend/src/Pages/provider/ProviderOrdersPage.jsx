@@ -33,7 +33,8 @@ export default function ProviderOrdersPage() {
   const [orderSummary, setOrderSummary] = useState({ total_orders: 0, open_orders: 0, pending_review: 0, confirmed: 0, shipped: 0, completed: 0, declined: 0, priced_orders: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState(searchParams.get("status") || "all");
+  const initialStatus = searchParams.get("status");
+  const [activeTab, setActiveTab] = useState(initialStatus === "pending_review" ? "pending" : initialStatus || "all");
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
