@@ -3,9 +3,6 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from models.base import Base
-from models.notification import Notification
-from models.user import User
-
 from models.investor_profile import InvestorProfile
 from repositories import notification as notification_repo
 from repositories import user as user_repo
