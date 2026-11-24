@@ -180,6 +180,16 @@ async def test_update_onboarding_incomplete_when_no_role_or_id(session):
 
 
 @pytest.mark.asyncio
+async def test_role_alone_does_not_complete_onboarding(session):
+    user, _ = await auth_service.register_user(
+        email="role-only@example.com", password="SecurePassword123!"
+    )
+    updated = await auth_service.update_onboarding(user_id=user["id"], role="founder")
+    assert updated["role"] == "founder"
+    assert updated["onboarding_completed"] is False
+
+
+@pytest.mark.asyncio
 async def test_update_onboarding_missing_user(session):
     with pytest.raises(HTTPException) as exc:
         await auth_service.update_onboarding(user_id=999999, role="founder")
