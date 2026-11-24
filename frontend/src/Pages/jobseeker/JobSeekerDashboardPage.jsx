@@ -9,20 +9,25 @@ export default function JobSeekerDashboardPage() {
   const [openJobs, setOpenJobs] = useState(0);
   const [applicationCount, setApplicationCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     async function loadDashboard() {
+      setLoading(true);
+      setError("");
       try {
         const [profileResult, jobsResult, applicationsResult] = await Promise.all([
-          getJobSeekerProfileApi().catch(() => null),
+          getJobSeekerProfileApi(),
           listJobsApi({ is_active: true, limit: 100 }),
           listMyJobApplicationsApi(),
         ]);
         if (cancelled) return;
         setProfile(profileResult);
-        setOpenJobs(jobsResult.total || 0);
-        setApplicationCount(applicationsResult.total || 0);
+        setOpenJobs(Number(jobsResult.total ?? jobsResult.items?.length ?? 0));
+        setApplicationCount(Number(applicationsResult.total ?? applicationsResult.items?.length ?? 0));
+      } catch (loadError) {
+        if (!cancelled) setError(loadError.response?.data?.detail || loadError.message || "We couldn't load your dashboard. Please try again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -46,10 +51,12 @@ export default function JobSeekerDashboardPage() {
           </div>
         </header>
 
+        {error && <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error} <Button size="sm" variant="ghost" onClick={() => window.location.reload()}>Retry</Button></div>}
+
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : openJobs}</p></Card>
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications sent</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : applicationCount}</p></Card>
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile visibility</p><p className="mt-2 text-lg font-semibold">{loading ? "—" : profile?.is_active ? "Visible" : "Hidden"}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading || error ? "—" : openJobs}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications sent</p><p className="mt-2 text-3xl font-semibold">{loading || error ? "—" : applicationCount}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile visibility</p><p className="mt-2 text-lg font-semibold">{loading || error ? "—" : profile?.is_active ? "Visible" : "Hidden"}</p></Card>
         </div>
 
         <Card className="p-6">
