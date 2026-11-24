@@ -171,8 +171,8 @@ export default function ProviderListingPreviewPage() {
               <StatusPill status={asset.status?.toLowerCase() || "available"} />
             </div>
             <div className="flex items-baseline gap-2 mb-4">
-              <span className="font-serif text-3xl font-semibold text-gold">${Number(asset.price_monthly || 0).toLocaleString()}</span>
-              <span className="text-sm text-white/70">/ month</span>
+              <span className="font-serif text-3xl font-semibold text-gold">{Number(asset.price_monthly || 0).toLocaleString()}</span>
+              <span className="text-sm text-white/70">/ month · currency not specified</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
