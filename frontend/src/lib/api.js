@@ -53,6 +53,7 @@ export {
   createLegalFilingApi,
   getCompanyRegistrationGuideApi,
   executeAiToolApi,
+  listFounderInvestorUpdatesApi,
   createInvestorUpdateApi,
   publishInvestorUpdateApi,
 } from "./api/founder";
