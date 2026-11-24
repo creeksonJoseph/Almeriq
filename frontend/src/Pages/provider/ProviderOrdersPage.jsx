@@ -142,7 +142,7 @@ export default function ProviderOrdersPage() {
         <KPICard label="Total Orders" value={orders.length} icon="Receipt" />
         <KPICard label="Pending Review" value={orders.filter(o => o.status?.toLowerCase() === "pending_review").length} icon="AlertCircle" highlight />
         <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status?.toLowerCase() === "shipped").length} icon="Truck" />
-        <KPICard label="Orders with a Listed Rate" value={pricedOrderCount} icon="Lock" />
+        <KPICard label="Orders with a Listed Rate" value={pricedOrderCount} icon="Receipt" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
