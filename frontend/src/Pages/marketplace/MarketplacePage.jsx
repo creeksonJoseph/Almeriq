@@ -254,7 +254,7 @@ export default function MarketplacePage() {
               </select>
             </label>
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2 xl:col-span-4">
-              <Button variant="ghost" onClick={() => setFilters({ location: "", kind: "all", minPrice: "", maxPrice: "" })}>Clear filters</Button>
+              <Button variant="ghost" onClick={() => setFilters({ location: "", kind: "all" })}>Clear filters</Button>
               <p className="text-xs text-white/60">Filters update the listings as you change them. Price sorting and price ranges are unavailable because listing currency is not recorded.</p>
             </div>
           </Card>
