@@ -208,21 +208,21 @@ export default function MarketplacePage() {
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ImageIcon size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Available listings</p>
+              <p className="text-xs font-medium text-white/60">Available listings shown</p>
               <p className="text-xl font-semibold text-text">{availableCount}</p>
             </div>
           </Card>
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ShieldCheck size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Verified providers</p>
+              <p className="text-xs font-medium text-white/60">Verified listings shown</p>
               <p className="text-xl font-semibold text-text">{verifiedCount}</p>
             </div>
           </Card>
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><Layers size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Infrastructure types</p>
+              <p className="text-xs font-medium text-white/60">Infrastructure types shown</p>
               <p className="text-xl font-semibold text-text">{physicalCount} physical / {digitalCount} digital</p>
             </div>
           </Card>
