@@ -167,13 +167,24 @@ async def get_provider_order_summary(provider_id: int, session: AsyncSession) ->
         func.count(Order.id),
         func.coalesce(func.sum(case((Order.status.notin_(("completed", "declined")), 1), else_=0)), 0),
         func.coalesce(func.sum(case((Order.status == "pending_review", 1), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.status == "confirmed", 1), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.status == "shipped", 1), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.status == "completed", 1), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.status == "declined", 1), else_=0)), 0),
         func.coalesce(func.sum(case((Order.lease_amount.is_not(None), 1), else_=0)), 0),
     ).where(Order.provider_id == provider_id)
-    total, open_count, pending_count, priced_count = (await session.execute(stmt)).one()
+    (
+        total, open_count, pending_count, confirmed_count, shipped_count,
+        completed_count, declined_count, priced_count,
+    ) = (await session.execute(stmt)).one()
     return {
         "total_orders": int(total or 0),
         "open_orders": int(open_count or 0),
         "pending_review": int(pending_count or 0),
+        "confirmed": int(confirmed_count or 0),
+        "shipped": int(shipped_count or 0),
+        "completed": int(completed_count or 0),
+        "declined": int(declined_count or 0),
         "priced_orders": int(priced_count or 0),
     }
 
