@@ -47,6 +47,51 @@ export default function MessagesPage() {
     loadConversations();
   }, [searchParams]);
 
+  // Keep the inbox and open conversation in sync across browser sessions.
+  // This is intentionally lightweight polling; no realtime infrastructure is required.
+  useEffect(() => {
+    let cancelled = false;
+    const refreshInbox = async () => {
+      try {
+        const conversationResult = await listConversationsApi();
+        const items = conversationResult.items || conversationResult.conversations || [];
+        const normalized = items.map((conv) => ({
+          ...conv,
+          otherParty: { name: conv.other_participant?.full_name || conv.other_participant?.email || "User" },
+          lastMessage: conv.last_message?.body || "",
+          time: conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "",
+          unread: conv.unread_count || 0,
+        }));
+        if (cancelled) return;
+        setConversations(normalized);
+        if (activeConversation?.id) {
+          const current = normalized.find((item) => item.id === activeConversation.id);
+          if (current) setActiveConversation((previous) => ({ ...previous, ...current }));
+          const messageResult = await listMessagesApi(activeConversation.id);
+          if (cancelled) return;
+          setMessages((messageResult.items || messageResult.messages || []).map((message) => ({
+            ...message,
+            content: message.content || message.body || "",
+            own: String(message.sender_id) === String(user?.id),
+            senderName: message.sender?.full_name || message.sender?.email,
+            time: message.time || message.created_at,
+          })));
+          await markMessagesReadApi(activeConversation.id);
+          if (!cancelled) {
+            setConversations((previous) => previous.map((item) => item.id === activeConversation.id ? { ...item, unread: 0 } : item));
+          }
+        }
+      } catch {
+        // A transient polling failure should not erase the last successfully loaded data.
+      }
+    };
+    const intervalId = window.setInterval(refreshInbox, 7000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [activeConversation?.id, user?.id]);
+
   const openConversation = async (conversation) => {
     setActiveConversation(conversation);
     setMobileDrawerOpen(false);
@@ -215,7 +260,7 @@ function ConversationItem({ conversation, active, onClick }) {
 }
 
 function ChatView({ conversation, messages, onSend, messageForm, sending, messagesEndRef, onClose }) {
-  const otherParty = conversation.otherParty || { name: "Provider", verified: true };
+  const otherParty = conversation.otherParty || { name: "User" };
 
   return (
     <div className="flex flex-col h-full bg-bg">
@@ -228,7 +273,7 @@ function ChatView({ conversation, messages, onSend, messageForm, sending, messag
           <Avatar name={otherParty.name} size="md" />
           <div>
             <h3 className="font-semibold text-text">{otherParty.name}</h3>
-            <span className="text-xs text-gold">Online</span>
+            <span className="text-xs text-white/45">Conversation</span>
           </div>
         </div>
       </div>
