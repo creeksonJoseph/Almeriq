@@ -350,7 +350,7 @@ export default function AdminWaitlistPage() {
             <tbody className="divide-y divide-white/5">{providers.map((provider) => <tr key={provider.id}>
               <td className="px-5 py-4"><p className="font-medium text-white">{provider.company_name || provider.trading_name || `Provider #${provider.id}`}</p><p className="mt-1 text-white/40">{provider.about || "No provider description supplied."}</p></td>
               <td className="px-5 py-4 text-white/60">{provider.location || "Not provided"}</td>
-              <td className="px-5 py-4"><span className={provider.verified ? "text-emerald-300" : "text-amber-200"}>{provider.verified ? "Verified" : "Not verified"}</span></td>
+              <td className="px-5 py-4"><span className={provider.verified ? "text-emerald-300" : "text-amber-200"}>{provider.verified ? "Verified" : "Not verified"}</span>{provider.verified_at && <p className="mt-1 text-[10px] text-white/40">Reviewed {new Date(provider.verified_at).toLocaleDateString()}</p>}</td>
               <td className="px-5 py-4"><button type="button" disabled={verificationBusyId === provider.id} onClick={() => handleProviderVerification(provider)} className="rounded-lg border border-[#f2ca50]/30 px-3 py-2 font-semibold text-[#f2ca50] disabled:opacity-50">{verificationBusyId === provider.id ? "Saving…" : provider.verified ? "Revoke" : "Mark verified"}</button></td>
             </tr>)}</tbody>
           </table></div>}
