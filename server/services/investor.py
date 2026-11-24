@@ -298,7 +298,7 @@ async def create_investment_request(
             type="investment",
             title="New investor interest",
             body="An investor has expressed interest in your startup pitch.",
-            link="/founder/pitches",
+            link="/founder/fundraising/pitches",
             session=session,
         )
     return request
