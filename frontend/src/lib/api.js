@@ -53,6 +53,8 @@ export {
   createLegalFilingApi,
   getCompanyRegistrationGuideApi,
   executeAiToolApi,
+  createInvestorUpdateApi,
+  publishInvestorUpdateApi,
 } from "./api/founder";
 
 export { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi } from "./api/admin";
@@ -144,6 +146,7 @@ export {
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
   updateInvestorPortfolioApi,
+  listInvestorUpdatesApi,
 } from "./api/investor";
 export {
   discoverTalentApi,
