@@ -137,7 +137,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex items-center gap-2 truncate">
                 <span className="font-serif text-base font-semibold text-text truncate">Order from {providerName}</span>
-                <span className="text-gold shrink-0" aria-label="Verified">✓</span>
+
               </div>
             </div>
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg text-white/60 hover:text-text hover:bg-surface-2 transition-colors ml-2 shrink-0" aria-label="Close dialog">
