@@ -136,10 +136,10 @@ export default function ProviderDashboardPage() {
 
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Combined Monthly Rates · Currency Not Specified</span>
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Orders with a Listed Rate</span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">{totalRequestedValue.toLocaleString()}</div>
+            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">{pricedOrderCount}</div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
