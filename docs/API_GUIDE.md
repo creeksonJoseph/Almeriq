@@ -202,7 +202,7 @@ With the backend running:
 curl -s http://localhost:8000/openapi.json > /tmp/almeriq-openapi.json
 ~~~
 
-Use Swagger UI to try requests with an authenticated browser session. For command-line tests, use a disposable local account and avoid placing real production tokens in shell history. The Sentry diagnostic endpoint is registered unconditionally in `server/api/routers/health.py`; do not assume it is disabled in production. Gate or remove it before exposing a production deployment. The Sentry diagnostic endpoint is registered unconditionally in `server/api/routers/health.py`; do not assume it is disabled in production. Gate or remove it before exposing a production deployment.
+Use Swagger UI to try requests with an authenticated browser session. For command-line tests, use a disposable local account and avoid placing real production tokens in shell history. The Sentry diagnostic endpoint is registered unconditionally in `server/api/routers/health.py`; do not assume it is disabled in production. Gate or remove it before exposing a production deployment.
 
 ## 7. Contract change checklist
 
