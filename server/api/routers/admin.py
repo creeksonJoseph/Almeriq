@@ -1,7 +1,7 @@
 """api/routers/admin.py - Admin endpoints for administrative operations."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Response, HTTPException, status
+from fastapi import APIRouter, Depends, Query, Response, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from core.db import async_session_factory, get_db
@@ -75,6 +75,24 @@ async def list_provider_review_queue(
     """List provider profiles for admin verification review."""
     items = await provider_repo.list_provider_profiles(
         verified=verified, limit=min(max(limit, 1), 100), offset=max(offset, 0), session=db
+    )
+    return {"items": items}
+
+
+@router.get("/providers/{provider_id}/verification-history", status_code=200)
+async def get_provider_verification_history(
+    provider_id: int,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return the append-only verification and revocation history for a provider."""
+    profile = await provider_repo.get_provider_profile_by_id(provider_id, session=db)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Provider profile not found")
+    items = await provider_repo.list_provider_verification_events(
+        profile_id=provider_id, limit=limit, offset=offset, session=db
     )
     return {"items": items}
 
