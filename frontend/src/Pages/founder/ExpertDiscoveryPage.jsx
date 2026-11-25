@@ -11,7 +11,7 @@ export default function ExpertDiscoveryPage() {
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [sending, setSending] = useState(false);
-  const { experts, requests, expertsLoading, requestsLoading, error, notice, sendRequest, openConversation, setError } = useExpertDiscovery();
+  const { experts, requests, expertsLoading, requestsLoading, error, notice, sendRequest, openConversation, setError, setNotice } = useExpertDiscovery();
 
   const visible = experts.filter((expert) => {
     const haystack = [expert.headline, expert.bio, expert.location, ...(expert.expertise || [])].join(" ").toLowerCase();
