@@ -16,6 +16,7 @@ This index records the implementation source for each maintained guide. It is no
 | Document | Primary implementation/configuration sources | Authority boundary |
 |---|---|---|
 | [Repository README](../README.md) | `frontend/src/App.jsx`, `server/main.py`, `frontend/package.json`, `server/pyproject.toml`, `render.yaml`, `vercel.json` | Product summary and local commands; not proof of live deployment state |
+| [Root architecture pointer](../ARCHITECTURE.md) | [System architecture](SYSTEM_ARCHITECTURE.md), `frontend/src/Pages/founder/FounderAnalysisPage.jsx`, `frontend/src/hooks/useFounderFlow.js`, `server/services/founder_prompts.py` | Pointer only; system-wide architecture lives in the system guide |
 | [System architecture](SYSTEM_ARCHITECTURE.md) | `server/main.py`, `server/api/errors.py`, `server/core/db.py`, `frontend/src/App.jsx`, `frontend/src/lib/client.js`, `frontend/src/lib/api/` | Source topology only |
 | [API guide](API_GUIDE.md) | `server/main.py`, `server/api/routers/`, `server/schemas/`, `server/api/dependencies.py`, `frontend/src/lib/api/` | Running OpenAPI is authoritative for exact contracts |
 | [Domain guide](DOMAIN_GUIDE.md) | `server/core/roles.py`, `frontend/src/lib/roles.js`, `server/api/routers/`, `server/services/`, `server/models/`, `frontend/src/Pages/` | Product policy not encoded in source must be confirmed with the owner |
