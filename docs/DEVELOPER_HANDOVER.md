@@ -2,6 +2,8 @@
 
 > Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md).
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md).
+
 > Last reviewed: 2026-11-25  
 > Repository: [creeksonJoseph/Almeriq](https://github.com/creeksonJoseph/Almeriq)  
 
