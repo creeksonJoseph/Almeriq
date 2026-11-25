@@ -30,15 +30,19 @@ Recommended reading order:
 9. [Known gaps and handover checklist](KNOWN_GAPS.md) - items that need confirmation or follow-up.
 10. Optional historical context: [Architecture audit](engineering/ARCHITECTURE_AUDIT.md).
 
-## 3. Current branch baseline
+## 3. Branch workflow
 
-At the start of this documentation pass:
-- `main`: `146263a9ec2002389dc5c3fba4a37d09cc3ff1a3` (merge commit for PR #39).
-- `dev`: `3bffa05097bad050e7f70e5e05f398369ecc9144`.
-- Both branches contained the same root application tree and the same initial documentation files.
-- Documentation work is isolated on `docs/developer-handover`, created from `dev`.
+Branch heads change as work is merged. Do not rely on commit hashes or branch names recorded in an old handover snapshot. Before starting work:
 
-Do not assume the local checkout is current. Fetch and inspect branch heads before beginning work.
+```bash
+git fetch origin --prune
+git switch dev
+git pull --ff-only origin dev
+git branch -vv
+```
+
+Create task branches from the latest `dev`, open pull requests into `dev`, and promote `dev` to `main` only after CI, review and explicit release approval. The exact branch and commit state should always be read from GitHub rather than copied from this document.
+
 
 ## 4. Technology summary
 
