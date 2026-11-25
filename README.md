@@ -73,7 +73,7 @@ cd server
 cp .env.example .env
 ```
 
-Open `server/.env` and set a unique local `JWT_SECRET_KEY`. The template uses SQLite and leaves optional integrations blank. Add credentials only for services you need. Do not copy production secrets into your local environment.
+Open `server/.env` and set a unique local `JWT_SECRET_KEY`. The template shows the PostgreSQL/Neon connection-string format and leaves optional integrations blank. Use a separate development database, never the production database. For a disposable local SQLite database, set `DATABASE_URL=sqlite+aiosqlite:///./almeriq_dev.db`. Add credentials only for services you need. Do not copy production secrets into your local environment.
 
 Then install dependencies, prepare the database and start the API:
 
