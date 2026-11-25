@@ -5,10 +5,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - almeriq_dev_data:/data
     environment:
-      - DATABASE_URL=sqlite+aiosqlite:///./almeriq_dev.db
-      - ENVIRONMENT=development
-      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=sqlite+aiosqlite:////data/almeriq_dev.db
+      - JWT_SECRET_KEY=local-compose-only-not-for-production
       - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
     command: sh -c "uv run alembic upgrade head && uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     develop:
@@ -36,3 +37,6 @@ services:
             - node_modules/
         - action: rebuild
           path: ./frontend/package.json
+
+volumes:
+  almeriq_dev_data:
