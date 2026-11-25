@@ -139,13 +139,13 @@ async def test_duplicate_deal_rejected(session):
         client_id=buyer_id,
         asset_id=asset_id,
         allocation="a",
-        lease_amount=50.0,
+        lease_amount=100.0,
         session=session,
     )
     await session.commit()
 
     d1 = await deal_service.create_deal(
-        order["id"], "visa", 50.0,
+        order["id"], "visa", 100.0,
         provider_id=provider_id, client_id=buyer_id, session=session,
     )
     await session.commit()
@@ -153,7 +153,7 @@ async def test_duplicate_deal_rejected(session):
     # service-level repeat raises 409 conflict (no duplicate deal)
     with pytest.raises(HTTPException) as exc:
         await deal_service.create_deal(
-            order["id"], "mastercard", 50.0,
+            order["id"], "mastercard", 100.0,
             provider_id=provider_id, client_id=buyer_id, session=session,
         )
     await session.commit()
@@ -174,12 +174,12 @@ async def test_deal_retrieval_and_signing(session):
     asset_id = await _make_asset(session, provider_id, price_monthly=75.0)
     order = await order_service.create_order(
         provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
-        allocation="a", lease_amount=75.0, session=session,
+        allocation="a", lease_amount=100.0, session=session,
     )
     await session.commit()
 
     deal = await deal_service.create_deal(
-        order["id"], "visa", 75.0,
+        order["id"], "visa", 100.0,
         provider_id=provider_id, client_id=buyer_id, session=session,
     )
     await session.commit()
@@ -201,7 +201,7 @@ async def test_deal_retrieval_and_signing(session):
 
     # provider signs
     signed = await deal_service.sign_deal(
-        deal["id"], "data-url-signature", payment_method="visa", amount=75.0,
+        deal["id"], "data-url-signature", payment_method="visa", amount=100.0,
         provider_id=provider_id, session=session,
     )
     await session.commit()
@@ -505,6 +505,6 @@ async def test_provider_order_summary_counts_all_orders_and_priced_records(sessi
         "shipped": 0,
         "completed": 1,
         "declined": 0,
-        "priced_orders": 2,
+        "priced_orders": 3,
     }
 

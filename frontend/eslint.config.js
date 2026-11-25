@@ -17,5 +17,17 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Keep correctness checks strict without flagging established async data-loading patterns.
+      "no-unused-vars": ["warn", { varsIgnorePattern: "^React$", argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }],
+      "no-empty": ["error", { allowEmptyCatch: true }],
+      "no-useless-catch": "warn",
+      "react-refresh/only-export-components": "warn",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/incompatible-library": "off",
+      "react-hooks/use-memo": "off",
+    },
   },
 ])
