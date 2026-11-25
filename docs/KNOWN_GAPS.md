@@ -2,15 +2,14 @@
 
 > This is a source-review checklist, not a claim that every item is a confirmed defect. Items marked "verify" require a maintainer with runtime/dashboard access.
 
-## 1. Documentation debt identified
+## 1. Historical documentation cleanup
 
-- The original root `README.md` describes Almeriq primarily as an infrastructure-provider portal and lists only a small subset of endpoints. That is no longer a complete product description.
-- The original root `ARCHITECTURE.md` describes a founder AI analysis design, not the whole platform architecture.
-- `docs/PLAN.md` contains an early provider-portal implementation plan and missing-feature statements that conflict with the current repository.
-- The old multi-agent workstream and platform-contract guides contained stale role, model, route and branch status statements. They have been removed rather than kept as onboarding material.
+- The former root `README.md` and `ARCHITECTURE.md` were incomplete snapshots; both have been replaced with current entry points.
+- The former provider-portal `docs/PLAN.md` is now explicitly marked historical and points readers to current source-based guides.
+- Obsolete multi-agent workstream and platform-contract guides were removed because their role, model, route and branch status statements were stale.
 - Any test counts copied from older documentation are historical; do not repeat them as current results without running the test suite.
 
-The root README and ARCHITECTURE entry points have been refreshed. The old provider-focused plan remains labelled as historical. The obsolete agent coordination guides have been removed. The architecture audit is retained only as optional historical engineering context.
+The documentation cleanup is complete at source level. The architecture audit remains only as optional historical engineering context.
 
 ## 2. Runtime verification not performed in this documentation pass
 
@@ -44,14 +43,13 @@ These changes are source-reviewed but have not been executed in a local Docker e
 
 ## 4. Product/engineering questions for the incoming maintainer
 
-- Confirm whether the current onboarding flow should direct experts immediately to `/expert/profile` after role selection. Today the shared onboarding and separate expert profile editor are distinct.
+- Expert users are routed to their expert dashboard at `/dashboard`; its Create/Edit Profile action opens `/expert/profile`. Shared identity onboarding does not itself open a separate profile wizard. This is the current supported flow; change it only if the product owner wants a forced profile-completion step.
 - Confirm the product policy for expert profile publication. The inspected implementation exposes active profiles; no separate expert approval workflow was found.
 - Confirm whether profile activation is user-controlled or should be moderated. Do not add a review queue without a product decision.
 - Confirm production source of truth for role values and any legacy role strings; keep backend/frontend normalization aligned.
 - Confirm whether the provider verification review workflow is actively operated and who owns approvals.
 - Confirm actual payment/escrow behavior. The UI terminology must not be interpreted as real payment processing unless the provider integration and settlement flow are implemented and verified.
 - Confirm whether Redis is required in production or only optional. In-memory fallbacks behave differently across multiple instances.
-- Confirm the supported Node runtime and pin it consistently in CI/deployment docs.
 - Confirm ownership/access for Render, Vercel, Neon, Cloudinary, Resend, Google OAuth, Upstash and Sentry.
 
 ## 5. Security review checklist
