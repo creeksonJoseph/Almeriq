@@ -103,6 +103,10 @@ export default function AdminWaitlistPage() {
     try {
       const result = await updateAdminProviderVerificationApi(provider.id, !provider.verified);
       setProviders((items) => items.map((item) => item.id === provider.id ? result.provider : item));
+      if (Object.prototype.hasOwnProperty.call(verificationHistory, provider.id)) {
+        const history = await getAdminProviderVerificationHistoryApi(provider.id);
+        setVerificationHistory((current) => ({ ...current, [provider.id]: history.items || [] }));
+      }
       showToast(result.provider.verified ? "Provider verified. Their active listings are now marked verified." : "Provider verification revoked.", "success");
     } catch (err) {
       showToast(err.message || "Unable to update provider verification.", "error");
