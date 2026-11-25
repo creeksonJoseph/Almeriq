@@ -22,12 +22,13 @@ Recommended reading order:
 1. [Setup and operations](SETUP_AND_OPERATIONS.md) - prerequisites, environment, local run, tests and deployment notes.
 2. [Database guide](DATABASE_GUIDE.md) - entity map, migration graph, constraints, backup and restore cautions.
 3. [Production access transfer](ACCESS_TRANSFER.md) - repository, hosting, database and integration account handover.
-4. [System architecture](SYSTEM_ARCHITECTURE.md) - runtime structure, backend layers, frontend routing/state, authentication.
-5. [Domain and workflow guide](DOMAIN_GUIDE.md) - roles, major user journeys, domain boundaries.
-6. [Frontend route and state guide](FRONTEND_GUIDE.md) - routes, guards, contexts, hooks and page organization.
-7. [API guide](API_GUIDE.md) - router inventory, auth expectations, OpenAPI discovery.
-8. [Known gaps and handover checklist](KNOWN_GAPS.md) - items that need confirmation or follow-up.
-9. Existing engineering references under [engineering](engineering/).
+4. [Testing guide](TESTING_GUIDE.md) - CI jobs, existing test coverage, gaps and release checks.
+5. [System architecture](SYSTEM_ARCHITECTURE.md) - runtime structure, backend layers, frontend routing/state, authentication.
+6. [Domain and workflow guide](DOMAIN_GUIDE.md) - roles, major user journeys, domain boundaries.
+7. [Frontend route and state guide](FRONTEND_GUIDE.md) - routes, guards, contexts, hooks and page organization.
+8. [API guide](API_GUIDE.md) - router inventory, auth expectations, OpenAPI discovery.
+9. [Known gaps and handover checklist](KNOWN_GAPS.md) - items that need confirmation or follow-up.
+10. Existing engineering references under [engineering](engineering/).
 
 ## 3. Current branch baseline
 
