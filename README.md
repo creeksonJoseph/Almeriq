@@ -1,5 +1,7 @@
 # Almeriq
 
+> Implementation references: [Documentation source map](docs/SOURCE_OF_TRUTH.md).
+
 Almeriq is a platform that brings founders, infrastructure providers, job seekers, investors and experts into one place. It includes tools for building ventures, finding infrastructure and talent, exploring investment opportunities, requesting expert advice, and communicating with other users.
 
 This repository contains the application code for both the frontend and backend.
