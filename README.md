@@ -1,163 +1,186 @@
-# ALIMERIQ Infrastructure Provider Portal
+# Almeriq
 
-ALIMERIQ is an infrastructure leasing marketplace connecting providers of physical and compute assets with enterprise clients. This repository contains the full-stack provider portal: a FastAPI backend and a React/Tailwind frontend.
+Almeriq is a platform that brings founders, infrastructure providers, job seekers, investors and experts into one place. It includes tools for building ventures, finding infrastructure and talent, exploring investment opportunities, requesting expert advice, and communicating with other users.
 
-## Architecture
+This repository contains the application code for both the frontend and backend.
 
-- **Backend**: FastAPI (Python 3.13), SQLAlchemy 2.0 async, Alembic migrations, SQLite dev / Postgres prod
-- **Frontend**: React 19, Vite, Tailwind CSS, React Router, React Hook Form, Zod
-- **Auth**: JWT in HttpOnly Secure SameSite cookies, bcrypt password hashing
-- **Architecture pattern**: Layered backend — router → service → repository → model
+## What is in the app?
 
-## Project Structure
+The platform currently includes these user areas:
 
-```
+- **Founders:** venture-building tools, infrastructure discovery, workforce and team workflows, fundraising and expert advisory.
+- **Infrastructure providers:** provider profiles and marketplace workflows.
+- **Job seekers:** job-related profile and workforce workflows.
+- **Investors:** investment opportunities, portfolio and deal-related workflows.
+- **Experts:** public expert profiles and advisory requests.
+- **Shared platform features:** authentication, messaging and notifications.
+
+For the implementation details behind these workflows, see the [Domain guide](docs/DOMAIN_GUIDE.md).
+
+## Technology
+
+| Part | Stack |
+|---|---|
+| Frontend | React 19, Vite 8, React Router, Tailwind CSS 4 |
+| Backend | Python 3.13+, FastAPI |
+| Database access | SQLAlchemy 2 (async) |
+| Database migrations | Alembic |
+| Production database | PostgreSQL |
+| Local development database | SQLite |
+| Authentication | JWT in an HttpOnly cookie, bcrypt password hashing |
+| Hosting configuration | Vercel (frontend), Render (backend) |
+| Integrations | Resend, Cloudinary, Google Gemini; optional Upstash Redis and Sentry |
+
+Check `frontend/package.json` and `server/pyproject.toml` for the exact dependency versions.
+
+## How the repository is organised
+
+```text
 Almeriq/
-├── server/              # FastAPI backend
-│   ├── api/routers/     # Route handlers (provider, asset, order, deal, etc.)
-│   ├── services/        # Business logic
-│   ├── repositories/    # Data access layer
-│   ├── models/          # SQLAlchemy models
-│   ├── schemas/         # Pydantic schemas
-│   ├── core/db.py       # Database async engine & session
-│   ├── migrations/      # Alembic migrations
-│   ├── main.py          # App factory
-│   ├── pyproject.toml   # uv-managed dependencies
-│   └── scripts/smoke_test.sh  # Curl-based API smoke tests
-├── frontend/            # React frontend
-│   ├── src/Pages/       # Page components
-│   ├── src/components/ui/  # Shared UI components
-│   ├── src/lib/api/     # API client modules
-│   ├── src/lib/client.js  # Shared Axios instance
-│   ├── vitest.config.js   # Test config
-│   └── package.json
-├── docs/PLAN.md         # Implementation plan
-├── docker-compose.yml   # Local dev with Docker
-├── render.yaml          # Render deployment config
-└── .env.dev.example     # Dev environment variables (example)
+├── server/                  # FastAPI application
+│   ├── api/routers/         # HTTP endpoints
+│   ├── services/            # Business logic and workflows
+│   ├── repositories/        # Database queries
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Request and response schemas
+│   ├── core/                # Configuration, database, security, integrations
+│   ├── migrations/          # Alembic migrations
+│   └── tests/               # Backend tests
+├── frontend/                # React + Vite application
+│   └── src/
+│       ├── Pages/           # Screens and route-level views
+│       ├── components/      # Shared UI components
+│       ├── context/         # App-wide React contexts
+│       ├── hooks/           # Domain and workflow hooks
+│       └── lib/             # API client and shared utilities
+├── docs/                    # Developer and handover documentation
+├── .github/workflows/       # GitHub Actions CI
+├── docker-compose.yml       # Local container setup
+├── render.yaml              # Render backend service configuration
+└── vercel.json              # Root Vercel frontend configuration
 ```
 
-## Design Tokens
+## Run it locally
 
-Strict palette (enforced by `.agents/rules/ui-styling-standards.md`):
-- **White**: `#F3F1EC` (background) / `text-white`
-- **Gold**: `#C9A15A` (accents)
-- **Black**: `#0A0A0B` (text)
+You need Python 3.13 or newer, [uv](https://docs.astral.sh/uv/), Node.js compatible with Vite 8, and npm.
 
-Forbidden: emerald, rust, muted, faint, gray text. No em/en dashes — use hyphens.
+### 1. Start the backend
 
-## Local Development
-
-### Prerequisites
-
-- Python 3.13 + [uv](https://github.com/astral-sh/uv)
-- Node.js 20 + npm
-
-### Backend
+In a terminal:
 
 ```bash
 cd server
-cp .env.dev.example .env.dev   # edit values as needed
+cp .env.example .env
+```
+
+Open `server/.env` and set a unique local `JWT_SECRET_KEY`. The template shows the PostgreSQL/Neon connection-string format and leaves optional integrations blank. Use a separate development database, never the production database. For a disposable local SQLite database, set `DATABASE_URL=sqlite+aiosqlite:///./almeriq_dev.db`. Add credentials only for services you need. Do not copy production secrets into your local environment.
+
+Then install dependencies, prepare the database and start the API:
+
+```bash
 uv sync
 uv run alembic upgrade head
 uv run uvicorn main:app --reload
 ```
 
-Server runs at `http://localhost:8000`. API docs at `http://localhost:8000/docs`.
+The API will normally be available at `http://localhost:8000`. Once it is running, interactive API documentation is at [http://localhost:8000/docs](http://localhost:8000/docs), and the OpenAPI schema is at `/openapi.json`.
 
-### Frontend
+### 2. Start the frontend
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs at `http://localhost:5173`. Set `VITE_API_BASE_URL=http://localhost:8000` in `.env` if needed.
-
-### Docker (both services)
-
-```bash
-docker compose up --build
-```
-
-Backend at `http://localhost:8000`, frontend at `http://localhost:5173`.
-
-## Testing
-
-### Backend smoke tests
-
-```bash
-cd server
-bash scripts/smoke_test.sh
-```
-
-Curl-based tests covering auth, provider profile, assets, marketplace, search, orders, deals, conversations, notifications, and negative cases.
-
-### Frontend unit tests
+Open a second terminal:
 
 ```bash
 cd frontend
-npm test
+cp .env.example .env
 ```
 
-Vitest + React Testing Library. 14 tests across API client, UI components, and provider dashboard page.
+Set the local API URL in `frontend/.env`:
 
-### Lint
-
-```bash
-cd frontend
-npm run lint
-```
-
-### Build
-
-```bash
-cd frontend
-npm run build
-```
-
-## Environment Variables
-
-### Backend (`.env.dev`)
-
-```
-DATABASE_URL=sqlite+aiosqlite:///./almeriq_dev.db
-ENVIRONMENT=development
-SECRET_KEY=your-secret-key
-ALLOWED_ORIGINS=http://localhost:5173
-```
-
-### Frontend
-
-```
+```env
 VITE_API_BASE_URL=http://localhost:8000
 ```
 
-`.env.dev` and `.env.prod` are gitignored. Examples are committed as `.env.dev.example` and `.env.prod.example` with placeholders. Never commit real secrets.
-
-## Migrations
+Then install dependencies and start Vite:
 
 ```bash
-cd server
-uv run alembic upgrade head     # apply all migrations
-uv run alembic revision --autogenerate -m "description"  # create new migration
+npm ci
+npm run dev
 ```
 
-Dev DB uses SQLite (`almeriq_dev.db`). Production uses PostgreSQL/Neon via `DATABASE_URL`. All migrations are dialect-neutral (no native enums, no ARRAY, no raw dialect SQL).
+Use the local URL printed by Vite (normally `http://localhost:5173`).
 
-## API Endpoints
+More detailed setup instructions, environment variables and troubleshooting notes are in [Setup and operations](docs/SETUP_AND_OPERATIONS.md).
 
-41 endpoints registered. See `http://localhost:8000/openapi.json` for full spec.
+## How development and production work
 
-Key areas:
-- `POST /api/auth/register` / `/api/auth/login` / `/api/auth/logout` / `/api/auth/me`
-- `POST /api/auth/onboarding` — set provider role
-- `GET/PUT /api/provider/profile`
-- `POST/GET /api/provider/assets`, `GET /api/provider/assets/{id}`
-- `GET/POST /api/provider/coverage-regions`
-- `GET /api/provider/orders`, `GET/PATCH /api/provider/orders/{id}`
-- `POST /api/deals`, `GET/POST /api/deals/{id}/sign`
-- `GET/POST /api/conversations`, `GET/POST /api/conversations/{id}/messages`
-- `GET /api/notifications`, `PATCH /api/notifications/read-all`
-- `GET /api/marketplace/listings`, `GET /api/search`
+A few terms are useful when working on this repository:
+
+| Environment | What it means | Almeriq's workflow |
+|---|---|---|
+| Local | The app running on a developer's computer | Use this to build features and debug locally. |
+| Integration | The shared branch where completed work is brought together and checked | `dev` is the team's integration branch. GitHub Actions runs CI for pushes to `dev` and pull requests targeting it. |
+| Production | The live app used by real users | `main` is the release branch. The root Vercel configuration enables deployments from `main`. |
+
+**Staging and production are not the same thing.** Staging is a separately deployed test environment, ideally with its own backend and database. The `dev` Git branch is an integration branch; its existence does not, by itself, prove that a separate staging website or staging database is deployed. Confirm the actual Render and Vercel dashboard settings before relying on a staging environment.
+
+### Deployment layout in this repository
+
+- **Frontend — Vercel:** the root `vercel.json` builds the React app from `frontend/`, serves `frontend/dist`, and routes client-side paths back to `index.html`. Its Git settings enable `main` and disable automatic deployments for `dev` and `feat-*` branches.
+- **Backend — Render:** `render.yaml` defines a Docker-based web service built from `server/Dockerfile`. It configures `/health` as the health-check path and runs Alembic migrations before deployment.
+- **Database — PostgreSQL:** production is expected to use PostgreSQL through `DATABASE_URL`. SQLite is intended for local development, not as the production database.
+
+The repository configuration does not show every setting stored in the hosting dashboards. In particular, confirm the Render service's connected branch, the production database, custom domains, and environment variables with the account owner. Do not assume a staging backend exists until it has been verified.
+
+### Typical release path
+
+1. Create a task branch from the latest `dev`.
+2. Make the change and open a pull request targeting `dev`.
+3. Wait for the GitHub Actions checks and review the change.
+4. Merge into `dev` after approval.
+5. When the integration branch is ready for release, open a reviewed promotion pull request from `dev` to `main`.
+6. Merge to `main` only after explicit release approval. The Vercel production deployment is associated with `main`.
+
+A frontend deployment and a backend deployment are separate services. Check the deployment status of both when a release changes both sides of the application.
+
+## Tests and quality checks
+
+Run backend tests from `server/`:
+
+```bash
+uv run pytest -q
+```
+
+Run frontend checks from `frontend/`:
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+GitHub Actions runs the repository's CI checks. These commands describe how to run the checks; they are not a claim that every branch or commit has passed. Check the workflow run for the exact commit you are reviewing.
+
+## Developer documentation
+
+If you are new to the codebase, start with the **[Developer handover](docs/DEVELOPER_HANDOVER.md)**.
+
+| Guide | What it covers |
+|---|---|
+| [Setup and operations](docs/SETUP_AND_OPERATIONS.md) | Local setup, configuration and operational notes |
+| [System architecture](docs/SYSTEM_ARCHITECTURE.md) | Backend and frontend structure |
+| [Domain guide](docs/DOMAIN_GUIDE.md) | Roles, features and user workflows |
+| [Frontend guide](docs/FRONTEND_GUIDE.md) | Routes, state, hooks and UI structure |
+| [API guide](docs/API_GUIDE.md) | Backend routers and API discovery |
+| [Database guide](docs/DATABASE_GUIDE.md) | Data model, relationships and migrations |
+| [Testing guide](docs/TESTING_GUIDE.md) | CI, tests and release checks |
+| [Access transfer](docs/ACCESS_TRANSFER.md) | Hosting, database and integration account handover |
+| [Known gaps](docs/KNOWN_GAPS.md) | Unverified items and follow-up work |
+
+## Security
+
+- Never commit `.env` files, API keys, database URLs, JWT secrets or other credentials.
+- Use separate credentials and databases for local, staging (if configured) and production environments.
+- Production secrets belong in the hosting provider's environment-variable settings, not in this repository.
+- If a secret is exposed, rotate it. Deleting it from a later commit does not make the exposed value safe again.
+
+For the production configuration and account-transfer checklist, see [Access transfer](docs/ACCESS_TRANSFER.md).
