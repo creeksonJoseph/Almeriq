@@ -116,7 +116,7 @@ export default function ProviderAssetPage() {
             </div>
             <div className="flex flex-col gap-2">
               <span className="text-sm font-semibold text-white">Monthly price</span>
-              <span className="text-xs text-white/55">Leave blank if the price depends on the request.</span>
+              <span className="text-xs text-white/55">Leave blank if the price depends on the request. Currency is not recorded yet, so the amount will be shown without a currency unit.</span>
               <Input type="number" min="0" value={form.price_monthly} onChange={updateField("price_monthly")} className="!border-[#282a2f] focus:!border-[#f2ca50]" />
             </div>
             <div className="flex flex-col gap-2">

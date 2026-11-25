@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import {
   discoverTalentApi, inviteTalentApi, listFounderTeamInvitationsApi,
   listTeamMembersApi, removeTeamMemberApi,
@@ -86,7 +86,7 @@ export default function TeamWorkforcePage() {
             <Input value={filterLocation} onChange={(event) => setFilterLocation(event.target.value)} placeholder="Location" />
             <Button type="submit" disabled={loading}>Search talent</Button>
           </form>
-          {loading ? <p className="py-8 text-center text-sm text-white/50">Finding talent…</p> : talent.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">No active talent profiles match those filters.</Card> : <div className="grid gap-4 md:grid-cols-2">{talent.map((person) => {
+          {loading ? <div className="grid gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : talent.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">No active talent profiles match those filters.</Card> : <div className="grid gap-4 md:grid-cols-2">{talent.map((person) => {
             const alreadyInvited = invitations.some((item) => item.invitee_id === person.user_id && ["pending", "accepted"].includes(item.status));
             const alreadyMember = members.some((item) => item.member_id === person.user_id);
             return <Card key={person.user_id} className="space-y-3 p-5">
@@ -106,11 +106,11 @@ export default function TeamWorkforcePage() {
         </section>}
 
         {tab === "members" && <section className="space-y-3">
-          {members.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">Your team is empty. Discover talent and send your first invitation.</Card> : members.map((member) => <Card key={member.id} className="flex flex-wrap items-center justify-between gap-4 p-4"><div><h3 className="font-medium">{member.full_name}</h3><p className="mt-1 text-sm text-white/55">{member.headline || "Team member"} · {member.location || "Location not set"}</p><p className="mt-1 text-xs text-white/40">{(member.skills || []).join(" · ")}</p></div><div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => navigate("/messages")}>Message</Button><Button size="sm" variant="ghost" disabled={busyId === member.member_id} onClick={() => remove(member)}>Remove</Button></div></Card>)}
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="flex items-center gap-4 p-5"><Skeleton className="h-12 w-12 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-3 w-1/2" /></div><Skeleton className="h-9 w-24 rounded-xl" /></Card>)}</div> : members.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">Your team is empty. Discover talent and send your first invitation.</Card> : members.map((member) => <Card key={member.id} className="flex flex-wrap items-center justify-between gap-4 p-4"><div><h3 className="font-medium">{member.full_name}</h3><p className="mt-1 text-sm text-white/55">{member.headline || "Team member"} · {member.location || "Location not set"}</p><p className="mt-1 text-xs text-white/40">{(member.skills || []).join(" · ")}</p></div><div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => navigate("/messages")}>Message</Button><Button size="sm" variant="ghost" disabled={busyId === member.member_id} onClick={() => remove(member)}>Remove</Button></div></Card>)}
         </section>}
 
         {tab === "invitations" && <section className="space-y-3">
-          {invitations.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">You have not sent any team invitations yet.</Card> : invitations.map((invitation) => <Card key={invitation.id} className="flex flex-wrap items-center justify-between gap-4 p-4"><div><h3 className="font-medium">{invitation.other_party_name || `Talent #${invitation.invitee_id}`}</h3><p className="mt-1 text-sm text-white/50">{invitation.headline || "Team invitation"} · {invitation.status}</p><p className="mt-1 text-xs text-white/40">{invitation.message || ""}</p></div><span className="rounded-full border border-border px-3 py-1 text-xs capitalize">{invitation.status}</span></Card>)}
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-4 w-1/3" /><SkeletonText lines={2} /></Card>)}</div> : invitations.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">You have not sent any team invitations yet.</Card> : invitations.map((invitation) => <Card key={invitation.id} className="flex flex-wrap items-center justify-between gap-4 p-4"><div><h3 className="font-medium">{invitation.other_party_name || `Talent #${invitation.invitee_id}`}</h3><p className="mt-1 text-sm text-white/50">{invitation.headline || "Team invitation"} · {invitation.status}</p><p className="mt-1 text-xs text-white/40">{invitation.message || ""}</p></div><span className="rounded-full border border-border px-3 py-1 text-xs capitalize">{invitation.status}</span></Card>)}
         </section>}
       </div>
     </main>

@@ -17,6 +17,11 @@ const normalizeOrderList = (data) => ({
   items: (data.items || []).map(normalizeOrder),
 });
 
+export async function getProviderOrderSummaryApi() {
+  const res = await apiClient.get("/api/provider/orders/summary");
+  return res.data;
+}
+
 export async function listOrdersApi(params = {}) {
   const res = await apiClient.get("/api/provider/orders", { params });
   return normalizeOrderList(res.data);

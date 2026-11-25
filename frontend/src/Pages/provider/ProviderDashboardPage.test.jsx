@@ -28,6 +28,8 @@ vi.mock("../../lib/api", () => ({
   listOrdersApi: vi.fn(),
   listAssetsApi: vi.fn(),
   listConversationsApi: vi.fn(),
+  getProviderOrderSummaryApi: vi.fn(),
+  getConversationSummaryApi: vi.fn(),
 }));
 
 import ProviderDashboardPage from "./ProviderDashboardPage.jsx";
@@ -36,6 +38,8 @@ import * as api from "../../lib/api";
 describe("ProviderDashboardPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(api.getProviderOrderSummaryApi).mockResolvedValue({ total_orders: 0, open_orders: 0, pending_review: 0, confirmed: 0, shipped: 0, completed: 0, declined: 0, priced_orders: 0 });
+    vi.mocked(api.getConversationSummaryApi).mockResolvedValue({ unread_conversations: 0 });
   });
 
   it("shows loading skeletons then renders dashboard", async () => {
@@ -43,6 +47,7 @@ describe("ProviderDashboardPage", () => {
     vi.mocked(api.listOrdersApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listConversationsApi).mockResolvedValue({ items: [] });
+    vi.mocked(api.getProviderOrderSummaryApi).mockResolvedValue({ total_orders: 0, open_orders: 0, pending_review: 0, confirmed: 0, shipped: 0, completed: 0, declined: 0, priced_orders: 0 });
 
     render(
       <MemoryRouter>

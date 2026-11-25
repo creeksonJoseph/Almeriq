@@ -42,7 +42,7 @@ export function useOnboarding(user, onComplete) {
     if (loading) return;
     const cleanId = idNumber.trim();
     if (!cleanId) {
-      setError("Please enter your ID or Passport number for verification.");
+      setError("Please enter your ID or Passport number.");
       return;
     }
     setError("");
@@ -51,7 +51,7 @@ export function useOnboarding(user, onComplete) {
       await onboardingApi({ id_number: cleanId });
       setStep(3);
     } catch (err) {
-      setError(err.message || "Failed to save identity verification.");
+      setError(err.message || "Failed to save identity details.");
     } finally {
       setLoading(false);
     }

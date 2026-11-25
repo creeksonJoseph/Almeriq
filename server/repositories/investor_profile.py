@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.investor_profile import InvestorProfile
 
-PROFILE_FIELDS = {"firm_name", "investment_focus", "check_size", "location", "about", "investor_type", "preferred_sectors", "preferred_stages", "geographies", "check_size_min", "check_size_max", "lead_follow_preference", "track_record", "value_add", "accreditation_status", "target_return_percent", "years_investing", "verification_url", "notable_investments", "companies_backed", "exits", "assets_under_management", "time_commitment", "contact_preference", "contact_formats", "preferred_payment_methods", "notify_deal_updates", "notify_valuation_changes", "notify_messages"}
+PROFILE_FIELDS = {"firm_name", "investment_focus", "check_size", "location", "about", "investor_type", "preferred_sectors", "preferred_stages", "geographies", "check_size_min", "check_size_max", "lead_follow_preference", "track_record", "value_add", "accreditation_status", "target_return_percent", "years_investing", "verification_url", "notable_investments", "companies_backed", "exits", "assets_under_management", "time_commitment", "contact_preference", "contact_formats", "preferred_payment_methods", "notify_deal_updates", "notify_messages"}
 JSON_FIELDS = {"preferred_sectors": "preferred_sectors_json", "preferred_stages": "preferred_stages_json", "geographies": "geographies_json", "contact_formats": "contact_formats_json", "preferred_payment_methods": "preferred_payment_methods_json"}
 
 

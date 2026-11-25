@@ -1,7 +1,7 @@
 /**
  * lib/api/founder.js - Founder analysis & venture history API calls.
  */
-import { apiClient, extractErrorMessage } from "../client";
+import { apiClient, apiFetch, extractErrorMessage } from "../client";
 
 function apiErr(error, defaultMsg) {
   if (
@@ -130,3 +130,119 @@ export async function executeAiToolApi(payload) {
     throw apiErr(e, "Unable to run analysis");
   }
 }
+
+
+// ── Fundraising pitches and investor interest ────────────────────────────────
+export async function listFounderPitchesApi() {
+  try {
+    const { data } = await apiClient.get("/api/founder/pitches");
+    return Array.isArray(data) ? data : data?.items || [];
+  } catch (e) {
+    throw apiErr(e, "Unable to load your pitches");
+  }
+}
+
+export async function listFounderInvestmentRequestsApi() {
+  try {
+    const { data } = await apiClient.get("/api/founder/investment-requests");
+    return data?.items || [];
+  } catch (e) {
+    throw apiErr(e, "Unable to load investor interest");
+  }
+}
+
+export async function createFounderPitchApi(payload) {
+  try {
+    const { data } = await apiClient.post("/api/founder/pitches", payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to publish this pitch");
+  }
+}
+
+export async function updateFounderPitchApi(id, payload) {
+  try {
+    const { data } = await apiClient.put(`/api/founder/pitches/${encodeURIComponent(id)}`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to update this pitch");
+  }
+}
+
+export async function updateFounderInvestmentRequestApi(id, status) {
+  try {
+    const { data } = await apiClient.patch(
+      `/api/founder/investment-requests/${encodeURIComponent(id)}`,
+      { status },
+    );
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to update this investor request");
+  }
+}
+
+export async function listFounderInvestorUpdatesApi(pitchId) {
+  try {
+    const { data } = await apiClient.get(`/api/founder/pitches/${encodeURIComponent(pitchId)}/updates`);
+    return data?.items || [];
+  } catch (e) {
+    throw apiErr(e, "Unable to load saved investor updates");
+  }
+}
+
+export async function createInvestorUpdateApi(pitchId, payload) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/pitches/${encodeURIComponent(pitchId)}/updates`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to save this investor update");
+  }
+}
+
+export async function updateInvestorUpdateApi(updateId, payload) {
+  try {
+    const { data } = await apiClient.put(`/api/founder/updates/${encodeURIComponent(updateId)}`, payload);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to update this investor update draft");
+  }
+}
+
+export async function publishInvestorUpdateApi(updateId) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/updates/${encodeURIComponent(updateId)}/publish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to share this investor update");
+  }
+}
+
+export async function publishFounderPitchApi(id) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/pitches/${id}/publish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to publish this pitch");
+  }
+}
+
+export async function unpublishFounderPitchApi(id) {
+  try {
+    const { data } = await apiClient.post(`/api/founder/pitches/${id}/unpublish`);
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to unpublish this pitch");
+  }
+}
+
+export async function deleteFounderPitchApi(id) {
+  try {
+    await apiClient.delete(`/api/founder/pitches/${encodeURIComponent(id)}`);
+  } catch (e) {
+    throw apiErr(e, "Unable to delete this pitch");
+  }
+}
+
+
+/** ETag-aware read for the authenticated user's venture history. */
+export const getVenturesCachedApi = (etag) => apiFetch("/founder/ventures", { etag });

@@ -137,7 +137,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex items-center gap-2 truncate">
                 <span className="font-serif text-base font-semibold text-text truncate">Order from {providerName}</span>
-                <span className="text-gold shrink-0" aria-label="Verified">✓</span>
+
               </div>
             </div>
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg text-white/60 hover:text-text hover:bg-surface-2 transition-colors ml-2 shrink-0" aria-label="Close dialog">
@@ -279,8 +279,8 @@ function AmountStep({ amount, onBack, onNext, loading, formatAmount }) {
         <span className="text-label-caps text-gold">FIXED AMOUNT</span>
       </div>
       <div className="rounded-xl border-2 border-gold bg-surface-2 px-5 py-6 text-center">
-        <p className="font-mono text-3xl font-bold text-gold">${formatAmount(amount)}</p>
-        <p className="mt-2 text-xs text-white/50">Monthly lease amount set by the provider's listing</p>
+        <p className="font-mono text-3xl font-bold text-gold">{formatAmount(amount)}</p>
+        <p className="mt-2 text-xs text-white/50">Monthly amount set by the provider's listing · currency not specified</p>
       </div>
       <div className="rounded-xl border border-border bg-surface-2 p-4 flex items-start gap-3">
         <Shield className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
@@ -344,7 +344,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
             <div className="text-xs font-mono text-gold">No payment is processed in this demo</div>
           </div>
           <div className="font-serif text-2xl font-bold text-gold">
-            ${formatAmount(amount)} <span className="text-label-caps text-white/60">USD</span>
+            {formatAmount(amount)} <span className="text-label-caps text-white/60">Currency not specified</span>
           </div>
         </div>
       </Card>
@@ -437,7 +437,7 @@ function CompleteStep({ orderId, providerName, amount, formatAmount, onDone }) {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="font-medium text-text">{providerName}</span></div>
-          <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">${formatAmount(amount)}</span></div>
+          <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">{formatAmount(amount)}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">simulated</span></div>
         </div>
       </Card>

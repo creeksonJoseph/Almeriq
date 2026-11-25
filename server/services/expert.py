@@ -52,15 +52,20 @@ async def create_request(founder_id: int, expert_id: int, subject: str, descript
 
 async def list_requests(user_id: int, role: str, session: AsyncSession | None = None) -> list[dict]:
     items = await request_repo.list_advisory_requests(user_id, role, session=session)
-    for item in items:
-        if role == "expert":
-            founder = await user_repo.get_user_by_id(item["founder_id"], session=session)
-            item["founder_name"] = (
-                founder.get("full_name") if founder else None
-            ) or f"Founder #{item['founder_id']}"
-        else:
-            profile = await profile_repo.get_expert_profile(item["expert_id"], session=session)
-            item["expert_headline"] = (profile or {}).get("headline") or f"Expert #{item['expert_id']}"
+    if role == "expert":
+        names = await user_repo.get_user_names_by_ids(
+            [item["founder_id"] for item in items],
+            session=session,
+        )
+        for item in items:
+            item["founder_name"] = names.get(item["founder_id"]) or f"Founder #{item['founder_id']}"
+    else:
+        headlines = await profile_repo.get_expert_headlines_by_user_ids(
+            [item["expert_id"] for item in items],
+            session=session,
+        )
+        for item in items:
+            item["expert_headline"] = headlines.get(item["expert_id"]) or f"Expert #{item['expert_id']}"
     return items
 
 

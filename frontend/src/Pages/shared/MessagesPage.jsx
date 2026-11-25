@@ -47,6 +47,60 @@ export default function MessagesPage() {
     loadConversations();
   }, [searchParams]);
 
+  // Keep the inbox and open conversation in sync across browser sessions.
+  // This is intentionally lightweight polling; no realtime infrastructure is required.
+  useEffect(() => {
+    let cancelled = false;
+    const refreshInbox = async () => {
+      try {
+        const conversationResult = await listConversationsApi();
+        const items = conversationResult.items || conversationResult.conversations || [];
+        const normalized = items.map((conv) => ({
+          ...conv,
+          otherParty: { name: conv.other_participant?.full_name || conv.other_participant?.email || "User" },
+          lastMessage: conv.last_message?.body || "",
+          time: conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "",
+          unread: conv.unread_count || 0,
+        }));
+        if (cancelled) return;
+        setConversations(normalized);
+        if (activeConversation?.id) {
+          const current = normalized.find((item) => item.id === activeConversation.id);
+          if (current) setActiveConversation((previous) => ({ ...previous, ...current }));
+          const messageResult = await listMessagesApi(activeConversation.id);
+          if (cancelled) return;
+          const refreshedMessages = (messageResult.items || messageResult.messages || []).map((message) => ({
+            ...message,
+            content: message.content || message.body || "",
+            own: String(message.sender_id) === String(user?.id),
+            senderName: message.sender?.full_name || message.sender?.email,
+            time: message.time || message.created_at,
+          }));
+          setMessages((previous) => {
+            const unchanged = previous.length === refreshedMessages.length &&
+              previous.every((message, index) => message.id === refreshedMessages[index]?.id &&
+                message.content === refreshedMessages[index]?.content &&
+                message.read_at === refreshedMessages[index]?.read_at);
+            return unchanged ? previous : refreshedMessages;
+          });
+          if (current?.unread > 0) {
+            await markMessagesReadApi(activeConversation.id);
+            if (!cancelled) {
+              setConversations((previous) => previous.map((item) => item.id === activeConversation.id ? { ...item, unread: 0 } : item));
+            }
+          }
+        }
+      } catch {
+        // A transient polling failure should not erase the last successfully loaded data.
+      }
+    };
+    const intervalId = window.setInterval(refreshInbox, 7000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [activeConversation?.id, user?.id]);
+
   const openConversation = async (conversation) => {
     setActiveConversation(conversation);
     setMobileDrawerOpen(false);
@@ -102,14 +156,14 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="h-[calc(100vh-200px)] flex items-center justify-center">
+      <div className="flex-1 min-h-0 flex items-center justify-center">
         <SkeletonText lines={3} />
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-200px)] flex flex-col">
+    <div className="messages-layout flex flex-1 min-h-0 min-w-0 flex-col">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-border shrink-0">
         <div>
@@ -126,9 +180,9 @@ export default function MessagesPage() {
       {error && <p role="alert" className="mx-4 mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
 
       {/* Conversation List + Chat View */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
         {/* Conversation List (Sidebar on desktop, Drawer on mobile) */}
-        <div className={`w-full lg:w-96 flex-shrink-0 border-r border-border bg-surface flex flex-col ${mobileDrawerOpen ? "fixed inset-0 z-50 lg:static lg:z-auto" : "hidden lg:flex"}`}>
+        <div className={`w-full lg:w-96 flex-shrink-0 min-h-0 border-r border-border bg-surface flex flex-col ${mobileDrawerOpen ? "fixed inset-0 z-50 lg:static lg:z-auto" : "hidden lg:flex"}`}>
           {/* Mobile Header */}
           <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
             <h2 className="font-serif text-lg font-semibold text-text">Messages</h2>
@@ -165,7 +219,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Chat View */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 min-h-0 flex flex-col min-w-0">
           {activeConversation ? (
             <ChatView
               conversation={activeConversation}
@@ -215,7 +269,7 @@ function ConversationItem({ conversation, active, onClick }) {
 }
 
 function ChatView({ conversation, messages, onSend, messageForm, sending, messagesEndRef, onClose }) {
-  const otherParty = conversation.otherParty || { name: "Provider", verified: true };
+  const otherParty = conversation.otherParty || { name: "User" };
 
   return (
     <div className="flex flex-col h-full bg-bg">
@@ -228,7 +282,7 @@ function ChatView({ conversation, messages, onSend, messageForm, sending, messag
           <Avatar name={otherParty.name} size="md" />
           <div>
             <h3 className="font-semibold text-text">{otherParty.name}</h3>
-            <span className="text-xs text-gold">Online</span>
+            <span className="text-xs text-white/45">Conversation</span>
           </div>
         </div>
       </div>

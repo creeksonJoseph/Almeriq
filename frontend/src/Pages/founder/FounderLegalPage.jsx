@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ExternalLink,
   RotateCcw,
   AlertCircle,
-  Loader2,
   Copy,
   Check,
   Building2,
@@ -15,11 +14,11 @@ import {
 } from "lucide-react";
 import FounderStudioNav from "../../components/founder/FounderStudioNav";
 import { FounderFlowGuard } from "../../components/founder/FounderFlowLayout";
-import { getCompanyRegistrationGuideApi } from "../../lib/api";
-import { listLegalFilingsApi, createLegalFilingApi } from "../../lib/api/founder";
+import { useFounderLegalWorkspace } from "../../hooks/useFounderLegalWorkspace";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { COUNTRIES } from "../../lib/countries";
+import { Skeleton, SkeletonText } from "../../components/ui";
 
 // ── Plain English Starter Legal Templates ─────────────────────────────────────
 const LEGAL_TEMPLATES = [
@@ -40,7 +39,7 @@ Everything we share about the product, code, business plans, and finances is pri
 Both parties promise not to share this private information with anyone else, and to use it only to evaluate this project.
 
 4. HOW LONG THIS LASTS:
-This agreement protects secrets for 2 years from the date information is shared.
+This agreement protects secrets for [insert an agreed duration] from the date information is shared.
 
 5. GOVERNING LAW:
 This agreement follows the standard business laws of the place where the company is registered.`,
@@ -53,7 +52,7 @@ This agreement follows the standard business laws of the place where the company
     content: `INVENTIONS AND INTELLECTUAL PROPERTY AGREEMENT
 
 1. COMPANY OWNS ALL WORK:
-All code, designs, ideas, and work you create for the startup belong 100% to the company.
+Work ownership depends on local law and a valid written assignment. Identify the work covered, the people assigning it, and any agreed exceptions.
 
 2. NO OUTSIDE CLAIMS:
 You confirm that the work you do here does not belong to any former school, employer, or past project.
@@ -75,7 +74,7 @@ The investor gives the startup money today in exchange for shares when the compa
 Sets the maximum price the investor pays when their investment turns into shares.
 
 3. DISCOUNT RATE:
-Standard 20% discount so early investors get a lower share price than later investors.
+Insert the discount, if any, that both sides negotiate and approve in the final agreement.
 
 4. WHAT HAPPENS IN A SALE:
 If the company is sold, the investor gets their money back or gets shares in the sale.`,
@@ -91,7 +90,7 @@ If the company is sold, the investor gets their money back or gets shares in the
 The founders agree on what percentage of the company each person owns.
 
 2. VESTING (4 YEARS WITH 1-YEAR CLIFF):
-Founders earn their shares over 4 years. If someone leaves during the first year, they do not keep any shares. This keeps everyone committed.
+Use a vesting schedule that all founders agree to. A four-year schedule with a one-year cliff is one common example, not a legal requirement.
 
 3. ALL IDEAS BELONG TO THE COMPANY:
 All code, domain names, and prototypes created before today belong to the company.
@@ -162,19 +161,19 @@ const THESIS_PILLARS = [
     index: "01",
     title: "Keep Your Personal Money Safe",
     category: "Personal Protection",
-    desc: "If your business owes money or gets into a legal dispute, your personal savings, phone, laptop, and home are safe. The company owes the money, not you.",
+    desc: "A limited liability company can separate many business debts from personal assets. Personal guarantees, misconduct, director duties, and local law can create exceptions.",
   },
   {
     index: "02",
     title: "Take Money From Investors",
     category: "Ready for Funding",
-    desc: "Investors cannot wire money to your personal bank account. Registering lets you create company shares and sign standard investment contracts like SAFEs.",
+    desc: "Investors often expect clear company ownership records and written investment terms. The right structure depends on the deal and local law.",
   },
   {
     index: "03",
     title: "Open Business Bank Accounts and Stripe",
     category: "Payments and Banking",
-    desc: "Payment services like Stripe and business banks require official company paperwork before they let you take payments from customers around the world.",
+    desc: "Banks and payment providers may ask for company documents, tax details, or other checks. Requirements vary by provider and country.",
   },
   {
     index: "04",
@@ -271,10 +270,6 @@ export default function FounderLegalPage() {
   const location = useLocation();
   const activeMode = location.pathname.endsWith("/templates") ? "templates" : location.pathname.endsWith("/filings") ? "filings" : "dossier";
   const setActiveMode = (mode) => navigate(mode === "templates" ? "/founder/legal/templates" : mode === "filings" ? "/founder/legal/filings" : "/founder/legal/guide");
-  const [filings, setFilings] = useState([]);
-  const [filingLoading, setFilingLoading] = useState(false);
-  const [filingSaving, setFilingSaving] = useState(false);
-  const [filingError, setFilingError] = useState("");
   const [filingForm, setFilingForm] = useState({ filing_type: "company", company_name: "", entity_type: "Ltd", jurisdiction: "", ip_title: "", ip_type: "Source Code", ip_description: "" });
 
   // Company registration guide stepper: 1 = Why & Steps, 2 = Documents & Next Steps
@@ -293,73 +288,11 @@ export default function FounderLegalPage() {
   }, [user?.nationality]);
 
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
-  const [guide, setGuide] = useState(null);
-  const [guideLoading, setGuideLoading] = useState(true);
-  const [guideError, setGuideError] = useState(null);
-
   // Starter contracts state
   const [selectedTemplate, setSelectedTemplate] = useState(LEGAL_TEMPLATES[0]);
   const [copiedTemplate, setCopiedTemplate] = useState(false);
 
-  const loadFilings = useCallback(async () => {
-    setFilingLoading(true);
-    setFilingError("");
-    try { setFilings(await listLegalFilingsApi()); }
-    catch (err) { setFilingError(err.message || "Unable to load your registration requests."); }
-    finally { setFilingLoading(false); }
-  }, []);
-
-  useEffect(() => { loadFilings(); }, [loadFilings]);
-
-  const submitFiling = async (event) => {
-    event.preventDefault();
-    setFilingSaving(true);
-    setFilingError("");
-    try {
-      await createLegalFilingApi({
-        ...filingForm,
-        company_name: filingForm.filing_type === "company" ? filingForm.company_name.trim() : null,
-        entity_type: filingForm.filing_type === "company" ? filingForm.entity_type : null,
-        jurisdiction: filingForm.filing_type === "company" ? (filingForm.jurisdiction.trim() || selectedCountry) : null,
-        ip_title: filingForm.filing_type === "ip" ? filingForm.ip_title.trim() : null,
-        ip_type: filingForm.filing_type === "ip" ? filingForm.ip_type : null,
-        ip_description: filingForm.filing_type === "ip" ? filingForm.ip_description.trim() : null,
-      });
-      await loadFilings();
-      setFilingForm((current) => ({ ...current, company_name: "", ip_title: "", ip_description: "" }));
-      showToast("Registration intake submitted. This does not file with a government office.", "success");
-    } catch (err) { setFilingError(err.message || "Unable to submit this registration intake."); }
-    finally { setFilingSaving(false); }
-  };
-  // Fetch company registration guide
-  const loadGuide = useCallback(async (countryName, forceRefresh = false) => {
-    setGuideLoading(true);
-    setGuide(null); // Clear previous country data immediately
-    setGuideError(null);
-    try {
-      const data = await getCompanyRegistrationGuideApi(countryName, forceRefresh);
-      setGuide(data);
-    } catch (err) {
-      console.error("Failed to load company registration guide:", err);
-      setGuideError(
-        err.message ||
-          "Could not load the registration guide right now. Please check your internet connection and click retry."
-      );
-    } finally {
-      setGuideLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadGuide(selectedCountry);
-  }, [selectedCountry, loadGuide]);
-
-  const handleCountryChange = (e) => {
-    const newCountry = e.target.value;
-    setSelectedCountry(newCountry);
-    setGuide(null); // Clear previous country data immediately
-    setGuideError(null);
-  };
+  const handleCountryChange = (event) => setSelectedCountry(event.target.value);
 
   const copyTemplateContent = () => {
     if (!selectedTemplate) return;
@@ -368,6 +301,9 @@ export default function FounderLegalPage() {
     showToast("Template copied to clipboard", "success");
     setTimeout(() => setCopiedTemplate(false), 2000);
   };
+
+  const legalWorkspace = useFounderLegalWorkspace({ selectedCountry, filingForm, setFilingForm, showToast });
+  const { filings, filingLoading, filingSaving, filingError, submitFiling, guide, guideLoading, guideError, refreshGuide } = legalWorkspace;
 
   // Safe normalized collections
   const prerequisitesList = useMemo(() => {
@@ -582,7 +518,7 @@ export default function FounderLegalPage() {
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => loadGuide(selectedCountry, true)}
+                      onClick={refreshGuide}
                       disabled={guideLoading}
                       className="inline-flex items-center gap-2 rounded border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-white/[0.08] disabled:opacity-50 cursor-pointer"
                     >
@@ -615,7 +551,7 @@ export default function FounderLegalPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-colors hover:bg-[#e2ba40] shadow-sm cursor-pointer"
                       >
-                        <span>Official Registry Portal</span>
+                        <span>Suggested Registry Portal</span>
                         <ExternalLink size={13} />
                       </a>
                     )}
@@ -625,14 +561,12 @@ export default function FounderLegalPage() {
 
               {/* Loading State when country is selected or refreshing */}
               {guideLoading && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.015] p-16 text-center space-y-4">
-                  <Loader2 size={36} className="mx-auto animate-spin text-[#f2ca50]" />
-                  <h3 className="font-serif text-xl font-medium text-white">
-                    Loading Official Registration Guide for {selectedCountry}...
-                  </h3>
-                  <p className="mx-auto max-w-md text-xs font-normal text-white leading-relaxed">
-                    Checking our database for official {selectedCountry} procedures. If this is the first search for this country, our system synthesizes the steps and saves them permanently for all founders.
-                  </p>
+                <div className="space-y-5 rounded-xl bg-surface p-6" aria-label="Loading registration guide" aria-busy="true">
+                  <Skeleton className="h-7 w-2/3 max-w-md" />
+                  <SkeletonText lines={3} />
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {[0, 1, 2, 3].map((item) => <div key={item} className="space-y-3 rounded-lg bg-surface-2 p-4"><Skeleton className="h-4 w-1/2" /><SkeletonText lines={3} /></div>)}
+                  </div>
                 </div>
               )}
 
@@ -649,7 +583,7 @@ export default function FounderLegalPage() {
                   <div className="pt-2 flex justify-center">
                     <button
                       type="button"
-                      onClick={() => loadGuide(selectedCountry, true)}
+                      onClick={refreshGuide}
                       className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-all hover:bg-[#e2ba40] cursor-pointer"
                     >
                       <RotateCcw size={13} />
@@ -662,7 +596,7 @@ export default function FounderLegalPage() {
               {/* Loaded Country Guidance Content */}
               {!guideLoading && !guideError && guide && (
                 <div className="space-y-12">
-                  {/* Metric Data Strip: Expected Time, Fees, Registry for THIS country */}
+                  {/* Metric Data Strip: Estimated Timeline, Fees, Registry for THIS country */}
                   <section className="rounded-2xl border border-[#f2ca50]/25 bg-[#f2ca50]/[0.04] p-5 sm:p-6">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
@@ -674,16 +608,17 @@ export default function FounderLegalPage() {
                         </p>
                       </div>
                       <span className="hidden text-[10px] font-mono uppercase tracking-wider text-white/50 sm:block">
-                        Official guidance
+                        AI-generated guide
                       </span>
                     </div>
+                    <p className="mb-4 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-5 text-amber-100/80">AI-generated guidance, not live government data. Verify the registry, portal URL, fees, requirements and timelines directly with the relevant authority before acting.</p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Official Registry
+                        Suggested Registry
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white truncate">
-                        {guide.regulatory_body || "Government Company Registry"}
+                        {guide.regulatory_body || "Not provided"}
                       </span>
                       <span className="text-[11px] text-white/70 truncate block">
                         {guide.country_name || selectedCountry}
@@ -692,25 +627,25 @@ export default function FounderLegalPage() {
 
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Expected Time
+                        Estimated Timeline
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
-                        {guide.estimated_timeline || "3 to 7 business days"}
+                        {guide.estimated_timeline || "Not provided"}
                       </span>
                       <span className="text-[11px] font-mono text-[#f2ca50]">
-                        Standard queue
+                        Confirm with registry
                       </span>
                     </div>
 
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Estimated Government Fees
+                        Estimated Fees · Confirm with Registry
                       </span>
                       <span className="mt-1 block font-mono text-sm font-semibold text-white">
-                        {guide.estimated_cost || "Standard government fee"}
+                        {guide.estimated_cost || "Not provided"}
                       </span>
                       <span className="text-[11px] text-white/70">
-                        Official registry fee
+                        Confirm directly with registry
                       </span>
                     </div>
 
@@ -719,10 +654,10 @@ export default function FounderLegalPage() {
                         Company Type
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
-                        Private Limited Company (Ltd)
+                        Confirm locally
                       </span>
                       <span className="text-[11px] font-mono text-[#f2ca50]">
-                        {guide.source === "database" ? "Saved in Database" : "Freshly Generated"}
+                        {guide.source === "database" ? "Cached AI guidance" : "AI-generated"}
                       </span>
                       </div>
                     </div>
@@ -761,7 +696,7 @@ export default function FounderLegalPage() {
                                   {step.step_number || idx + 1}. {step.title}
                                 </h3>
                                 <span className="text-[10px] font-mono text-[#f2ca50]">
-                                  {step.online_process || "Online"}
+                                  {step.online_process || "Process not specified"}
                                 </span>
                               </div>
 
@@ -947,15 +882,15 @@ export default function FounderLegalPage() {
             <section className="space-y-4">
               <div><h2 className="font-serif text-2xl text-white">Start a registration request</h2><p className="mt-2 text-sm text-white/60">Submit your company or intellectual-property details for an Almeriq intake record. This is not a government filing or legal registration.</p></div>
               <form onSubmit={submitFiling} className="space-y-4 rounded border border-white/10 bg-white/[0.02] p-5">
-                <label className="block space-y-2 text-sm"><span className="text-white/75">Request type</span><select value={filingForm.filing_type} onChange={(event) => setFilingForm((form) => ({ ...form, filing_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option value="company">Company registration guidance</option><option value="ip">Copyright / trademark guidance</option></select></label>
+                <label className="block space-y-2 text-sm"><span className="text-white/75">Request type</span><select value={filingForm.filing_type} onChange={(event) => setFilingForm((form) => ({ ...form, filing_type: event.target.value }))} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white"><option value="company">Company registration guidance</option><option value="ip">Copyright / trademark guidance</option></select></label>
                 {filingForm.filing_type === "company" ? <>
-                  <label className="block space-y-2 text-sm"><span className="text-white/75">Proposed company name</span><input required maxLength={200} value={filingForm.company_name} onChange={(event) => setFilingForm((form) => ({ ...form, company_name: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
-                  <label className="block space-y-2 text-sm"><span className="text-white/75">Entity type</span><select value={filingForm.entity_type} onChange={(event) => setFilingForm((form) => ({ ...form, entity_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option>Ltd</option><option>LLC</option><option>Corporation</option><option>Sole Proprietor</option></select></label>
-                  <label className="block space-y-2 text-sm"><span className="text-white/75">Country / jurisdiction</span><input required maxLength={120} value={filingForm.jurisdiction} onChange={(event) => setFilingForm((form) => ({ ...form, jurisdiction: event.target.value }))} placeholder={selectedCountry} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Proposed company name</span><input required maxLength={200} value={filingForm.company_name} onChange={(event) => setFilingForm((form) => ({ ...form, company_name: event.target.value }))} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Entity type</span><select value={filingForm.entity_type} onChange={(event) => setFilingForm((form) => ({ ...form, entity_type: event.target.value }))} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white"><option>Ltd</option><option>LLC</option><option>Corporation</option><option>Sole Proprietor</option></select></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Country / jurisdiction</span><input required maxLength={120} value={filingForm.jurisdiction} onChange={(event) => setFilingForm((form) => ({ ...form, jurisdiction: event.target.value }))} placeholder={selectedCountry} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white" /></label>
                 </> : <>
-                  <label className="block space-y-2 text-sm"><span className="text-white/75">Title of work / brand</span><input required maxLength={200} value={filingForm.ip_title} onChange={(event) => setFilingForm((form) => ({ ...form, ip_title: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
-                  <label className="block space-y-2 text-sm"><span className="text-white/75">What are you protecting?</span><select value={filingForm.ip_type} onChange={(event) => setFilingForm((form) => ({ ...form, ip_type: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white"><option>Source Code</option><option>Logo</option><option>Company Name</option><option>Product Design</option><option>Written Content</option></select></label>
-                  <label className="block space-y-2 text-sm"><span className="text-white/75">Description</span><textarea required maxLength={3000} rows={4} value={filingForm.ip_description} onChange={(event) => setFilingForm((form) => ({ ...form, ip_description: event.target.value }))} className="w-full rounded border border-white/10 bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Title of work / brand</span><input required maxLength={200} value={filingForm.ip_title} onChange={(event) => setFilingForm((form) => ({ ...form, ip_title: event.target.value }))} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white" /></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">What are you protecting?</span><select value={filingForm.ip_type} onChange={(event) => setFilingForm((form) => ({ ...form, ip_type: event.target.value }))} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white"><option>Source Code</option><option>Logo</option><option>Company Name</option><option>Product Design</option><option>Written Content</option></select></label>
+                  <label className="block space-y-2 text-sm"><span className="text-white/75">Description</span><textarea required maxLength={3000} rows={4} value={filingForm.ip_description} onChange={(event) => setFilingForm((form) => ({ ...form, ip_description: event.target.value }))} className="w-full rounded border border-[#282a2f] bg-[#111318] p-3 text-white" /></label>
                 </>}
                 {filingError && <p role="alert" className="text-sm text-red-300">{filingError}</p>}
                 <button disabled={filingSaving} className="rounded bg-[#f2ca50] px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50">{filingSaving ? "Submitting…" : "Submit intake request"}</button>
@@ -963,7 +898,7 @@ export default function FounderLegalPage() {
             </section>
             <section className="space-y-4">
               <div><h2 className="font-serif text-2xl text-white">Your requests</h2><p className="mt-2 text-sm text-white/60">Reference numbers and submission history for your records.</p></div>
-              {filingLoading ? <p className="text-sm text-white/50">Loading requests…</p> : filings.length === 0 ? <div className="rounded border border-white/10 p-5 text-sm text-white/50">No registration requests yet.</div> : filings.map((filing) => <article key={filing.id} className="rounded border border-white/10 bg-white/[0.02] p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-white">{filing.filing_type === "company" ? filing.company_name : filing.ip_title}</strong><span className="text-xs text-[#f2ca50]">{filing.status}</span></div><p className="mt-1 text-xs text-white/50">{filing.ref_number} · {filing.filing_type === "company" ? filing.entity_type + " · " + filing.jurisdiction : filing.ip_type}</p><p className="mt-2 text-xs text-white/40">{filing.filed_at ? new Date(filing.filed_at).toLocaleString() : ""}</p><p className="mt-2 text-xs text-amber-200/70">Almeriq intake record only — no government application has been submitted.</p></article>)}
+              {filingLoading ? <div className="space-y-3" aria-busy="true">{[0, 1].map((item) => <div key={item} className="space-y-3 rounded border border-border bg-surface p-4"><Skeleton className="h-4 w-1/3" /><SkeletonText lines={2} /></div>)}</div> : filings.length === 0 ? <div className="rounded border border-white/10 p-5 text-sm text-white/50">No registration requests yet.</div> : filings.map((filing) => <article key={filing.id} className="rounded border border-white/10 bg-white/[0.02] p-4"><div className="flex items-center justify-between gap-3"><strong className="text-sm text-white">{filing.filing_type === "company" ? filing.company_name : filing.ip_title}</strong><span className="text-xs text-[#f2ca50]">{filing.status}</span></div><p className="mt-1 text-xs text-white/50">{filing.ref_number} · {filing.filing_type === "company" ? filing.entity_type + " · " + filing.jurisdiction : filing.ip_type}</p><p className="mt-2 text-xs text-white/40">{filing.filed_at ? new Date(filing.filed_at).toLocaleString() : ""}</p><p className="mt-2 text-xs text-amber-200/70">Almeriq intake record only — no government application has been submitted.</p></article>)}
             </section>
           </div>
         )}

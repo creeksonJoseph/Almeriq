@@ -5,6 +5,11 @@ export async function startProviderConversationApi(providerId) {
   return res.data;
 }
 
+export async function getConversationSummaryApi() {
+  const { data } = await apiClient.get("/api/conversations/summary");
+  return data;
+}
+
 export async function listConversationsApi(params = {}) {
   const res = await apiClient.get("/api/conversations", { params });
   return res.data;

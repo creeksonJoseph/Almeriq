@@ -145,6 +145,21 @@ async def list_user_conversations(
         ]
 
 
+async def count_unread_conversations(user_id: int, session: AsyncSession) -> int:
+    """Count every conversation containing at least one unread message for this user."""
+    stmt = (
+        select(func.count(func.distinct(Message.conversation_id)))
+        .select_from(Message)
+        .join(Conversation, Conversation.id == Message.conversation_id)
+        .where(
+            or_(Conversation.participant_a_id == user_id, Conversation.participant_b_id == user_id),
+            Message.sender_id != user_id,
+            Message.read_at.is_(None),
+        )
+    )
+    return int(await session.scalar(stmt) or 0)
+
+
 async def update_conversation_timestamp(
     conversation_id: int,
     session: AsyncSession | None = None,

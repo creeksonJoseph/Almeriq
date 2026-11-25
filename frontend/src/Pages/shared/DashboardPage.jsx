@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { RouteSkeleton } from "../../components/ui";
 
 const ProviderDashboardPage = lazy(() => import("../provider/ProviderDashboardPage"));
 const JobSeekerDashboardPage = lazy(() => import("../jobseeker/JobSeekerDashboardPage"));
@@ -8,11 +9,7 @@ const ExpertDashboardPage = lazy(() => import("../expert/ExpertDashboardPage"));
 const DashboardComponent = lazy(() => import("../../components/Dashboard"));
 const AdminWaitlistPage = lazy(() => import("../admin/AdminWaitlistPage"));
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[50vh] w-full">
-    <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-  </div>
-);
+const PageLoader = () => <RouteSkeleton variant="dashboard" />;
 
 export default function DashboardPage() {
   const { user, logout, updateUser } = useAuth();

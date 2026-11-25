@@ -26,6 +26,8 @@ class StartupPitch(Base):
     traction: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     team_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     documents_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="[]")
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="draft", server_default="draft", index=True)
+    published_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -43,5 +45,6 @@ class StartupPitch(Base):
             "website_url": self.website_url, "pitch_deck_url": self.pitch_deck_url,
             "financials_url": self.financials_url, "traction": self.traction,
             "team_summary": self.team_summary, "documents": documents,
+            "status": self.status, "published_at": self.published_at,
             "created_at": self.created_at, "updated_at": self.updated_at,
         }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { useFounderPitches } from "../../hooks/useFounderPitches";
+import { useInvestorUpdateDraft } from "../../hooks/useInvestorUpdateDraft";
+import { createInvestorUpdateApi, updateInvestorUpdateApi, listFounderInvestorUpdatesApi, publishInvestorUpdateApi } from "../../lib/api";
 import { useLocation, useNavigate } from "react-router-dom";
-import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
-import { startInvestmentConversationApi } from "../../lib/api/conversations";
-import { executeAiToolApi } from "../../lib/api/founder";
+
+import { Button, Card, Input, Select, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY = { title: "", summary: "", sector: "", stage: "", ask_amount: "", location: "", target_check_size: "", website_url: "", pitch_deck_url: "", financials_url: "", traction: "", team_summary: "" };
 
@@ -11,50 +12,47 @@ export default function FounderPitchesPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const pageView = location.pathname.includes("/investors") ? "investors" : location.pathname.includes("/updates") ? "updates" : "pitches";
-  const [pitches, setPitches] = useState([]);
-  const [requests, setRequests] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [documentsText, setDocumentsText] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const {
+    pitches, requests, loading, saving, busyRequestId, error, notice,
+    savePitch, updateRequest, removePitch, setPitchPublished, startConversation, setError, setNotice,
+  } = useFounderPitches();
   const [updatePitchId, setUpdatePitchId] = useState("");
   const [updatePeriod, setUpdatePeriod] = useState("");
   const [updateHighlights, setUpdateHighlights] = useState("");
   const [updateChallenges, setUpdateChallenges] = useState("");
   const [updateKpis, setUpdateKpis] = useState("");
   const [updateAsks, setUpdateAsks] = useState("");
-  const [investorUpdateDraft, setInvestorUpdateDraft] = useState("");
-  const [draftingUpdate, setDraftingUpdate] = useState(false);
+  const [savedUpdateId, setSavedUpdateId] = useState(null);
+  const [savedUpdateContent, setSavedUpdateContent] = useState("");
+  const [savedUpdatePeriod, setSavedUpdatePeriod] = useState("");
+  const [updatePublished, setUpdatePublished] = useState(false);
+  const [savedUpdates, setSavedUpdates] = useState([]);
+  const [updatesLoading, setUpdatesLoading] = useState(false);
+  const { draft: investorUpdateDraft, setDraft: setInvestorUpdateDraft, drafting: draftingUpdate, generate: generateUpdateDraft } = useInvestorUpdateDraft({ setError, setNotice });
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [pitchResponse, requestResponse] = await Promise.all([
-        apiClient.get("/api/founder/pitches"),
-        apiClient.get("/api/founder/investment-requests"),
-      ]);
-      const pitchData = pitchResponse.data;
-      setPitches(Array.isArray(pitchData) ? pitchData : pitchData.items || []);
-      setRequests(requestResponse.data?.items || []);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to load your pitches.");
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!updatePitchId) { setSavedUpdates([]); return; }
+    let cancelled = false;
+    setUpdatesLoading(true);
+    listFounderInvestorUpdatesApi(updatePitchId)
+      .then((items) => { if (!cancelled) setSavedUpdates(items); })
+      .catch((requestError) => { if (!cancelled) setError(requestError.message || "Unable to load saved investor updates."); })
+      .finally(() => { if (!cancelled) setUpdatesLoading(false); });
+    return () => { cancelled = true; };
+  }, [updatePitchId, setError]);
 
   const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   const reset = () => { setForm(EMPTY); setDocumentsText(""); setEditingId(null); };
 
   const submit = async (event) => {
     event.preventDefault();
-    setSaving(true); setError(""); setNotice("");
+    setError(""); setNotice("");
     const amount = form.ask_amount === "" ? null : Number(form.ask_amount);
     if (!form.title.trim() || (amount !== null && (!Number.isFinite(amount) || amount < 0))) {
-      setError("Enter a pitch title and a valid non-negative funding ask."); setSaving(false); return;
+      setError("Enter a pitch title and a valid non-negative funding ask."); return;
     }
     const documents = documentsText.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
       const [title, ...urlParts] = line.split("|");
@@ -69,12 +67,9 @@ export default function FounderPitchesPage() {
       documents,
     };
     try {
-      if (editingId) await apiClient.put(`/api/founder/pitches/${editingId}`, payload);
-      else await apiClient.post("/api/founder/pitches", payload);
-      reset(); setNotice(editingId ? "Pitch updated." : "Pitch published to investor discovery."); await load();
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to save this pitch.");
-    } finally { setSaving(false); }
+      await savePitch(editingId, payload);
+      reset();
+    } catch { /* The feature hook owns and exposes the request error. */ }
   };
 
   const edit = (pitch) => {
@@ -84,21 +79,57 @@ export default function FounderPitchesPage() {
     setNotice(""); setError("");
   };
 
-  const generateInvestorUpdate = async () => {
+  const generateInvestorUpdate = () => {
     const pitch = pitches.find((item) => String(item.id) === String(updatePitchId));
-    if (!pitch) { setError("Choose a startup pitch first."); return; }
-    setDraftingUpdate(true); setError(""); setNotice("");
+    setSavedUpdateId(null);
+    setSavedUpdateContent("");
+    setSavedUpdatePeriod("");
+    setUpdatePublished(false);
+    return generateUpdateDraft(pitch, {
+      period: updatePeriod,
+      highlights: updateHighlights,
+      challenges: updateChallenges,
+      kpis: updateKpis,
+      asks: updateAsks,
+    });
+  };
+
+  const saveInvestorUpdate = async () => {
+    if (!updatePitchId || !updatePeriod.trim() || !investorUpdateDraft.trim()) {
+      setError("Choose a startup, enter an update period and generate or write the update first.");
+      return;
+    }
     try {
-      const response = await executeAiToolApi({
-        tool_key: "investor_update", idea: pitch.title, customer: "Current investors", location: pitch.location || "",
-        problem: pitch.summary || "", solution: pitch.traction || "",
-        extra_params: { period: updatePeriod || "Not specified", sector: pitch.sector, stage: pitch.stage, company_summary: pitch.summary, traction_so_far: pitch.traction, team: pitch.team_summary, founder_highlights: updateHighlights, challenges: updateChallenges, kpis: updateKpis, investor_asks: updateAsks },
-      });
-      const result = response.result || {};
-      setInvestorUpdateDraft(result.full_email || [result.subject, ...(result.highlights || []), ...(result.lowlights || []), ...(result.asks || [])].join("\n"));
-      setNotice("Investor update draft generated. Check every metric and statement before sending.");
-    } catch (err) { setError(err.message || "Unable to draft the investor update."); }
-    finally { setDraftingUpdate(false); }
+      const payload = { period: updatePeriod.trim(), content: investorUpdateDraft.trim() };
+      const saved = savedUpdateId
+        ? await updateInvestorUpdateApi(savedUpdateId, payload)
+        : await createInvestorUpdateApi(Number(updatePitchId), payload);
+      setSavedUpdateId(saved.id);
+      setSavedUpdateContent(saved.content);
+      setSavedUpdatePeriod(saved.period);
+      setUpdatePublished(false);
+      setSavedUpdates((items) => [saved, ...items.filter((item) => item.id !== saved.id)]);
+      setNotice("Investor update draft saved.");
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to save investor update.");
+    }
+  };
+
+  const publishInvestorUpdate = async () => {
+    if (!savedUpdateId || investorUpdateDraft.trim() !== savedUpdateContent || updatePeriod.trim() !== savedUpdatePeriod) {
+      setError("Save the latest edits as a draft before publishing.");
+      return;
+    }
+    try {
+      const published = await publishInvestorUpdateApi(savedUpdateId);
+      setUpdatePublished(true);
+      setSavedUpdates((items) => items.map((item) => item.id === published.id ? published : item));
+      setNotice("Investor update shared with connected investors. They will receive an in-app notification.");
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to share investor update. Make sure this pitch has an accepted investor relationship.");
+    }
   };
 
   const copyInvestorUpdate = async () => {
@@ -106,35 +137,13 @@ export default function FounderPitchesPage() {
     try { await navigator.clipboard.writeText(investorUpdateDraft); setNotice("Investor update copied."); }
     catch { setError("Clipboard access was blocked. Select and copy the draft manually."); }
   };
-  const openConversation = async (requestId) => {
-    try {
-      const conversation = await startInvestmentConversationApi(requestId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Unable to open this conversation.");
-    }
-  };
-
-  const updateRequest = async (requestId, status) => {
-    setError(""); setNotice("");
-    try {
-      const { data } = await apiClient.patch(`/api/founder/investment-requests/${requestId}`, { status });
-      setRequests((items) => items.map((item) => item.id === requestId ? { ...item, ...data } : item));
-      setNotice(`Investor request marked ${status.replaceAll("_", " ")}.`);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to update this investor request.");
-    }
-  };
-
   const remove = async (pitchId) => {
     if (!window.confirm("Delete this startup pitch?")) return;
     setError(""); setNotice("");
     try {
-      await apiClient.delete(`/api/founder/pitches/${pitchId}`);
+      await removePitch(pitchId);
       if (editingId === pitchId) reset();
-      setPitches((items) => items.filter((item) => item.id !== pitchId));
-      setNotice("Pitch deleted.");
-    } catch (err) { setError(err.response?.data?.detail || "Unable to delete this pitch."); }
+    } catch { /* The feature hook owns and exposes the request error. */ }
   };
 
   return (
@@ -148,50 +157,51 @@ export default function FounderPitchesPage() {
         <Card className="space-y-4 p-6">
           <div><h2 className="font-serif text-xl">Draft an investor update</h2><p className="mt-1 text-sm text-white/55">Generate an editable monthly update from details you provide. Missing metrics will not be invented.</p></div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-1 text-sm"><span>Startup</span><select value={updatePitchId} onChange={(event) => setUpdatePitchId(event.target.value)} className="w-full rounded-lg border border-border bg-surface-2 p-3"><option value="">Choose a pitch</option>{pitches.map((pitch) => <option key={pitch.id} value={pitch.id}>{pitch.title}</option>)}</select></label>
+            <label className="space-y-1 text-sm"><span>Startup</span><Select value={updatePitchId} onChange={(event) => { setUpdatePitchId(event.target.value); setSavedUpdateId(null); setSavedUpdateContent(""); setSavedUpdatePeriod(""); setUpdatePublished(false); setInvestorUpdateDraft(""); }} className="w-full rounded-lg border border-border bg-surface-2 p-3"><option value="">Choose a pitch</option>{pitches.map((pitch) => <option key={pitch.id} value={pitch.id}>{pitch.title}</option>)}</Select></label>
             <label className="space-y-1 text-sm"><span>Update period</span><Input value={updatePeriod} onChange={(event) => setUpdatePeriod(event.target.value)} placeholder="e.g. November 2026" /></label>
           </div>
-          <label className="block space-y-1 text-sm"><span>Highlights / progress</span><textarea value={updateHighlights} onChange={(event) => setUpdateHighlights(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Wins, product milestones, customer progress…" /></label>
-          <label className="block space-y-1 text-sm"><span>Challenges / lowlights</span><textarea value={updateChallenges} onChange={(event) => setUpdateChallenges(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="What did not go as planned?" /></label>
-          <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
-          <label className="block space-y-1 text-sm"><span>What you need from investors</span><textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
+          <label className="block space-y-1 text-sm"><span>Highlights / progress</span><Textarea value={updateHighlights} onChange={(event) => setUpdateHighlights(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Wins, product milestones, customer progress…" /></label>
+          <label className="block space-y-1 text-sm"><span>Challenges / lowlights</span><Textarea value={updateChallenges} onChange={(event) => setUpdateChallenges(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="What did not go as planned?" /></label>
+          <label className="block space-y-1 text-sm"><span>KPIs (include values and period)</span><Textarea value={updateKpis} onChange={(event) => setUpdateKpis(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Revenue, users, growth, runway…" /></label>
+          <label className="block space-y-1 text-sm"><span>What you need from investors</span><Textarea value={updateAsks} onChange={(event) => setUpdateAsks(event.target.value)} rows={2} className="w-full rounded-lg border border-border bg-surface-2 p-3" placeholder="Introductions, hiring help, advice, follow-on funding…" /></label>
           <div className="flex justify-end"><Button type="button" disabled={draftingUpdate || !updatePitchId} onClick={generateInvestorUpdate}>{draftingUpdate ? "Drafting…" : "Generate update"}</Button></div>
-          {investorUpdateDraft && <div className="space-y-2 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable draft</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy draft</Button></div><textarea value={investorUpdateDraft} onChange={(event) => setInvestorUpdateDraft(event.target.value)} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /></div>}
+          {investorUpdateDraft && <div className="space-y-3 border-t border-border pt-4"><div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium">Editable update</h3><Button type="button" size="sm" variant="ghost" onClick={copyInvestorUpdate}>Copy text</Button></div><Textarea value={investorUpdateDraft} disabled={updatePublished} onChange={(event) => { setInvestorUpdateDraft(event.target.value); setUpdatePublished(false); }} rows={14} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" /><div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="ghost" disabled={updatePublished} onClick={saveInvestorUpdate}>Save draft</Button><Button type="button" disabled={!savedUpdateId || updatePublished || investorUpdateDraft.trim() !== savedUpdateContent || updatePeriod.trim() !== savedUpdatePeriod} onClick={publishInvestorUpdate}>Share with connected investors</Button></div><p className="text-xs text-white/45">Sharing publishes this update to investors whose interest request you have accepted or moved into discussion. They receive an in-app notification; no email is sent.</p></div>}
+          <div className="space-y-2 border-t border-border pt-4"><h3 className="text-sm font-medium">Saved updates</h3>{updatesLoading ? <p className="text-xs text-white/45">Loading update history…</p> : savedUpdates.length === 0 ? <p className="text-xs text-white/45">No saved updates for this startup yet.</p> : savedUpdates.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3"><div><p className="text-sm font-medium">{item.period}</p><p className="text-xs text-white/45">{item.status === "published" ? "Shared with connected investors" : "Draft"}{item.published_at ? ` · ${new Date(item.published_at).toLocaleDateString()}` : ""}</p></div>{item.status === "draft" && <Button size="sm" variant="ghost" onClick={() => { setSavedUpdateId(item.id); setSavedUpdateContent(item.content); setSavedUpdatePeriod(item.period); setInvestorUpdateDraft(item.content); setUpdatePeriod(item.period); setUpdatePublished(false); }}>Open draft</Button>}</div>)}</div>
         </Card>
         
         )}
         {pageView === "pitches" && (
         <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
+          <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">{editingId ? "Edit pitch" : "Create a pitch draft"}</h2>{editingId && <Button variant="ghost" onClick={reset}>Cancel edit</Button>}</div>
           <form onSubmit={submit} className="space-y-4">
             <label className="block space-y-2"><span className="text-sm">Startup / pitch title</span><Input name="title" value={form.title} onChange={update} maxLength={200} required placeholder="Company or product name" /></label>
-            <label className="block space-y-2"><span className="text-sm">Summary</span><textarea name="summary" value={form.summary} onChange={update} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Problem, solution, traction and what you're building." /></label>
+            <label className="block space-y-2"><span className="text-sm">Summary</span><Textarea name="summary" value={form.summary} onChange={update} rows={4} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Problem, solution, traction and what you're building." /></label>
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block space-y-2"><span className="text-sm">Sector</span><Input name="sector" value={form.sector} onChange={update} placeholder="Fintech" /></label>
               <label className="block space-y-2"><span className="text-sm">Stage</span><Input name="stage" value={form.stage} onChange={update} placeholder="Pre-seed" /></label>
-              <label className="block space-y-2"><span className="text-sm">Funding ask</span><Input name="ask_amount" type="number" min="0" step="0.01" value={form.ask_amount} onChange={update} placeholder="Optional amount" /></label>
+              <label className="block space-y-2"><span className="text-sm">Funding ask · currency not specified</span><Input name="ask_amount" type="number" min="0" step="0.01" value={form.ask_amount} onChange={update} placeholder="Optional amount" /></label>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2"><span className="text-sm">Location / market</span><Input name="location" value={form.location} onChange={update} placeholder="Nairobi, Kenya / East Africa" /></label>
-              <label className="block space-y-2"><span className="text-sm">Target investor check size</span><Input name="target_check_size" type="number" min="0" step="0.01" value={form.target_check_size} onChange={update} placeholder="Typical individual ticket" /></label>
+              <label className="block space-y-2"><span className="text-sm">Target investor check size · currency not specified</span><Input name="target_check_size" type="number" min="0" step="0.01" value={form.target_check_size} onChange={update} placeholder="Typical individual ticket" /></label>
               <label className="block space-y-2"><span className="text-sm">Website</span><Input name="website_url" value={form.website_url} onChange={update} placeholder="https://…" /></label>
               <label className="block space-y-2"><span className="text-sm">Pitch deck URL</span><Input name="pitch_deck_url" value={form.pitch_deck_url} onChange={update} placeholder="https://…" /></label>
               <label className="block space-y-2"><span className="text-sm">Financials / data room URL</span><Input name="financials_url" value={form.financials_url} onChange={update} placeholder="https://…" /></label>
             </div>
-            <label className="block space-y-2"><span className="text-sm">Traction</span><textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
-            <label className="block space-y-2"><span className="text-sm">Team summary</span><textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
-            <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
-            <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Update pitch" : "Publish pitch"}</Button></div>
+            <label className="block space-y-2"><span className="text-sm">Traction</span><Textarea name="traction" value={form.traction} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Customers, revenue, growth, pilots or milestones." /></label>
+            <label className="block space-y-2"><span className="text-sm">Team summary</span><Textarea name="team_summary" value={form.team_summary} onChange={update} rows={3} maxLength={3000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Who is building this and why are they suited to it?" /></label>
+            <label className="block space-y-2"><span className="text-sm">Additional pitch documents (one per line: title | URL)</span><Textarea value={documentsText} onChange={(event) => setDocumentsText(event.target.value)} rows={3} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm" placeholder="Product demo | https://…&#10;Market research | https://…" /></label>
+            <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Save changes" : "Save as draft"}</Button></div>
           </form>
         </Card>
         
         )}
         {pageView === "pitches" && (
-        <section className="space-y-3"><h2 className="font-serif text-xl">Your published pitches</h2>
-          {loading ? <p className="text-sm text-white/50">Loading pitches…</p> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
+        <section className="space-y-3"><h2 className="font-serif text-xl">Your pitches</h2>
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><SkeletonText lines={2} /><Skeleton className="h-9 w-32 rounded-xl" /></Card>)}</div> : pitches.length === 0 ? <Card className="p-6 text-sm text-white/50">You haven't published a startup pitch yet.</Card> : pitches.map((pitch) => (
             <Card key={pitch.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
-              <div className="min-w-0 flex-1"><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-sm text-white/60">{pitch.sector || "Sector not set"} · {pitch.stage || "Stage not set"}{pitch.ask_amount != null ? ` · Ask: ${pitch.ask_amount}` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-white/50">{pitch.summary || "No summary added."}</p></div>
-              <div className="flex gap-2"><Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
+              <div className="min-w-0 flex-1"><h3 className="font-medium">{pitch.title}</h3><p className="mt-1 text-sm text-white/60">{pitch.sector || "Sector not set"} · {pitch.stage || "Stage not set"}{pitch.ask_amount != null ? ` · Ask: ${pitch.ask_amount} · currency not specified` : ""}</p><p className="mt-2 line-clamp-2 text-sm text-white/50">{pitch.summary || "No summary added."}</p></div>
+              <div className="flex flex-wrap items-center gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-wider ${pitch.status === "active" ? "border-emerald-400/30 text-emerald-300" : "border-white/15 text-white/50"}`}>{pitch.status === "active" ? "Published" : "Draft"}</span>{pitch.status === "active" ? <Button size="sm" variant="ghost" onClick={() => setPitchPublished(pitch.id, false)}>Unpublish</Button> : <Button size="sm" onClick={() => setPitchPublished(pitch.id, true)}>Publish</Button>}<Button size="sm" variant="ghost" onClick={() => edit(pitch)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => remove(pitch.id)}>Delete</Button></div>
             </Card>
           ))}
         </section>
@@ -200,11 +210,11 @@ export default function FounderPitchesPage() {
         {pageView === "investors" && (
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Investor interest</h2>
-          {requests.length === 0 ? <Card className="p-6 text-sm text-white/50">No investors have expressed interest yet.</Card> : requests.map((request) => {
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-4 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : requests.length === 0 ? <Card className="p-6 text-sm text-white/50">No investors have expressed interest yet.</Card> : requests.map((request) => {
             const pitch = pitches.find((item) => item.id === request.pitch_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">{request.investor_name || `Investor #${request.investor_id}`}{request.amount != null ? ` · Indicative amount: ${request.amount}` : ""}</p>{request.investor_profile && <p className="mt-2 max-w-xl text-xs text-white/55">{[request.investor_profile.investor_type, request.investor_profile.investment_focus, request.investor_profile.preferred_sectors?.join(", "), request.investor_profile.preferred_stages?.join(", "), request.investor_profile.geographies?.join(", "), request.investor_profile.check_size ? `Typical check: ${request.investor_profile.check_size}` : null, request.investor_profile.lead_follow_preference ? `Prefers to ${request.investor_profile.lead_follow_preference}` : null, request.investor_profile.accreditation_status ? `Accreditation: ${request.investor_profile.accreditation_status}` : null, request.investor_profile.location].filter(Boolean).join(" · ")}</p>}{request.investor_profile?.about && <p className="mt-1 max-w-xl text-xs text-white/45">{request.investor_profile.about}</p>}{request.investor_profile?.verification_url && <a className="mt-1 block text-xs text-[#C9A15A] underline" href={request.investor_profile.verification_url} target="_blank" rel="noreferrer">Investor verification link</a>}{request.investor_profile?.notable_investments && <p className="mt-1 max-w-xl text-xs text-white/45">Notable investments: {request.investor_profile.notable_investments}</p>}{request.investor_profile?.companies_backed != null && <p className="mt-1 max-w-xl text-xs text-white/45">Track record: {request.investor_profile.companies_backed} companies backed · {request.investor_profile.exits ?? 0} exits · {request.investor_profile.years_investing ?? "—"} years investing</p>}{request.investor_profile?.assets_under_management && <p className="mt-1 max-w-xl text-xs text-white/45">AUM: {request.investor_profile.assets_under_management}</p>}{request.investor_profile?.time_commitment && <p className="mt-1 max-w-xl text-xs text-white/45">Time commitment: {request.investor_profile.time_commitment}</p>}{request.investor_profile?.contact_preference && <p className="mt-1 max-w-xl text-xs text-white/45">Contact preference: {request.investor_profile.contact_preference}</p>}{request.investor_profile?.contact_formats?.length > 0 && <p className="mt-1 max-w-xl text-xs text-white/45">First contact: {request.investor_profile.contact_formats.join(", ")}</p>}{request.investor_profile?.track_record && <p className="mt-1 max-w-xl text-xs text-white/45">Track record: {request.investor_profile.track_record}</p>}{request.investor_profile?.value_add && <p className="mt-1 max-w-xl text-xs text-white/45">Founder support: {request.investor_profile.value_add}</p>}{request.status === "invested" && <div className="mt-2 rounded-lg border border-emerald-400/20 bg-emerald-400/5 p-3"><p className="text-xs font-medium text-emerald-200">Demo deal confirmed</p><p className="mt-1 text-xs text-white/65">Investor-reported amount: {Number(request.investment_amount || 0).toLocaleString()}</p>{request.ownership_percent != null && <p className="mt-1 text-xs text-white/65">Proposed ownership entered: {request.ownership_percent}%</p>}{request.payment_method && <p className="mt-1 text-xs text-white/65">Selected demo method: {String(request.payment_method).toUpperCase()}</p>}{request.deal_confirmed_at && <p className="mt-1 text-xs text-white/50">Confirmed {new Date(request.deal_confirmed_at).toLocaleString()}</p>}<p className="mt-1 text-xs text-white/45">Simulation only — Almeriq has not processed or verified a transfer.</p></div>}<p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
-              <div className="flex flex-wrap gap-2">{request.status === "pending" && <><Button size="sm" onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></>}{["accepted", "in_discussion", "invested"].includes(request.status) && <Button size="sm" variant="ghost" onClick={() => openConversation(request.id)}>Message investor</Button>}</div>
+              <div><p className="font-medium">{pitch?.title || `Pitch #${request.pitch_id}`}</p><p className="mt-1 text-xs text-white/50">{request.investor_name || `Investor #${request.investor_id}`}{request.amount != null ? ` · Indicative amount: ${request.amount} · currency not specified` : ""}</p>{request.investor_profile && <p className="mt-2 max-w-xl text-xs text-white/55">{[request.investor_profile.investor_type, request.investor_profile.investment_focus, request.investor_profile.preferred_sectors?.join(", "), request.investor_profile.preferred_stages?.join(", "), request.investor_profile.geographies?.join(", "), request.investor_profile.check_size ? `Typical check: ${request.investor_profile.check_size}` : null, request.investor_profile.lead_follow_preference ? `Prefers to ${request.investor_profile.lead_follow_preference}` : null, request.investor_profile.accreditation_status ? `Self-reported accreditation: ${request.investor_profile.accreditation_status}` : null, request.investor_profile.location].filter(Boolean).join(" · ")}</p>}{request.investor_profile?.about && <p className="mt-1 max-w-xl text-xs text-white/45">{request.investor_profile.about}</p>}{request.investor_profile?.verification_url && <a className="mt-1 block text-xs text-[#C9A15A] underline" href={request.investor_profile.verification_url} target="_blank" rel="noreferrer">Investor-provided reference link</a>}{request.investor_profile?.notable_investments && <p className="mt-1 max-w-xl text-xs text-white/45">Notable investments: {request.investor_profile.notable_investments}</p>}{request.investor_profile?.companies_backed != null && <p className="mt-1 max-w-xl text-xs text-white/45">Track record: {request.investor_profile.companies_backed} companies backed · {request.investor_profile.exits ?? 0} exits · {request.investor_profile.years_investing ?? "—"} years investing</p>}{request.investor_profile?.assets_under_management && <p className="mt-1 max-w-xl text-xs text-white/45">AUM: {request.investor_profile.assets_under_management}</p>}{request.investor_profile?.time_commitment && <p className="mt-1 max-w-xl text-xs text-white/45">Time commitment: {request.investor_profile.time_commitment}</p>}{request.investor_profile?.contact_preference && <p className="mt-1 max-w-xl text-xs text-white/45">Contact preference: {request.investor_profile.contact_preference}</p>}{request.investor_profile?.contact_formats?.length > 0 && <p className="mt-1 max-w-xl text-xs text-white/45">First contact: {request.investor_profile.contact_formats.join(", ")}</p>}{request.investor_profile?.track_record && <p className="mt-1 max-w-xl text-xs text-white/45">Track record: {request.investor_profile.track_record}</p>}{request.investor_profile?.value_add && <p className="mt-1 max-w-xl text-xs text-white/45">Founder support: {request.investor_profile.value_add}</p>}{["invested", "investor_reported"].includes(request.status) && <div className="mt-2 rounded-lg border border-emerald-400/20 bg-emerald-400/5 p-3"><p className="text-xs font-medium text-emerald-200">Investor-reported demo record</p><p className="mt-1 text-xs text-white/65">Investor-reported amount: {Number(request.investment_amount || 0).toLocaleString()} · currency not specified</p>{request.ownership_percent != null && <p className="mt-1 text-xs text-white/65">Proposed ownership entered: {request.ownership_percent}%</p>}{request.payment_method && <p className="mt-1 text-xs text-white/65">Selected demo method: {String(request.payment_method).toUpperCase()}</p>}{request.deal_confirmed_at && <p className="mt-1 text-xs text-white/50">Confirmed {new Date(request.deal_confirmed_at).toLocaleString()}</p>}<p className="mt-1 text-xs text-white/45">Simulation only — Almeriq has not processed or verified a transfer.</p></div>}<p className="mt-1 text-xs capitalize text-gold">{String(request.status || "pending").replaceAll("_", " ")}</p></div>
+              <div className="flex flex-wrap gap-2">{request.status === "pending" && <><Button size="sm" disabled={busyRequestId === request.id} onClick={() => updateRequest(request.id, "accepted")}>Accept</Button><Button size="sm" variant="ghost" disabled={busyRequestId === request.id} onClick={() => updateRequest(request.id, "declined")}>Decline</Button><Button size="sm" variant="ghost" disabled={busyRequestId === request.id} onClick={() => updateRequest(request.id, "in_discussion")}>Discuss</Button></>}{["accepted", "in_discussion", "invested", "investor_reported"].includes(request.status) && <Button size="sm" variant="ghost" onClick={async () => { try { const conversation = await startConversation(request.id); navigate(`/messages?conversation=${conversation.id}`); } catch (err) { setError(err.message || "Unable to open this conversation."); } }}>Message investor</Button>}</div>
             </Card>;
           })}
         </section>

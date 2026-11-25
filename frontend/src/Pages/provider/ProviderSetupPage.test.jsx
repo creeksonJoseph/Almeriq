@@ -35,9 +35,9 @@ vi.mock("../../lib/api", () => ({
 
 import * as api from "../../lib/api";
 import ProviderSetupPage from "./ProviderSetupPage.jsx";
+import { ToastProvider } from "../../context/ToastContext";
 
 const setup = () => {
-  window.alert = vi.fn();
   navigateMock.mockClear();
   const all = [
     api.getProviderProfileApi,
@@ -54,9 +54,9 @@ const setup = () => {
   vi.mocked(api.listCoverageRegionsApi).mockResolvedValue({ items: [] });
   vi.mocked(api.listAssetsApi).mockResolvedValue({ items: [] });
   return render(
-    <MemoryRouter>
+    <ToastProvider><MemoryRouter>
       <ProviderSetupPage />
-    </MemoryRouter>
+    </MemoryRouter></ToastProvider>
   );
 };
 
@@ -173,12 +173,10 @@ describe("ProviderSetupPage asset behavior", () => {
     await waitFor(() => expect(api.createAssetApi).toHaveBeenCalled());
 
     fireEvent.click(screen.getByText(/remove/i));
-    // saving retries the pending deletion; failure is surfaced via alert
+    // saving retries the pending deletion; failure is surfaced via the global toast
     clickSaveDraft();
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        expect.stringContaining("could not be deleted")
-      );
+      expect(screen.getByText(/some assets could not be deleted/i)).toBeInTheDocument();
     });
   });
 
@@ -206,9 +204,7 @@ describe("ProviderSetupPage asset behavior", () => {
     // removing only tracks the pending deletion; saving triggers the API call
     clickSaveDraft();
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        expect.stringContaining("could not be deleted")
-      );
+      expect(screen.getByText(/some assets could not be deleted/i)).toBeInTheDocument();
     });
 
     // retry the pending deletion on the next save draft
@@ -232,16 +228,13 @@ describe("ProviderSetupPage asset behavior", () => {
     clickSaveDraft();
 
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        expect.stringContaining("failed to save")
-      );
+      expect(screen.getByText(/some draft data failed to save/i)).toBeInTheDocument();
     });
   });
 
   it("does not navigate to /provider/dashboard when pending deletion fails", async () => {
     // Set all mocks before render so useEffect loads the existing asset
-    window.alert = vi.fn();
-    navigateMock.mockClear();
+      navigateMock.mockClear();
     vi.mocked(api.getProviderProfileApi).mockResolvedValue(null);
     vi.mocked(api.listCoverageRegionsApi).mockResolvedValue({ items: [] });
     vi.mocked(api.listAssetsApi).mockResolvedValue({
@@ -262,7 +255,7 @@ describe("ProviderSetupPage asset behavior", () => {
     vi.mocked(api.updateCoverageRegionsApi).mockResolvedValue({});
     vi.mocked(api.deleteAssetApi).mockRejectedValue(new Error("delete failed"));
 
-    render(<MemoryRouter><ProviderSetupPage /></MemoryRouter>);
+    render(<ToastProvider><MemoryRouter><ProviderSetupPage /></MemoryRouter></ToastProvider>);
 
     await advanceToPhysical();
     // The pre-existing asset (id 3) is loaded with a remove button.
@@ -292,11 +285,9 @@ describe("ProviderSetupPage asset behavior", () => {
     // Deletion was attempted with the asset's backend id (3).
     await waitFor(() => expect(api.deleteAssetApi).toHaveBeenCalledTimes(1));
     expect(api.deleteAssetApi).toHaveBeenCalledWith(3);
-    // Failure is surfaced to the user.
+    // Failure is surfaced through the global toast.
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        expect.stringContaining("could not be deleted")
-      );
+      expect(screen.getByText(/some assets could not be deleted/i)).toBeInTheDocument();
     });
     // Navigation was NOT triggered.
     expect(navigateMock).not.toHaveBeenCalledWith("/provider/dashboard");

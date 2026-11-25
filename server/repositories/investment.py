@@ -80,7 +80,7 @@ async def update_investor_portfolio(
         if key in values:
             setattr(item, key, values[key])
     if values.get("investment_amount") is not None:
-        item.status = "invested"
+        item.status = "investor_reported"
     if values.get("signature_data") and values.get("payment_method") and not item.deal_confirmed_at:
         item.deal_confirmed_at = datetime.now(timezone.utc)
     await session.flush()

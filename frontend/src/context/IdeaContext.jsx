@@ -1,30 +1,31 @@
 /**
  * context/IdeaContext.jsx - Global active startup idea / venture state.
  *
- * Provides a unified source of truth for the currently active idea across
- * Founder Studio tools (Idea Validation, Startup Tools, Product & Tech, Legal, Outreach, Analysis).
+ * Uses the same user-scoped SWR cache as useVentures so Founder Studio pages
+ * share one in-memory source of truth without persisting private ventures in
+ * a cross-account localStorage entry.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
-import { listVenturesApi } from "../lib/api";
 import { useAuth } from "./AuthContext";
+import { getVenturesCachedApi } from "../lib/api/founder";
+import { useDataCache } from "../hooks/useDataCache";
 
 const LS_ACTIVE_VENTURE_KEY = "almeriq_active_venture_id";
 const SS_FORM_KEY = "alimeriq_founder_form";
 const LS_VENTURE_ID_KEY = "alimeriq_venture_id";
-const LS_VENTURES_CACHE_KEY = "alimeriq_ventures_cache";
 
 const IdeaContext = createContext(null);
 
 export function IdeaProvider({ children }) {
   const { user } = useAuth();
-  const [ventures, setVentures] = useState(() => {
-    try {
-      const raw = localStorage.getItem(LS_VENTURES_CACHE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const isFounder = user?.role === "founder";
+  const cacheKey = isFounder && user?.id ? `private:ventures:${user.id}` : null;
+  const {
+    data,
+    loading,
+    refresh: refreshCachedVentures,
+  } = useDataCache(cacheKey, getVenturesCachedApi, { enabled: Boolean(cacheKey) });
+  const ventures = Array.isArray(data) ? data : [];
 
   const [activeVentureId, setActiveVentureIdState] = useState(() => {
     try {
@@ -35,9 +36,7 @@ export function IdeaProvider({ children }) {
     }
   });
 
-  const [loading, setLoading] = useState(false);
-
-  // Sync active venture data into localStorage and notify listeners
+  // Sync active venture data into localStorage and notify listeners.
   const syncFlowStorage = useCallback((venture) => {
     if (!venture) return;
     try {
@@ -53,7 +52,6 @@ export function IdeaProvider({ children }) {
         location: venture.location || "",
       };
 
-      // Defer event dispatch to avoid updating other components synchronously during render
       setTimeout(() => {
         window.dispatchEvent(
           new CustomEvent("almeriq:active-idea-changed", {
@@ -61,53 +59,41 @@ export function IdeaProvider({ children }) {
           })
         );
       }, 0);
-    } catch (e) {
-      console.warn("[IdeaContext] Storage sync error:", e);
+    } catch (error) {
+      console.warn("[IdeaContext] Storage sync error:", error);
     }
   }, []);
 
   const refreshVentures = useCallback(async () => {
-    if (!user) return [];
-    setLoading(true);
+    if (!isFounder) return [];
     try {
-      const data = await listVenturesApi();
-      if (Array.isArray(data)) {
-        setVentures(data);
-        try {
-          localStorage.setItem(LS_VENTURES_CACHE_KEY, JSON.stringify(data));
-        } catch {}
-
-        // Determine active venture cleanly outside of state updater
-        const currentId = activeVentureId;
-        const exists = data.some((v) => String(v.id) === String(currentId));
-        if (!exists && data.length > 0) {
-          const defaultVenture = data[0];
-          setActiveVentureIdState(String(defaultVenture.id));
-          syncFlowStorage(defaultVenture);
-        } else if (exists) {
-          const found = data.find((v) => String(v.id) === String(currentId));
-          if (found) syncFlowStorage(found);
-        }
-        return data;
-      }
+      const refreshed = await refreshCachedVentures();
+      return Array.isArray(refreshed) ? refreshed : [];
+    } catch (error) {
+      console.warn("[IdeaContext] Failed to load ventures:", error);
       return [];
-    } catch (err) {
-      console.warn("[IdeaContext] Failed to load ventures:", err);
-      return [];
-    } finally {
-      setLoading(false);
     }
-  }, [user, activeVentureId, syncFlowStorage]);
+  }, [isFounder, refreshCachedVentures]);
 
-  // Load ventures whenever authenticated user changes (founders only)
+  // Reset the active selection for non-founder sessions.
   useEffect(() => {
-    if (user && user.role === "FOUNDER") {
-      refreshVentures();
-    } else {
-      setVentures([]);
-      setActiveVentureIdState(null);
+    if (!isFounder) setActiveVentureIdState(null);
+  }, [isFounder]);
+
+  // Keep the active selection valid whenever the shared venture cache changes.
+  useEffect(() => {
+    if (!isFounder || !Array.isArray(data)) return;
+
+    const exists = data.some((venture) => String(venture.id) === String(activeVentureId));
+    if (!exists && data.length > 0) {
+      const defaultVenture = data[0];
+      setActiveVentureIdState(String(defaultVenture.id));
+      syncFlowStorage(defaultVenture);
+    } else if (exists) {
+      const found = data.find((venture) => String(venture.id) === String(activeVentureId));
+      if (found) syncFlowStorage(found);
     }
-  }, [user, refreshVentures]);
+  }, [isFounder, data, activeVentureId, syncFlowStorage]);
 
   const setActiveVentureId = useCallback((id) => {
     const stringId = id ? String(id) : null;
@@ -117,10 +103,8 @@ export function IdeaProvider({ children }) {
         localStorage.setItem(LS_ACTIVE_VENTURE_KEY, stringId);
         localStorage.setItem(LS_VENTURE_ID_KEY, stringId);
       } catch {}
-      const found = ventures.find((v) => String(v.id) === stringId);
-      if (found) {
-        syncFlowStorage(found);
-      }
+      const found = ventures.find((venture) => String(venture.id) === stringId);
+      if (found) syncFlowStorage(found);
     } else {
       try {
         localStorage.removeItem(LS_ACTIVE_VENTURE_KEY);
@@ -144,9 +128,9 @@ export function IdeaProvider({ children }) {
   }, []);
 
   const activeVenture = useMemo(() => {
-    if (!ventures?.length) return null;
+    if (!ventures.length) return null;
     if (!activeVentureId) return ventures[0] || null;
-    return ventures.find((v) => String(v.id) === String(activeVentureId)) || ventures[0] || null;
+    return ventures.find((venture) => String(venture.id) === String(activeVentureId)) || ventures[0] || null;
   }, [ventures, activeVentureId]);
 
   const value = useMemo(() => ({

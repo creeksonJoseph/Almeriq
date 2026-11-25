@@ -156,7 +156,7 @@ Key areas:
 - `GET/PUT /api/provider/profile`
 - `POST/GET /api/provider/assets`, `GET /api/provider/assets/{id}`
 - `GET/POST /api/provider/coverage-regions`
-- `GET/POST /api/provider/orders`, `GET/PATCH /api/provider/orders/{id}`
+- `GET /api/provider/orders`, `GET/PATCH /api/provider/orders/{id}`
 - `POST /api/deals`, `GET/POST /api/deals/{id}/sign`
 - `GET/POST /api/conversations`, `GET/POST /api/conversations/{id}/messages`
 - `GET /api/notifications`, `PATCH /api/notifications/read-all`

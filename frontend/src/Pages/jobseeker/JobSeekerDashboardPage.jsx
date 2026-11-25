@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "../../components/ui";
+import { Button, Card, Skeleton, SkeletonText } from "../../components/ui";
 import { getJobSeekerProfileApi, listJobsApi, listMyJobApplicationsApi } from "../../lib/api/job";
 
 export default function JobSeekerDashboardPage() {
@@ -9,27 +9,35 @@ export default function JobSeekerDashboardPage() {
   const [openJobs, setOpenJobs] = useState(0);
   const [applicationCount, setApplicationCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     async function loadDashboard() {
       try {
         const [profileResult, jobsResult, applicationsResult] = await Promise.all([
-          getJobSeekerProfileApi().catch(() => null),
+          getJobSeekerProfileApi().catch((requestError) => {
+            if (requestError.status === 404 || requestError.response?.status === 404) return null;
+            throw requestError;
+          }),
           listJobsApi({ is_active: true, limit: 100 }),
           listMyJobApplicationsApi(),
         ]);
         if (cancelled) return;
         setProfile(profileResult);
-        setOpenJobs(jobsResult.total || 0);
-        setApplicationCount(applicationsResult.total || 0);
+        setOpenJobs(jobsResult.total ?? jobsResult.items?.length ?? 0);
+        setApplicationCount(applicationsResult.total ?? applicationsResult.items?.length ?? 0);
+        setError("");
+      } catch (requestError) {
+        if (!cancelled) setError(requestError.response?.data?.detail || requestError.message || "Unable to load your dashboard. Please try again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
     loadDashboard();
     return () => { cancelled = true; };
-  }, []);
+  }, [retryCount]);
 
   return (
     <main className="min-h-screen bg-bg px-4 py-10 text-text">
@@ -46,10 +54,12 @@ export default function JobSeekerDashboardPage() {
           </div>
         </header>
 
+        {error && <Card className="border border-red-500/30 p-4 text-sm text-red-300" role="alert">{error}<Button className="ml-3" size="sm" variant="ghost" onClick={() => { setLoading(true); setRetryCount((count) => count + 1); }}>Retry</Button></Card>}
+
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : openJobs}</p></Card>
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications sent</p><p className="mt-2 text-3xl font-semibold">{loading ? "—" : applicationCount}</p></Card>
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile visibility</p><p className="mt-2 text-lg font-semibold">{loading ? "—" : profile?.is_active ? "Visible" : "Hidden"}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{loading || error ? "—" : openJobs}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications sent</p><p className="mt-2 text-3xl font-semibold">{loading || error ? "—" : applicationCount}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile visibility</p><p className="mt-2 text-lg font-semibold">{loading || error ? "—" : profile?.is_active ? "Visible" : "Hidden"}</p></Card>
         </div>
 
         <Card className="p-6">

@@ -10,6 +10,7 @@ import ProviderRoute from "./components/ProviderRoute";
 import RoleRoute from "./components/RoleRoute";
 import FounderRoute from "./components/FounderRoute";
 import Layout from "./components/Layout";
+import { RouteSkeleton } from "./components/ui";
 
 // Eager load primary landing entry
 import LandingPage from "./Pages/shared/LandingPage";
@@ -94,11 +95,7 @@ const SearchPage = lazyWithRetry(() => import("./Pages/marketplace/SearchPage"))
 const CheckoutPage = lazyWithRetry(() => import("./Pages/checkout/CheckoutPage"));
 const SentryTestPage = lazyWithRetry(() => import("./Pages/checkout/SentryTestPage"));
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[50vh] w-full">
-    <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-  </div>
-);
+const PageLoader = () => <RouteSkeleton />;
 
 function App() {
   return (
@@ -411,7 +408,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/settings"].map((path) => (
+                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/updates", "/investor/settings"].map((path) => (
                   <Route
                     key={path}
                     path={path}

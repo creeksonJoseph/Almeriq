@@ -3,30 +3,33 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 
-vi.mock("../../lib/client", () => ({
-  apiClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  },
+vi.mock("../../lib/api/founder", () => ({
+  executeAiToolApi: vi.fn(),
+  listFounderPitchesApi: vi.fn(),
+  listFounderInvestmentRequestsApi: vi.fn(),
+  createFounderPitchApi: vi.fn(),
+  updateFounderPitchApi: vi.fn(),
+  updateFounderInvestmentRequestApi: vi.fn(),
+  publishFounderPitchApi: vi.fn(),
+  unpublishFounderPitchApi: vi.fn(),
+  deleteFounderPitchApi: vi.fn(),
 }));
 
 vi.mock("../../lib/api/conversations", () => ({
   startInvestmentConversationApi: vi.fn(),
 }));
 
-vi.mock("../../lib/api/founder", () => ({
-  executeAiToolApi: vi.fn(),
-}));
 
-import * as client from "../../lib/client";
+
+import * as founderApi from "../../lib/api/founder";
 import FounderPitchesPage from "./FounderPitchesPage.jsx";
 
-const apiGet = vi.mocked(client.apiClient.get);
-const apiPost = vi.mocked(client.apiClient.post);
-const apiPut = vi.mocked(client.apiClient.put);
-const apiDelete = vi.mocked(client.apiClient.delete);
+const listPitches = vi.mocked(founderApi.listFounderPitchesApi);
+const listRequests = vi.mocked(founderApi.listFounderInvestmentRequestsApi);
+const createPitch = vi.mocked(founderApi.createFounderPitchApi);
+const updatePitch = vi.mocked(founderApi.updateFounderPitchApi);
+const deletePitch = vi.mocked(founderApi.deleteFounderPitchApi);
+const publishPitch = vi.mocked(founderApi.publishFounderPitchApi);
 
 const PITCH = {
   id: 1,
@@ -46,26 +49,19 @@ const PITCH = {
 };
 
 const pitchList = (payload = []) => {
-  apiGet.mockImplementation((url) => {
-    if (String(url).includes("investment-requests")) {
-      return Promise.resolve({ data: { items: [] } });
-    }
-    return Promise.resolve({ data: payload });
-  });
+  listPitches.mockResolvedValue(payload);
+  listRequests.mockResolvedValue([]);
 };
 
 beforeEach(() => {
   vi.resetAllMocks();
   window.confirm = vi.fn(() => true);
-  apiGet.mockImplementation((url) => {
-    if (String(url).includes("investment-requests")) {
-      return Promise.resolve({ data: { items: [] } });
-    }
-    return Promise.resolve({ data: [] });
-  });
-  apiPost.mockResolvedValue({ data: {} });
-  apiPut.mockResolvedValue({ data: {} });
-  apiDelete.mockResolvedValue({ data: {} });
+  listPitches.mockResolvedValue([]);
+  listRequests.mockResolvedValue([]);
+  createPitch.mockResolvedValue({});
+  updatePitch.mockResolvedValue({});
+  deletePitch.mockResolvedValue(undefined);
+  publishPitch.mockResolvedValue({ id: 1, status: "active" });
 });
 
 afterEach(() => {
@@ -73,8 +69,14 @@ afterEach(() => {
 });
 
 describe("FounderPitchesPage pitch creation", () => {
-  it("publishes a new pitch via POST and shows success notice", async () => {
-    pitchList();
+  it("saves a new pitch as a draft and publishes it in a separate action", async () => {
+    listPitches.mockResolvedValueOnce([]).mockResolvedValue([{
+      ...PITCH,
+      id: 7,
+      title: "Acme AI",
+      status: "draft",
+    }]);
+    listRequests.mockResolvedValue([]);
     render(<MemoryRouter><FounderPitchesPage /></MemoryRouter>);
 
     await waitFor(() => expect(screen.getByText(/create a pitch/i)).toBeInTheDocument());
@@ -94,15 +96,21 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.change(screen.getByPlaceholderText(/optional amount/i), {
       target: { value: "50000" },
     });
+    fireEvent.change(screen.getByPlaceholderText(/nairobi, kenya/i), {
+      target: { value: "Nairobi, Kenya" },
+    });
 
-    fireEvent.click(screen.getByText(/publish pitch/i));
+    fireEvent.click(screen.getByRole("button", { name: /save as draft/i }));
 
     await waitFor(() => {
-      expect(apiPost).toHaveBeenCalledWith(
-        "/api/founder/pitches",
+      expect(createPitch).toHaveBeenCalledWith(
         expect.objectContaining({ title: "Acme AI", ask_amount: 50000 }),
       );
     });
+    await waitFor(() => expect(screen.getByText(/draft saved/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
+
+    await waitFor(() => expect(publishPitch).toHaveBeenCalledWith(7));
     await waitFor(() => {
       expect(screen.getByText(/pitch published to investor discovery/i)).toBeInTheDocument();
     });
@@ -121,12 +129,12 @@ describe("FounderPitchesPage pitch creation", () => {
       target: { value: "-100" },
     });
 
-    fireEvent.submit(screen.getByRole("button", { name: /publish pitch/i }).closest("form"));
+    fireEvent.submit(screen.getByRole("button", { name: /save as draft/i }).closest("form"));
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/enter a pitch title and a valid non-negative funding ask/i);
     });
-    expect(apiPost).not.toHaveBeenCalled();
+    expect(createPitch).not.toHaveBeenCalled();
   });
 
   it("loads an existing pitch into the form for editing", async () => {
@@ -158,8 +166,8 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.click(screen.getByText(/update pitch/i));
 
     await waitFor(() => {
-      expect(apiPut).toHaveBeenCalledWith(
-        "/api/founder/pitches/1",
+      expect(updatePitch).toHaveBeenCalledWith(
+        1,
         expect.objectContaining({ title: "Updated Pitch" }),
       );
     });
@@ -173,7 +181,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.click(screen.getByText(/delete/i));
 
     await waitFor(() => {
-      expect(apiDelete).toHaveBeenCalledWith("/api/founder/pitches/1");
+      expect(deletePitch).toHaveBeenCalledWith(1);
     });
     await waitFor(() => {
       expect(screen.getByText(/pitch deleted/i)).toBeInTheDocument();

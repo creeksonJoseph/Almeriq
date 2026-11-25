@@ -1,18 +1,13 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import OnboardingWizard from "./OnboardingWizard";
+import { RouteSkeleton } from "./ui";
 
 export default function FounderRoute({ children }) {
   const { isLoggedIn, loading, user, updateUser } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] w-full">
-        <div className="w-8 h-8 border-2 border-[#C9A15A] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <RouteSkeleton />;
 
   if (!isLoggedIn) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -22,7 +17,7 @@ export default function FounderRoute({ children }) {
     return <OnboardingWizard user={user} onComplete={(nextUser) => updateUser(nextUser)} />;
   }
 
-  if (user?.role !== "founder") {
+  if (String(user?.role || "").toLowerCase() !== "founder") {
     return <Navigate to="/dashboard" replace />;
   }
 

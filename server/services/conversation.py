@@ -53,6 +53,10 @@ async def start_provider_conversation(provider_id: int, user_id: int, session: A
     return await conversation_repo.get_or_create_conversation(user_id, profile["user_id"], session=session)
 
 
+async def count_unread_conversations(user_id: int, session: AsyncSession) -> int:
+    return await conversation_repo.count_unread_conversations(user_id=user_id, session=session)
+
+
 async def get_conversation(
     conversation_id: int,
     user_id: int,
@@ -106,7 +110,7 @@ async def start_investment_conversation(
     pitch = await pitch_repo.get_startup_pitch(request["pitch_id"], session=session)
     if not pitch or user_id not in {request["investor_id"], pitch["founder_id"]}:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Investor request not found")
-    if request["status"] not in {"accepted", "in_discussion", "invested"}:
+    if request["status"] not in {"accepted", "in_discussion", "invested", "investor_reported"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Messaging is available after the founder accepts or opens discussion")
     other_id = pitch["founder_id"] if user_id == request["investor_id"] else request["investor_id"]
     return await conversation_repo.get_or_create_conversation(user_id, other_id, session=session)

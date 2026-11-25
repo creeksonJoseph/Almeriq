@@ -1,19 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Download, Plus, Filter, ChevronRight, Search } from "lucide-react";
-import { Button, Card, Input, StatusPill, DataTable, Skeleton, SkeletonText, SkeletonCard, Drawer } from "../../components/ui";
-import { listOrdersApi, getOrderApi } from "../../lib/api";
-
-const C = {
-  bg: "#0c0e13",
-  surface: "#111318",
-  surfaceLow: "#1a1b21",
-  surfaceContainer: "#1e2025",
-  surfaceHigh: "#282a2f",
-  gold: "#f2ca50",
-  text: "#ffffff",
-  border: "#282a2f",
-};
+import { ChevronRight, Search } from "lucide-react";
+import { Button, Card, DataTable, Skeleton, SkeletonText, SkeletonCard, Drawer } from "../../components/ui";
+import { listOrdersApi, getOrderApi, getProviderOrderSummaryApi } from "../../lib/api";
 
 const STATUS_CONFIG = {
   pending: { variant: "gold", label: "Pending" },
@@ -28,27 +17,60 @@ export default function ProviderOrdersPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
+  const [ordersTotal, setOrdersTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState("");
+  const [orderSummary, setOrderSummary] = useState({ total_orders: 0, open_orders: 0, pending_review: 0, confirmed: 0, shipped: 0, completed: 0, declined: 0, priced_orders: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState(searchParams.get("status") || "all");
+  const initialStatus = searchParams.get("status");
+  const [activeTab, setActiveTab] = useState(initialStatus === "pending_review" ? "pending" : initialStatus || "all");
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailError, setDetailError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     async function loadOrders() {
       setLoading(true);
+      setError(null);
       try {
-        const res = await listOrdersApi();
-        setOrders(res?.items || res.data?.items || res.data || res.orders || res);
+        const [res, summary] = await Promise.all([
+          listOrdersApi({ limit: 50, offset: 0 }),
+          getProviderOrderSummaryApi(),
+        ]);
+        if (cancelled) return;
+        setOrders(res.items || []);
+        setOrdersTotal(res.total ?? res.items?.length ?? 0);
+        setOrderSummary(summary);
       } catch (e) {
-        setError(e.message);
+        if (!cancelled) setError(e.response?.data?.detail || e.message || "Unable to load orders.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     loadOrders();
-  }, [activeTab]);
+    return () => { cancelled = true; };
+  }, []);
+
+  const loadMoreOrders = async () => {
+    if (loadingMore || orders.length >= ordersTotal) return;
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const res = await listOrdersApi({ limit: 50, offset: orders.length });
+      setOrders((current) => {
+        const seen = new Set(current.map((order) => order.id));
+        return [...current, ...(res.items || []).filter((order) => !seen.has(order.id))];
+      });
+      setOrdersTotal(res.total ?? ordersTotal);
+    } catch (e) {
+      setLoadMoreError(e.response?.data?.detail || e.message || "Unable to load more orders.");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredOrders = orders.filter((order) => {
     const statusMatches = activeTab === "all" ||
@@ -62,21 +84,23 @@ export default function ProviderOrdersPage() {
   });
 
   const statusTabs = useMemo(() => [
-    { value: "all", label: "All", count: orders.length },
-    { value: "pending", label: "Pending", count: orders.filter(o => o.status?.toLowerCase() === "pending_review").length },
-    { value: "confirmed", label: "Confirmed", count: orders.filter(o => o.status?.toLowerCase() === "confirmed").length },
-    { value: "shipped", label: "Shipped", count: orders.filter(o => o.status?.toLowerCase() === "shipped").length },
-    { value: "completed", label: "Completed", count: orders.filter(o => o.status?.toLowerCase() === "completed").length },
-  ], [orders]);
+    { value: "all", label: "All", count: orderSummary.total_orders },
+    { value: "pending", label: "Pending", count: orderSummary.pending_review },
+    { value: "confirmed", label: "Confirmed", count: orderSummary.confirmed },
+    { value: "shipped", label: "Shipped", count: orderSummary.shipped },
+    { value: "completed", label: "Completed", count: orderSummary.completed },
+    { value: "declined", label: "Declined", count: orderSummary.declined },
+  ], [orderSummary]);
 
   const openDrawer = async (order) => {
+    setDetailError("");
     setSelectedOrder(order);
     setDrawerOpen(true);
     try {
       const detail = await getOrderApi(order.id);
       setSelectedOrder(detail.data || detail.order || detail);
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || "Unable to load order details.");
+      setDetailError(e.response?.data?.detail || e.message || "Unable to load order details.");
     }
   };
 
@@ -110,7 +134,7 @@ export default function ProviderOrdersPage() {
     );
   }
 
-  const escrowVolume = orders.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0);
+
 
   return (
     <div className={`min-h-screen bg-[#0c0e13] text-[#ffffff] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 space-y-10`}>
@@ -126,7 +150,7 @@ export default function ProviderOrdersPage() {
             const rows = filteredOrders.map((order) => [order.id, order.clientName, order.assetName, order.status, order.amount || order.lease_amount].join(","));
             window.open(`data:text/csv;charset=utf-8,${encodeURIComponent(["Order ID,Client,Asset,Status,Amount", ...rows].join("\n"))}`, "_blank");
           }}>
-            Export CSV
+            Export loaded orders
           </Button>
           <Button className="!border-0 !bg-[#f2ca50] !text-[#0c0e13] hover:!bg-[#e2ba40]" disabled={!orders.some(order => order.status?.toLowerCase() === "confirmed")} onClick={() => {
             const nextOrder = orders.find(order => order.status?.toLowerCase() === "confirmed");
@@ -139,10 +163,10 @@ export default function ProviderOrdersPage() {
 
       {/* Summary KPIs Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KPICard label="Total Orders" value={orders.length} icon="Receipt" />
-        <KPICard label="Pending Review" value={orders.filter(o => o.status?.toLowerCase() === "pending_review").length} icon="AlertCircle" highlight />
-        <KPICard label="In Transit / Deployed" value={orders.filter(o => o.status?.toLowerCase() === "shipped").length} icon="Truck" />
-        <KPICard label="Total Order Value" value={escrowVolume > 0 ? `$${escrowVolume.toLocaleString()}` : "—"} icon="Lock" />
+        <KPICard label="Total Orders" value={orderSummary.total_orders} icon="Receipt" />
+        <KPICard label="Pending Review" value={orderSummary.pending_review} icon="AlertCircle" highlight />
+        <KPICard label="In Transit / Deployed" value={orderSummary.shipped} icon="Truck" />
+        <KPICard label="Orders with a Listed Rate" value={orderSummary.priced_orders} icon="Receipt" />
       </div>
 
       {/* Filtering, Tabs & Search Toolbar */}
@@ -186,7 +210,7 @@ export default function ProviderOrdersPage() {
           <div className="px-6 py-4 bg-[#111318] border-b border-[#282a2f] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-[#f2ca50]">Database</span>
-              <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Live Order Ledger ({filteredOrders.length} Records)</span>
+              <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Live Order Ledger ({filteredOrders.length} matches · {orders.length} of {ordersTotal} loaded)</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-[#ffffff]/60">
               <span className="w-2 h-2 rounded-full bg-[#f2ca50]"></span>
@@ -223,7 +247,7 @@ export default function ProviderOrdersPage() {
                 <span className="font-mono text-[#ffffff]/60">{row.allocation || "—"}</span>
               )},
               { key: "amount", header: "Lease Amount", render: (row) => (
-                <span className="font-mono font-bold text-[#f2ca50] text-sm">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-normal text-[#ffffff]/60">/mo</span></span>
+                <span className="font-mono font-bold text-[#f2ca50] text-sm">{(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-normal text-[#ffffff]/60">/mo · currency not specified</span></span>
               )},
               { key: "status", header: "Status", render: (row) => {
                 const config = STATUS_CONFIG[row.status?.toLowerCase()] || STATUS_CONFIG.pending;
@@ -235,7 +259,7 @@ export default function ProviderOrdersPage() {
                 );
               }},
               { key: "timestamp", header: "Timestamp", render: (row) => (
-                <span className="font-mono text-[#ffffff]/60 text-[12px]">{row.timestamp || "—"}</span>
+                <span className="font-mono text-[#ffffff]/60 text-[12px]">{row.created_at ? new Date(row.created_at).toLocaleString() : "—"}</span>
               )},
               { key: "action", header: "Inspect", render: (row) => (
                 <button onClick={() => openDrawer(row)} className="text-[#f2ca50] hover:text-[#e2ba40] p-1">
@@ -247,6 +271,8 @@ export default function ProviderOrdersPage() {
             emptyMessage="No orders found matching your filters."
             rowKey={(row) => row.id}
           />
+          {loadMoreError && <p role="alert" className="border-t border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{loadMoreError}</p>}
+          {orders.length < ordersTotal && <div className="flex justify-center border-t border-[#282a2f] p-4"><Button variant="ghost" disabled={loadingMore} onClick={loadMoreOrders}>{loadingMore ? "Loading…" : "Load more orders"}</Button></div>}
         </div>
 
         {/* Order Detail Drawer */}
@@ -257,6 +283,7 @@ export default function ProviderOrdersPage() {
           side="right"
           className="md:w-[520px]"
         >
+          {detailError && <p role="alert" className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{detailError}</p>}
           {selectedOrder && <OrderDetailDrawer order={selectedOrder} navigate={navigate} />}
         </Drawer>
       </div>
@@ -328,7 +355,7 @@ function OrderDetailDrawer({ order, navigate }) {
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-[#ffffff]/60">Lease Amount:</span>
-          <span className="font-mono font-bold text-[#f2ca50]">${(order.amount || order.lease_amount || 0).toLocaleString()}/mo</span>
+          <span className="font-mono font-bold text-[#f2ca50]">{(order.amount || order.lease_amount || 0).toLocaleString()}/mo · currency not specified</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-[#ffffff]/60">Payment status:</span>

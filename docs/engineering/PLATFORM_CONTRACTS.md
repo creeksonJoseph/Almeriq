@@ -25,7 +25,7 @@ All models extend `server/models/base.py` (`DeclarativeBase`) and use
 ### Provider Domain (implemented on feat/marketplace-order-flow)
 | Model | Table | Key columns |
 |-------|-------|-------------|
-| ProviderProfile | `provider_profiles` | id PK, user_id FK→users unique, company_name, trading_name, provider_type, location, about, verified, enclave_key, created_at, updated_at |
+| ProviderProfile | `provider_profiles` | id PK, user_id FK→users unique, company_name, trading_name, provider_type, location, about, verified, verified_at, verified_by, verification_reviewed_at, verification_reviewed_by, enclave_key, created_at, updated_at |
 | Asset | `assets` | id PK, provider_id FK, name, category, kind (physical\|digital), description, specs JSON, price_monthly numeric, quantity_capacity, status, telemetry_url, is_active, client_asset_id, created_at, updated_at |
 | CoverageRegion | `coverage_regions` | id PK, provider_id FK, region, created_at |
 | Order | `orders` | id PK, order_id unique text, client_id FK→users, provider_id FK→provider_profiles, asset_id FK→assets, allocation text, lease_amount numeric, status (pending_review\|confirmed\|shipped\|completed\|declined), created_at, updated_at |
@@ -81,7 +81,7 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 | POST/GET | `/api/provider/assets` | cookie + provider | Assets |
 | GET/PUT/DELETE | `/api/provider/assets/:id` | cookie + provider (ownership) | Asset CRUD |
 | GET/POST | `/api/provider/coverage-regions` | cookie + provider | Coverage regions |
-| GET/POST | `/api/provider/orders` | cookie + provider | Orders |
+| GET | `/api/provider/orders` | cookie + provider | Orders |
 | GET/PATCH | `/api/provider/orders/:id` | cookie + provider (ownership) | Order status |
 | POST | `/api/provider/orders/:id/waybill` | cookie + provider | Waybill upload |
 
@@ -90,12 +90,12 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 |--------|------|------|-------------|
 | GET | `/api/marketplace/listings` | none | Browse listings |
 | GET | `/api/marketplace/listings/:id` | none | Listing detail |
-| POST | `/api/marketplace/orders` | cookie | Create order |
+| POST | `/api/marketplace/checkout` | cookie + founder | Create order and deal atomically |
 
 ### Orders (provider role)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/provider/orders` | cookie + provider | List orders |
+| GET | `/api/provider/orders` | cookie + provider | Paginated order list |\n| GET | `/api/provider/orders/summary` | cookie + provider | All-time order counts for dashboard metrics |
 | GET | `/api/provider/orders/:id` | cookie + provider (ownership) | Order detail |
 | PATCH | `/api/provider/orders/:id/status` | cookie + provider (ownership) | Update status |
 | POST | `/api/provider/orders/:id/waybill` | cookie + provider | Upload waybill |
@@ -110,7 +110,7 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 ### Messaging (authenticated)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/conversations` | cookie | List conversations |
+| GET | `/api/conversations` | cookie | Paginated conversation list |\n| GET | `/api/conversations/summary` | cookie | Inbox-wide unread conversation count |
 | GET | `/api/conversations/:id/messages` | cookie | List messages |
 | POST | `/api/conversations/:id/messages` | cookie | Send message |
 
@@ -148,7 +148,7 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 | Role | Can access |
 |------|------------|
 | `user` (default) | Public routes, dashboard, chat, notifications, checkout |
-| `INFRASTRUCTURE_PROVIDER` | `/api/provider/*`, `/api/deals`, `/api/marketplace/orders` (create) |
+| `INFRASTRUCTURE_PROVIDER` | `/api/provider/*`, provider-owned deal and fulfillment actions |
 | `JOB_SEEKER` | `/api/jobs/*` (apply), `/api/job-seeker/profile` |
 | `INVESTOR` | `/api/investor/profile`, `/api/startup-pitches/:id/invest`, `/api/investments/:id/sign`, `/api/investor/portfolio` |
 | `FOUNDER` | `/api/jobs/*` (create/manage own), `/api/startup-pitches/*` (create/manage own) |

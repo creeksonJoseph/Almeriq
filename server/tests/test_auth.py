@@ -115,6 +115,40 @@ async def test_authenticate_google_only_account_rejects_password(session):
     assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
 
 
+@pytest.mark.asyncio
+async def test_google_signin_rejects_token_for_a_different_client(monkeypatch, session):
+    class MockResponse:
+        status_code = 200
+
+        def json(self):
+            return {
+                "sub": "google-subject",
+                "email": "google-audience@example.com",
+                "name": "Google User",
+                "aud": "another-client-id",
+                "email_verified": "true",
+            }
+
+    class MockClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, traceback):
+            return False
+
+        async def get(self, *args, **kwargs):
+            return MockResponse()
+
+    monkeypatch.setattr(auth_service, "GOOGLE_CLIENT_ID", "expected-client-id")
+    monkeypatch.setattr(auth_service.httpx, "AsyncClient", lambda **kwargs: MockClient())
+
+    with pytest.raises(HTTPException) as exc:
+        await auth_service.authenticate_google_user("fake-token")
+
+    assert exc.value.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "different application" in exc.value.detail
+
+
 # ── Onboarding ────────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
@@ -142,6 +176,16 @@ async def test_update_onboarding_incomplete_when_no_role_or_id(session):
     updated = await auth_service.update_onboarding(
         user_id=user["id"], full_name="Only Name"
     )
+    assert updated["onboarding_completed"] is False
+
+
+@pytest.mark.asyncio
+async def test_role_alone_does_not_complete_onboarding(session):
+    user, _ = await auth_service.register_user(
+        email="role-only@example.com", password="SecurePassword123!"
+    )
+    updated = await auth_service.update_onboarding(user_id=user["id"], role="founder")
+    assert updated["role"] == "founder"
     assert updated["onboarding_completed"] is False
 
 

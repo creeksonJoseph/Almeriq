@@ -6,6 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.notification import Notification
 from models.investor_profile import InvestorProfile
+from models.user import User
+
+NOTIFICATION_TYPES = frozenset({"order", "message", "job", "investment", "advisory", "team"})
+
+INVESTOR_PREFERENCE_FIELDS = {
+    "investment": "notify_deal_updates",
+    "message": "notify_messages",
+}
 
 logger = logging.getLogger(__name__)
 
@@ -18,24 +26,26 @@ async def create_notification(
     link: str | None = None,
     session: AsyncSession | None = None,
 ) -> dict:
-    """Create a notification unless the recipient opted out of this investor alert type."""
-    logger.info(f"[REPO-CREATE-NOTIFICATION] Starting: user_id={user_id}, type={type}")
-    preference_field = {
-        "investment": "notify_deal_updates",
-        "deal": "notify_deal_updates",
-        "message": "notify_messages",
-        "valuation": "notify_valuation_changes",
-    }.get(type)
+    """Persist a supported event, honoring preferences only for investor recipients."""
+    if type not in NOTIFICATION_TYPES:
+        logger.warning("Unsupported notification type skipped", extra={"user_id": user_id, "type": type})
+        return {}
+
+    preference_field = INVESTOR_PREFERENCE_FIELDS.get(type)
     if preference_field:
-        preference_column = getattr(InvestorProfile, preference_field)
-        preference_stmt = select(preference_column).where(InvestorProfile.user_id == user_id).limit(1)
+        role_stmt = select(User.role).where(User.id == user_id)
+        profile_stmt = select(getattr(InvestorProfile, preference_field)).where(
+            InvestorProfile.user_id == user_id
+        ).limit(1)
         if session is not None:
-            enabled = await session.scalar(preference_stmt)
+            recipient_role = await session.scalar(role_stmt)
+            enabled = await session.scalar(profile_stmt) if str(recipient_role).lower() == "investor" else None
         else:
             async with async_session_factory() as preference_db:
-                enabled = await preference_db.scalar(preference_stmt)
+                recipient_role = await preference_db.scalar(role_stmt)
+                enabled = await preference_db.scalar(profile_stmt) if str(recipient_role).lower() == "investor" else None
         if enabled is False:
-            logger.info("Notification suppressed by recipient preference", extra={"user_id": user_id, "type": type})
+            logger.info("Notification suppressed by investor preference", extra={"user_id": user_id, "type": type})
             return {}
     notification = Notification(
         user_id=user_id,
@@ -62,6 +72,7 @@ async def list_notifications(
     unread_only: bool = False,
     limit: int = 50,
     offset: int = 0,
+    notification_type: str | None = None,
     session: AsyncSession | None = None,
 ) -> tuple[list[dict], int]:
     """List notifications for a user."""
@@ -71,6 +82,9 @@ async def list_notifications(
     if unread_only:
         stmt = stmt.where(Notification.read == False)
         count_stmt = count_stmt.where(Notification.read == False)
+    if notification_type:
+        stmt = stmt.where(Notification.type == notification_type)
+        count_stmt = count_stmt.where(Notification.type == notification_type)
 
     stmt = stmt.order_by(Notification.created_at.desc()).limit(limit).offset(offset)
 

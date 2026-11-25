@@ -1,52 +1,22 @@
-import { useEffect, useState } from "react";
-import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
-import { startAdvisoryConversationApi } from "../../lib/api/conversations";
+import { useState } from "react";
+import { useExpertDiscovery } from "../../hooks/useExpertDiscovery";
+import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 import { useNavigate } from "react-router-dom";
 
 export default function ExpertDiscoveryPage() {
   const navigate = useNavigate();
-  const [experts, setExperts] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [budget, setBudget] = useState("");
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    Promise.all([
-      apiClient.get("/api/experts"),
-      apiClient.get("/api/founder/expert-requests"),
-    ]).then(([expertResponse, requestResponse]) => {
-      if (active) {
-        setExperts(expertResponse.data?.items || []);
-        setRequests(requestResponse.data?.items || []);
-      }
-    }).catch((err) => {
-      if (active) setError(err.response?.data?.detail || "Unable to load expert data.");
-    }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+  const { experts, requests, expertsLoading, requestsLoading, error, notice, sendRequest, openConversation, setError } = useExpertDiscovery();
 
   const visible = experts.filter((expert) => {
     const haystack = [expert.headline, expert.bio, expert.location, ...(expert.expertise || [])].join(" ").toLowerCase();
     return haystack.includes(query.toLowerCase());
   });
-
-  const openConversation = async (requestId) => {
-    try {
-      const conversation = await startAdvisoryConversationApi(requestId);
-      navigate(`/messages?conversation=${conversation.id}`);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unable to open this conversation.");
-    }
-  };
 
   const requestAdvice = async (event) => {
     event.preventDefault();
@@ -57,11 +27,9 @@ export default function ExpertDiscoveryPage() {
     if (amount !== null && (!Number.isFinite(amount) || amount < 0)) { setError("Budget must be a valid non-negative amount."); return; }
     setSending(true); setError(""); setNotice("");
     try {
-      const { data } = await apiClient.post(`/api/experts/${selected.user_id}/requests`, { subject: subject.trim(), description: description.trim(), budget: amount });
-      setRequests((items) => [data, ...items]);
-      setNotice(`Your advisory request was sent to ${selected.headline || "the expert"}.`);
+      await sendRequest(selected.user_id, { subject: subject.trim(), description: description.trim(), budget: amount });
       setSelected(null); setSubject(""); setDescription(""); setBudget("");
-    } catch (err) { setError(err.response?.data?.detail || "Unable to send your request."); }
+    } catch { /* The feature hook exposes the request error. */ }
     finally { setSending(false); }
   };
 
@@ -72,7 +40,7 @@ export default function ExpertDiscoveryPage() {
         <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expertise, location or keywords…" />
         {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
         {notice && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</p>}
-        {loading ? <p className="text-sm text-white/50">Loading experts…</p> : visible.length === 0 ? <Card className="p-6 text-sm text-white/50">No active expert profiles match that search.</Card> : <div className="grid gap-4 md:grid-cols-2">{visible.map((expert) => (
+        {expertsLoading ? <div className="grid gap-4 md:grid-cols-2" aria-busy="true">{[0, 1, 2, 3].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> : visible.length === 0 ? <Card className="p-6 text-sm text-white/50">No active expert profiles match that search.</Card> : <div className="grid gap-4 md:grid-cols-2">{visible.map((expert) => (
           <Card key={expert.id} className="space-y-3 p-5">
             <div><h2 className="font-serif text-xl">{expert.headline || "Independent expert"}</h2><p className="mt-1 text-xs text-gold">{expert.expertise?.join(" · ") || "Expertise not listed"}</p></div>
             <p className="text-sm text-white/65">{expert.bio || "No bio provided."}</p>
@@ -83,11 +51,11 @@ export default function ExpertDiscoveryPage() {
         ))}</div>}
         <section className="space-y-3">
           <h2 className="font-serif text-xl">Your advisory requests</h2>
-          {requests.length === 0 ? <Card className="p-5 text-sm text-white/50">You haven't contacted an expert yet.</Card> : requests.map((request) => {
+          {requestsLoading ? <div className="space-y-3" aria-busy="true">{[0, 1].map((item) => <Card key={item} className="space-y-2 p-4"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-3 w-1/2" /></Card>)}</div> : requests.length === 0 ? <Card className="p-5 text-sm text-white/50">You haven't contacted an expert yet.</Card> : requests.map((request) => {
             const expert = experts.find((item) => item.user_id === request.expert_id);
             return <Card key={request.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div><p className="font-medium">{request.subject}</p><p className="mt-1 text-xs text-white/50">{expert?.headline || `Expert #${request.expert_id}`} · <span className="capitalize">{request.status.replaceAll("_", " ")}</span></p></div>
-              {["accepted", "completed"].includes(request.status) && <Button size="sm" onClick={() => openConversation(request.id)}>Open conversation</Button>}
+              {["accepted", "completed"].includes(request.status) && <Button size="sm" onClick={async () => { try { const conversation = await openConversation(request.id); navigate(`/messages?conversation=${conversation.id}`); } catch (err) { setError(err.message || "Unable to open this conversation."); } }}>Open conversation</Button>}
             </Card>;
           })}
         </section>
@@ -95,8 +63,8 @@ export default function ExpertDiscoveryPage() {
           <div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-serif text-xl">Request advice from {selected.headline || "this expert"}</h2><Button variant="ghost" onClick={() => setSelected(null)}>Close</Button></div>
           <form onSubmit={requestAdvice} className="space-y-4">
             <label className="block space-y-2"><span className="text-sm">What do you need help with?</span><Input value={subject} onChange={(event) => setSubject(event.target.value)} maxLength={200} placeholder="e.g. Review our fundraising strategy" required /></label>
-            <label className="block space-y-2"><span className="text-sm">Describe the request</span><textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={4} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Share context, goals and the kind of help you need." required /></label>
-            <label className="block space-y-2"><span className="text-sm">Indicative budget (optional)</span><Input value={budget} onChange={(event) => setBudget(event.target.value)} placeholder="Amount" /></label>
+            <label className="block space-y-2"><span className="text-sm">Describe the request</span><Textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={4} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Share context, goals and the kind of help you need." required /></label>
+            <label className="block space-y-2"><span className="text-sm">Indicative budget (optional · currency not specified)</span><Input value={budget} onChange={(event) => setBudget(event.target.value)} placeholder="Amount" /></label>
             <div className="flex justify-end"><Button type="submit" disabled={sending}>{sending ? "Sending…" : "Send advisory request"}</Button></div>
           </form>
         </Card>}

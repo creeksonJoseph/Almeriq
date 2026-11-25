@@ -11,10 +11,10 @@ export default function StepIdentity({
     <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="font-serif text-xl text-white font-medium tracking-tight">
-          Identity Verification
+          Identity Details
         </h2>
         <p className="text-sm text-white mt-2">
-          Required for legal company registration and compliance.
+          Used for compliance-related workflows where required.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export default function StepIdentity({
               Why we ask for identity numbers
             </h4>
             <p className="text-xs text-white leading-relaxed">
-              Required for legal company registration, compliance, and regulatory verification when executing infrastructure or investment contracts.
+              This information is collected for compliance workflows. Submitting it here does not verify your identity.
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function StepIdentity({
                 : "bg-[#22242c] text-white/50 cursor-not-allowed"
             }`}
           >
-            {loading ? "Verifying..." : "Proceed to Role Selection"}
+            {loading ? "Saving..." : "Continue to Role Selection"}
           </button>
         </div>
       </form>

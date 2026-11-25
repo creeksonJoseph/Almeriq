@@ -48,6 +48,20 @@ describe("JobSeekerJobsPage job application", () => {
     expect(listJobsApi).toHaveBeenCalled();
   });
 
+  it("loads the next page of open jobs without duplicating existing results", async () => {
+    const nextJob = { ...JOB, id: 43, title: "Platform Engineer" };
+    listJobsApi
+      .mockResolvedValueOnce({ items: [JOB], total: 2 })
+      .mockResolvedValueOnce({ items: [nextJob], total: 2 });
+    render(<MemoryRouter initialEntries={["/job-seeker/jobs"]}><JobSeekerJobsPage /></MemoryRouter>);
+
+    await waitFor(() => expect(screen.getByRole("button", { name: /load more jobs/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /load more jobs/i }));
+
+    await waitFor(() => expect(screen.getByText(/platform engineer/i)).toBeInTheDocument());
+    expect(listJobsApi).toHaveBeenLastCalledWith({ is_active: true, limit: 50, offset: 1 });
+  });
+
   it("submits an application and marks the job as applied", async () => {
     listMyJobApplicationsApi
       .mockResolvedValueOnce({ items: [] })

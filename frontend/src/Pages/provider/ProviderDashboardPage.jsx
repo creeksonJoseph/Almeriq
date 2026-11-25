@@ -1,28 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, StatusPill, SkeletonText, SkeletonCard, DataTable } from "../../components/ui";
-import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi } from "../../lib/api";
+import { listOrdersApi, getProviderProfileApi, listAssetsApi, listConversationsApi, getProviderOrderSummaryApi, getConversationSummaryApi } from "../../lib/api";
 
 export default function ProviderDashboardPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [orderSummary, setOrderSummary] = useState({ total_orders: 0, open_orders: 0, pending_review: 0, priced_orders: 0 });
+  const [unreadConversationCount, setUnreadConversationCount] = useState(0);
   const [assets, setAssets] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
+      setError(null);
       try {
-        const [profileRes, ordersRes, assetsRes, conversationsRes] = await Promise.all([
+        const [profileRes, ordersRes, assetsRes, conversationsRes, orderSummaryRes, conversationSummaryRes] = await Promise.all([
           getProviderProfileApi(),
           listOrdersApi(),
           listAssetsApi(),
-          listConversationsApi({ limit: 5 }),
+          listConversationsApi({ limit: 100 }),
+          getProviderOrderSummaryApi(),
+          getConversationSummaryApi(),
         ]);
         setProfile(profileRes);
+        setOrderSummary(orderSummaryRes);
+        setUnreadConversationCount(conversationSummaryRes.unread_conversations || 0);
         setOrders(ordersRes?.items || ordersRes?.data?.items || ordersRes?.orders || ordersRes);
         setAssets(assetsRes?.items || assetsRes?.data?.items || assetsRes?.assets || assetsRes);
         setConversations(conversationsRes?.items || conversationsRes?.data?.items || conversationsRes?.conversations || conversationsRes);
@@ -33,7 +41,7 @@ export default function ProviderDashboardPage() {
       }
     }
     loadData();
-  }, []);
+  }, [retryCount]);
 
   if (loading) {
     return (
@@ -61,7 +69,7 @@ export default function ProviderDashboardPage() {
       <div className="flex items-center justify-center min-h-[50vh] text-center px-4 sm:px-6 lg:px-8">
         <div>
           <p className="text-[#f2ca50] mb-4 text-sm sm:text-base">Failed to load dashboard: {error}</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <Button onClick={() => setRetryCount((count) => count + 1)}>Retry</Button>
         </div>
       </div>
     );
@@ -69,9 +77,9 @@ export default function ProviderDashboardPage() {
 
   const companyName = profile?.company_name || profile?.trading_name || profile?.name || "your provider account";
   const activeListings = assets?.filter(asset => asset.is_active).length || 0;
-  const pendingOrders = orders?.filter(o => o.status?.toLowerCase() === "pending_review").length || 0;
-  const totalRequestedValue = orders?.reduce((sum, o) => sum + (Number(o.lease_amount) || Number(o.amount) || 0), 0) || 0;
-  const unreadEnquiries = conversations?.filter(c => c.unread_count > 0).length || 0;
+  const pendingOrders = orderSummary.pending_review;
+  const pricedOrderCount = orderSummary.priced_orders;
+  const unreadEnquiries = unreadConversationCount;
   
 
   return (
@@ -113,7 +121,7 @@ export default function ProviderDashboardPage() {
             <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Open Orders</span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orders?.filter(order => !["completed", "declined"].includes(order.status?.toLowerCase())).length || 0}</div>
+            <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{orderSummary.open_orders}</div>
             <div className="flex items-center gap-1.5 mt-1 text-xs font-mono text-[#f2ca50]">
               <span>{pendingOrders} awaiting review</span>
             </div>
@@ -123,7 +131,7 @@ export default function ProviderDashboardPage() {
 
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Unread Enquiries</span>
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Unread Conversations</span>
           </div>
           <div className="mt-4">
             <div className="font-serif text-3xl font-semibold text-[#ffffff] tracking-tight">{unreadEnquiries}</div>
@@ -136,10 +144,10 @@ export default function ProviderDashboardPage() {
 
         <Card className="p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:bg-[#111318] transition-colors border border-[#282a2f] rounded-xl">
           <div className="flex items-start justify-between">
-            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Total Requested Value</span>
+            <span className="text-xs font-mono text-[#ffffff]/60 uppercase tracking-wider">Orders with a Listed Rate</span>
           </div>
           <div className="mt-4">
-            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">${totalRequestedValue.toLocaleString()}</div>
+            <div className="font-serif text-3xl font-semibold text-[#f2ca50] tracking-tight">{pricedOrderCount}</div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#111318] group-hover:bg-[#f2ca50] transition-colors"></div>
         </Card>
@@ -183,7 +191,7 @@ export default function ProviderDashboardPage() {
                   </div>
                 )},
                 { key: "amount", header: "Amount", render: (row) => (
-                  <span className="font-serif text-lg font-semibold text-[#f2ca50]">${(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-[#ffffff]/60 font-normal">/mo</span></span>
+                  <span className="font-serif text-lg font-semibold text-[#f2ca50]">{(row.amount || row.lease_amount || 0).toLocaleString()}<span className="text-xs font-mono text-[#ffffff]/60 font-normal">/mo · currency not specified</span></span>
                 )},
                 { key: "status", header: "Status", render: (row) => (
                   <StatusPill status={row.status?.toLowerCase() || "pending"} />
@@ -226,7 +234,7 @@ export default function ProviderDashboardPage() {
                   <StatusPill status={asset.status?.toLowerCase() || "available"} />
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#f2ca50] font-mono">${asset.rate || asset.price_monthly || "—"}/mo</span>
+                  <span className="text-[#f2ca50] font-mono">{asset.rate || asset.price_monthly || "—"} / mo · currency not specified</span>
                   <Link to={`/provider/listings/${asset.id}/edit`} className="text-xs font-mono text-[#ffffff]/60 hover:text-[#f2ca50]">
                     Edit
                   </Link>

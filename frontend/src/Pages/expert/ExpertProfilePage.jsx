@@ -1,28 +1,20 @@
 import { useEffect, useState } from "react";
+import { useExpertProfile } from "../../hooks/useExpertProfile";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "../../lib/client";
-import { Button, Card, Input } from "../../components/ui";
+
+import { Button, Card, Input, Textarea, Skeleton, SkeletonText } from "../../components/ui";
 
 const EMPTY = { headline: "", bio: "", expertise: "", years_experience: "", location: "", hourly_rate: "", availability: "", portfolio_url: "", is_active: true };
 
 export default function ExpertProfilePage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const { profile, loading, saving, error, saved, save, setError, setSaved } = useExpertProfile();
 
   useEffect(() => {
-    let active = true;
-    apiClient.get("/api/expert/profile").then(({ data }) => {
-      if (!active || !data) return;
-      setForm({ ...EMPTY, ...data, expertise: (data.expertise || []).join(", ") });
-    }).catch((err) => {
-      if (active && err.response?.status !== 404) setError(err.response?.data?.detail || "Unable to load your profile.");
-    }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+    if (!profile) return;
+    setForm({ ...EMPTY, ...profile, expertise: (profile.expertise || []).join(", ") });
+  }, [profile]);
 
   const update = (event) => {
     const { name, value, type, checked } = event.target;
@@ -31,27 +23,29 @@ export default function ExpertProfilePage() {
   };
 
   const submit = async (event) => {
-    event.preventDefault(); setSaving(true); setError(""); setSaved(false);
+    event.preventDefault(); setError(""); setSaved(false);
     const years = form.years_experience === "" ? null : Number(form.years_experience);
     const rate = form.hourly_rate === "" ? null : Number(form.hourly_rate);
     if ((years !== null && (!Number.isInteger(years) || years < 0)) || (rate !== null && (!Number.isFinite(rate) || rate < 0))) {
-      setError("Years of experience and hourly rate must be valid non-negative numbers."); setSaving(false); return;
+      setError("Years of experience and hourly rate must be valid non-negative numbers."); return;
     }
     try {
-      const { data } = await apiClient.put("/api/expert/profile", {
+      await save({
         headline: form.headline.trim() || null, bio: form.bio.trim() || null,
         expertise: form.expertise.split(",").map((item) => item.trim()).filter(Boolean),
         years_experience: years, location: form.location.trim() || null,
         hourly_rate: rate, availability: form.availability.trim() || null,
         portfolio_url: form.portfolio_url.trim() || null, is_active: form.is_active,
       });
-      setForm({ ...EMPTY, ...data, expertise: (data.expertise || []).join(", ") });
-      setSaved(true);
-    } catch (err) { setError(err.response?.data?.detail || "Unable to save your profile."); }
-    finally { setSaving(false); }
+    } catch { /* The hook owns and exposes the request error. */ }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0A0A0B] p-8 text-white/60">Loading expert profile…</div>;
+  if (loading) return (
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-10" aria-label="Loading expert profile" aria-busy="true">
+      <div className="space-y-3"><Skeleton className="h-3 w-28" /><Skeleton className="h-9 w-64" /><Skeleton className="h-4 w-96 max-w-full" /></div>
+      <Card className="space-y-5 p-5"><Skeleton className="h-16 w-16 rounded-full" />{[0, 1, 2, 3, 4].map((item) => <div key={item} className="space-y-2"><Skeleton className="h-3 w-1/4" /><Skeleton className="h-11 w-full rounded-xl" /></div>)}<SkeletonText lines={3} /><Skeleton className="h-10 w-36 rounded-xl" /></Card>
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-[#0A0A0B] px-4 py-10 text-white">
@@ -62,7 +56,7 @@ export default function ExpertProfilePage() {
             {error && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</p>}
             {saved && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">Profile saved.</p>}
             <label className="block space-y-2"><span className="text-sm">Professional headline</span><Input name="headline" value={form.headline || ""} onChange={update} placeholder="e.g. Fintech and payments advisor" /></label>
-            <label className="block space-y-2"><span className="text-sm">About your experience</span><textarea name="bio" value={form.bio || ""} onChange={update} rows={5} className="w-full rounded-lg border border-white/10 bg-white/5 p-3 text-sm outline-none focus:border-[#C9A15A]" placeholder="Your background, achievements and how you help founders." /></label>
+            <label className="block space-y-2"><span className="text-sm">About your experience</span><Textarea name="bio" value={form.bio || ""} onChange={update} rows={5} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm outline-none transition-colors focus:border-gold focus:ring-1 focus:ring-gold" placeholder="Your background, achievements and how you help founders." /></label>
             <label className="block space-y-2"><span className="text-sm">Areas of expertise</span><Input name="expertise" value={form.expertise || ""} onChange={update} placeholder="Product strategy, fundraising, cloud infrastructure" /><span className="text-xs text-white/40">Separate areas with commas.</span></label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2"><span className="text-sm">Years of experience</span><Input name="years_experience" value={form.years_experience ?? ""} onChange={update} placeholder="Years" /></label>

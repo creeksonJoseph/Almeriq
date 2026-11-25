@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Input } from "../../components/ui";
+import { Button, Card, Input, Skeleton, SkeletonText } from "../../components/ui";
 import {
   createJobApi,
   deleteJobApi,
@@ -185,8 +185,8 @@ export default function EmployerJobsPage() {
               <label className="space-y-2 text-sm"><span>Requirements</span><Input name="requirements" value={form.requirements} onChange={updateField} placeholder="Skills, experience, qualifications" /></label>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-2 text-sm"><span>Minimum salary</span><Input name="salary_min" type="number" min="0" step="0.01" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
-              <label className="space-y-2 text-sm"><span>Maximum salary</span><Input name="salary_max" type="number" min="0" step="0.01" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
+              <label className="space-y-2 text-sm"><span >Minimum salary · currency not specified</span><Input name="salary_min" type="number" min="0" step="0.01" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
+              <label className="space-y-2 text-sm"><span >Maximum salary · currency not specified</span><Input name="salary_max" type="number" min="0" step="0.01" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
             </div>
             <div className="flex justify-end gap-2">{editingJobId && <Button type="button" variant="ghost" onClick={cancelEdit}>Cancel edit</Button>}<Button type="submit" disabled={saving || !form.title.trim() || !form.description.trim()}>{saving ? "Saving…" : editingJobId ? "Save changes" : "Publish job"}</Button></div>
           </form>
@@ -197,7 +197,7 @@ export default function EmployerJobsPage() {
 {pageView === "list" && (
         <section className="space-y-4">
           <div className="flex items-center justify-between"><h2 className="font-serif text-2xl">Your job postings</h2><span className="text-sm text-white/45">{jobs.length} total</span></div>
-          {loading ? <p className="py-8 text-center text-sm text-white/50">Loading your postings…</p> :
+          {loading ? <div className="space-y-3" aria-busy="true">{[0, 1, 2].map((item) => <Card key={item} className="space-y-3 p-5"><Skeleton className="h-5 w-1/3" /><SkeletonText lines={3} /><Skeleton className="h-9 w-28 rounded-xl" /></Card>)}</div> :
             jobs.length === 0 ? <Card className="p-8 text-center text-sm text-white/55">You have not posted a role yet. Create your first opening above.</Card> :
             <div className="space-y-4">
               {jobs.map((job) => (

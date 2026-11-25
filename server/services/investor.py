@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -126,6 +128,13 @@ async def update_founder_pitch(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="ask_amount cannot be negative",
         )
+    current = await pitch_repo.get_startup_pitch(pitch_id, founder_id=founder_id, session=session)
+    if not current:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    # Editing a published pitch returns it to draft until the founder republishes.
+    if current.get("status") == "active" and values:
+        values["status"] = "draft"
+        values["published_at"] = None
     pitch = await pitch_repo.update_startup_pitch(
         pitch_id, founder_id, session=session, **values
     )
@@ -134,6 +143,29 @@ async def update_founder_pitch(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Startup pitch not found",
         )
+    return pitch
+
+
+async def publish_founder_pitch(pitch_id: int, founder_id: int, session: AsyncSession | None = None) -> dict:
+    pitch = await pitch_repo.get_startup_pitch(pitch_id, founder_id=founder_id, session=session)
+    if not pitch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
+    required = ("title", "summary", "sector", "stage", "location")
+    missing = [field for field in required if pitch.get(field) is None or (isinstance(pitch.get(field), str) and not pitch[field].strip())]
+    if missing:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Complete the title, summary, sector, stage and location before publishing. The funding ask is optional.")
+    return await pitch_repo.update_startup_pitch(
+        pitch_id, founder_id, session=session, status="active",
+        published_at=datetime.now(timezone.utc),
+    )
+
+
+async def unpublish_founder_pitch(pitch_id: int, founder_id: int, session: AsyncSession | None = None) -> dict:
+    pitch = await pitch_repo.update_startup_pitch(
+        pitch_id, founder_id, session=session, status="draft", published_at=None
+    )
+    if not pitch:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
     return pitch
 
 
@@ -154,7 +186,7 @@ async def delete_founder_pitch(
 
 async def get_investor_pitch(pitch_id: int, session: AsyncSession | None = None) -> dict:
     pitch = await pitch_repo.get_startup_pitch(pitch_id, session=session)
-    if not pitch:
+    if not pitch or pitch.get("status") != "active":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
     return pitch
 
@@ -184,16 +216,11 @@ def _match_pitch_to_investor(pitch: dict, profile: dict | None) -> tuple[int | N
         if any(value in location for value in geographies):
             score += 15
             reasons.append(f"Geography match: {pitch['location']}")
-    minimum = profile.get("check_size_min")
-    maximum = profile.get("check_size_max")
-    ask = pitch.get("target_check_size")
-    if (minimum is not None or maximum is not None) and ask is not None:
-        possible += 20
-        if (minimum is None or float(ask) >= float(minimum)) and (maximum is None or float(ask) <= float(maximum)):
-            score += 20
-            reasons.append("Target investor check size fits your range")
+    # Monetary matching is intentionally omitted until pitches and investor
+    # profiles store a currency. Comparing bare numbers across currencies would
+    # produce misleading match scores.
     if possible == 0:
-        return None, ["Add sectors, stages, geography or check-size preferences for a match score."]
+        return None, ["Add sector, stage or geography preferences for a match score."]
     return round(score / possible * 100), reasons or ["No matching criteria found; review the pitch details."]
 
 
@@ -203,18 +230,18 @@ async def list_all_pitches(
     offset: int = 0,
     session: AsyncSession | None = None,
 ) -> dict:
-    items = await pitch_repo.list_startup_pitches(
-        limit=limit, offset=offset, session=session
-    )
-    total = await pitch_repo.count_startup_pitches(session=session)
+    # Rank all published pitches before pagination so the strongest matches
+    # are not hidden on later pages.
+    eligible = await pitch_repo.list_startup_pitches(status="active", session=session)
+    total = len(eligible)
     if investor_id is not None:
         profile = await profile_repo.get_investor_profile_by_user_id(investor_id, session=session)
-        for pitch in items:
+        for pitch in eligible:
             score, reasons = _match_pitch_to_investor(pitch, profile)
             pitch["match_score"] = score
             pitch["match_reasons"] = reasons
-        items.sort(key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1, reverse=True)
-    return {"items": items, "total": total}
+        eligible.sort(key=lambda item: item.get("match_score") if item.get("match_score") is not None else -1, reverse=True)
+    return {"items": eligible[offset:offset + limit], "total": total}
 
 
 async def upsert_investor_profile(
@@ -248,7 +275,7 @@ async def create_investment_request(
     from repositories import investment as investment_repo
 
     pitch = await pitch_repo.get_startup_pitch(pitch_id, session=session)
-    if not pitch:
+    if not pitch or pitch.get("status") != "active":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Startup pitch not found")
     if pitch["founder_id"] == investor_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot express interest in your own startup pitch")
@@ -266,7 +293,7 @@ async def create_investment_request(
             type="investment",
             title="New investor interest",
             body="An investor has expressed interest in your startup pitch.",
-            link="/founder/pitches",
+            link="/founder/fundraising/pitches",
             session=session,
         )
     return request
@@ -299,22 +326,22 @@ async def update_investor_portfolio(
     item = await investment_repo.get_investment(investment_id, session=session)
     if not item or item["investor_id"] != investor_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
-    if item["status"] not in {"accepted", "in_discussion", "invested"}:
+    if item["status"] not in {"accepted", "in_discussion", "invested", "investor_reported"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Record an investment only after the founder accepts or opens discussion")
     if not values.get("payment_method") or not values.get("signature_data"):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A demo payment method and drawn signature are required to confirm this deal record")
-    was_invested = item["status"] == "invested"
+    was_already_reported = item["status"] in {"invested", "investor_reported"}
     updated = await investment_repo.update_investor_portfolio(investment_id, investor_id, values, session=session)
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Portfolio item not found")
     updated["pitch"] = await pitch_repo.get_startup_pitch(updated["pitch_id"], session=session)
-    if not was_invested and updated["pitch"]:
+    if not was_already_reported and updated["pitch"]:
         await notification_repo.create_notification(
             user_id=updated["pitch"]["founder_id"],
             type="investment",
             title="Investor updated their portfolio",
             body="An investor recorded a portfolio entry for your startup. This is an investor-reported record, not a payment confirmation.",
-            link="/founder/pitches",
+            link="/founder/fundraising/pitches",
             session=session,
         )
     return updated

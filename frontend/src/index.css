@@ -5,7 +5,7 @@
   --color-bg: #0a0a0b;
   --color-surface: #141417;
   --color-surface-2: #1c1c21;
-  --color-border: #2b2b31;
+  --color-border: #282a2f;
   --color-gold: #c9a15a;
   --color-gold-soft: #e8d6a8;
   --color-text: #f3f1ec;
@@ -35,6 +35,83 @@ select,
 button {
   font-family: inherit;
   color: inherit;
+}
+
+/*
+ * Native form controls inherit the dark theme even when a page has not yet
+ * migrated to the shared components. Keep this selector deliberately low
+ * specificity so page-level sizing utilities remain usable.
+ */
+:root {
+  color-scheme: dark;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+) {
+  color-scheme: dark;
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+)::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+):focus-visible {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px var(--color-gold);
+}
+
+select option,
+select optgroup {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+/* Enforce the dark field palette even where legacy pages still carry white
+   Tailwind border/background utilities. Checkbox/radio controls are excluded. */
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+)[class*="border-white"] {
+  border-color: var(--color-border) !important;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+  textarea,
+  select
+)[class~="bg-white"] {
+  background-color: var(--color-surface-2) !important;
+}
+
+/* Keep Chrome/Safari autofill from painting light fields over the dark theme. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface-2) inset;
+  box-shadow: 0 0 0 1000px var(--color-surface-2) inset;
+  border-color: var(--color-border);
 }
 
 html {
@@ -141,57 +218,78 @@ body {
   white-space: nowrap;
 }
 
-/* ── Inputs ──────────────────────────────────────────── */
-.alq-input {
+/* ── Canonical dark form controls ─────────────────────── */
+.alq-input,
+.alq-textarea,
+.alq-select {
+  display: block;
   width: 100%;
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  background: var(--color-surface-2);
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: 8px 12px;
-  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
   outline: none;
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s,
-    background-color 0.2s;
-  min-height: 38px;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
-.alq-input:autofill,
+
+.alq-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.alq-select {
+  cursor: pointer;
+}
+
+.alq-input:focus-visible,
+.alq-textarea:focus-visible,
+.alq-select:focus-visible {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px var(--color-gold);
+}
+
+.alq-input:user-invalid,
+.alq-textarea:user-invalid,
+.alq-select:user-invalid {
+  border-color: var(--color-gold);
+}
+
+.alq-input::placeholder,
+.alq-textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.alq-input:disabled,
+.alq-textarea:disabled,
+.alq-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .alq-input:-webkit-autofill,
 .alq-input:-webkit-autofill:hover,
-.alq-input:-webkit-autofill:focus {
-  color: var(--color-text) !important;
+.alq-input:-webkit-autofill:focus,
+.alq-textarea:-webkit-autofill,
+.alq-select:-webkit-autofill {
   -webkit-text-fill-color: var(--color-text) !important;
-  background-color: var(--color-surface-2) !important;
-  background-clip: padding-box !important;
-  -webkit-background-clip: padding-box !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--radius-xl) !important;
-  outline: none !important;
-  -webkit-appearance: none;
+  caret-color: var(--color-text);
   -webkit-box-shadow: 0 0 0 1000px var(--color-surface-2) inset !important;
   box-shadow: 0 0 0 1000px var(--color-surface-2) inset !important;
-}
-.alq-input:focus-visible {
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 1px var(--color-gold);
-}
-.alq-input:user-invalid {
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 1px var(--color-gold);
-}
-.alq-input::placeholder {
-  color: var(--color-text-muted);
+  border: 1px solid var(--color-border) !important;
 }
 
 .alq-label {
   display: block;
+  margin-bottom: 0.375rem;
+  color: var(--color-text);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: 0.375rem;
 }
 
 /* ── Role pill buttons ───────────────────────────────── */
@@ -245,7 +343,7 @@ body {
 }
 .alq-submit[aria-disabled="true"] {
   background: var(--color-border);
-  color: var(--color-muted);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 .alq-submit:not([aria-disabled="true"]):hover {
@@ -438,4 +536,50 @@ body {
     margin: 1.2cm;
     size: auto;
   }
+}
+
+
+/* Keep structural dividers and legacy white-border utilities on the same
+   restrained dark border used by the shared form controls and cards. */
+:where(
+  [class~="border-border"],
+  [class~="divide-border"],
+  [class*="border-white"],
+  [class*="divide-white"]
+) {
+  border-color: var(--color-border) !important;
+}
+
+
+/* All form submission actions share the primary Alimeriq gold treatment.
+   Disabled submits stay gold but are visibly subdued; secondary buttons are untouched. */
+button[type="submit"],
+form button:not([type]),
+input[type="submit"] {
+  background-color: var(--color-gold) !important;
+  color: var(--color-bg) !important;
+  border: 0 !important;
+  box-shadow: none;
+}
+
+button[type="submit"]:not(:disabled):hover,
+form button:not([type]):not(:disabled):hover,
+input[type="submit"]:not(:disabled):hover {
+  background-color: #e2ba40 !important;
+}
+
+button[type="submit"]:disabled,
+form button:not([type]):disabled,
+input[type="submit"]:disabled {
+  background-color: var(--color-gold) !important;
+  color: var(--color-bg) !important;
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button[type="submit"]:focus-visible,
+form button:not([type]):focus-visible,
+input[type="submit"]:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
 }
