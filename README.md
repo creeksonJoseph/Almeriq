@@ -138,7 +138,7 @@ The repository configuration does not show every setting stored in the hosting d
 3. Wait for the GitHub Actions checks and review the change.
 4. Merge into `dev` after approval.
 5. When the integration branch is ready for release, open a reviewed promotion pull request from `dev` to `main`.
-6. Merge to `main) only after explicit release approval. The Vercel production deployment is associated with `main`.
+6. Merge to `main` only after explicit release approval. The Vercel production deployment is associated with `main`.
 
 A frontend deployment and a backend deployment are separate services. Check the deployment status of both when a release changes both sides of the application.
 
