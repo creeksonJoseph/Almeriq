@@ -70,10 +70,10 @@ In a terminal:
 
 ```bash
 cd server
-cp .env.dev.example .env.dev
+cp .env.example .env
 ```
 
-Open `server/.env.dev` and set a unique local `JWT_SECRET_KEY`. Add any other integration values you need for the features you plan to use. Do not copy production secrets into your local environment.
+Open `server/.env` and set a unique local `JWT_SECRET_KEY`. The template uses SQLite and leaves optional integrations blank. Add credentials only for services you need. Do not copy production secrets into your local environment.
 
 Then install dependencies, prepare the database and start the API:
 
