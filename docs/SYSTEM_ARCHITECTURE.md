@@ -2,6 +2,8 @@
 
 > Source map: [Documentation source map](SOURCE_OF_TRUTH.md). Paths below describe checked-in code, not live deployment state.
 
+> Source map: [Documentation source map](SOURCE_OF_TRUTH.md). Paths below describe checked-in code, not live deployment state.
+
 > Source review date: 2026-11-25. This describes the repository structure and code paths; it is not a deployment penetration test or runtime verification.
 
 ## 1. Runtime topology
