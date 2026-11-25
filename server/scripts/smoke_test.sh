@@ -171,7 +171,7 @@ echo ""
 echo "--- 15. Marketplace checkout ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/marketplace/checkout" \
   -H "Content-Type: application/json" \
-  -d '{"asset_id":'${ASSET_ID}',"allocation":"3x 36-ton units","payment_method":"card"}' \
+  -d '{"asset_id":'${ASSET_ID}',"allocation":"3x 36-ton units","payment_method":"mpesa"}' \
   -b /tmp/founder-cookies.txt -c /tmp/founder-cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status "POST /api/marketplace/checkout" "201" "$HTTP"
