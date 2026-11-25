@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -134,57 +134,57 @@ function App() {
                 <Route
                   path="/founder/intake"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <FounderIntakePage />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/founder/analysis"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <FounderAnalysisPage />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/founder/roadmap"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <Navigate to="/founder/analysis" state={{ autoSelectTool: "execution_roadmap" }} replace />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/founder/ventures"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <VenturesPage />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/founder/validation"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <FounderValidationPage />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/founder/ai-tools"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <Navigate to="/dashboard" replace />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/founder/product"
                   element={
-                    <FounderRoute>
+                    <ProtectedRoute>
                       <FounderProductPage />
-                    </FounderRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
@@ -262,9 +262,9 @@ function App() {
                     key={path}
                     path={path}
                     element={
-                      <FounderRoute>
+                      <ProtectedRoute>
                         <FounderLegalPage />
-                      </FounderRoute>
+                      </ProtectedRoute>
                     }
                   />
                 ))}
@@ -408,7 +408,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/updates", "/investor/settings"].map((path) => (
+                {["/investor/startups", "/investor/deals", "/investor/portfolio", "/investor/analytics", "/investor/resources", "/investor/settings"].map((path) => (
                   <Route
                     key={path}
                     path={path}
