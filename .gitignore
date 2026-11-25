@@ -92,3 +92,8 @@ docker-compose.override.yml
 *.swp
 *~
 UI_wireframes
+
+# ─── SQLite dev databases ─────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3

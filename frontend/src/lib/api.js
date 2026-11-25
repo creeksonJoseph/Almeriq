@@ -59,7 +59,7 @@ export {
   publishInvestorUpdateApi,
 } from "./api/founder";
 
-export { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi } from "./api/admin";
+export { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi, getAdminProviderVerificationHistoryApi } from "./api/admin";
 
 export {
   getProviderProfileApi,
