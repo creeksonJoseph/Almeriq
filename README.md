@@ -15,6 +15,7 @@ Start with **[Developer Handover](docs/DEVELOPER_HANDOVER.md)**. It links to:
 - [System architecture](docs/SYSTEM_ARCHITECTURE.md)
 - [Setup and operations](docs/SETUP_AND_OPERATIONS.md)
 - [Domain and workflow guide](docs/DOMAIN_GUIDE.md)
+- [Frontend route and state guide](docs/FRONTEND_GUIDE.md)
 - [API guide](docs/API_GUIDE.md)
 - [Known gaps and handover checklist](docs/KNOWN_GAPS.md)
 
