@@ -25,13 +25,22 @@ The GitHub source connection permits repository inspection and Git writes, but n
 
 CI status should be checked for the exact documentation commit before calling this handover complete.
 
-## 3. Confirmed configuration issues to resolve
+## 3. Configuration findings and remaining checks
 
-- **Docker Compose auth secret mismatch:** docker-compose.yml sets SECRET_KEY, but server/core/config.py reads JWT_SECRET_KEY. The app therefore does not use the Compose-provided secret and falls back to its configured default unless JWT_SECRET_KEY is supplied separately. The Compose file also sets ENVIRONMENT, which is not a declared setting in the inspected Settings class. Do not use the current Compose auth configuration for anything beyond disposable local development; correct the variable name and use a unique secret before relying on it.
-- **Docker Compose database persistence:** the Compose backend uses a SQLite file inside the container and does not declare a persistent volume for that database. Recreating the container can lose the local test data. Use a disposable database or add an explicit development volume if persistence is needed.
-- **Node runtime divergence:** CI pins Node 22, while frontend/Dockerfile uses node:20-slim. Confirm the exact Vite 8 minimum runtime and align the development/container runtime with CI so local/container behavior matches CI.
-- **Render auth configuration needs live verification:** render.yaml does not declare JWT_SECRET_KEY, COOKIE_SECURE, Gemini, Google OAuth, Upstash or Sentry variables. These may be configured manually in the Render dashboard, which is not accessible from this repository review. Confirm JWT_SECRET_KEY is explicitly set to a strong unique value in production; otherwise the backend falls back to the unsafe example default in core/config.py. Confirm COOKIE_SECURE=true for HTTPS production and review the other integration variables.
-- **Frontend deployment configuration:** root vercel.json builds from the repository root and explicitly disables automatic deployment for dev while enabling main. frontend/vercel.json is an alternate configuration for a Vercel project rooted at frontend/. Confirm which configuration the live Vercel project actually uses.
+The source-level issues previously identified in local configuration have been corrected on this branch:
+
+- **Docker Compose auth configuration:** Compose now supplies `JWT_SECRET_KEY`, the setting read by `server/core/config.py`. The unused `ENVIRONMENT` variable has been removed. The Compose secret remains a local-only placeholder and must not be reused in a shared or hosted environment.
+- **Docker Compose database persistence:** the backend SQLite database now lives at `/data/almeriq_dev.db` on a named volume. Running `docker compose down -v` intentionally deletes that local database.
+- **Node runtime alignment:** GitHub Actions and the frontend Docker image now use Node 22. The container uses `npm ci` to install from the lockfile.
+
+The following still require access to deployment dashboards or a live environment and cannot be confirmed from repository source alone:
+
+- **Render auth configuration:** `render.yaml` does not declare `JWT_SECRET_KEY` or `COOKIE_SECURE`. Confirm a strong unique JWT secret is explicitly configured in the Render service and that `COOKIE_SECURE=true` for HTTPS production. Also verify Gemini, Google OAuth, Upstash and Sentry values if those integrations are enabled.
+- **Frontend deployment configuration:** root `vercel.json` builds from the repository root and enables automatic deployment for `main` while disabling it for `dev` and `feat-*`. `frontend/vercel.json` is an alternative for a Vercel project rooted at `frontend/`. Confirm which configuration and project root the live Vercel project uses.
+- **Production database and operations:** verify the actual Render branch, PostgreSQL attachment, custom domains, backups, restore procedure, deployment health and environment values in the relevant dashboards.
+
+These changes are source-reviewed but have not been executed in a local Docker environment during this pass. CI must be checked for the exact pull-request head before the changes are considered verified.
+
 
 ## 4. Product/engineering questions for the incoming maintainer
 
