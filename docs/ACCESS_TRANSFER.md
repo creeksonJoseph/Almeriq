@@ -2,8 +2,6 @@
 
 > Implementation references and authority boundaries: [Documentation source map](SOURCE_OF_TRUTH.md). Dashboard and account-state items below require confirmation by the relevant owner.
 
-> Implementation references and authority boundaries: [Documentation source map](SOURCE_OF_TRUTH.md). Dashboard and account-state items below require confirmation by the relevant owner.
-
 ## Purpose
 
 This checklist is for transferring Almeriq operations from the outgoing developer to the next maintainer. It is not a place to record passwords, API keys, recovery codes or private tokens. Transfer access through each provider's own invitation/role-management system.
