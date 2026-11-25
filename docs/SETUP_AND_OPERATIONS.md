@@ -69,7 +69,7 @@ The current Compose file starts backend and frontend services, maps ports 8000 a
 
 ## 6. Environment variables
 
-Backend settings are defined in `server/core/config.py`. Pydantic Settings reads `.env`, `.env.dev`, and `.env.prod` (case-insensitive); actual process environment variables can also supply values. There is one backend template: `server/.env.example`. Copy it to `server/.env` for local development. It uses SQLite, local cookie settings, and blank optional integration credentials. For hosted environments, set the required values directly in the hosting provider's environment settings rather than maintaining separate committed production templates.
+Backend settings are defined in `server/core/config.py`. Pydantic Settings reads `.env`, `.env.dev`, and `.env.prod` (case-insensitive); actual process environment variables can also supply values. There is one backend template: `server/.env.example`. Copy it to `server/.env` for local development. It shows the PostgreSQL/Neon connection-string format, local cookie settings, and blank optional integration credentials. Use a separate development database, never production. To use a disposable local SQLite database instead, set `DATABASE_URL=sqlite+aiosqlite:///./almeriq_dev.db`. For hosted environments, set the required values directly in the hosting provider's environment settings rather than maintaining separate committed production templates.
 
 | Variable | Required for | Notes |
 |---|---|---|
