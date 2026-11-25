@@ -79,7 +79,7 @@ The expert portal is implemented, not merely a placeholder:
 - API client: `frontend/src/lib/api/expert.js`.
 - Backend: expert router/service/repository/schema/model and advisory request model.
 
-Current observed behavior: selecting Expert in the shared onboarding flow does not automatically run a dedicated expert-profile wizard. Experts can subsequently edit their profile. The existing profile API supports profile retrieval and save; the founder discovery flow lists active expert profiles and supports advisory requests. There is no separate expert profile approval/review queue documented in the inspected source; profile publication is based on the profile's active state. Re-check implementation before changing this product rule.
+Current observed behavior: selecting Expert in the shared onboarding flow does not automatically run a dedicated expert-profile wizard. Experts can subsequently edit their profile. The profile fields are headline, bio, expertise (list of strings), years_experience, location, hourly_rate, availability, portfolio_url and is_active. The Pydantic update schema defaults is_active to true; the model also defaults it to true. Founder discovery lists active expert profiles and supports advisory requests. There is no separate expert profile approval/review queue in the inspected implementation; publication is based on the profile's active state. Re-check implementation before changing this product rule.
 
 Important workflow:
 1. User registers and completes shared identity/role onboarding.
@@ -103,3 +103,21 @@ Before changing:
 ## 9. Admin and waitlist
 
 Waitlist registration/confirmation and administrative waitlist management are separate from normal user onboarding. Admin access is backend-protected. Do not rely on a hidden frontend route as the only access control.
+
+
+## 10. Persistent model inventory
+
+The current model registry is server/models/__init__.py. It imports the following domain entities; use each model and its migration as the source of truth for exact columns and relationships.
+
+| Domain | Registered models |
+|---|---|
+| Identity and waitlist | User, Waitlist |
+| Founder | FounderVenture, FounderValidation, FounderLegalFiling, FounderAiCache, CompanyRegistrationGuide |
+| Provider and marketplace | ProviderProfile, ProviderVerificationEvent, Asset, CoverageRegion, Order, OrderEvent, Deal |
+| Collaboration | Conversation, Message, Notification |
+| Investor and fundraising | InvestorProfile, StartupPitch, Investment, InvestorUpdate |
+| Jobs and talent | JobPosting, JobApplication, JobSeekerProfile |
+| Expert advisory | ExpertProfile, AdvisoryRequest |
+| Team | TeamInvitation, TeamMembership |
+
+When adding a model, import it in server/models/__init__.py so Alembic can discover its metadata. Inspect the migration chain before adding constraints, indexes or relationships.
