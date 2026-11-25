@@ -65,7 +65,7 @@ From repository root:
 docker compose up --build
 ```
 
-Inspect `docker-compose.yml` before relying on it: confirm which services are included, their environment-file paths, volumes, health checks and port mappings. The Docker setup is a convenience, not a substitute for understanding the independent frontend/backend run commands above.
+The current Compose file starts backend and frontend services, maps ports 8000 and 5173, and uses a SQLite file inside the backend container without a named persistent volume. It sets `SECRET_KEY`, but the backend reads `JWT_SECRET_KEY`; it also sets `ENVIRONMENT`, which is not a declared setting in `server/core/config.py`. Treat this as disposable local development only until the mismatch is corrected and a unique secret is supplied. Do not assume local database data survives container recreation.
 
 ## 6. Environment variables
 
@@ -154,11 +154,11 @@ The repository includes `render.yaml` and `server/Dockerfile`. The Render bluepr
 - pre-deploy migration command `uv run alembic upgrade head`;
 - environment variables supplied through Render for database, email and Cloudinary.
 
-The YAML is not a complete inventory of the live Render dashboard. Verify production environment variables, database attachment, domains, scaling, health checks, and deploy history in the hosting account before making changes.
+The YAML is not a complete inventory of the live Render dashboard. It does not declare `JWT_SECRET_KEY`, `COOKIE_SECURE`, `GEMINI_API_KEY`, Google OAuth, Upstash or Sentry variables; these may be manually configured in the dashboard. Verify that a strong unique `JWT_SECRET_KEY` is explicitly set and `COOKIE_SECURE=true` for HTTPS production. The source default JWT secret is unsafe. Verify database attachment, domains, scaling, health checks and deploy history in the hosting account before making changes.
 
 ### Frontend
 
-The repository has root `vercel.json` and `frontend/vercel.json`. Confirm the actual Vercel project root/build/output settings and the custom domain in the Vercel dashboard. The frontend must point to the intended API base URL and the backend CORS allowlist must include its production origin.
+The repository has root `vercel.json` and `frontend/vercel.json`. The root config builds from the monorepo root and disables automatic deployment for `dev` while enabling `main`; the frontend-level config assumes the project root is `frontend/`. Confirm which config the live Vercel project uses, the actual project root/build/output settings and custom domain. The frontend must point to the intended API base URL and the backend CORS allowlist must include its production origin.
 
 ### Release checklist
 
