@@ -22,9 +22,10 @@ Recommended reading order:
 1. [Setup and operations](SETUP_AND_OPERATIONS.md) - prerequisites, environment, local run, migrations, tests, deployment notes.
 2. [System architecture](SYSTEM_ARCHITECTURE.md) - runtime structure, backend layers, frontend routing/state, authentication.
 3. [Domain and workflow guide](DOMAIN_GUIDE.md) - roles, major user journeys, domain boundaries.
-4. [API guide](API_GUIDE.md) - router inventory, auth expectations, OpenAPI discovery.
-5. [Known gaps and handover checklist](KNOWN_GAPS.md) - items that need confirmation or follow-up.
-6. Existing engineering references under [engineering](engineering/).
+4. [Frontend route and state guide](FRONTEND_GUIDE.md) - routes, guards, contexts, hooks and page organization.
+5. [API guide](API_GUIDE.md) - router inventory, auth expectations, OpenAPI discovery.
+6. [Known gaps and handover checklist](KNOWN_GAPS.md) - items that need confirmation or follow-up.
+7. Existing engineering references under [engineering](engineering/).
 
 ## 3. Current branch baseline
 
