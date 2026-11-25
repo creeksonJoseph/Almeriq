@@ -8,6 +8,7 @@ set -euo pipefail
 BASE="http://localhost:8000"
 RUN_ID=$(date +%s)
 PROVIDER_EMAIL="provider-smoke-${RUN_ID}@example.com"
+REGULAR_EMAIL="user-smoke-${RUN_ID}@example.com"
 PASS=0
 FAIL=0
 
@@ -324,14 +325,14 @@ echo ""
 echo "--- 27. Negative: non-provider 403 ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"SecurePass123!"}' \
+  -d "{\"email\":\"${REGULAR_EMAIL}\",\"password\":\"SecurePass123!\"}" \
   -c /tmp/cookies2.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status_any "POST /api/auth/register (regular user)" "200" "201" "$HTTP"
 
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"SecurePass123!"}' \
+  -d "{\"email\":\"${REGULAR_EMAIL}\",\"password\":\"SecurePass123!\"}" \
   -c /tmp/cookies2.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status "POST /api/auth/login (regular user)" "200" "$HTTP"
