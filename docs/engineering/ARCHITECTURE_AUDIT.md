@@ -1,6 +1,6 @@
 # Architecture audit and refactor
 
-Audit baseline: `.agents/skills/architectureskill.md`, repository tree and frontend/backend source on `main`, plus the previously merged architecture work in PR #18.
+Audit baseline: repository tree and frontend/backend source on `main`, plus the previously merged architecture work in PR #18.
 
 ## Applied in this refactor
 
