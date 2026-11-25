@@ -13,7 +13,7 @@ Almeriq is a multi-role platform for founders, infrastructure providers, job see
 The repository is a monorepo:
 - `server/`: FastAPI backend, async SQLAlchemy persistence, Alembic migrations, domain services.
 - `frontend/`: React + Vite single-page application.
-- `docs/`: engineering contracts, plans, audits, and handover material.
+- `docs/`: developer guides and handover material.
 - Root deployment files: Docker Compose, Render blueprint, and Vercel configuration.
 
 ## 2. Start here
@@ -28,7 +28,7 @@ Recommended reading order:
 7. [Frontend route and state guide](FRONTEND_GUIDE.md) - routes, guards, contexts, hooks and page organization.
 8. [API guide](API_GUIDE.md) - router inventory, auth expectations, OpenAPI discovery.
 9. [Known gaps and handover checklist](KNOWN_GAPS.md) - items that need confirmation or follow-up.
-10. Existing engineering references under [engineering](engineering/).
+10. Optional historical context: [Architecture audit](engineering/ARCHITECTURE_AUDIT.md).
 
 ## 3. Current branch baseline
 
@@ -140,4 +140,4 @@ Do not force-push, rewrite shared history, or delete branches/worktrees without 
 
 ## 11. Documentation accuracy note
 
-Some original documents were written while the project was still a provider-only implementation plan. They contain obsolete statements such as missing provider/job/investor domains and an expert placeholder. Treat the new handover set as the current overview. Historical planning material should be clearly labelled as historical rather than silently treated as current implementation.
+Some original documents were written while the project was still a provider-only implementation plan. They contain obsolete statements about missing domains and unfinished portals. Treat this handover set as the current overview. The old multi-agent workstream and platform-contract guides have been removed because they no longer describe the team's workflow or current implementation.
