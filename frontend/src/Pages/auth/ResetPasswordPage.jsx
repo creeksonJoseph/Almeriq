@@ -1,7 +1,7 @@
 /**
  * Pages/ResetPasswordPage.jsx - Consume reset token and set a new password.
  */
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import BrandLogo from "../../components/BrandLogo";
