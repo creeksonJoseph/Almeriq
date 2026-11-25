@@ -23,7 +23,7 @@ The diagram shows the major foreign-key relationships in the current model defin
 ~~~mermaid
 erDiagram
     USERS ||--o{ FOUNDER_VENTURES : owns
-    USERS ||--o{ FOUNDER_VALIDATION : owns
+    USERS ||--o| FOUNDER_VALIDATION : owns
     USERS ||--o{ FOUNDER_LEGAL_FILINGS : owns
     USERS ||--o{ FOUNDER_AI_CACHE : owns
     USERS ||--o| PROVIDER_PROFILES : has
@@ -52,6 +52,7 @@ erDiagram
     PROVIDER_PROFILES ||--o{ ORDERS : provider
     ASSETS ||--o{ ORDERS : ordered
     ORDERS ||--o{ ORDER_EVENTS : history
+    USERS ||--o{ ORDER_EVENTS : actor
     ORDERS ||--o| DEALS : deal
     USERS ||--o{ CONVERSATIONS : participant
     CONVERSATIONS ||--o{ MESSAGES : contains
