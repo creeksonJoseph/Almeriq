@@ -14,8 +14,8 @@ The documentation cleanup is complete at source level. The architecture audit re
 ## 2. Runtime verification not performed in this documentation pass
 
 The GitHub source connection permits repository inspection and Git writes, but not execution of the application in a real local checkout. Therefore the following remain unverified here:
-- Backend pytest suite result on the current `dev` head.
-- Frontend Vitest, ESLint and production build on the current `dev` head.
+- Backend pytest suite result on the proposed pull-request head.
+- Frontend Vitest, ESLint and production build on the proposed pull-request head.
 - Clean database migration from zero to head and upgrade from a production-like prior revision.
 - Full PostgreSQL/Neon compatibility and transaction behavior.
 - End-to-end browser workflows across every role.
@@ -99,5 +99,5 @@ These changes are source-reviewed but have not been executed in a local Docker e
 - [ ] Environment variables are documented without real secret values.
 - [ ] API reference points to OpenAPI and identifies all router domains.
 - [ ] Existing stale docs are labelled or updated.
-- [ ] CI is green for the documentation branch.
+- [ ] CI is green for the exact pull-request head.
 - [ ] Project owner confirms production access transfer and operational ownership.
