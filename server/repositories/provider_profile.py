@@ -158,7 +158,7 @@ async def list_provider_verification_events(
         select(ProviderVerificationEvent, User.full_name, User.email)
         .outerjoin(User, User.id == ProviderVerificationEvent.reviewer_id)
         .where(ProviderVerificationEvent.provider_id == profile_id)
-        .order_by(ProviderVerificationEvent.reviewed_at.desc(), ProviderVerificationEvent.id.desc())
+        .order_by(ProviderVerificationEvent.id.desc())
         .limit(limit)
         .offset(offset)
     )
