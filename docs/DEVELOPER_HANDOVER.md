@@ -2,7 +2,6 @@
 
 > Last reviewed: 2026-11-25  
 > Repository: [creeksonJoseph/Almeriq](https://github.com/creeksonJoseph/Almeriq)  
-> Working branch for this documentation pass: `docs/developer-handover`
 
 This is the entry point for the next developer. It describes the repository as it exists in source, not as originally planned. When documentation conflicts with implementation, verify the code and update the documentation rather than assuming the older document is correct.
 
