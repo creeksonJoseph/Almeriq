@@ -7,6 +7,7 @@
  */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";
+import { userHasRole } from "../lib/roles";
 import { getVenturesCachedApi } from "../lib/api/founder";
 import { useDataCache } from "../hooks/useDataCache";
 
@@ -18,7 +19,7 @@ const IdeaContext = createContext(null);
 
 export function IdeaProvider({ children }) {
   const { user } = useAuth();
-  const isFounder = user?.role === "founder";
+  const isFounder = userHasRole(user, "founder");
   const cacheKey = isFounder && user?.id ? `private:ventures:${user.id}` : null;
   const {
     data,

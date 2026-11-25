@@ -59,8 +59,8 @@ export function AssetCard({ asset, onDelete, onDuplicate }) {
       </div>
       <div className="pt-4 border-t border-border mt-2">
         <div className="flex items-baseline gap-1.5 mb-4">
-          <span className="font-serif text-2xl font-semibold text-gold">{asset.price_monthly != null ? "$" + Number(asset.price_monthly).toLocaleString() : "Price on request"}</span>
-          <span className="text-xs text-white/60">/ month</span>
+          <span className="font-serif text-2xl font-semibold text-gold">{asset.price_monthly != null ? Number(asset.price_monthly).toLocaleString() : "Price on request"}</span>
+          <span className="text-xs text-white/60">/ month · currency not specified</span>
         </div>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">

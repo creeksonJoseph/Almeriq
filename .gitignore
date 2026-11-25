@@ -33,6 +33,7 @@ uploads/
 # uv / pip / poetry lockfile artifacts
 pip-wheel-metadata/
 .pip-cache/
+server/=*.*
 
 # Pytest / coverage
 .pytest_cache/
@@ -92,3 +93,9 @@ docker-compose.override.yml
 *.swp
 *~
 UI_wireframes
+
+# ─── SQLite dev databases ─────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite3=*

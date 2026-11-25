@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ChevronRight, Check, X, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
@@ -30,7 +30,7 @@ export default function CheckoutPage() {
   const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [signature, setSignature] = useState("");
-    const [, setCanvasRef] = useState(null);
+  const canvasRef = useRef(null);
 
   const paymentForm = useForm({ defaultValues: { method: "visa" } });
   const amountForm = useForm({ defaultValues: { amount: "0.00" } });
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex items-center gap-2 truncate">
                 <span className="font-serif text-base font-semibold text-text truncate">Order from {providerName}</span>
-                <span className="text-gold shrink-0" aria-label="Verified">✓</span>
+
               </div>
             </div>
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg text-white/60 hover:text-text hover:bg-surface-2 transition-colors ml-2 shrink-0" aria-label="Close dialog">
@@ -207,7 +207,7 @@ export default function CheckoutPage() {
           {/* Step 4: Sign */}
           {currentStep === 3 && (
             <SignStep
-              canvasRef={setCanvasRef}
+              canvasRef={canvasRef}
               signature={signature}
               onSignatureChange={setSignature}
               onBack={handleBack}
@@ -279,8 +279,8 @@ function AmountStep({ amount, onBack, onNext, loading, formatAmount }) {
         <span className="text-label-caps text-gold">FIXED AMOUNT</span>
       </div>
       <div className="rounded-xl border-2 border-gold bg-surface-2 px-5 py-6 text-center">
-        <p className="font-mono text-3xl font-bold text-gold">${formatAmount(amount)}</p>
-        <p className="mt-2 text-xs text-white/50">Monthly lease amount set by the provider's listing</p>
+        <p className="font-mono text-3xl font-bold text-gold">{formatAmount(amount)}</p>
+        <p className="mt-2 text-xs text-white/50">Monthly amount set by the provider's listing · currency not specified</p>
       </div>
       <div className="rounded-xl border border-border bg-surface-2 p-4 flex items-start gap-3">
         <Shield className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
@@ -344,7 +344,7 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
             <div className="text-xs font-mono text-gold">No payment is processed in this demo</div>
           </div>
           <div className="font-serif text-2xl font-bold text-gold">
-            ${formatAmount(amount)} <span className="text-label-caps text-white/60">USD</span>
+            {formatAmount(amount)} <span className="text-label-caps text-white/60">Currency not specified</span>
           </div>
         </div>
       </Card>
@@ -365,24 +365,41 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
 }
 
 function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loading }) {
-  const handleMouseDown = (e) => {
+  const getPoint = (e, canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches?.[0]?.clientX ?? e.clientX;
+    const clientY = e.touches?.[0]?.clientY ?? e.clientY;
+    const scaleX = rect.width ? canvas.width / rect.width : 1;
+    const scaleY = rect.height ? canvas.height / rect.height : 1;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  };
+
+  const handleStart = (e) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
+    const { x, y } = getPoint(e, canvas);
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    canvas.onmousemove = (e) => {
-      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.moveTo(x, y);
+    const handleMove = (moveEvent) => {
+      const point = getPoint(moveEvent, canvas);
+      ctx.lineTo(point.x, point.y);
       ctx.strokeStyle = "#C9A15A";
       ctx.lineWidth = 2;
       ctx.lineCap = "round";
       ctx.stroke();
     };
-    canvas.onmouseup = () => {
+    const handleEnd = () => {
       canvas.onmousemove = null;
+      canvas.onmouseup = null;
+      canvas.ontouchmove = null;
+      canvas.ontouchend = null;
       onSignatureChange(canvas.toDataURL());
     };
+    canvas.onmousemove = handleMove;
+    canvas.ontouchmove = handleMove;
+    canvas.onmouseup = handleEnd;
+    canvas.ontouchend = handleEnd;
   };
 
   return (
@@ -397,9 +414,12 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
         </div>
         <canvas
           ref={canvasRef}
+          width={640}
+          height={176}
+          aria-label="Deal signature pad"
           className="absolute inset-0 w-full h-full touch-none"
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleMouseDown}
+          onMouseDown={handleStart}
+          onTouchStart={handleStart}
           style={{ cursor: "crosshair" }}
         />
         <div className="relative z-10 flex items-center justify-between w-full">
@@ -437,7 +457,7 @@ function CompleteStep({ orderId, providerName, amount, formatAmount, onDone }) {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-white/60">Order ID</span><span className="font-mono text-text">{orderId}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Provider</span><span className="font-medium text-text">{providerName}</span></div>
-          <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">${formatAmount(amount)}</span></div>
+          <div className="flex justify-between"><span className="text-white/60">Amount</span><span className="font-mono text-gold">{formatAmount(amount)}</span></div>
           <div className="flex justify-between"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">simulated</span></div>
         </div>
       </Card>

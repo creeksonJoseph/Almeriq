@@ -21,48 +21,49 @@ const C = {
 };
 
 const ROLES = [
-  { id: "Founder", icon: Building2, color: C.gold, desc: "Startup co-pilot, investor exposure, hiring & infrastructure" },
-  { id: "Investor", icon: TrendingUp, color: C.gold, desc: "Vetted deal flow, live founder metrics & investment tracking" },
-  { id: "Job Seeker", icon: Briefcase, color: C.gold, desc: "Direct founder hiring, startup roles & transparent equity" },
-  { id: "Infrastructure Provider", icon: Truck, color: C.gold, desc: "Monetize compute, cold storage, servers & logistics assets" },
+  { id: "Founder", icon: Building2, color: C.gold, desc: "Build a venture, publish startup pitches, hire, and request infrastructure" },
+  { id: "Investor", icon: TrendingUp, color: C.gold, desc: "Discover founder-published pitches, open conversations, and record portfolio positions" },
+  { id: "Job Seeker", icon: Briefcase, color: C.gold, desc: "Find startup roles, apply directly, and track application status" },
+  { id: "Infrastructure Provider", icon: Truck, color: C.gold, desc: "List infrastructure assets and manage incoming order requests" },
+  { id: "Expert", icon: ShieldCheck, color: C.gold, desc: "Offer specialist advice to founders through scoped advisory requests" },
 ];
 
 const CAPABILITIES = [
   {
     num: "01",
     color: C.gold,
-    title: "Guided Venture Builder",
-    desc: "Founders get a step-by-step studio - from idea validation and market sizing to business plans, MVP scoping, and company registration."
+    title: "Guided venture builder",
+    desc: "AI-assisted tools help founders work through idea validation, market sizing, business plans, MVP scoping, and company registration guidance."
   },
   {
     num: "02",
     color: C.gold,
-    title: "Curated Investor Deal Flow",
-    desc: "Browse vetted startups across 20+ sectors, review transparent founder metrics, and participate in startup syndicates."
+    title: "Founder-published investor deal flow",
+    desc: "Investors discover published startup pitches, review founder-provided information, request discussions, and keep manually recorded portfolio entries."
   },
   {
     num: "03",
     color: C.gold,
-    title: "Borderless Startup Talent Network",
-    desc: "Founders post roles and match with top engineers, growth leaders, and operators. Job seekers apply directly without recruiter black holes."
+    title: "Startup hiring workspace",
+    desc: "Founders publish roles and review applications. Job seekers browse openings, apply directly, and follow application status."
   },
   {
     num: "04",
     color: C.gold,
-    title: "Physical & Cloud Infrastructure Leasing",
-    desc: "Need servers, cold storage, warehousing, or trucks? Infrastructure providers list assets and startups lease exactly what they need."
+    title: "Infrastructure marketplace",
+    desc: "Providers list physical and digital assets. Founders can request an order and follow its recorded fulfilment status; checkout is simulated."
   },
   {
     num: "05",
     color: C.gold,
-    title: "Legal & Compliance Infrastructure",
-    desc: "Streamlined company registration, trademark filings, mutual NDAs, and compliance guidelines across global startup hubs."
+    title: "Legal and compliance guidance",
+    desc: "Use AI-assisted guidance and editable document templates for company setup and compliance. Almeriq does not submit government filings."
   },
   {
     num: "06",
     color: C.gold,
-    title: "Emerging Market Payment Rails",
-    desc: "Built for founders across Africa, Asia, and Latin America with multi-currency clearing (KES, INR, BRL, AED, USD) and resilient UX."
+    title: "Marketplace payment workflow",
+    desc: "Record order terms and a preferred payment method during simulated checkout. Live payment processing and escrow are not enabled yet."
   }
 ];
 
@@ -99,14 +100,14 @@ export function EcosystemSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between pb-8 sm:pb-12">
           <div>
-            <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl text-white font-medium">Four Stakeholders. One Ecosystem.</h2>
+            <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl text-white font-medium">Five Stakeholders. One Ecosystem.</h2>
           </div>
           <p className="text-xs sm:text-sm text-white max-w-md mt-3 md:mt-0 leading-relaxed">
             Replacing fragmented tools with a single unified platform where capital, talent, founders, and physical assets connect.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-px bg-[#282a2f] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-[#282a2f] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl">
           <div className="p-6 sm:p-8 bg-[#111318] flex flex-col justify-between group">
             <div>
               <h3 className="font-serif text-xl sm:text-2xl text-white font-medium mb-2.5 sm:mb-3">Founders</h3>
@@ -120,7 +121,7 @@ export function EcosystemSection() {
             <div>
               <h3 className="font-serif text-xl sm:text-2xl text-white font-medium mb-2.5 sm:mb-3">Investors</h3>
               <p className="text-xs text-white leading-relaxed">
-                Vetted startup deal flow with real-time operational telemetry. Evaluate founders, participate in syndicates, and track portfolios.
+                Discover founder-published pitches, request discussions, and maintain manually recorded portfolio positions. Almeriq does not verify transfers or provide live operational telemetry.
               </p>
             </div>
           </div>
@@ -129,7 +130,16 @@ export function EcosystemSection() {
             <div>
               <h3 className="font-serif text-xl sm:text-2xl text-white font-medium mb-2.5 sm:mb-3">Job Seekers</h3>
               <p className="text-xs text-white leading-relaxed">
-                Direct access to fast-growing startups without recruiter black holes. Showcase your skills and land key roles.
+                Browse startup job postings, submit applications, and track responses from employers.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8 bg-[#111318] flex flex-col justify-between group">
+            <div>
+              <h3 className="font-serif text-xl sm:text-2xl text-white font-medium mb-2.5 sm:mb-3">Experts</h3>
+              <p className="text-xs text-white leading-relaxed">
+                Share specialist knowledge with founders through advisory requests, scoped discussions, and completion tracking.
               </p>
             </div>
           </div>
@@ -138,7 +148,7 @@ export function EcosystemSection() {
             <div>
               <h3 className="font-serif text-xl sm:text-2xl text-white font-medium mb-2.5 sm:mb-3">Asset Lessors</h3>
               <p className="text-xs text-white leading-relaxed">
-                Monetize servers, compute clusters, cold storage, warehousing, and trucks. Lease assets directly to startups.
+                List servers, compute, storage, warehousing, and transport assets. Manage order requests and fulfilment updates in one place.
               </p>
             </div>
           </div>

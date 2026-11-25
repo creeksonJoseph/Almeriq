@@ -79,6 +79,7 @@ export default function ProviderOrderDetailPage() {
 
   const statusConfig = {
     pending: { variant: "gold", label: "Pending Review", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
+    pending_review: { variant: "gold", label: "Pending Review", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
     confirmed: { variant: "gold", label: "Confirmed", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
     shipped: { variant: "gold", label: "Shipped / In Transit", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
     completed: { variant: "gold", label: "Completed", color: "text-gold", bg: "bg-gold/10", border: "border-gold/30" },
@@ -151,7 +152,7 @@ export default function ProviderOrderDetailPage() {
                 <span className="text-sm font-medium text-text">{order.assetName}</span>
                 <div className="text-xs text-white/60">{order.assetDetails || "No asset description provided."}</div>
               </div>
-              <span className="font-mono font-semibold text-gold shrink-0">${order.amount}/mo</span>
+              <span className="font-mono font-semibold text-gold shrink-0">{order.amount}/mo · currency not specified</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><span className="text-white/60">Allocation:</span> <span className="font-mono text-text ml-2">{order.allocation || "Not specified"}</span></div>
@@ -166,7 +167,7 @@ export default function ProviderOrderDetailPage() {
         <Card className="p-5 space-y-4">
           <h3 className="text-label-caps text-white/60 uppercase tracking-wider">ORDER VALUE & PAYMENT STATUS</h3>
           <div className="space-y-3 bg-surface-2 p-4 rounded-lg border border-border">
-            <div className="flex justify-between text-sm"><span className="text-white/60">Monthly Lease Rate</span><span className="font-mono text-gold">${order.amount}/mo</span></div>
+            <div className="flex justify-between text-sm"><span className="text-white/60">Monthly Lease Rate</span><span className="font-mono text-gold">{order.amount != null ? `${order.amount}/mo · currency not specified` : "Not specified"}</span></div>
             <div className="flex justify-between text-sm"><span className="text-white/60">Payment method</span><span className="font-mono text-text">{order.paymentMethod || "Not selected"}</span></div>
             <div className="flex justify-between text-sm"><span className="text-white/60">Payment status</span><span className="font-mono text-gold">{order.paymentStatus || "not_started"}</span></div>
           </div>

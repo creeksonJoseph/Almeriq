@@ -5,6 +5,7 @@ vi.mock("../lib/api", () => ({
   getInvestorProfileApi: vi.fn(),
   listInvestorStartupsApi: vi.fn(),
   listInvestorPortfolioApi: vi.fn(),
+  listInvestorUpdatesApi: vi.fn(),
   createInvestmentApi: vi.fn(),
   updateInvestorPortfolioApi: vi.fn(),
   updateInvestorProfileApi: vi.fn(),
@@ -27,6 +28,7 @@ describe("useInvestorWorkspace", () => {
     api.listInvestorPortfolioApi.mockResolvedValue({ items: [{ id: 9, pitch_id: 1, status: "pending" }] });
     api.createInvestmentApi.mockResolvedValue({ id: 10, pitch_id: 2, status: "pending" });
     api.updateInvestorProfileApi.mockResolvedValue({ notify_messages: false });
+    api.listInvestorUpdatesApi.mockResolvedValue({ items: [] });
     startInvestmentConversationApi.mockResolvedValue({ id: 42 });
   });
 

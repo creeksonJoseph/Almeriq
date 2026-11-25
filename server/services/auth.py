@@ -15,8 +15,10 @@ from sqlalchemy.exc import IntegrityError
 
 from core.config import DOMAIN, GOOGLE_CLIENT_ID, JWT_ALGORITHM, JWT_SECRET_KEY, RESEND_API_KEY
 from core.redis_client import cache_delete, cache_get, cache_set, cache_set_if_absent
+from core.roles import normalize_role
 from core.security import create_access_token, hash_password, verify_password
 from repositories import user as user_repo
+from core.roles import normalize_role
 
 logger = logging.getLogger(__name__)
 resend.api_key = RESEND_API_KEY
@@ -125,10 +127,24 @@ async def authenticate_google_user(credential: str) -> tuple[dict, str]:
             detail="Google account token is missing email or sub identifier",
         )
 
-    # Optional aud check if GOOGLE_CLIENT_ID is configured
-    if GOOGLE_CLIENT_ID and payload.get("aud") != GOOGLE_CLIENT_ID:
-        # Note: log warning or enforce client_id match
-        pass
+    # Google ID tokens must be issued for this application. Fail closed if
+    # the client ID is missing or the token audience does not match.
+    if not GOOGLE_CLIENT_ID:
+        logger.error("GOOGLE_CLIENT_ID is not configured; rejecting Google sign-in")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google sign-in is not configured",
+        )
+    if payload.get("aud") != GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google credential was issued for a different application",
+        )
+    if str(payload.get("email_verified", "")).lower() not in {"true", "1"}:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Google email address has not been verified",
+        )
 
     user = await user_repo.get_user_by_google_id(google_sub)
     if not user:
@@ -185,13 +201,32 @@ async def update_onboarding(
     Phase 2: Save wizard onboarding responses.
     Completion is derived here (§1 — business rules live in services, not routers).
     """
-    is_complete = bool(role or (full_name and id_number))
+    allowed_roles = {
+        "founder", "investor", "infrastructure_provider", "job_seeker", "expert"
+    }
+    normalized_role = normalize_role(role) if role is not None else None
+    if normalized_role is not None and normalized_role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Choose one of the supported account roles",
+        )
+
+    existing_user = await user_repo.get_user_by_id(user_id)
+    if not existing_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User record not found")
+
+    next_name = full_name.strip() if full_name is not None else (existing_user.get("full_name") or "")
+    next_id_number = id_number.strip() if id_number is not None else (existing_user.get("id_number") or "")
+    next_role = normalized_role if normalized_role is not None else normalize_role(existing_user.get("role"))
+    # Onboarding is complete only after the user has supplied a name, identity
+    # number and a supported role. This is data collection, not identity verification.
+    is_complete = bool(next_name and next_id_number and next_role in allowed_roles)
     updated_user = await user_repo.update_user_onboarding(
         user_id=user_id,
         full_name=full_name,
         nationality=nationality,
         id_number=id_number,
-        role=role,
+        role=normalized_role,
         onboarding_completed=is_complete,
     )
     if not updated_user:

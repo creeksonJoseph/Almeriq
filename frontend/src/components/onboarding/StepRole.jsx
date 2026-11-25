@@ -1,32 +1,33 @@
 import React from "react";
+import { normalizeRole } from "../../lib/roles";
 
 const ROLES = [
   {
-    id: "FOUNDER",
+    id: "founder",
     title: "Founder / Entrepreneur",
     desc: "Building, scaling, and legalizing tech companies on Alimeriq",
     badge: "Building",
   },
   {
-    id: "INVESTOR",
+    id: "investor",
     title: "Investor / VC",
     desc: "Funding, evaluating, and backing high-growth ventures",
     badge: "Investing",
   },
   {
-    id: "INFRASTRUCTURE_PROVIDER",
+    id: "infrastructure_provider",
     title: "Infrastructure Provider",
     desc: "Offering compute, legal, physical, or cloud resources",
     badge: "Providing",
   },
   {
-    id: "JOB_SEEKER",
+    id: "job_seeker",
     title: "Talent / Job Seeker",
     desc: "Joining high-impact teams and early-stage companies",
     badge: "Talent",
   },
   {
-    id: "EXPERT",
+    id: "expert",
     title: "Expert / Advisor",
     desc: "Offering sector expertise, mentorship, and advisory engagements",
     badge: "Expert",
@@ -47,7 +48,7 @@ export default function StepRole({ role, setRole, loading, onBack, onSubmit }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
         {ROLES.map((r) => {
-          const isSelected = role === r.id;
+          const isSelected = normalizeRole(role) === r.id;
           return (
             <button
               key={r.id}

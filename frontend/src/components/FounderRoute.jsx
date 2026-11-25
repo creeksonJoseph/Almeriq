@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { userHasRole } from "../lib/roles";
 import OnboardingWizard from "./OnboardingWizard";
 import { RouteSkeleton } from "./ui";
 
@@ -17,7 +18,7 @@ export default function FounderRoute({ children }) {
     return <OnboardingWizard user={user} onComplete={(nextUser) => updateUser(nextUser)} />;
   }
 
-  if (String(user?.role || "").toLowerCase() !== "founder") {
+  if (!userHasRole(user, "founder")) {
     return <Navigate to="/dashboard" replace />;
   }
 

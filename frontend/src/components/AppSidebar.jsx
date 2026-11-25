@@ -17,6 +17,7 @@ import {
 } from "./sidebarNavigation";
 import BrandLogo from "./BrandLogo";
 import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
+import { normalizeRole } from "../lib/roles";
 
 export default function AppSidebar({
   user,
@@ -28,9 +29,9 @@ export default function AppSidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = user?.role || "founder";
-  const normalizedRole = String(role).trim().toUpperCase();
-  const isFounder = normalizedRole === "FOUNDER";
+  const normalizedRole = normalizeRole(user?.role || "founder");
+  const isFounder = normalizedRole === "founder";
+  const isAdmin = Boolean(user?.is_admin);
 
   const isCurrentActive = (itemPath) => {
     if (itemPath === "/investor/dashboard") {
@@ -150,41 +151,16 @@ export default function AppSidebar({
 
         {/* ── SCROLLABLE NAVIGATION BODY ── */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2 space-y-4 no-scrollbar">
-          {/* Communication links are shown only for roles with a real messaging or notification workflow. */}
-          {COMMUNICATION_NAV.some((item) => item.roles.includes(normalizedRole)) && (
+
+
+          {/* Admin controls are separate from role workspaces. */}
+          {isAdmin && (
             <div>
-              {!isCollapsed && (
-                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
-                  Communication
-                </p>
-              )}
-              <div className="space-y-0.5">
-                {COMMUNICATION_NAV.filter((item) => item.roles.includes(normalizedRole)).map((item) => {
-                  const Icon = item.icon;
-                  const active = isCurrentActive(item.path);
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => handleNavClick(item.path)}
-                      title={isCollapsed ? item.label : undefined}
-                      className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
-                        isCollapsed ? "justify-center px-0 h-9" : "h-9"
-                      } ${
-                        active
-                          ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
-                          : "text-white hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      {active && !isCollapsed && (
-                        <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
-                      )}
-                      <Icon size={16} className={`shrink-0 transition-colors ${active ? "text-[#C9A15A]" : "text-white/70 group-hover:text-white"}`} />
-                      {!isCollapsed && <span className="truncate">{item.label}</span>}
-                    </button>
-                  );
-                })}
-              </div>
+              {!isCollapsed && <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">Administration</p>}
+              <button type="button" onClick={() => handleNavClick("/admin/waitlist")} title={isCollapsed ? "Admin console" : undefined} className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${isCollapsed ? "justify-center px-0 h-9" : "h-9"} ${location.pathname.startsWith("/admin") ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold" : "text-white hover:bg-white/[0.05]"}`}>
+                <ShieldCheck size={16} className="shrink-0 text-[#C9A15A]" />
+                {!isCollapsed && <span className="truncate">Admin console</span>}
+              </button>
             </div>
           )}
 
@@ -234,7 +210,7 @@ export default function AppSidebar({
           )}
 
           {/* GROUP 2b: Provider Navigation */}
-          {normalizedRole === "INFRASTRUCTURE_PROVIDER" && (
+          {normalizedRole === "infrastructure_provider" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -279,7 +255,7 @@ export default function AppSidebar({
           )}
 
                      {/* GROUP 2c: Job Seeker Navigation */}
-           {normalizedRole === "JOB_SEEKER" && (
+           {normalizedRole === "job_seeker" && (
              <div>
                {!isCollapsed && (
                  <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -323,7 +299,7 @@ export default function AppSidebar({
              </div>
             )}
             {/* GROUP 2d: Investor Navigation */}
-            {normalizedRole === "INVESTOR" && (
+            {normalizedRole === "investor" && (
               <div>
                 {!isCollapsed && (
                   <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -367,7 +343,7 @@ export default function AppSidebar({
               </div>
             )}
             {/* GROUP 2e: Expert Navigation */}
-            {normalizedRole === "EXPERT" && (
+            {normalizedRole === "expert" && (
               <div>
                 {!isCollapsed && (
                   <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -410,42 +386,46 @@ export default function AppSidebar({
                 </div>
               </div>
             )}
-            {Boolean(user?.is_admin) && (
+
+
+          {/* Communication links sit after the role workspace so primary tasks remain the first navigation priority. */}
+          {COMMUNICATION_NAV.some((item) => item.roles.includes(normalizedRole)) && (
             <div>
               {!isCollapsed && (
-                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]/60">
-                  Administration
+                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  Communication
                 </p>
               )}
               <div className="space-y-0.5">
-                <button
-                  type="button"
-                  onClick={() => handleNavClick("/admin/waitlist")}
-                  title={isCollapsed ? "Waitlist Console" : undefined}
-                  className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
-                    isCollapsed ? "justify-center px-0 h-9" : "h-9"
-                  } ${
-                    location.pathname.startsWith("/admin")
-                      ? "bg-[#f2ca50]/12 text-[#f2ca50] font-semibold"
-                      : "text-white/65 hover:bg-white/[0.05] hover:text-white"
-                  }`}
-                >
-                  {location.pathname.startsWith("/admin") && !isCollapsed && (
-                    <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#f2ca50]" />
-                  )}
-                  <ShieldCheck
-                    size={16}
-                    className={`shrink-0 ${
-                      location.pathname.startsWith("/admin")
-                        ? "text-[#f2ca50]"
-                        : "text-white/45 group-hover:text-white/80"
-                    }`}
-                  />
-                  {!isCollapsed && <span className="truncate">Waitlist Console</span>}
-                </button>
+                {COMMUNICATION_NAV.filter((item) => item.roles.includes(normalizedRole)).map((item) => {
+                  const Icon = item.icon;
+                  const active = isCurrentActive(item.path);
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => handleNavClick(item.path)}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
+                        isCollapsed ? "justify-center px-0 h-9" : "h-9"
+                      } ${
+                        active
+                          ? "bg-[#C9A15A]/12 text-[#E8D6A8] font-semibold"
+                          : "text-white hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      {active && !isCollapsed && (
+                        <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#C9A15A]" />
+                      )}
+                      <Icon size={16} className={`shrink-0 transition-colors ${active ? "text-[#C9A15A]" : "text-white/70 group-hover:text-white"}`} />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
+
         </div>
 
         {/* ── FOOTER TIER: User Identity & Quick Settings ── */}

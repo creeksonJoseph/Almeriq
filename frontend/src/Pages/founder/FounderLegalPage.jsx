@@ -39,7 +39,7 @@ Everything we share about the product, code, business plans, and finances is pri
 Both parties promise not to share this private information with anyone else, and to use it only to evaluate this project.
 
 4. HOW LONG THIS LASTS:
-This agreement protects secrets for 2 years from the date information is shared.
+This agreement protects secrets for [insert an agreed duration] from the date information is shared.
 
 5. GOVERNING LAW:
 This agreement follows the standard business laws of the place where the company is registered.`,
@@ -52,7 +52,7 @@ This agreement follows the standard business laws of the place where the company
     content: `INVENTIONS AND INTELLECTUAL PROPERTY AGREEMENT
 
 1. COMPANY OWNS ALL WORK:
-All code, designs, ideas, and work you create for the startup belong 100% to the company.
+Work ownership depends on local law and a valid written assignment. Identify the work covered, the people assigning it, and any agreed exceptions.
 
 2. NO OUTSIDE CLAIMS:
 You confirm that the work you do here does not belong to any former school, employer, or past project.
@@ -74,7 +74,7 @@ The investor gives the startup money today in exchange for shares when the compa
 Sets the maximum price the investor pays when their investment turns into shares.
 
 3. DISCOUNT RATE:
-Standard 20% discount so early investors get a lower share price than later investors.
+Insert the discount, if any, that both sides negotiate and approve in the final agreement.
 
 4. WHAT HAPPENS IN A SALE:
 If the company is sold, the investor gets their money back or gets shares in the sale.`,
@@ -90,7 +90,7 @@ If the company is sold, the investor gets their money back or gets shares in the
 The founders agree on what percentage of the company each person owns.
 
 2. VESTING (4 YEARS WITH 1-YEAR CLIFF):
-Founders earn their shares over 4 years. If someone leaves during the first year, they do not keep any shares. This keeps everyone committed.
+Use a vesting schedule that all founders agree to. A four-year schedule with a one-year cliff is one common example, not a legal requirement.
 
 3. ALL IDEAS BELONG TO THE COMPANY:
 All code, domain names, and prototypes created before today belong to the company.
@@ -161,19 +161,19 @@ const THESIS_PILLARS = [
     index: "01",
     title: "Keep Your Personal Money Safe",
     category: "Personal Protection",
-    desc: "If your business owes money or gets into a legal dispute, your personal savings, phone, laptop, and home are safe. The company owes the money, not you.",
+    desc: "A limited liability company can separate many business debts from personal assets. Personal guarantees, misconduct, director duties, and local law can create exceptions.",
   },
   {
     index: "02",
     title: "Take Money From Investors",
     category: "Ready for Funding",
-    desc: "Investors cannot wire money to your personal bank account. Registering lets you create company shares and sign standard investment contracts like SAFEs.",
+    desc: "Investors often expect clear company ownership records and written investment terms. The right structure depends on the deal and local law.",
   },
   {
     index: "03",
     title: "Open Business Bank Accounts and Stripe",
     category: "Payments and Banking",
-    desc: "Payment services like Stripe and business banks require official company paperwork before they let you take payments from customers around the world.",
+    desc: "Banks and payment providers may ask for company documents, tax details, or other checks. Requirements vary by provider and country.",
   },
   {
     index: "04",
@@ -551,7 +551,7 @@ export default function FounderLegalPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded bg-[#f2ca50] px-4 py-2 text-xs font-semibold text-black transition-colors hover:bg-[#e2ba40] shadow-sm cursor-pointer"
                       >
-                        <span>Official Registry Portal</span>
+                        <span>Suggested Registry Portal</span>
                         <ExternalLink size={13} />
                       </a>
                     )}
@@ -596,7 +596,7 @@ export default function FounderLegalPage() {
               {/* Loaded Country Guidance Content */}
               {!guideLoading && !guideError && guide && (
                 <div className="space-y-12">
-                  {/* Metric Data Strip: Expected Time, Fees, Registry for THIS country */}
+                  {/* Metric Data Strip: Estimated Timeline, Fees, Registry for THIS country */}
                   <section className="rounded-2xl border border-[#f2ca50]/25 bg-[#f2ca50]/[0.04] p-5 sm:p-6">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
@@ -608,16 +608,17 @@ export default function FounderLegalPage() {
                         </p>
                       </div>
                       <span className="hidden text-[10px] font-mono uppercase tracking-wider text-white/50 sm:block">
-                        Official guidance
+                        AI-generated guide
                       </span>
                     </div>
+                    <p className="mb-4 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-5 text-amber-100/80">AI-generated guidance, not live government data. Verify the registry, portal URL, fees, requirements and timelines directly with the relevant authority before acting.</p>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Official Registry
+                        Suggested Registry
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white truncate">
-                        {guide.regulatory_body || "Government Company Registry"}
+                        {guide.regulatory_body || "Not provided"}
                       </span>
                       <span className="text-[11px] text-white/70 truncate block">
                         {guide.country_name || selectedCountry}
@@ -626,25 +627,25 @@ export default function FounderLegalPage() {
 
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Expected Time
+                        Estimated Timeline
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
-                        {guide.estimated_timeline || "3 to 7 business days"}
+                        {guide.estimated_timeline || "Not provided"}
                       </span>
                       <span className="text-[11px] font-mono text-[#f2ca50]">
-                        Standard queue
+                        Confirm with registry
                       </span>
                     </div>
 
                     <div className="rounded-xl bg-[#090a0d]/45 p-4">
                       <span className="block text-[10px] font-mono uppercase tracking-wider text-white/60">
-                        Estimated Government Fees
+                        Estimated Fees · Confirm with Registry
                       </span>
                       <span className="mt-1 block font-mono text-sm font-semibold text-white">
-                        {guide.estimated_cost || "Standard government fee"}
+                        {guide.estimated_cost || "Not provided"}
                       </span>
                       <span className="text-[11px] text-white/70">
-                        Official registry fee
+                        Confirm directly with registry
                       </span>
                     </div>
 
@@ -653,10 +654,10 @@ export default function FounderLegalPage() {
                         Company Type
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-white">
-                        Private Limited Company (Ltd)
+                        Confirm locally
                       </span>
                       <span className="text-[11px] font-mono text-[#f2ca50]">
-                        {guide.source === "database" ? "Saved in Database" : "Freshly Generated"}
+                        {guide.source === "database" ? "Cached AI guidance" : "AI-generated"}
                       </span>
                       </div>
                     </div>
@@ -695,7 +696,7 @@ export default function FounderLegalPage() {
                                   {step.step_number || idx + 1}. {step.title}
                                 </h3>
                                 <span className="text-[10px] font-mono text-[#f2ca50]">
-                                  {step.online_process || "Online"}
+                                  {step.online_process || "Process not specified"}
                                 </span>
                               </div>
 

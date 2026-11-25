@@ -1,6 +1,7 @@
 import { ArrowLeft, BookOpen, CheckCircle2, Plus } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { userHasRole } from "../../lib/roles";
 import { useFounderFlow } from "../../hooks/useFounderFlow";
 import { useActiveIdea } from "../../context/IdeaContext";
 
@@ -11,7 +12,7 @@ const STEPS = [
 
 export function FounderFlowGuard({ children }) {
   const { user } = useAuth();
-  if (user?.role !== "founder") {
+  if (!userHasRole(user, "founder")) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
         <h1 className="font-display text-3xl font-semibold text-white">Founder access required</h1>

@@ -1,14 +1,14 @@
-import { Children, cloneElement } from "react";
-
-const sizeClasses = {
-  32: "w-8 h-8 text-xs",
-  40: "w-10 h-10 text-sm",
-  48: "w-12 h-12 text-base",
-  56: "w-14 h-14 text-lg",
-  64: "w-16 h-16 text-xl",
-};
+import React from "react";
+import { User, MessageSquare, Send, MoreVertical } from "lucide-react";
 
 export function Avatar({ src, alt, name, size = 40, className = "", online = false, ...props }) {
+  const sizeClasses = {
+    32: "w-8 h-8 text-xs",
+    40: "w-10 h-10 text-sm",
+    48: "w-12 h-12 text-base",
+    56: "w-14 h-14 text-lg",
+    64: "w-16 h-16 text-xl",
+  };
 
   const getInitials = (str) => {
     if (!str) return "?";
@@ -42,14 +42,15 @@ export function Avatar({ src, alt, name, size = 40, className = "", online = fal
 }
 
 export function AvatarGroup({ children, maxVisible = 5, className = "", ...props }) {
-  const kids = Children.toArray(children);
+  const sizeClasses = { 40: "w-10 h-10 text-sm" };
+  const kids = React.Children.toArray(children);
   const visible = kids.slice(0, maxVisible);
   const rest = kids.length - maxVisible;
 
   return (
     <div className={`flex -space-x-2 ${className}`} {...props}>
       {visible.map((child, i) =>
-        cloneElement(child, { key: child.key || i, className: `relative z-${visible.length - i} ${child.props.className || ""}` })
+        React.cloneElement(child, { key: child.key || i, className: `relative z-${visible.length - i} ${child.props.className || ""}` })
       )}
       {rest > 0 && (
         <div

@@ -16,11 +16,15 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, fin
     async function loadProfile() {
       setLoading(true);
       try {
+        const allowMissingProfile = (err) => {
+          if (err?.status === 404 || err?.response?.status === 404) return null;
+          throw err;
+        };
         const [profile, coverage, physical, digital] = await Promise.all([
-          getProviderProfileApi(),
-          listCoverageRegionsApi(),
-          listAssetsApi({ kind: "physical" }),
-          listAssetsApi({ kind: "digital" }),
+          getProviderProfileApi().catch(allowMissingProfile),
+          listCoverageRegionsApi().catch((err) => allowMissingProfile(err) ?? { items: [] }),
+          listAssetsApi({ kind: "physical" }).catch((err) => allowMissingProfile(err) ?? { items: [] }),
+          listAssetsApi({ kind: "digital" }).catch((err) => allowMissingProfile(err) ?? { items: [] }),
         ]);
         if (!active) return;
         if (profile) {
@@ -56,7 +60,7 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, fin
   }, [methods, coverageToApi, toast]);
 
   const persistAssets = useCallback(async (data) => {
-    const toNum = (value) => value != null && value !== "" && !Number.isNaN(Number(value)) ? Number(value) : null;
+    const toNum = (value) => value != null && value !== "" && !Number.isNaN(Number(String(value).replace(/,/g, ""))) ? Number(String(value).replace(/,/g, "")) : null;
     const saveAsset = async (asset, kind, index, fieldPath) => {
       const payload = {
         name: asset.name, category: asset.category, kind, client_asset_id: asset.client_asset_id,

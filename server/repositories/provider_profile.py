@@ -1,11 +1,15 @@
 """repositories/provider_profile.py - SQLAlchemy 2.0 repository for ProviderProfile model."""
 from __future__ import annotations
+
+from datetime import datetime, timezone
 import logging
 from typing import Optional
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import async_session_factory
 from models.provider_profile import ProviderProfile
+from models.provider_verification_event import ProviderVerificationEvent
+from models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -126,3 +130,94 @@ async def update_provider_profile(
         await s.commit()
         profile = res.scalar_one_or_none()
         return profile.to_dict() if profile else None
+
+async def list_provider_profiles(
+    verified: bool | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    session: AsyncSession | None = None,
+) -> list[dict]:
+    """List provider profiles for the admin verification queue."""
+    stmt = select(ProviderProfile).order_by(ProviderProfile.created_at.desc()).limit(limit).offset(offset)
+    if verified is not None:
+        stmt = stmt.where(ProviderProfile.verified == verified)
+    if session is not None:
+        return [profile.to_dict() for profile in (await session.scalars(stmt)).all()]
+    async with async_session_factory() as db:
+        return [profile.to_dict() for profile in (await db.scalars(stmt)).all()]
+
+
+async def list_provider_verification_events(
+    profile_id: int,
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession | None = None,
+) -> list[dict]:
+    """Return immutable verification decisions newest first."""
+    stmt = (
+        select(ProviderVerificationEvent, User.full_name, User.email)
+        .outerjoin(User, User.id == ProviderVerificationEvent.reviewer_id)
+        .where(ProviderVerificationEvent.provider_id == profile_id)
+        .order_by(ProviderVerificationEvent.id.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    if session is not None:
+        rows = (await session.execute(stmt)).all()
+        return [event.to_dict(name, email) for event, name, email in rows]
+    async with async_session_factory() as db:
+        rows = (await db.execute(stmt)).all()
+        return [event.to_dict(name, email) for event, name, email in rows]
+
+
+async def update_provider_verification(
+    profile_id: int,
+    verified: bool,
+    verified_by: int | None = None,
+    session: AsyncSession | None = None,
+) -> dict | None:
+    """Set provider verification and append an immutable reviewer event."""
+    reviewed_at = datetime.now(timezone.utc)
+    values = {
+        "verified": verified,
+        "verified_at": reviewed_at if verified else None,
+        "verified_by": verified_by if verified else None,
+        "verification_reviewed_at": reviewed_at,
+        "verification_reviewed_by": verified_by,
+    }
+    stmt = (
+        update(ProviderProfile)
+        .where(ProviderProfile.id == profile_id)
+        .values(**values)
+        .returning(ProviderProfile)
+    )
+
+    if session is not None:
+        profile = (await session.execute(stmt)).scalar_one_or_none()
+        if profile is None:
+            return None
+        session.add(
+            ProviderVerificationEvent(
+                provider_id=profile_id,
+                reviewer_id=verified_by,
+                verified=verified,
+                reviewed_at=reviewed_at,
+            )
+        )
+        await session.flush()
+        return profile.to_dict()
+
+    async with async_session_factory() as db:
+        profile = (await db.execute(stmt)).scalar_one_or_none()
+        if profile is None:
+            return None
+        db.add(
+            ProviderVerificationEvent(
+                provider_id=profile_id,
+                reviewer_id=verified_by,
+                verified=verified,
+                reviewed_at=reviewed_at,
+            )
+        )
+        await db.commit()
+        return profile.to_dict()

@@ -1,13 +1,12 @@
 """api/routers/order.py - Provider order endpoints."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_db
 from core.roles import user_has_role
 from api.dependencies import get_current_provider_profile, get_current_user
 from schemas.provider import (
-    OrderCreateRequest,
     OrderDetailResponse,
     OrderListResponse,
     OrderResponse,
@@ -31,11 +30,13 @@ async def list_client_orders(
     response: Response,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List orders placed by the current founder."""
     client_id = _require_founder(current_user)
     response.headers["Cache-Control"] = "private, no-store"
-    items, total = await svc.list_client_orders(client_id=client_id, session=db)
+    items, total = await svc.list_client_orders(client_id=client_id, limit=limit, offset=offset, session=db)
     return {"items": items, "total": total}
 
 
@@ -53,40 +54,36 @@ async def get_client_order(
 
 
 
-@router.post("/provider/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_order(
-    response: Response,
-    body: OrderCreateRequest,
-    profile: dict = Depends(get_current_provider_profile),
-    db: AsyncSession = Depends(get_db),
-) -> dict:
-    """Create an order for one of the provider's assets."""
-    response.headers["Cache-Control"] = "no-store"
-    return await svc.create_order(
-        provider_id=profile["id"],
-        client_id=profile["user_id"],
-        asset_id=body.asset_id,
-        allocation=body.allocation,
-        lease_amount=body.lease_amount,
-        session=db,
-    )
-
-
 @router.get("/provider/orders", response_model=OrderListResponse)
 async def list_orders(
     response: Response,
     profile: dict = Depends(get_current_provider_profile),
     db: AsyncSession = Depends(get_db),
     status: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ) -> dict:
     """List orders for the current provider."""
     response.headers["Cache-Control"] = "private, max-age=30"
     items, total = await svc.list_orders(
         provider_id=profile["id"],
         status=status,
+        limit=limit,
+        offset=offset,
         session=db,
     )
     return {"items": items, "total": total}
+
+
+@router.get("/provider/orders/summary")
+async def get_provider_order_summary(
+    response: Response,
+    profile: dict = Depends(get_current_provider_profile),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return all-time provider order counts for dashboard metrics."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return await svc.get_provider_order_summary(provider_id=profile["id"], session=db)
 
 
 @router.get("/provider/orders/{order_id}", response_model=OrderDetailResponse)

@@ -5,6 +5,7 @@
  * JS never touches the token, eliminating XSS token theft.
  */
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { normalizeRole } from "../lib/roles";
 import {
   getMeApi,
   loginApi,
@@ -19,26 +20,14 @@ import {
 
 const AuthContext = createContext(null);
 
-const CANONICAL_ROLES = {
-  infrastructure_provider: "INFRASTRUCTURE_PROVIDER",
-  infrastructure: "INFRASTRUCTURE_PROVIDER",
-  INFRASTRUCTURE_PROVIDER: "INFRASTRUCTURE_PROVIDER",
-  INFRASTRUCTURE: "INFRASTRUCTURE_PROVIDER",
-  founder: "founder",
-  FOUNDER: "founder",
-  admin: "ADMIN",
-  ADMIN: "ADMIN",
-  investor: "INVESTOR",
-  INVESTOR: "INVESTOR",
-  expert: "EXPERT",
-  EXPERT: "EXPERT",
-  job_seeker: "JOB_SEEKER",
-  JOB_SEEKER: "JOB_SEEKER",
+const ROLE_ALIASES = {
+  infrastructure: "infrastructure_provider",
 };
 
 function normalizeUser(user) {
   if (!user || !user.role) return user;
-  return { ...user, role: CANONICAL_ROLES[user.role] ?? user.role };
+  const normalized = normalizeRole(user.role);
+  return { ...user, role: ROLE_ALIASES[normalized] ?? normalized };
 }
 
 export function AuthProvider({ children }) {
@@ -53,10 +42,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(!user);
 
   const saveUser = useCallback((nextUser) => {
-    setUser(normalizeUser(nextUser));
+    const normalized = normalizeUser(nextUser);
+    setUser(normalized);
     try {
-      if (nextUser) {
-        localStorage.setItem("almeriq_user", JSON.stringify(nextUser));
+      if (normalized) {
+        localStorage.setItem("almeriq_user", JSON.stringify(normalized));
       } else {
         localStorage.removeItem("almeriq_user");
       }

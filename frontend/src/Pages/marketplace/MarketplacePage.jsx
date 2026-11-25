@@ -39,16 +39,19 @@ function matchesCategory(listing, category) {
 
 function formatPrice(value) {
   if (value == null || value === "") return "Price on request";
-  return "$" + Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " / month";
+  return Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }) + " / month · currency not specified";
 }
 
 export default function MarketplacePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [listings, setListings] = useState([]);
+  const [totalListings, setTotalListings] = useState(0);
+  const [loadingMoreListings, setLoadingMoreListings] = useState(false);
   const [orderingId, setOrderingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState("all");
   const [sortMode, setSortMode] = useState("featured");
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -56,7 +59,7 @@ export default function MarketplacePage() {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const galleryTouchStart = useRef(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState({ location: "", kind: "all", minPrice: "", maxPrice: "" });
+  const [filters, setFilters] = useState({ location: "", kind: "all" });
   const searchForm = useForm({ defaultValues: { query: "" } });
   const query = searchForm.watch("query");
 
@@ -67,7 +70,10 @@ export default function MarketplacePage() {
       setError("");
       try {
         const response = await listMarketplaceListingsApi({ limit: 50 });
-        if (!cancelled) setListings(getListings(response));
+        if (!cancelled) {
+          setListings(getListings(response));
+          setTotalListings(response?.total ?? getListings(response).length);
+        }
       } catch (err) {
         if (!cancelled) setError(err.response?.data?.detail || err.message || "We could not load marketplace listings.");
       } finally {
@@ -76,7 +82,7 @@ export default function MarketplacePage() {
     }
     loadListings();
     return () => { cancelled = true; };
-  }, []);
+  }, [retryCount]);
 
   const visibleListings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -87,25 +93,38 @@ export default function MarketplacePage() {
       const queryMatch = !normalizedQuery || searchable.includes(normalizedQuery);
       const locationMatch = !filters.location || String(listing.provider_location || "").toLowerCase().includes(filters.location.toLowerCase());
       const kindMatch = filters.kind === "all" || String(listing.kind || "").toLowerCase() === filters.kind;
-      const price = Number(listing.price_monthly || 0);
-      const minMatch = filters.minPrice === "" || price >= Number(filters.minPrice);
-      const maxMatch = filters.maxPrice === "" || price <= Number(filters.maxPrice);
-      return categoryMatch && queryMatch && locationMatch && kindMatch && minMatch && maxMatch;
+      return categoryMatch && queryMatch && locationMatch && kindMatch;
     });
     return filtered.sort((a, b) => {
-      if (sortMode === "price_asc") return Number(a.price_monthly || 0) - Number(b.price_monthly || 0);
-      if (sortMode === "price_desc") return Number(b.price_monthly || 0) - Number(a.price_monthly || 0);
       if (sortMode === "provider") return String(a.provider_name || a.name || "").localeCompare(String(b.provider_name || b.name || ""));
       return 0;
     });
   }, [listings, activeCategory, query, filters, sortMode]);
 
-  const activeFilterCount = [filters.location, filters.kind !== "all" ? filters.kind : "", filters.minPrice, filters.maxPrice]
+  const activeFilterCount = [filters.location, filters.kind !== "all" ? filters.kind : ""]
     .filter(Boolean).length;
   const availableCount = listings.filter((listing) => String(listing.status || "available").toLowerCase() === "available").length;
   const verifiedCount = listings.filter((listing) => listing.verified || listing.provider_verified).length;
   const physicalCount = listings.filter((listing) => String(listing.kind || "").toLowerCase() === "physical").length;
   const digitalCount = listings.filter((listing) => String(listing.kind || "").toLowerCase() === "digital").length;
+
+  const loadMoreListings = async () => {
+    if (loadingMoreListings || listings.length >= totalListings) return;
+    setLoadingMoreListings(true);
+    try {
+      const response = await listMarketplaceListingsApi({ limit: 50, offset: listings.length });
+      const nextItems = getListings(response);
+      setListings((current) => {
+        const seen = new Set(current.map((item) => item.id));
+        return [...current, ...nextItems.filter((item) => !seen.has(item.id))];
+      });
+      setTotalListings(response?.total ?? totalListings);
+    } catch (requestError) {
+      setError(requestError.response?.data?.detail || requestError.message || "Unable to load more listings.");
+    } finally {
+      setLoadingMoreListings(false);
+    }
+  };
 
   const handleOrder = async (listing) => {
     if (!user) {
@@ -190,21 +209,21 @@ export default function MarketplacePage() {
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ImageIcon size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Available listings</p>
+              <p className="text-xs font-medium text-white/60">Available listings shown</p>
               <p className="text-xl font-semibold text-text">{availableCount}</p>
             </div>
           </Card>
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><ShieldCheck size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Verified providers</p>
+              <p className="text-xs font-medium text-white/60">Verified listings shown</p>
               <p className="text-xl font-semibold text-text">{verifiedCount}</p>
             </div>
           </Card>
           <Card className="flex items-center gap-3 p-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold"><Layers size={18} /></div>
             <div>
-              <p className="text-xs font-medium text-white/60">Infrastructure types</p>
+              <p className="text-xs font-medium text-white/60">Infrastructure types shown</p>
               <p className="text-xl font-semibold text-text">{physicalCount} physical / {digitalCount} digital</p>
             </div>
           </Card>
@@ -235,17 +254,9 @@ export default function MarketplacePage() {
                 <option value="all">All types</option><option value="physical">Physical</option><option value="digital">Digital</option>
               </select>
             </label>
-            <label className="space-y-1.5 text-sm text-text">
-              <span className="font-medium">Minimum monthly price</span>
-              <input type="number" min="0" value={filters.minPrice} onChange={(event) => setFilters((current) => ({ ...current, minPrice: event.target.value }))} className="alq-input w-full" placeholder="No minimum" />
-            </label>
-            <label className="space-y-1.5 text-sm text-text">
-              <span className="font-medium">Maximum monthly price</span>
-              <input type="number" min="0" value={filters.maxPrice} onChange={(event) => setFilters((current) => ({ ...current, maxPrice: event.target.value }))} className="alq-input w-full" placeholder="No maximum" />
-            </label>
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2 xl:col-span-4">
-              <Button variant="ghost" onClick={() => setFilters({ location: "", kind: "all", minPrice: "", maxPrice: "" })}>Clear filters</Button>
-              <p className="text-xs text-white/60">Filters update the listings as you change them.</p>
+              <Button variant="ghost" onClick={() => setFilters({ location: "", kind: "all" })}>Clear filters</Button>
+              <p className="text-xs text-white/60">Filters update the listings as you change them. Price sorting and price ranges are unavailable because listing currency is not recorded.</p>
             </div>
           </Card>
         )}
@@ -286,8 +297,6 @@ export default function MarketplacePage() {
               <span>Sort by</span>
               <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} className="alq-input min-h-10 w-auto">
                 <option value="featured">Featured</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
                 <option value="provider">Provider name</option>
               </select>
             </label>
@@ -302,9 +311,12 @@ export default function MarketplacePage() {
                 onImageClick={openGallery} />
             ))}
           </div>
+        ) : error ? (
+          <Card className="space-y-3 p-8 text-center"><p className="font-medium">Listings could not be loaded</p><p className="text-sm text-white/50">{error}</p><Button onClick={() => setRetryCount((count) => count + 1)}>Retry</Button></Card>
         ) : (
-          <EmptyState title="No listings found" description="Try another category or remove some filters to see more infrastructure." actionLabel="Clear all filters" onAction={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setFilters({ location: "", kind: "all", minPrice: "", maxPrice: "" }); }} />
+          <EmptyState title="No listings found" description="Try another category or remove some filters to see more infrastructure." actionLabel="Clear all filters" onAction={() => { setActiveCategory("all"); searchForm.setValue("query", ""); setFilters({ location: "", kind: "all" }); }} />
         )}
+              {listings.length < totalListings && <div className="flex justify-center pt-2"><Button variant="ghost" disabled={loadingMoreListings} onClick={loadMoreListings}>{loadingMoreListings ? "Loading…" : "Load more listings"}</Button></div>}
       </section>
 
       {galleryOpen && galleryImages.length > 0 && (

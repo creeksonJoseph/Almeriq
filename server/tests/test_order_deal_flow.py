@@ -133,19 +133,21 @@ async def test_create_order_records_event_and_notification(session):
 async def test_duplicate_deal_rejected(session):
     buyer_id = await _make_user(session, "buyer2@example.com", role="user")
     provider_id = await _make_provider(session, await _make_user(session, "provider2@example.com"))
-    asset_id = await _make_asset(session, provider_id)
+    asset_id = await _make_asset(session, provider_id, price_monthly=50.0)
     order = await order_service.create_order(
         provider_id=provider_id,
         client_id=buyer_id,
         asset_id=asset_id,
         allocation="a",
-        lease_amount=50.0,
+        lease_amount=100.0,
         session=session,
     )
     await session.commit()
+    # create_order uses asset.price_monthly as the authoritative lease_amount
+    deal_amount = order["lease_amount"]
 
     d1 = await deal_service.create_deal(
-        order["id"], "visa", 50.0,
+        order["id"], "visa", deal_amount,
         provider_id=provider_id, client_id=buyer_id, session=session,
     )
     await session.commit()
@@ -153,7 +155,7 @@ async def test_duplicate_deal_rejected(session):
     # service-level repeat raises 409 conflict (no duplicate deal)
     with pytest.raises(HTTPException) as exc:
         await deal_service.create_deal(
-            order["id"], "mastercard", 50.0,
+            order["id"], "mastercard", deal_amount,
             provider_id=provider_id, client_id=buyer_id, session=session,
         )
     await session.commit()
@@ -171,15 +173,15 @@ async def test_deal_retrieval_and_signing(session):
     provider_id = await _make_provider(
         session, await _make_user(session, "provider3@example.com"), "Provider A"
     )
-    asset_id = await _make_asset(session, provider_id)
+    asset_id = await _make_asset(session, provider_id, price_monthly=75.0)
     order = await order_service.create_order(
         provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
-        allocation="a", lease_amount=75.0, session=session,
+        allocation="a", lease_amount=100.0, session=session,
     )
     await session.commit()
 
     deal = await deal_service.create_deal(
-        order["id"], "visa", 75.0,
+        order["id"], "visa", order["lease_amount"],
         provider_id=provider_id, client_id=buyer_id, session=session,
     )
     await session.commit()
@@ -201,7 +203,7 @@ async def test_deal_retrieval_and_signing(session):
 
     # provider signs
     signed = await deal_service.sign_deal(
-        deal["id"], "data-url-signature", payment_method="visa", amount=75.0,
+        deal["id"], "data-url-signature", payment_method="visa", amount=order["lease_amount"],
         provider_id=provider_id, session=session,
     )
     await session.commit()
@@ -460,4 +462,51 @@ async def test_end_to_end_buyer_provider_lifecycle(session):
             )
         await session.commit()
         assert exc.value.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_provider_order_summary_counts_all_orders_and_priced_records(session):
+    buyer_id = await _make_user(session, "summary-buyer@example.com", role="user")
+    provider_id = await _make_provider(
+        session, await _make_user(session, "summary-provider@example.com")
+    )
+    asset_id = await _make_asset(session, provider_id)
+
+    pending = await order_service.create_order(
+        provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
+        allocation="pending", lease_amount=100.0, session=session,
+    )
+    confirmed = await order_service.create_order(
+        provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
+        allocation="confirmed", lease_amount=150.0, session=session,
+    )
+    completed = await order_repo.create_order(
+        order_id="ORD-SUMMARY-COMPLETED",
+        client_id=buyer_id,
+        provider_id=provider_id,
+        asset_id=asset_id,
+        allocation="completed",
+        lease_amount=None,
+        status="completed",
+        session=session,
+    )
+    await order_repo.update_order_status(
+        confirmed["id"], provider_id, "confirmed", session=session
+    )
+    await order_repo.update_order_status(
+        completed["id"], provider_id, "completed", session=session
+    )
+    await session.commit()
+
+    summary = await order_repo.get_provider_order_summary(provider_id, session=session)
+    assert summary == {
+        "total_orders": 3,
+        "open_orders": 2,
+        "pending_review": 1,
+        "confirmed": 1,
+        "shipped": 0,
+        "completed": 1,
+        "declined": 0,
+        "priced_orders": 2,
+    }
 

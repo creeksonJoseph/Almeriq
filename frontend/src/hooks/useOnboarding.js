@@ -6,6 +6,7 @@
 import { useState, useCallback } from "react";
 import { onboardingApi } from "../lib/api";
 import { useToast } from "../context/ToastContext";
+import { normalizeRole } from "../lib/roles";
 
 export function useOnboarding(user, onComplete) {
   const toast = useToast();
@@ -13,7 +14,8 @@ export function useOnboarding(user, onComplete) {
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [nationality, setNationality] = useState(user?.nationality || "United States");
   const [idNumber, setIdNumber] = useState(user?.id_number || "");
-  const [role, setRole] = useState(user?.role !== "user" ? user?.role : "FOUNDER");
+  const initialRole = normalizeRole(user?.role);
+  const [role, setRole] = useState(initialRole && initialRole !== "user" ? initialRole : "founder");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -42,7 +44,7 @@ export function useOnboarding(user, onComplete) {
     if (loading) return;
     const cleanId = idNumber.trim();
     if (!cleanId) {
-      setError("Please enter your ID or Passport number for verification.");
+      setError("Please enter your ID or Passport number.");
       return;
     }
     setError("");
@@ -51,7 +53,7 @@ export function useOnboarding(user, onComplete) {
       await onboardingApi({ id_number: cleanId });
       setStep(3);
     } catch (err) {
-      setError(err.message || "Failed to save identity verification.");
+      setError(err.message || "Failed to save identity details.");
     } finally {
       setLoading(false);
     }

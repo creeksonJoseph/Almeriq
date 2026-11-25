@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   getInvestorProfileApi, listInvestorStartupsApi, listInvestorPortfolioApi,
-  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi,
+  createInvestmentApi, updateInvestorPortfolioApi, updateInvestorProfileApi, listInvestorUpdatesApi,
 } from "../lib/api";
 import { startInvestmentConversationApi } from "../lib/api/conversations";
 
@@ -9,7 +9,10 @@ import { startInvestmentConversationApi } from "../lib/api/conversations";
 export function useInvestorWorkspace({ navigate }) {
   const [profile, setProfile] = useState(null);
   const [startups, setStartups] = useState([]);
+  const [startupTotal, setStartupTotal] = useState(0);
+  const [loadingMoreStartups, setLoadingMoreStartups] = useState(false);
   const [requests, setRequests] = useState([]);
+  const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyPitch, setBusyPitch] = useState(null);
   const [error, setError] = useState("");
@@ -20,18 +23,21 @@ export function useInvestorWorkspace({ navigate }) {
     setLoading(true);
     setError("");
     try {
-      const [profileResult, startupResult, requestResult] = await Promise.all([
+      const [profileResult, startupResult, requestResult, updateResult] = await Promise.all([
         getInvestorProfileApi().catch((err) => { if (err.status === 404) return null; throw err; }),
         listInvestorStartupsApi(),
         listInvestorPortfolioApi(),
+        listInvestorUpdatesApi().catch((err) => { setError(err.message || "Unable to load shared investor updates."); return { items: [] }; }),
       ]);
       setProfile(profileResult ? {
         preferred_payment_methods: ["visa"], notify_deal_updates: true,
-        notify_valuation_changes: true, notify_messages: true, ...profileResult,
+        notify_messages: true, ...profileResult,
       } : null);
       setStartups(startupResult?.items || []);
+      setStartupTotal(startupResult?.total ?? startupResult?.items?.length ?? 0);
       setRequests(requestResult?.items || []);
-      return { profile: profileResult, startups: startupResult?.items || [], requests: requestResult?.items || [] };
+      setUpdates(updateResult?.items || []);
+      return { profile: profileResult, startups: startupResult?.items || [], requests: requestResult?.items || [], updates: updateResult?.items || [] };
     } catch (err) {
       setError(err.message || "Unable to load your investor workspace.");
       return null;
@@ -40,6 +46,23 @@ export function useInvestorWorkspace({ navigate }) {
 
   useEffect(() => { load(); }, [load]);
 
+  const loadMoreStartups = useCallback(async () => {
+    if (loadingMoreStartups || startups.length >= startupTotal) return;
+    setLoadingMoreStartups(true);
+    try {
+      const result = await listInvestorStartupsApi({ limit: 50, offset: startups.length });
+      setStartups((current) => {
+        const seen = new Set(current.map((item) => item.id));
+        return [...current, ...(result.items || []).filter((item) => !seen.has(item.id))];
+      });
+      setStartupTotal(result.total ?? startupTotal);
+    } catch (requestError) {
+      setError(requestError.message || "Unable to load more startup pitches.");
+    } finally {
+      setLoadingMoreStartups(false);
+    }
+  }, [loadingMoreStartups, startups, startupTotal]);
+
   const saveSettings = useCallback(async () => {
     if (!profile) return;
     setSettingsSaving(true); setError(""); setNotice("");
@@ -47,7 +70,6 @@ export function useInvestorWorkspace({ navigate }) {
       const updated = await updateInvestorProfileApi({
         preferred_payment_methods: profile.preferred_payment_methods || [],
         notify_deal_updates: Boolean(profile.notify_deal_updates),
-        notify_valuation_changes: Boolean(profile.notify_valuation_changes),
         notify_messages: Boolean(profile.notify_messages),
       });
       setProfile((current) => ({ ...current, ...updated }));
@@ -109,7 +131,7 @@ export function useInvestorWorkspace({ navigate }) {
   }, []);
 
   return {
-    profile, setProfile, startups, requests, setRequests, loading, busyPitch,
+    profile, setProfile, startups, startupTotal, loadingMoreStartups, loadMoreStartups, requests, setRequests, updates, loading, busyPitch,
     error, setError, notice, setNotice, settingsSaving, load, saveSettings,
     openConversation, savePortfolio, expressInterest,
   };

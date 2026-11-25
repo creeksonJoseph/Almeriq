@@ -40,7 +40,6 @@ class InvestorProfile(Base):
     contact_formats_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="[]")
     preferred_payment_methods_json: Mapped[str] = mapped_column(Text, nullable=False, default='["visa"]', server_default='["visa"]')
     notify_deal_updates: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
-    notify_valuation_changes: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
     notify_messages: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -71,7 +70,6 @@ class InvestorProfile(Base):
             "contact_formats": decode(self.contact_formats_json),
             "preferred_payment_methods": decode(self.preferred_payment_methods_json),
             "notify_deal_updates": self.notify_deal_updates,
-            "notify_valuation_changes": self.notify_valuation_changes,
             "notify_messages": self.notify_messages, "verified": self.verified,
             "created_at": self.created_at, "updated_at": self.updated_at,
         }

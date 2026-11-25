@@ -1,7 +1,7 @@
 """api/routers/admin.py - Admin endpoints for administrative operations."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Response, HTTPException, status
+from fastapi import APIRouter, Depends, Query, Response, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from core.db import async_session_factory, get_db
@@ -15,11 +15,12 @@ from repositories import provider_profile as provider_repo
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 VALID_USER_ROLES = {
-    "ADMIN",
-    "FOUNDER",
-    "INVESTOR",
-    "JOB_SEEKER",
-    "INFRASTRUCTURE_PROVIDER",
+    "admin",
+    "founder",
+    "investor",
+    "job_seeker",
+    "infrastructure_provider",
+    "expert",
 }
 
 
@@ -27,12 +28,16 @@ class AdminRoleUpdateRequest(BaseModel):
     role: str
 
 
+class ProviderVerificationUpdateRequest(BaseModel):
+    verified: bool
+
+
 def _normalize_role(role: str) -> str:
-    normalized = normalize_role(role).upper()
+    normalized = normalize_role(role)
     if normalized not in VALID_USER_ROLES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Role must be ADMIN, FOUNDER, INVESTOR, JOB_SEEKER, or INFRASTRUCTURE_PROVIDER",
+            detail="Role must be admin, founder, investor, job_seeker, infrastructure_provider, or expert",
         )
     return normalized
 
@@ -59,6 +64,56 @@ async def get_waitlist_participants(
     }
 
 
+@router.get("/providers", status_code=200)
+async def list_provider_review_queue(
+    verified: bool | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """List provider profiles for admin verification review."""
+    items = await provider_repo.list_provider_profiles(
+        verified=verified, limit=min(max(limit, 1), 100), offset=max(offset, 0), session=db
+    )
+    return {"items": items}
+
+
+@router.get("/providers/{provider_id}/verification-history", status_code=200)
+async def get_provider_verification_history(
+    provider_id: int,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return the append-only verification and revocation history for a provider."""
+    profile = await provider_repo.get_provider_profile_by_id(provider_id, session=db)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Provider profile not found")
+    items = await provider_repo.list_provider_verification_events(
+        profile_id=provider_id, limit=limit, offset=offset, session=db
+    )
+    return {"items": items}
+
+
+@router.patch("/providers/{provider_id}/verification", status_code=200)
+async def update_provider_verification(
+    provider_id: int,
+    body: ProviderVerificationUpdateRequest,
+    admin_user: dict = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Verify or revoke verification for a provider profile."""
+    profile = await provider_repo.update_provider_verification(
+        profile_id=provider_id, verified=body.verified, verified_by=admin_user["id"], session=db
+    )
+    if not profile:
+        raise HTTPException(status_code=404, detail="Provider profile not found")
+    await db.commit()
+    return {"message": "Provider verification updated", "provider": profile}
+
+
 @router.patch("/me/role", status_code=200)
 async def update_user_role(
     body: AdminRoleUpdateRequest,
@@ -78,7 +133,7 @@ async def update_user_role(
             detail="Your account could not be updated",
         )
 
-    if role == "INFRASTRUCTURE_PROVIDER":
+    if role == "infrastructure_provider":
         profile = await provider_repo.get_provider_profile_by_user_id(
             admin_user["id"],
             session=db,

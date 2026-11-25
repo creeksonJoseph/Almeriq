@@ -53,9 +53,13 @@ export {
   createLegalFilingApi,
   getCompanyRegistrationGuideApi,
   executeAiToolApi,
+  listFounderInvestorUpdatesApi,
+  createInvestorUpdateApi,
+  updateInvestorUpdateApi,
+  publishInvestorUpdateApi,
 } from "./api/founder";
 
-export { getAdminWaitlistApi, updateAdminRoleApi } from "./api/admin";
+export { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi, getAdminProviderVerificationHistoryApi } from "./api/admin";
 
 export {
   getProviderProfileApi,
@@ -77,12 +81,12 @@ export {
   listMarketplaceListingsApi,
   getMarketplaceListingApi,
   createMarketplaceCheckoutApi,
-  createMarketplaceOrderApi,
   searchMarketplaceApi,
 } from "./api/marketplace";
 
 export {
   listOrdersApi,
+  getProviderOrderSummaryApi,
   getOrderApi,
   confirmOrderApi,
   declineOrderApi,
@@ -103,6 +107,7 @@ export {
 
 export {
   listConversationsApi,
+  getConversationSummaryApi,
   startProviderConversationApi,
   getConversationApi,
   listMessagesApi,
@@ -144,6 +149,7 @@ export {
   listInvestorPortfolioApi,
   getInvestorPortfolioItemApi,
   updateInvestorPortfolioApi,
+  listInvestorUpdatesApi,
 } from "./api/investor";
 export {
   discoverTalentApi,

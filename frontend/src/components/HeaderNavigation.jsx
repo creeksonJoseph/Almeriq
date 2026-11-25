@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
+import { userHasRole } from "../lib/roles";
 
 function UserAvatar({ user, size = "sm" }) {
   const initial = (user?.full_name?.[0] || user?.email?.[0] || "U").toUpperCase();
@@ -21,7 +22,7 @@ export default function HeaderNavigation({ currentUser, onLogout, onOpenSidebar 
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
-  const isProvider = currentUser?.role === "INFRASTRUCTURE_PROVIDER";
+  const isFounder = userHasRole(currentUser, "founder");
 
   const handleJoinWaitlist = (e) => {
     e.preventDefault();
@@ -59,7 +60,7 @@ export default function HeaderNavigation({ currentUser, onLogout, onOpenSidebar 
           {currentUser ? (
             onOpenSidebar ? (
               <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                {!isProvider && <ActiveIdeaDropdown variant="header" />}
+                {isFounder && <ActiveIdeaDropdown variant="header" />}
                 <button
                   type="button"
                   onClick={onOpenSidebar}

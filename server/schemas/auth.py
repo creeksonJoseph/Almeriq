@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from core.roles import normalize_role
 
 
 class UserRegisterRequest(BaseModel):
@@ -42,6 +43,17 @@ class UserOnboardingRequest(BaseModel):
     nationality: str | None = Field(default=None, max_length=100)
     id_number: str | None = Field(default=None, max_length=100)
     role: str | None = Field(default=None, max_length=50)
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: str | None) -> str | None:
+        allowed = {"founder", "investor", "infrastructure_provider", "job_seeker", "expert"}
+        if value is None:
+            return None
+        normalized = normalize_role(value)
+        if normalized not in allowed:
+            raise ValueError("Choose a supported account role")
+        return normalized
 
 
 class UserResponse(BaseModel):

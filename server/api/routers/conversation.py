@@ -36,6 +36,21 @@ async def list_conversations(
     return {"items": items}
 
 
+@router.get("/conversations/summary")
+async def get_conversation_summary(
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return inbox-wide unread conversation counts, independent of pagination."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return {
+        "unread_conversations": await svc.count_unread_conversations(
+            user_id=current_user["id"], session=db
+        )
+    }
+
+
 @router.get("/conversations/{conversation_id}")
 async def get_conversation(
     response: Response,

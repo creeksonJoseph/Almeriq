@@ -16,6 +16,8 @@ export default function JobSeekerJobsPage() {
   const location = useLocation();
   const pageView = location.pathname.endsWith("/applications") ? "applications" : "jobs";
   const [jobs, setJobs] = useState([]);
+  const [jobsTotal, setJobsTotal] = useState(0);
+  const [loadingMoreJobs, setLoadingMoreJobs] = useState(false);
   const [applications, setApplications] = useState([]);
   const [profile, setProfile] = useState(null);
   const [query, setQuery] = useState("");
@@ -33,7 +35,7 @@ export default function JobSeekerJobsPage() {
     setError("");
     try {
       const [jobResult, applicationResult, seekerProfile] = await Promise.all([
-        listJobsApi({ is_active: true, limit: 100 }),
+        listJobsApi({ is_active: true, limit: 50, offset: 0 }),
         listMyJobApplicationsApi(),
         getJobSeekerProfileApi().catch((profileError) => {
           if (profileError.status === 404) return null;
@@ -41,6 +43,7 @@ export default function JobSeekerJobsPage() {
         }),
       ]);
       setJobs(jobResult.items || []);
+      setJobsTotal(jobResult.total ?? jobResult.items?.length ?? 0);
       setApplications(applicationResult.items || []);
       setProfile(seekerProfile);
     } catch (requestError) {
@@ -87,6 +90,23 @@ export default function JobSeekerJobsPage() {
     }).filter((job) => job.match_reasons.length > 0).sort((a, b) => b.match_score - a.match_score).slice(0, 3);
   }, [jobs, profile]);
 
+  const loadMoreJobs = async () => {
+    if (loadingMoreJobs || jobs.length >= jobsTotal) return;
+    setLoadingMoreJobs(true);
+    try {
+      const result = await listJobsApi({ is_active: true, limit: 50, offset: jobs.length });
+      setJobs((current) => {
+        const seen = new Set(current.map((job) => job.id));
+        return [...current, ...(result.items || []).filter((job) => !seen.has(job.id))];
+      });
+      setJobsTotal(result.total ?? jobsTotal);
+    } catch (requestError) {
+      setError(requestError.message || "Unable to load more open roles.");
+    } finally {
+      setLoadingMoreJobs(false);
+    }
+  };
+
   const apply = async (job) => {
     setApplyingId(job.id);
     setError("");
@@ -127,7 +147,7 @@ export default function JobSeekerJobsPage() {
         </header>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{jobs.length}</p></Card>
+          <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Open roles</p><p className="mt-2 text-3xl font-semibold">{jobsTotal}</p></Card>
           <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Applications</p><p className="mt-2 text-3xl font-semibold">{applications.length}</p></Card>
           <Card className="p-5"><p className="text-xs uppercase tracking-wider text-white/45">Profile status</p><p className="mt-2 text-lg font-semibold">{profile?.is_active ? "Visible to employers" : "Not visible"}</p></Card>
         </div>
@@ -139,6 +159,7 @@ export default function JobSeekerJobsPage() {
         <section className="space-y-3"><div><h2 className="font-serif text-2xl">Recommended for you</h2><p className="mt-1 text-sm text-white/50">Based on your skills and saved job preferences.</p></div><div className="grid gap-3 md:grid-cols-3">{recommendedJobs.map((job) => <Card key={job.id} className="space-y-2 p-4"><div className="flex items-start justify-between gap-2"><h3 className="font-medium">{job.title}</h3><span className="text-xs text-gold">{job.match_score}%</span></div><p className="text-xs text-white/45">{job.location || "Location not specified"}</p><p className="text-xs text-white/55">{job.match_reasons.join(" · ")}</p><Button size="sm" disabled={appliedJobIds.has(job.id) || applyingId === job.id} onClick={() => apply(job)}>{appliedJobIds.has(job.id) ? "Applied" : "Apply now"}</Button></Card>)}</div></section>
         
         )}
+        {pageView === "jobs" && (
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 className="font-serif text-2xl">Open positions</h2><p className="mt-1 text-sm text-white/50">Search by title, skills, location or description.</p></div>
@@ -155,7 +176,7 @@ export default function JobSeekerJobsPage() {
                   </div>
                   <p className="whitespace-pre-line text-sm leading-6 text-white/70">{job.description}</p>
                   {job.requirements && <div><p className="text-xs font-semibold uppercase tracking-wider text-white/40">Requirements</p><p className="mt-1 whitespace-pre-line text-sm text-white/60">{job.requirements}</p></div>}
-                  {(job.salary_min != null || job.salary_max != null) && <p className="text-sm text-white/60">Salary range: {job.salary_min ?? "—"} – {job.salary_max ?? "—"}</p>}
+                  {(job.salary_min != null || job.salary_max != null) && <p className="text-sm text-white/60">Salary range: {job.salary_min ?? "—"} – {job.salary_max ?? "—"} · currency not specified</p>}
                   {!appliedJobIds.has(job.id) && <label className="block space-y-2"><span className="text-xs text-white/50">Cover letter (optional)</span><textarea value={coverLetters[job.id] || ""} onChange={(event) => setCoverLetters((items) => ({ ...items, [job.id]: event.target.value }))} rows={3} maxLength={5000} className="w-full rounded-lg border border-border bg-surface-2 p-3 text-sm text-text outline-none focus:border-gold" placeholder="Briefly explain why you're a good fit." /></label>}
                   <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">
                     <span className="text-xs text-white/40">Job #{job.id}</span>
@@ -167,7 +188,9 @@ export default function JobSeekerJobsPage() {
               ))}
             </div>
           }
+          {jobs.length < jobsTotal && <div className="flex justify-center pt-2"><Button variant="ghost" disabled={loadingMoreJobs} onClick={loadMoreJobs}>{loadingMoreJobs ? "Loading…" : "Load more jobs"}</Button></div>}
         </section>
+        )}
 
         {pageView === "applications" && (
         <section className="space-y-4">

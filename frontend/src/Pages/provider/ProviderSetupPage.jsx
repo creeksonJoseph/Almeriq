@@ -39,7 +39,7 @@ const physicalAssetSchema = z.object({
   category: z.string().min(1, "Category is required"),
   quantity: z.string().optional(),
   availability: z.string().optional(),
-  rate: z.string().optional(),
+  rate: z.string().optional().refine((value) => !value?.trim() || Number.isFinite(Number(value.replace(/,/g, ""))), "Enter a numeric monthly amount"),
 });
 
 const digitalAssetSchema = z.object({
@@ -416,10 +416,9 @@ export default function ProviderSetupPage() {
                           <Input placeholder="e.g. Immediate (Turnkey Dispatch)" {...methods.register(`physicalAssets.${index}.availability`)} />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Rate (Optional)</label>
+                          <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Rate (Optional · currency not specified)</label>
                           <div className="relative">
-                            <span className="absolute left-3.5 top-2.5 text-white/60 text-sm">$</span>
-                            <Input placeholder="e.g. 14,500 / month" className="pl-8" {...methods.register(`physicalAssets.${index}.rate`)} />
+                            <Input placeholder="e.g. 14500" className="" {...methods.register(`physicalAssets.${index}.rate`)} />
                           </div>
                         </div>
                       </div>
@@ -483,8 +482,7 @@ export default function ProviderSetupPage() {
                         <div className="md:col-span-2">
                           <label className="block text-xs font-medium text-white/60 uppercase tracking-wider mb-1.5">Rate (Optional)</label>
                           <div className="relative">
-                            <span className="absolute left-3.5 top-2.5 text-white/60 text-sm">$</span>
-                            <Input placeholder="e.g. 48,200 / month or $2.85 / GPU-hr" className="pl-8" {...methods.register(`digitalAssets.${index}.rate`)} />
+                            <Input placeholder="e.g. 48200" className="" {...methods.register(`digitalAssets.${index}.rate`)} />
                           </div>
                         </div>
                       </div>
@@ -563,7 +561,7 @@ export default function ProviderSetupPage() {
                       <span className="text-[11px] text-white/40">Suggested tags:</span>
                       <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">YC / Seed+ Startups</span>
                       <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">Min 3-Month Lease</span>
-                      <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">Telemetry-Bonded Escrow</span>
+                      <span className="text-[11px] bg-surface-2 border border-border px-2 py-0.5 rounded text-white/60">Telemetry-linked monitoring</span>
                     </div>
                   </div>
                 </Card>

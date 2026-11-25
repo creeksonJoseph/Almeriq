@@ -35,7 +35,7 @@ export default function OnboardingWizard({ user, onComplete }) {
             <p className="text-xs text-white/70 font-mono mb-3">
               Step {step} of 3{" · "}
               {step === 1 && "Personal Info"}
-              {step === 2 && "Identity Verification"}
+              {step === 2 && "Identity Details"}
               {step === 3 && "Role & Intent"}
             </p>
 

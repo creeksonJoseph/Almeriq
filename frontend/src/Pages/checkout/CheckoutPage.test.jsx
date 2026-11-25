@@ -41,7 +41,7 @@ beforeEach(() => {
 const advanceToSign = async () => {
   await waitFor(() => expect(screen.getByText(/choose payment method/i)).toBeInTheDocument());
   fireEvent.click(screen.getByText(/continue/i));
-  await waitFor(() => expect(screen.getByText(/\$1,500.00/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(/1,500.00/i)).toBeInTheDocument());
   fireEvent.click(screen.getByText(/continue/i));
   await waitFor(() => expect(screen.getByText(/confirm lease agreement/i)).toBeInTheDocument());
   fireEvent.click(screen.getByText(/confirm deal/i));

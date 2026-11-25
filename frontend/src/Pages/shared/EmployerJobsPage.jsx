@@ -185,8 +185,8 @@ export default function EmployerJobsPage() {
               <label className="space-y-2 text-sm"><span>Requirements</span><Input name="requirements" value={form.requirements} onChange={updateField} placeholder="Skills, experience, qualifications" /></label>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-2 text-sm"><span>Minimum salary</span><Input name="salary_min" type="number" min="0" step="0.01" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
-              <label className="space-y-2 text-sm"><span>Maximum salary</span><Input name="salary_max" type="number" min="0" step="0.01" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
+              <label className="space-y-2 text-sm"><span >Minimum salary · currency not specified</span><Input name="salary_min" type="number" min="0" step="0.01" value={form.salary_min} onChange={updateField} placeholder="Optional" /></label>
+              <label className="space-y-2 text-sm"><span >Maximum salary · currency not specified</span><Input name="salary_max" type="number" min="0" step="0.01" value={form.salary_max} onChange={updateField} placeholder="Optional" /></label>
             </div>
             <div className="flex justify-end gap-2">{editingJobId && <Button type="button" variant="ghost" onClick={cancelEdit}>Cancel edit</Button>}<Button type="submit" disabled={saving || !form.title.trim() || !form.description.trim()}>{saving ? "Saving…" : editingJobId ? "Save changes" : "Publish job"}</Button></div>
           </form>

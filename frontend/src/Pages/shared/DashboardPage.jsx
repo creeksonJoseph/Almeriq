@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { normalizeRole } from "../../lib/roles";
 import { RouteSkeleton } from "../../components/ui";
 
 const ProviderDashboardPage = lazy(() => import("../provider/ProviderDashboardPage"));
@@ -13,9 +14,9 @@ const PageLoader = () => <RouteSkeleton variant="dashboard" />;
 
 export default function DashboardPage() {
   const { user, logout, updateUser } = useAuth();
-  const role = user?.role;
+  const role = normalizeRole(user?.role);
 
-  if (role === "INFRASTRUCTURE_PROVIDER") {
+  if (role === "infrastructure_provider") {
     return (
       <Suspense fallback={<PageLoader />}>
         <ProviderDashboardPage />
@@ -23,7 +24,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (role === "JOB_SEEKER") {
+  if (role === "job_seeker") {
     return (
       <Suspense fallback={<PageLoader />}>
         <JobSeekerDashboardPage />
@@ -31,7 +32,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (role === "INVESTOR") {
+  if (role === "investor") {
     return (
       <Suspense fallback={<PageLoader />}>
         <InvestorDashboardPage />
@@ -39,7 +40,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (role === "EXPERT") {
+  if (role === "expert") {
     return (
       <Suspense fallback={<PageLoader />}>
         <ExpertDashboardPage />
@@ -47,7 +48,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (role === "ADMIN" || Boolean(user?.is_admin)) {
+  if (role === "admin" || Boolean(user?.is_admin)) {
     return (
       <Suspense fallback={<PageLoader />}>
         <AdminWaitlistPage />

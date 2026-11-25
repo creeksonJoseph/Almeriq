@@ -4,6 +4,8 @@ import {
   deleteFounderPitchApi,
   listFounderInvestmentRequestsApi,
   listFounderPitchesApi,
+  publishFounderPitchApi,
+  unpublishFounderPitchApi,
   updateFounderInvestmentRequestApi,
   updateFounderPitchApi,
 } from "../lib/api/founder";
@@ -40,11 +42,14 @@ export function useFounderPitches() {
     setNotice("");
     try {
       if (id) {
+        const wasPublished = pitches.some((pitch) => pitch.id === id && pitch.status === "active");
         await updateFounderPitchApi(id, payload);
-        setNotice("Pitch updated.");
+        setNotice(wasPublished
+          ? "Changes saved as a draft. Publish the pitch again when the updated details are ready."
+          : "Pitch updated.");
       } else {
         await createFounderPitchApi(payload);
-        setNotice("Pitch published to investor discovery.");
+        setNotice("Draft saved. Review it and publish when it is ready.");
       }
       await load({ silent: true });
     } catch (requestError) {
@@ -53,7 +58,7 @@ export function useFounderPitches() {
     } finally {
       setSaving(false);
     }
-  }, [load]);
+  }, [load, pitches]);
 
   const updateRequest = useCallback(async (requestId, status) => {
     setBusyRequestId(requestId);
@@ -69,6 +74,22 @@ export function useFounderPitches() {
       return null;
     } finally {
       setBusyRequestId(null);
+    }
+  }, []);
+
+  const setPitchPublished = useCallback(async (pitchId, published) => {
+    setError("");
+    setNotice("");
+    try {
+      const updated = published
+        ? await publishFounderPitchApi(pitchId)
+        : await unpublishFounderPitchApi(pitchId);
+      setPitches((items) => items.map((item) => item.id === pitchId ? { ...item, ...updated } : item));
+      setNotice(published ? "Pitch published to investor discovery." : "Pitch moved back to drafts.");
+      return updated;
+    } catch (requestError) {
+      setError(requestError.message || "Unable to change pitch visibility.");
+      throw requestError;
     }
   }, []);
 
@@ -89,6 +110,6 @@ export function useFounderPitches() {
 
   return {
     pitches, requests, loading, saving, busyRequestId, error, notice,
-    load, savePitch, updateRequest, removePitch, startConversation, setError, setNotice,
+    load, savePitch, updateRequest, removePitch, setPitchPublished, startConversation, setError, setNotice,
   };
 }

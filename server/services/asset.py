@@ -216,13 +216,13 @@ async def list_public_assets(
         stmt = (
             select(Asset, ProviderProfile)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.is_active == True, ProviderProfile.verified == True)
+            .where(Asset.is_active == True)
         )
         count_stmt = (
             select(func.count())
             .select_from(Asset)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.is_active == True, ProviderProfile.verified == True)
+            .where(Asset.is_active == True)
         )
 
         if category:
@@ -271,7 +271,6 @@ async def list_public_assets(
             asset_dict["provider_name"] = provider.company_name or provider.trading_name or "Unknown"
             asset_dict["provider_verified"] = provider.verified
             asset_dict["provider_location"] = provider.location
-            asset_dict["provider_enclave_key"] = provider.enclave_key
             items.append(asset_dict)
 
         return items, count or 0
@@ -294,7 +293,7 @@ async def get_public_asset_detail(
         stmt = (
             select(Asset, ProviderProfile)
             .join(ProviderProfile, Asset.provider_id == ProviderProfile.id)
-            .where(Asset.id == asset_id, Asset.is_active == True, ProviderProfile.verified == True)
+            .where(Asset.id == asset_id, Asset.is_active == True)
         )
         result = await s.execute(stmt)
         row = result.first()
@@ -305,7 +304,6 @@ async def get_public_asset_detail(
         asset_dict["provider_name"] = provider.company_name or provider.trading_name or "Unknown"
         asset_dict["provider_verified"] = provider.verified
         asset_dict["provider_location"] = provider.location
-        asset_dict["provider_enclave_key"] = provider.enclave_key
         asset_dict["provider_about"] = provider.about
         return asset_dict
 

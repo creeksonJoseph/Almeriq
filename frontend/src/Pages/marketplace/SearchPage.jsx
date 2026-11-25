@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button, Card, Pill, Input, SkeletonCard, EmptyState } from "../../components/ui";
-import { searchMarketplaceApi, listMarketplaceProvidersApi, createMarketplaceOrderApi, createDealApi, startProviderConversationApi } from "../../lib/api";
+import { searchMarketplaceApi, listMarketplaceProvidersApi, createMarketplaceCheckoutApi, startProviderConversationApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 
 const SEARCH_CATEGORIES = [
@@ -139,13 +139,13 @@ export default function SearchPage() {
     setOrderingId(result.id);
     setError("");
     try {
-      const order = await createMarketplaceOrderApi({
+      const checkout = await createMarketplaceCheckoutApi({
         asset_id: result.id,
         allocation: "Requested through search",
-        lease_amount: result.price_monthly,
+        payment_method: "visa",
       });
-      const deal = await createDealApi({ order_id: order.id, payment_method: "visa", amount: result.price_monthly || 0 });
-      navigate("/checkout/" + deal.id);
+      if (!checkout?.deal?.id) throw new Error("Checkout could not be started. Please try again.");
+      navigate("/checkout/" + checkout.deal.id);
     } catch (err) {
       setError(err.response?.data?.detail || err.message || "Unable to start this order.");
     } finally {
@@ -154,8 +154,6 @@ export default function SearchPage() {
   };
 
   const sortedResults = useMemo(() => [...results].sort((a, b) => {
-    if (sortMode === "price_asc") return Number(a.price_monthly || 0) - Number(b.price_monthly || 0);
-    if (sortMode === "price_desc") return Number(b.price_monthly || 0) - Number(a.price_monthly || 0);
     return 0;
   }), [results, sortMode]);
 
@@ -220,8 +218,6 @@ export default function SearchPage() {
               <span>Sort by</span>
               <select value={sortMode} onChange={(event) => setSortMode(event.target.value)} className="alq-input min-h-10 w-auto">
                 <option value="relevance">Relevance</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
               </select>
             </label>
           </div>
@@ -232,6 +228,8 @@ export default function SearchPage() {
               {sortedResults.map((result) => <SearchResultCard key={result.id} result={result} ordering={orderingId === result.id}
                 onChat={() => handleChat(result)} onOrder={() => handleOrder(result)} onView={() => navigate("/listings/" + result.id)} />)}
             </div>
+          ) : error ? (
+            <Card className="space-y-3 p-8 text-center"><p className="font-medium">Search could not be completed</p><p className="text-sm text-white/50">{error}</p><Button onClick={() => runSearch(query, activeCategory)}>Retry search</Button></Card>
           ) : (
             <EmptyState title="No matching listings" description="Try a different search or choose another category." actionLabel="Clear search" onAction={() => { searchForm.setValue("query", ""); setActiveCategory("all"); setResults([]); setHasSearched(false); navigate("/search", { replace: true }); }} />
           )}
@@ -274,8 +272,8 @@ function SearchResultCard({ result, onChat, onOrder, onView, ordering }) {
       <div className="flex items-center gap-2 text-sm text-white/70"><MapPin size={14} className="shrink-0 text-gold" /><span>{result.provider_location || "Location not provided"}</span></div>
       <p className="line-clamp-2 min-h-12 text-sm leading-6 text-white/80">{result.description || "Contact the provider for more information."}</p>
       <div className="mt-auto border-t border-border pt-4">
-        <p className="text-xs text-white/60">Monthly price</p>
-        <p className="mt-1 font-serif text-xl font-semibold text-gold">{result.price_monthly != null ? "$" + Number(result.price_monthly).toLocaleString() + " / month" : "Price on request"}</p>
+        <p className="text-xs text-white/60">Monthly amount · currency not specified</p>
+        <p className="mt-1 font-serif text-xl font-semibold text-gold">{result.price_monthly != null ? Number(result.price_monthly).toLocaleString() + " / month · currency not specified" : "Price on request"}</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <Button variant="ghost" size="sm" onClick={onView}>View details</Button>

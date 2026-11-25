@@ -171,8 +171,8 @@ export default function ProviderListingPreviewPage() {
               <StatusPill status={asset.status?.toLowerCase() || "available"} />
             </div>
             <div className="flex items-baseline gap-2 mb-4">
-              <span className="font-serif text-3xl font-semibold text-gold">${Number(asset.price_monthly || 0).toLocaleString()}</span>
-              <span className="text-sm text-white/70">/ month</span>
+              <span className="font-serif text-3xl font-semibold text-gold">{Number(asset.price_monthly || 0).toLocaleString()}</span>
+              <span className="text-sm text-white/70">/ month · currency not specified</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function ProviderListingPreviewPage() {
               {asset.kind && <div className="flex justify-between"><span className="text-white/60">Type</span><span className="text-text">{asset.kind}</span></div>}
               {asset.category && <div className="flex justify-between"><span className="text-white/60">Category</span><span className="text-text">{asset.category}</span></div>}
               {provider?.location && <div className="flex justify-between"><span className="text-white/60">Location</span><span className="text-text">{provider.location}</span></div>}
-              {asset.price_monthly != null && <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">${Number(asset.price_monthly).toLocaleString()}/mo</span></div>}
+              {asset.price_monthly != null && <div className="flex justify-between"><span className="text-white/60">Rate</span><span className="text-gold font-semibold">{Number(asset.price_monthly).toLocaleString()}/mo · currency not specified</span></div>}
             </div>
           </Card>
 

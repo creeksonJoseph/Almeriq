@@ -147,7 +147,6 @@ class MarketplaceListingResponse(BaseModel):
     provider_name: str
     provider_verified: bool
     provider_location: Optional[str]
-    provider_enclave_key: Optional[str]
     media: List[dict] = Field(default_factory=list)
     created_at: datetime
 
@@ -155,8 +154,28 @@ class MarketplaceListingResponse(BaseModel):
         from_attributes = True
 
 
+class PublicAssetResponse(BaseModel):
+    id: int
+    provider_id: int
+    name: str
+    category: str
+    kind: str
+    description: Optional[str] = None
+    specs: Optional[dict] = None
+    price_monthly: Optional[float] = None
+    quantity_capacity: Optional[int] = None
+    status: str
+    is_active: bool
+    media: List[dict] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class MarketplaceListingDetailResponse(MarketplaceListingResponse):
-    assets: List[AssetResponse]  # All assets from this provider
+    assets: List[PublicAssetResponse]  # Only active, available assets; no private telemetry or client IDs
 
 
 class MarketplaceListingListResponse(BaseModel):
