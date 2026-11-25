@@ -2,6 +2,8 @@
 
 > Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). `frontend/src/App.jsx` is authoritative for registered paths and guards.
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). `frontend/src/App.jsx` is authoritative for registered paths and guards.
+
 ## Route source of truth
 
 All routes are declared in frontend/src/App.jsx. The list below is grouped for navigation; check App.jsx for the exact guard/component wrapper and redirects.
