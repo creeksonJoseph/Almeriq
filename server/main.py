@@ -157,7 +157,7 @@ def _upgrade_and_read_migration_state(
 app = FastAPI(
     lifespan=lifespan,
     title="ALIMERIQ API",
-    description="Waitlist & Authentication API for ALIMERIQ.",
+    description="Almeriq API for founder tools, marketplace, talent, investment, expert advisory and shared platform workflows.",
     version="0.1.0",
 )
 
