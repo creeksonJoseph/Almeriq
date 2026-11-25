@@ -25,7 +25,14 @@ The GitHub source connection permits repository inspection and Git writes, but n
 
 CI status should be checked for the exact documentation commit before calling this handover complete.
 
-## 3. Product/engineering questions for the incoming maintainer
+## 3. Confirmed configuration issues to resolve
+
+- **Docker Compose auth secret mismatch:** docker-compose.yml sets SECRET_KEY, but server/core/config.py reads JWT_SECRET_KEY. The app therefore does not use the Compose-provided secret and falls back to its configured default unless JWT_SECRET_KEY is supplied separately. The Compose file also sets ENVIRONMENT, which is not a declared setting in the inspected Settings class. Do not use the current Compose auth configuration for anything beyond disposable local development; correct the variable name and use a unique secret before relying on it.
+- **Docker Compose database persistence:** the Compose backend uses a SQLite file inside the container and does not declare a persistent volume for that database. Recreating the container can lose the local test data. Use a disposable database or add an explicit development volume if persistence is needed.
+- **Node runtime mismatch:** CI pins Node 22, while frontend/Dockerfile uses node:20-slim. Confirm Vite 8 support and align the development/container runtime with CI before treating the frontend Docker image as a dependable build/test environment.
+- **Frontend deployment configuration:** root vercel.json builds from the repository root and explicitly disables automatic deployment for dev while enabling main. frontend/vercel.json is an alternate configuration for a Vercel project rooted at frontend/. Confirm which configuration the live Vercel project actually uses.
+
+## 4. Product/engineering questions for the incoming maintainer
 
 - Confirm whether the current onboarding flow should direct experts immediately to `/expert/profile` after role selection. Today the shared onboarding and separate expert profile editor are distinct.
 - Confirm the product policy for expert profile publication. The inspected implementation exposes active profiles; no separate expert approval workflow was found.
@@ -37,7 +44,7 @@ CI status should be checked for the exact documentation commit before calling th
 - Confirm the supported Node runtime and pin it consistently in CI/deployment docs.
 - Confirm ownership/access for Render, Vercel, Neon, Cloudinary, Resend, Google OAuth, Upstash and Sentry.
 
-## 4. Security review checklist
+## 5. Security review checklist
 
 - [ ] Replace example/default JWT secret in every deployed environment.
 - [ ] Verify production cookie flags, cookie domain/path and HTTPS.
@@ -51,7 +58,7 @@ CI status should be checked for the exact documentation commit before calling th
 - [ ] Review admin access provisioning and waitlist actions.
 - [ ] Review rate limits and abuse controls on auth, waitlist, AI and upload endpoints.
 
-## 5. Data and operations checklist
+## 6. Data and operations checklist
 
 - [ ] Identify production database owner and obtain least-privilege access.
 - [ ] Confirm backup schedule, retention and tested restore process.
@@ -62,7 +69,7 @@ CI status should be checked for the exact documentation commit before calling th
 - [ ] Document incident contacts and escalation process.
 - [ ] Verify production health checks and alert routing.
 
-## 6. Incoming developer first-week plan
+## 7. Incoming developer first-week plan
 
 1. Obtain repository and hosting access; do not use the outgoing developer's personal credentials.
 2. Read the handover docs and inspect `dev`/ `main` divergence.
@@ -75,7 +82,7 @@ CI status should be checked for the exact documentation commit before calling th
 9. Prioritize security and reliability gaps before adding new features.
 10. Agree on product roadmap and release process with the project owner.
 
-## 7. Completion criteria for this handover
+## 8. Completion criteria for this handover
 
 - [ ] README points to current docs.
 - [ ] Setup instructions are repeatable on a clean machine.
