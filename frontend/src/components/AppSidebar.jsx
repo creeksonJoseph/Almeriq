@@ -386,42 +386,7 @@ export default function AppSidebar({
                 </div>
               </div>
             )}
-            {Boolean(user?.is_admin) && (
-            <div>
-              {!isCollapsed && (
-                <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#f2ca50]/60">
-                  Administration
-                </p>
-              )}
-              <div className="space-y-0.5">
-                <button
-                  type="button"
-                  onClick={() => handleNavClick("/admin/waitlist")}
-                  title={isCollapsed ? "Waitlist Console" : undefined}
-                  className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all cursor-pointer ${
-                    isCollapsed ? "justify-center px-0 h-9" : "h-9"
-                  } ${
-                    location.pathname.startsWith("/admin")
-                      ? "bg-[#f2ca50]/12 text-[#f2ca50] font-semibold"
-                      : "text-white/65 hover:bg-white/[0.05] hover:text-white"
-                  }`}
-                >
-                  {location.pathname.startsWith("/admin") && !isCollapsed && (
-                    <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-[#f2ca50]" />
-                  )}
-                  <ShieldCheck
-                    size={16}
-                    className={`shrink-0 ${
-                      location.pathname.startsWith("/admin")
-                        ? "text-[#f2ca50]"
-                        : "text-white/45 group-hover:text-white/80"
-                    }`}
-                  />
-                  {!isCollapsed && <span className="truncate">Waitlist Console</span>}
-                </button>
-              </div>
-            </div>
-          )}
+
 
           {/* Communication links sit after the role workspace so primary tasks remain the first navigation priority. */}
           {COMMUNICATION_NAV.some((item) => item.roles.includes(normalizedRole)) && (
