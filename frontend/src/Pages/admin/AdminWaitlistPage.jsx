@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi } from "../../lib/api";
+import { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi, getAdminProviderVerificationHistoryApi } from "../../lib/api";
 import { StatStrip } from "../../components/ui/BorderlessPrimitives";
 import { Skeleton, RouteSkeleton } from "../../components/ui";
 
@@ -66,7 +66,7 @@ export default function AdminWaitlistPage() {
   const [data, setData] = useState({ total: 0, items: [] });
   const [providers, setProviders] = useState([]);
   const [providersLoading, setProvidersLoading] = useState(true);
-  const [verificationBusyId, setVerificationBusyId] = useState(null);
+  const [verificationBusyId, setVerificationBusyId] = useState(null);\n  const [verificationHistory, setVerificationHistory] = useState({});\n  const [historyLoadingId, setHistoryLoadingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
@@ -108,6 +108,34 @@ export default function AdminWaitlistPage() {
       showToast(err.message || "Unable to update provider verification.", "error");
     } finally {
       setVerificationBusyId(null);
+    }
+  };
+
+  const handleVerificationHistory = async (provider) => {
+    const providerId = provider.id;
+    if (Object.prototype.hasOwnProperty.call(verificationHistory, providerId)) {
+      setVerificationHistory((current) => {
+        const next = { ...current };
+        delete next[providerId];
+        return next;
+      });
+      return;
+    }
+
+    setVerificationHistory((current) => ({ ...current, [providerId]: null }));
+    setHistoryLoadingId(providerId);
+    try {
+      const result = await getAdminProviderVerificationHistoryApi(providerId);
+      setVerificationHistory((current) => ({ ...current, [providerId]: result.items || [] }));
+    } catch (err) {
+      setVerificationHistory((current) => {
+        const next = { ...current };
+        delete next[providerId];
+        return next;
+      });
+      showToast(err.message || "Unable to load verification history.", "error");
+    } finally {
+      setHistoryLoadingId(null);
     }
   };
 
@@ -346,13 +374,39 @@ export default function AdminWaitlistPage() {
         </div>
         <div className="overflow-hidden rounded-2xl border border-[#282a2f] bg-[#12121a]">
           {providersLoading ? <div className="p-6 text-sm text-white/45">Loading provider profiles…</div> : providers.length === 0 ? <div className="p-6 text-sm text-white/45">No provider profiles have been created yet.</div> : <div className="overflow-x-auto"><table className="w-full text-left text-xs">
-            <thead className="border-b border-[#1e2025] text-white/45"><tr><th className="px-5 py-3">Provider</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Action</th></tr></thead>
-            <tbody className="divide-y divide-white/5">{providers.map((provider) => <tr key={provider.id}>
-              <td className="px-5 py-4"><p className="font-medium text-white">{provider.company_name || provider.trading_name || `Provider #${provider.id}`}</p><p className="mt-1 text-white/40">{provider.about || "No provider description supplied."}</p></td>
-              <td className="px-5 py-4 text-white/60">{provider.location || "Not provided"}</td>
-              <td className="px-5 py-4"><span className={provider.verified ? "text-emerald-300" : "text-amber-200"}>{provider.verified ? "Verified" : "Not verified"}</span>{provider.verification_reviewed_at && <p className="mt-1 text-[10px] text-white/40">Last reviewed {new Date(provider.verification_reviewed_at).toLocaleDateString()}</p>}</td>
-              <td className="px-5 py-4"><button type="button" disabled={verificationBusyId === provider.id} onClick={() => handleProviderVerification(provider)} className="rounded-lg border border-[#f2ca50]/30 px-3 py-2 font-semibold text-[#f2ca50] disabled:opacity-50">{verificationBusyId === provider.id ? "Saving…" : provider.verified ? "Revoke" : "Mark verified"}</button></td>
-            </tr>)}</tbody>
+            <thead className="border-b border-[#1e2025] text-white/45"><tr><th className="px-5 py-3">Provider</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Action</th><th className="px-5 py-3">Review history</th></tr></thead>
+            <tbody className="divide-y divide-white/5">{providers.map((provider) => (
+              <React.Fragment key={provider.id}>
+                <tr>
+                  <td className="px-5 py-4"><p className="font-medium text-white">{provider.company_name || provider.trading_name || `Provider #${provider.id}`}</p><p className="mt-1 text-white/40">{provider.about || "No provider description supplied."}</p></td>
+                  <td className="px-5 py-4 text-white/60">{provider.location || "Not provided"}</td>
+                  <td className="px-5 py-4"><span className={provider.verified ? "text-emerald-300" : "text-amber-200"}>{provider.verified ? "Verified" : "Not verified"}</span>{provider.verification_reviewed_at && <p className="mt-1 text-[10px] text-white/40">Last reviewed {new Date(provider.verification_reviewed_at).toLocaleDateString()}</p>}</td>
+                  <td className="px-5 py-4"><button type="button" disabled={verificationBusyId === provider.id} onClick={() => handleProviderVerification(provider)} className="rounded-lg border border-[#f2ca50]/30 px-3 py-2 font-semibold text-[#f2ca50] disabled:opacity-50">{verificationBusyId === provider.id ? "Saving…" : provider.verified ? "Revoke" : "Mark verified"}</button></td>
+                  <td className="px-5 py-4"><button type="button" onClick={() => handleVerificationHistory(provider)} className="font-semibold text-[#f2ca50] hover:text-[#e8d6a8]">{Object.prototype.hasOwnProperty.call(verificationHistory, provider.id) ? "Hide history" : "View history"}</button></td>
+                </tr>
+                {Object.prototype.hasOwnProperty.call(verificationHistory, provider.id) && (
+                  <tr>
+                    <td colSpan={5} className="bg-black/20 px-5 py-4">
+                      {historyLoadingId === provider.id || verificationHistory[provider.id] === null ? (
+                        <p className="text-xs text-white/45">Loading review history…</p>
+                      ) : verificationHistory[provider.id].length === 0 ? (
+                        <p className="text-xs text-white/45">No historical reviews recorded yet.</p>
+                      ) : (
+                        <ol className="space-y-2">
+                          {verificationHistory[provider.id].map((event) => (
+                            <li key={event.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                              <span className={event.verified ? "text-emerald-300" : "text-amber-200"}>{event.verified ? "Marked verified" : "Verification revoked"}</span>
+                              <span className="text-white/45">{formatDate(event.reviewed_at)}</span>
+                              <span className="text-white/45">Reviewer: {event.reviewer_name || event.reviewer_email || (event.reviewer_id ? `User #${event.reviewer_id}` : "Former admin account")}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}</tbody>
           </table></div>}
         </div>
       </section>
