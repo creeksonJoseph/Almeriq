@@ -9,6 +9,7 @@ from .founder_legal import FounderLegalFiling
 from .founder_ai_cache import FounderAiCache
 from .company_guide import CompanyRegistrationGuide
 from .provider_profile import ProviderProfile
+from .provider_verification_event import ProviderVerificationEvent
 from .asset import Asset
 from .coverage_region import CoverageRegion
 from .order import Order
@@ -33,7 +34,7 @@ __all__ = [
     "Base", "User", "Waitlist",
     "FounderVenture", "FounderValidation", "FounderLegalFiling", "FounderAiCache",
     "CompanyRegistrationGuide",
-    "ProviderProfile", "Asset", "CoverageRegion", "Order", "OrderEvent",
+    "ProviderProfile", "ProviderVerificationEvent", "Asset", "CoverageRegion", "Order", "OrderEvent",
     "Deal", "Conversation", "Message", "Notification",
     "InvestorProfile", "StartupPitch", "Investment", "InvestorUpdate",
     "JobPosting", "JobApplication", "JobSeekerProfile", "ExpertProfile", "AdvisoryRequest",
