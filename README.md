@@ -177,6 +177,7 @@ If you are new to the codebase, start with the **[Developer handover](docs/DEVEL
 | [Testing guide](docs/TESTING_GUIDE.md) | CI, tests and release checks |
 | [Access transfer](docs/ACCESS_TRANSFER.md) | Hosting, database and integration account handover |
 | [Known gaps](docs/KNOWN_GAPS.md) | Unverified items and follow-up work |
+| [Documentation source map](docs/SOURCE_OF_TRUTH.md) | Primary implementation/configuration sources for every maintained guide |
 
 ## Security
 
