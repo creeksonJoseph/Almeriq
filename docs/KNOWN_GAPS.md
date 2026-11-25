@@ -30,6 +30,7 @@ CI status should be checked for the exact documentation commit before calling th
 - **Docker Compose auth secret mismatch:** docker-compose.yml sets SECRET_KEY, but server/core/config.py reads JWT_SECRET_KEY. The app therefore does not use the Compose-provided secret and falls back to its configured default unless JWT_SECRET_KEY is supplied separately. The Compose file also sets ENVIRONMENT, which is not a declared setting in the inspected Settings class. Do not use the current Compose auth configuration for anything beyond disposable local development; correct the variable name and use a unique secret before relying on it.
 - **Docker Compose database persistence:** the Compose backend uses a SQLite file inside the container and does not declare a persistent volume for that database. Recreating the container can lose the local test data. Use a disposable database or add an explicit development volume if persistence is needed.
 - **Node runtime mismatch:** CI pins Node 22, while frontend/Dockerfile uses node:20-slim. Confirm Vite 8 support and align the development/container runtime with CI before treating the frontend Docker image as a dependable build/test environment.
+- **Render auth configuration needs live verification:** render.yaml does not declare JWT_SECRET_KEY, COOKIE_SECURE, Gemini, Google OAuth, Upstash or Sentry variables. These may be configured manually in the Render dashboard, which is not accessible from this repository review. Confirm JWT_SECRET_KEY is explicitly set to a strong unique value in production; otherwise the backend falls back to the unsafe example default in core/config.py. Confirm COOKIE_SECURE=true for HTTPS production and review the other integration variables.
 - **Frontend deployment configuration:** root vercel.json builds from the repository root and explicitly disables automatic deployment for dev while enabling main. frontend/vercel.json is an alternate configuration for a Vercel project rooted at frontend/. Confirm which configuration the live Vercel project actually uses.
 
 ## 4. Product/engineering questions for the incoming maintainer
@@ -46,7 +47,8 @@ CI status should be checked for the exact documentation commit before calling th
 
 ## 5. Security review checklist
 
-- [ ] Replace example/default JWT secret in every deployed environment.
+- [ ] Replace example/default JWT secret in every deployed environment and confirm the live Render value is explicitly configured.
+- [ ] Confirm production COOKIE_SECURE=true and correct SameSite/domain settings for the deployed frontend/API topology.
 - [ ] Verify production cookie flags, cookie domain/path and HTTPS.
 - [ ] Verify CORS allowlist is exact and does not use wildcard with credentials in production.
 - [ ] Confirm password reset and OAuth callback flows cannot be abused.
