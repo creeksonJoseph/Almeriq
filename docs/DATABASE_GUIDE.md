@@ -1,5 +1,7 @@
 # Database, Data Model and Migration Guide
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). ORM definitions and Alembic revisions are the schema sources; live database state must be checked separately.
+
 ## 1. Database runtime
 
 The backend uses SQLAlchemy 2 asynchronous sessions.

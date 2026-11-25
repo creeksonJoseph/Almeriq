@@ -1,25 +1,27 @@
 # Architecture audit and refactor
 
-Audit baseline: repository tree and frontend/backend source on `main`, plus the previously merged architecture work in PR #18.
+> Implementation references: [Documentation source map](../SOURCE_OF_TRUTH.md).
+
+Audit baseline: source tree at `main` commit `2760de985ed2318fe9afd149c44b6ce8f50a8c2d`, including the architecture changes merged in [PR #18](https://github.com/creeksonJoseph/Almeriq/pull/18). The source paths below are the evidence for the implementation claims.
 
 ## Applied in this refactor
 
-- **Founder legal workspace:** moved filing retrieval/submission, country guide retrieval, refresh, loading and error state into `useFounderLegalWorkspace`. The route component now owns navigation, local form presentation and template selection.
-- **Provider onboarding:** moved profile/coverage/assets loading, draft persistence, asset upserts/deletions and completion orchestration into `useProviderSetupWorkflow`. The form remains in the page and React Hook Form owns field state/validation. The four independent initial reads now start in parallel, and stale responses are ignored after unmount.
-- **Investor workspace:** moved profile/startup/portfolio reads, settings save, interest submission, portfolio confirmation persistence and conversation creation into `useInvestorWorkspace`. The route component retains display-only calculations and signature-canvas interaction.
-- **Landing page:** extracted Hero, ecosystem, capabilities, waitlist form and footer into dedicated presentational sections. The route now composes those sections and handles only the hash-scroll entry behavior.
-- **Error alerting:** fixed a Sentry filter defect that could classify an HTTP 5xx event as a client error solely because its exception type was `HTTPException`. The filter now suppresses only positively identified 4xx/validation events; regression tests cover 404, 422 and 5xx cases.
-- **Shared architecture:** retains the Axios client/domain API modules and the user-scoped SWR cache from PR #18. Raw Axios/fetch usage remains confined to the shared client layer.
+- **Founder legal workspace:** moved filing retrieval/submission, country guide retrieval, refresh, loading and error state into [`useFounderLegalWorkspace`](../../frontend/src/hooks/useFounderLegalWorkspace.js). [`FounderLegalPage`](../../frontend/src/Pages/founder/FounderLegalPage.jsx) retains navigation, local form presentation and template selection.
+- **Provider onboarding:** moved profile/coverage/assets loading, draft persistence, asset upserts/deletions and completion orchestration into [`useProviderSetupWorkflow`](../../frontend/src/hooks/useProviderSetupWorkflow.js). [`ProviderSetupPage`](../../frontend/src/Pages/provider/ProviderSetupPage.jsx) keeps the form and React Hook Form owns field state/validation. The four initial reads (profile, coverage, physical assets, digital assets) start in parallel; stale responses are ignored after unmount.
+- **Investor workspace:** moved profile/startup/portfolio reads, settings save, interest submission, portfolio confirmation persistence and conversation creation into [`useInvestorWorkspace`](../../frontend/src/hooks/useInvestorWorkspace.js). [`InvestorDashboardPage`](../../frontend/src/Pages/investor/InvestorDashboardPage.jsx) retains display calculations and signature-canvas interaction.
+- **Landing page:** extracted Hero, ecosystem, capabilities, waitlist form and footer into [`LandingSections`](../../frontend/src/components/landing/LandingSections.jsx). [`LandingPage`](../../frontend/src/Pages/shared/LandingPage.jsx) composes those sections and handles the hash-scroll entry behavior.
+- **Error alerting:** fixed a Sentry filter defect that could classify an HTTP 5xx event as a client error solely because its exception type was `HTTPException`. The filter in [`server/api/errors.py`](../../server/api/errors.py) suppresses only positively identified 4xx/validation events; regression tests are in [`test_error_pipeline.py`](../../server/tests/test_error_pipeline.py).
+- **Shared architecture:** retains the Axios transport in [`client.js`](../../frontend/src/lib/client.js), domain API modules in [`frontend/src/lib/api/`](../../frontend/src/lib/api/), and user-scoped cache consumers such as [`useExpertDiscovery`](../../frontend/src/hooks/useExpertDiscovery.js) and [`useVentures`](../../frontend/src/hooks/useVentures.js) from PR #18. Direct Axios imports and browser `fetch()` calls are not used by route pages.
 
 ## Existing implementation confirmed during audit
 
-- Backend is separated into routers, services, repositories, models, schemas and core configuration.
-- GZip middleware is enabled.
-- The standardized FastAPI error pipeline returns normalized client-safe 4xx/5xx payloads, logs 4xx as warnings, reports 5xx to Sentry, and filters expected 4xx events.
-- ETag/304 support exists for expert discovery and founder venture reads; CORS exposes ETag.
-- Model/migration indexes exist across core and domain tables; the advisory-request listing N+1 was removed with bulk repository lookups in PR #18.
-- Frontend route-level lazy loading, skeleton states, hashed asset caching, vendor splitting, waitlist draft autosave, and lazy marketplace imagery are already present.
-- The shared client cache provides TTL, request deduplication, ETag revalidation, cache subscriptions, mutation updates and private user-scoped keys.
+- Backend is separated into [`routers`](../../server/api/routers/), [`services`](../../server/services/), [`repositories`](../../server/repositories/), [`models`](../../server/models/), [`schemas`](../../server/schemas/) and [`core`](../../server/core/) configuration.
+- GZip middleware is registered in [`server/main.py`](../../server/main.py).
+- The standardized FastAPI error pipeline is registered in [`server/main.py`](../../server/main.py) and implemented in [`server/api/errors.py`](../../server/api/errors.py): normalized client-safe 4xx/5xx payloads, 4xx warning logs, 5xx Sentry reporting and filtering of expected 4xx events.
+- ETag/304 support is implemented for expert discovery and founder venture reads in [`expert.py`](../../server/api/routers/expert.py) and [`founder.py`](../../server/api/routers/founder.py); CORS exposes ETag in [`main.py`](../../server/main.py). Regression coverage is in [`test_http_cache.py`](../../server/tests/test_http_cache.py).
+- Indexes and constraints are declared in the SQLAlchemy models and Alembic revisions; their production effectiveness is not established without query plans. The advisory-request listing N+1 was removed with bulk lookups in [`advisory_request.py`](../../server/repositories/advisory_request.py) as part of PR #18.
+- Frontend route-level lazy loading is in [`App.jsx`](../../frontend/src/App.jsx); skeletons are used in route/page components; hashed asset caching is configured in [`vercel.json`](../../vercel.json); vendor splitting is in [`vite.config.js`](../../frontend/vite.config.js); waitlist draft autosave is in [`useWaitlist.js`](../../frontend/src/hooks/useWaitlist.js); marketplace listing images use lazy loading in [`MarketplacePage.jsx`](../../frontend/src/Pages/marketplace/MarketplacePage.jsx).
+- The shared client cache in [`client.js`](../../frontend/src/lib/client.js) provides TTL, request deduplication, ETag revalidation, cache subscriptions and mutation updates; domain hooks supply user-scoped cache keys.
 
 ## Deliberately not added
 
@@ -32,6 +34,13 @@ Audit baseline: repository tree and frontend/backend source on `main`, plus the 
 
 ## Verification boundary
 
-Hook-level regression tests were added for founder legal and investor workflows, and the provider onboarding page tests were updated for the global toast feedback. These tests are written but not executed.
+The hook-level regression tests are present at:
+- `frontend/src/hooks/useFounderLegalWorkspace.test.jsx`
+- `frontend/src/hooks/useInvestorWorkspace.test.jsx`
+- `frontend/src/Pages/provider/ProviderSetupPage.test.jsx`
 
-This is a source-level audit/refactor only. The repository connection permits source and Git operations but does not provide a runnable checkout or database/browser environment in this session. Frontend build/lint/tests, backend pytest, migration execution, PostgreSQL query plans and browser visual regression remain the final verification pass.
+The Sentry filter regression cases are in `server/tests/test_error_pipeline.py` (HTTP 404, validation 422, HTTP 5xx and an exception-instance 503 case).
+
+These tests were subsequently executed by GitHub Actions run [#50](https://github.com/creeksonJoseph/Almeriq/actions/runs/45610595905) on PR #41 head `a05abd65e83f8a6c55e63f645917ac461a8ec12d`. The Backend tests job and Frontend checks job both completed successfully; the frontend job ran ESLint, Vitest and the production build. This is CI evidence for that commit, not a claim of local execution.
+
+Still not established by that CI run: browser-level visual/E2E behavior, live integrations, production migration execution, PostgreSQL query plans, production row counts, or real deployment health. Those require the relevant runtime, database and provider access.

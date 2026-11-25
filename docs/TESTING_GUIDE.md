@@ -1,5 +1,7 @@
 # Testing and Release Verification Guide
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). CI job definitions are in `.github/workflows/ci.yml`; test files live under `server/tests/` and `frontend/src/`.
+
 ## 1. What CI runs
 
 Workflow: `.github/workflows/ci.yml`.
