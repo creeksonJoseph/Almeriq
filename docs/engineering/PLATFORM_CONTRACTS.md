@@ -95,7 +95,8 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 ### Orders (provider role)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/provider/orders` | cookie + provider | Paginated order list |\n| GET | `/api/provider/orders/summary` | cookie + provider | All-time order counts for dashboard metrics |
+| GET | `/api/provider/orders` | cookie + provider | Paginated order list |
+| GET | `/api/provider/orders/summary` | cookie + provider | All-time order counts for dashboard metrics |
 | GET | `/api/provider/orders/:id` | cookie + provider (ownership) | Order detail |
 | PATCH | `/api/provider/orders/:id/status` | cookie + provider (ownership) | Update status |
 | POST | `/api/provider/orders/:id/waybill` | cookie + provider | Upload waybill |
@@ -110,7 +111,8 @@ All routers mount at `/api`. Auth uses JWT in HttpOnly cookies.
 ### Messaging (authenticated)
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/conversations` | cookie | Paginated conversation list |\n| GET | `/api/conversations/summary` | cookie | Inbox-wide unread conversation count |
+| GET | `/api/conversations` | cookie | Paginated conversation list |
+| GET | `/api/conversations/summary` | cookie | Inbox-wide unread conversation count |
 | GET | `/api/conversations/:id/messages` | cookie | List messages |
 | POST | `/api/conversations/:id/messages` | cookie | Send message |
 
