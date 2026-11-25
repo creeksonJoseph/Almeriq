@@ -2,21 +2,20 @@
 
 > This is a source-review checklist, not a claim that every item is a confirmed defect. Items marked "verify" require a maintainer with runtime/dashboard access.
 
-## 1. Documentation debt identified
+## 1. Historical documentation cleanup
 
-- The original root `README.md` describes Almeriq primarily as an infrastructure-provider portal and lists only a small subset of endpoints. That is no longer a complete product description.
-- The original root `ARCHITECTURE.md` describes a founder AI analysis design, not the whole platform architecture.
-- `docs/PLAN.md` contains an early provider-portal implementation plan and missing-feature statements that conflict with the current repository.
-- The old multi-agent workstream and platform-contract guides contained stale role, model, route and branch status statements. They have been removed rather than kept as onboarding material.
+- The former root `README.md` and `ARCHITECTURE.md` were incomplete snapshots; both have been replaced with current entry points.
+- The former provider-portal `docs/PLAN.md` is now explicitly marked historical and points readers to current source-based guides.
+- Obsolete multi-agent workstream and platform-contract guides were removed because their role, model, route and branch status statements were stale.
 - Any test counts copied from older documentation are historical; do not repeat them as current results without running the test suite.
 
-The root README and ARCHITECTURE entry points have been refreshed. The old provider-focused plan remains labelled as historical. The obsolete agent coordination guides have been removed. The architecture audit is retained only as optional historical engineering context.
+The documentation cleanup is complete at source level. The architecture audit remains only as optional historical engineering context.
 
 ## 2. Runtime verification not performed in this documentation pass
 
 The GitHub source connection permits repository inspection and Git writes, but not execution of the application in a real local checkout. Therefore the following remain unverified here:
-- Backend pytest suite result on the current `dev` head.
-- Frontend Vitest, ESLint and production build on the current `dev` head.
+- Backend pytest suite result on the proposed pull-request head.
+- Frontend Vitest, ESLint and production build on the proposed pull-request head.
 - Clean database migration from zero to head and upgrade from a production-like prior revision.
 - Full PostgreSQL/Neon compatibility and transaction behavior.
 - End-to-end browser workflows across every role.
@@ -25,24 +24,32 @@ The GitHub source connection permits repository inspection and Git writes, but n
 
 CI status should be checked for the exact documentation commit before calling this handover complete.
 
-## 3. Confirmed configuration issues to resolve
+## 3. Configuration findings and remaining checks
 
-- **Docker Compose auth secret mismatch:** docker-compose.yml sets SECRET_KEY, but server/core/config.py reads JWT_SECRET_KEY. The app therefore does not use the Compose-provided secret and falls back to its configured default unless JWT_SECRET_KEY is supplied separately. The Compose file also sets ENVIRONMENT, which is not a declared setting in the inspected Settings class. Do not use the current Compose auth configuration for anything beyond disposable local development; correct the variable name and use a unique secret before relying on it.
-- **Docker Compose database persistence:** the Compose backend uses a SQLite file inside the container and does not declare a persistent volume for that database. Recreating the container can lose the local test data. Use a disposable database or add an explicit development volume if persistence is needed.
-- **Node runtime divergence:** CI pins Node 22, while frontend/Dockerfile uses node:20-slim. Confirm the exact Vite 8 minimum runtime and align the development/container runtime with CI so local/container behavior matches CI.
-- **Render auth configuration needs live verification:** render.yaml does not declare JWT_SECRET_KEY, COOKIE_SECURE, Gemini, Google OAuth, Upstash or Sentry variables. These may be configured manually in the Render dashboard, which is not accessible from this repository review. Confirm JWT_SECRET_KEY is explicitly set to a strong unique value in production; otherwise the backend falls back to the unsafe example default in core/config.py. Confirm COOKIE_SECURE=true for HTTPS production and review the other integration variables.
-- **Frontend deployment configuration:** root vercel.json builds from the repository root and explicitly disables automatic deployment for dev while enabling main. frontend/vercel.json is an alternate configuration for a Vercel project rooted at frontend/. Confirm which configuration the live Vercel project actually uses.
+The source-level issues previously identified in local configuration have been corrected on this branch:
+
+- **Docker Compose auth configuration:** Compose now supplies `JWT_SECRET_KEY`, the setting read by `server/core/config.py`. The unused `ENVIRONMENT` variable has been removed. The Compose secret remains a local-only placeholder and must not be reused in a shared or hosted environment.
+- **Docker Compose database persistence:** the backend SQLite database now lives at `/data/almeriq_dev.db` on a named volume. Running `docker compose down -v` intentionally deletes that local database.
+- **Node runtime alignment:** GitHub Actions and the frontend Docker image now use Node 22. The container uses `npm ci` to install from the lockfile.
+
+The following still require access to deployment dashboards or a live environment and cannot be confirmed from repository source alone:
+
+- **Render auth configuration:** `render.yaml` does not declare `JWT_SECRET_KEY` or `COOKIE_SECURE`. Confirm a strong unique JWT secret is explicitly configured in the Render service and that `COOKIE_SECURE=true` for HTTPS production. Also verify Gemini, Google OAuth, Upstash and Sentry values if those integrations are enabled.
+- **Frontend deployment configuration:** root `vercel.json` builds from the repository root and enables automatic deployment for `main` while disabling it for `dev` and `feat-*`. `frontend/vercel.json` is an alternative for a Vercel project rooted at `frontend/`. Confirm which configuration and project root the live Vercel project uses.
+- **Production database and operations:** verify the actual Render branch, PostgreSQL attachment, custom domains, backups, restore procedure, deployment health and environment values in the relevant dashboards.
+
+These changes are source-reviewed but have not been executed in a local Docker environment during this pass. CI must be checked for the exact pull-request head before the changes are considered verified.
+
 
 ## 4. Product/engineering questions for the incoming maintainer
 
-- Confirm whether the current onboarding flow should direct experts immediately to `/expert/profile` after role selection. Today the shared onboarding and separate expert profile editor are distinct.
+- Expert users are routed to their expert dashboard at `/dashboard`; its Create/Edit Profile action opens `/expert/profile`. Shared identity onboarding does not itself open a separate profile wizard. This is the current supported flow; change it only if the product owner wants a forced profile-completion step.
 - Confirm the product policy for expert profile publication. The inspected implementation exposes active profiles; no separate expert approval workflow was found.
 - Confirm whether profile activation is user-controlled or should be moderated. Do not add a review queue without a product decision.
 - Confirm production source of truth for role values and any legacy role strings; keep backend/frontend normalization aligned.
 - Confirm whether the provider verification review workflow is actively operated and who owns approvals.
 - Confirm actual payment/escrow behavior. The UI terminology must not be interpreted as real payment processing unless the provider integration and settlement flow are implemented and verified.
 - Confirm whether Redis is required in production or only optional. In-memory fallbacks behave differently across multiple instances.
-- Confirm the supported Node runtime and pin it consistently in CI/deployment docs.
 - Confirm ownership/access for Render, Vercel, Neon, Cloudinary, Resend, Google OAuth, Upstash and Sentry.
 
 ## 5. Security review checklist
@@ -92,5 +99,5 @@ CI status should be checked for the exact documentation commit before calling th
 - [ ] Environment variables are documented without real secret values.
 - [ ] API reference points to OpenAPI and identifies all router domains.
 - [ ] Existing stale docs are labelled or updated.
-- [ ] CI is green for the documentation branch.
+- [ ] CI is green for the exact pull-request head.
 - [ ] Project owner confirms production access transfer and operational ownership.
