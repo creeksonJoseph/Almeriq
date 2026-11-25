@@ -65,7 +65,14 @@ From repository root:
 docker compose up --build
 ```
 
-The current Compose file starts backend and frontend services, maps ports 8000 and 5173, and uses a SQLite file inside the backend container without a named persistent volume. It sets `SECRET_KEY`, but the backend reads `JWT_SECRET_KEY`; it also sets `ENVIRONMENT`, which is not a declared setting in `server/core/config.py`. Treat this as disposable local development only until the mismatch is corrected and a unique secret is supplied. Do not assume local database data survives container recreation.
+The Compose stack starts the backend and frontend on ports 8000 and 5173. The backend uses a named Docker volume mounted at `/data` for its SQLite database, so the local database survives backend container recreation. Remove the volume explicitly only when you intend to discard that local data:
+
+```bash
+docker compose down -v
+```
+
+Compose supplies `JWT_SECRET_KEY`, which matches the setting read by `server/core/config.py`. Its value is a local-only placeholder; replace it before sharing the environment and never use it in production. The Compose file does not set an `ENVIRONMENT` setting because the current Settings model does not declare one.
+
 
 ## 6. Environment variables
 

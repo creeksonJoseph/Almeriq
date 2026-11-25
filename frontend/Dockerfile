@@ -1,6 +1,6 @@
-FROM node:20-slim
+FROM node:22-slim
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
