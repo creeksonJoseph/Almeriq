@@ -2,6 +2,8 @@
 
 > Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). Exact live contracts come from the running OpenAPI schema.
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). Exact live contracts come from the running OpenAPI schema.
+
 ## 1. Source of truth
 
 The FastAPI OpenAPI schema is the authoritative endpoint/request/response reference for a running version of the application:
@@ -200,7 +202,7 @@ With the backend running:
 curl -s http://localhost:8000/openapi.json > /tmp/almeriq-openapi.json
 ~~~
 
-Use Swagger UI to try requests with an authenticated browser session. For command-line tests, use a disposable local account and avoid placing real production tokens in shell history. The Sentry diagnostic endpoint is registered unconditionally in `server/api/routers/health.py`; do not assume it is disabled in production. Gate or remove it before exposing a production deployment.
+Use Swagger UI to try requests with an authenticated browser session. For command-line tests, use a disposable local account and avoid placing real production tokens in shell history. The Sentry diagnostic endpoint is registered unconditionally in `server/api/routers/health.py`; do not assume it is disabled in production. Gate or remove it before exposing a production deployment. The Sentry diagnostic endpoint is registered unconditionally in `server/api/routers/health.py`; do not assume it is disabled in production. Gate or remove it before exposing a production deployment.
 
 ## 7. Contract change checklist
 
