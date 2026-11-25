@@ -2,6 +2,8 @@
 
 > Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). The repository files describe declared configuration only; live dashboard values require owner verification.
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). The repository files describe declared configuration only; live dashboard values require owner verification.
+
 ## 1. Prerequisites
 
 - Python 3.13 or newer.
