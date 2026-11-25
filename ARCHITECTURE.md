@@ -2,6 +2,8 @@
 
 > Implementation references: [Documentation source map](docs/SOURCE_OF_TRUTH.md).
 
+> Implementation references: [Documentation source map](docs/SOURCE_OF_TRUTH.md).
+
 This file previously described only an early founder AI-analysis workflow and was not a complete description of the platform.
 
 The current, source-reviewed platform architecture is maintained in [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md).
