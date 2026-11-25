@@ -2,6 +2,8 @@
 
 > Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). Source paths for roles, workflows, models and pages are listed there.
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). Source paths for roles, workflows, models and pages are listed there.
+
 This guide maps the current source tree to the user-facing product areas. For exact endpoint paths and schemas, use the live OpenAPI document described in [API Guide](API_GUIDE.md).
 
 ## 1. Roles
