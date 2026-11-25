@@ -1,8 +1,8 @@
 /**
  * Pages/AdminWaitlistPage.jsx - Admin console for viewing waitlist participants.
  */
-import React, { useState, useEffect, useMemo } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   Search,
@@ -13,9 +13,6 @@ import {
   Briefcase,
   Truck,
   ArrowLeft,
-  Calendar,
-  Mail,
-  User,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";

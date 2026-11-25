@@ -1,7 +1,7 @@
 /**
  * Pages/SignupPage.jsx - 3-step signup: email → OTP verification → password.
  */
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useSignupFlow } from "../../hooks/useSignupFlow";
@@ -112,7 +112,7 @@ export default function SignupPage() {
     return () => {
       try {
         document.body.removeChild(script);
-      } catch (e) {}
+      } catch { /* ignored */ }
     };
   }, [googleClientId, step, handleGoogleSuccess]);
 

@@ -77,16 +77,15 @@ export function ToastProvider({ children }) {
   );
 
   const toastApi = useMemo(() => {
-    const fn = (message, type = "info", duration = 4000) => {
-      show(message, type, duration);
-    };
-    fn.show = (message, type = "info", duration = 4000) => show(message, type, duration);
-    fn.showToast = (message, type = "info", duration = 4000) => show(message, type, duration);
-    fn.success = (msg, duration) => show(msg, "success", duration);
-    fn.error = (msg, duration) => show(msg, "error", duration);
-    fn.info = (msg, duration) => show(msg, "info", duration);
-    fn.toast = fn;
-    return fn;
+    const showFn = (message, type = "info", duration = 4000) => show(message, type, duration);
+    return Object.assign(showFn, {
+      show: (message, type = "info", duration = 4000) => show(message, type, duration),
+      showToast: (message, type = "info", duration = 4000) => show(message, type, duration),
+      success: (msg, duration) => show(msg, "success", duration),
+      error: (msg, duration) => show(msg, "error", duration),
+      info: (msg, duration) => show(msg, "info", duration),
+      toast: (...args) => showFn(...args),
+    });
   }, [show]);
 
   return (
