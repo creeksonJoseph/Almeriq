@@ -4,12 +4,12 @@
 
 - Python 3.13 or newer.
 - `uv` for Python dependency/environment management.
-- Node.js compatible with the Vite 8 toolchain and npm.
+- Node.js 22 and npm (the current GitHub Actions workflow uses Node 22).
 - Git.
 - Optional: Docker + Docker Compose.
 - Credentials only for integrations you intend to exercise (Gemini, Resend, Cloudinary, Google OAuth, Upstash Redis, Sentry).
 
-Use `server/pyproject.toml`, `server/uv.lock`, and `frontend/package-lock.json` as dependency sources of truth. The README's historical Node 20 note should be checked against the current Vite 8 requirements before pinning a runtime in CI or deployment.
+Use `server/pyproject.toml`, `server/uv.lock`, and `frontend/package-lock.json` as dependency sources of truth. GitHub Actions currently pins Python 3.13 and Node 22.
 
 ## 2. Clone and branch
 
@@ -139,7 +139,9 @@ npm run build
 
 The frontend test script already invokes `vitest run`; do not append an extra `--run` unless needed. For focused tests, pass a test filename/pattern after the script.
 
-The GitHub Actions workflow is `.github/workflows/ci.yml`. Inspect the workflow for its exact triggers, services, commands and Python/Node versions. A local test command being documented is not evidence it passed. Record the actual CI run URL/commit when reporting verification.
+The GitHub Actions workflow is `.github/workflows/ci.yml`. It runs on pushes to `dev`, pull requests targeting `dev`, and manual dispatch. It pins Python 3.13 and Node 22, runs backend pytest, frontend ESLint, Vitest and the frontend production build. A local test command being documented is not evidence it passed. Record the actual CI run URL/commit when reporting verification.
+
+The optional `server/scripts/smoke_test.sh` is a separate curl-based workflow, not part of this CI job. Read the script before running it: it creates test users and domain records in the configured database and does not clean up all persisted records. Run it only against a disposable local database, never production.
 
 ## 9. Deployment overview
 
