@@ -48,3 +48,14 @@ export async function updateAdminProviderVerificationApi(providerId, verified) {
     throw apiErr(e, "Unable to update provider verification");
   }
 }
+
+export async function getAdminProviderVerificationHistoryApi(providerId) {
+  try {
+    const { data } = await apiClient.get(
+      `/admin/providers/${encodeURIComponent(providerId)}/verification-history`
+    );
+    return data;
+  } catch (e) {
+    throw apiErr(e, "Unable to load provider verification history");
+  }
+}
