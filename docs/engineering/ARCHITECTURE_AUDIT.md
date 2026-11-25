@@ -1,5 +1,7 @@
 # Architecture audit and refactor
 
+> Implementation references: [Documentation source map](../SOURCE_OF_TRUTH.md).
+
 Audit baseline: source tree at `main` commit `2760de985ed2318fe9afd149c44b6ce8f50a8c2d`, including the architecture changes merged in [PR #18](https://github.com/creeksonJoseph/Almeriq/pull/18). The source paths below are the evidence for the implementation claims.
 
 ## Applied in this refactor
