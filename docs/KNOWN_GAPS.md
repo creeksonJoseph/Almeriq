@@ -8,9 +8,9 @@
 - The original root `ARCHITECTURE.md` describes a founder AI analysis design, not the whole platform architecture.
 - `docs/PLAN.md` contains an early provider-portal implementation plan and missing-feature statements that conflict with the current repository.
 - `docs/engineering/PLATFORM_CONTRACTS.md` and `WORKSTREAMS.md` contain stale role, model, route and branch status statements. In particular, they still describe expert as a placeholder and list workstreams as not started despite implementations existing.
-- Some README test-count statements are historical and should not be repeated as current results without running the test suite.
+- Any test counts copied from older documentation are historical; do not repeat them as current results without running the test suite.
 
-These docs need either replacement with current source-based content or a prominent historical/superseded banner. This handover set is intended to be the current starting point.
+The root README and ARCHITECTURE entry points have been refreshed. The old provider-focused plan and engineering workstream/contracts references are retained with explicit historical/superseded banners. This handover set is intended to be the current starting point; the remaining older engineering documents should still be reviewed before they are treated as authoritative.
 
 ## 2. Runtime verification not performed in this documentation pass
 
