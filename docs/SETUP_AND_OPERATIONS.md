@@ -34,7 +34,7 @@ uv run alembic upgrade head
 uv run uvicorn main:app --reload
 ```
 
-Backend defaults to a local SQLite URL in the development example. The API is normally available at:
+The backend example uses a PostgreSQL/Neon URL placeholder. Use your own development database, or switch to the documented SQLite URL for a disposable local database. The API is normally available at:
 - API root: `http://localhost:8000`
 - Health endpoint: `http://localhost:8000/health` (also inspect the health router for readiness semantics)
 - Swagger UI: `http://localhost:8000/docs`
