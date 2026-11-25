@@ -62,7 +62,7 @@ Almeriq/
 
 ## Run it locally
 
-You need Python 3.13 or newer, [uv](https://docs.astral.sh/uv/), Node.js compatible with Vite 8, and npm.
+You need Python 3.13 or newer, [uv](https://docs.astral.sh/uv/), Node.js 22 and npm (matching CI and the frontend container).
 
 ### 1. Start the backend
 
