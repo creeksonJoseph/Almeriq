@@ -27,8 +27,8 @@ Create a task branch from the latest `dev`. Do not develop directly on `main`. K
 
 ```bash
 cd server
-cp .env.dev.example .env.dev
-# Edit .env.dev and set a unique JWT_SECRET_KEY.
+cp .env.example .env
+# Edit .env and set a unique JWT_SECRET_KEY.
 uv sync
 uv run alembic upgrade head
 uv run uvicorn main:app --reload
@@ -69,10 +69,7 @@ The current Compose file starts backend and frontend services, maps ports 8000 a
 
 ## 6. Environment variables
 
-Backend settings are defined in `server/core/config.py`. Pydantic Settings reads `.env`, `.env.dev`, and `.env.prod` (case-insensitive); actual process environment variables can also supply values. Example templates:
-- `server/.env.example`
-- `server/.env.dev.example`
-- `server/.env.prod.example`
+Backend settings are defined in `server/core/config.py`. Pydantic Settings reads `.env`, `.env.dev`, and `.env.prod` (case-insensitive); actual process environment variables can also supply values. There is one backend template: `server/.env.example`. Copy it to `server/.env` for local development. It uses SQLite, local cookie settings, and blank optional integration credentials. For hosted environments, set the required values directly in the hosting provider's environment settings rather than maintaining separate committed production templates.
 
 | Variable | Required for | Notes |
 |---|---|---|
@@ -81,7 +78,7 @@ Backend settings are defined in `server/core/config.py`. Pydantic Settings reads
 | `JWT_ALGORITHM` | Auth | Defaults to HS256. |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Auth | Defaults to 10080 minutes (7 days). |
 | `COOKIE_NAME` | Auth | Defaults to `auth_token`. |
-| `COOKIE_SECURE` | Auth | Set true for HTTPS production. |
+| `COOKIE_SECURE` | Auth | False for local HTTP; set true for HTTPS production. |
 | `COOKIE_SAMESITE` | Auth | Defaults to `lax`; validate cross-site deployment topology before changing. |
 | `ALLOWED_ORIGINS` | Browser API access | Comma-separated origins; supports JSON list input in settings parser. Must be exact origins when using credentialed CORS. |
 | `RESEND_API_KEY` | Email | Resend API credential. |
@@ -96,7 +93,7 @@ Frontend:
 - `VITE_API_BASE_URL`: API origin/base URL. Vite variables are public in the built bundle; never put secrets in `VITE_*`.
 - `VITE_GOOGLE_CLIENT_ID`: public OAuth client ID used by frontend integration.
 
-Never copy real production credentials into example files or issue comments. If a credential has been committed accidentally, rotate it; deleting it from the latest tree is not sufficient.
+The single backend example includes one comma-separated `ALLOWED_ORIGINS` value for local development and the Almeriq domains. For production, set the exact production frontend origins in the Render environment; do not blindly reuse localhost origins. Never copy real production credentials into example files or issue comments. If a credential has been exposed, rotate it; deleting it from the latest tree is not sufficient.
 
 ## 7. Database and Alembic
 
