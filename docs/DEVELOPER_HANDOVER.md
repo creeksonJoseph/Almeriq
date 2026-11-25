@@ -48,7 +48,7 @@ Do not assume the local checkout is current. Fetch and inspect branch heads befo
 | API | FastAPI |
 | ORM | SQLAlchemy 2 async |
 | Database migrations | Alembic |
-| Development database | SQLite via aiosqlite |
+| Database drivers | SQLite via aiosqlite for local use; PostgreSQL via psycopg for hosted environments |
 | Production database | PostgreSQL; Neon is referenced in deployment examples |
 | Frontend | React 19, Vite 8 |
 | Routing | React Router 7 |
