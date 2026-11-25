@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# smoke_test.sh - Exercises every ALIMERIQ API endpoint against the running dev server.
+# smoke_test.sh - Exercises selected critical API workflows against a disposable local dev database.
 # Usage: ./smoke_test.sh
 # Prerequisites: Server running at http://localhost:8000 (uv run uvicorn main:app --reload)
 
 set -euo pipefail
 
 BASE="http://localhost:8000"
+RUN_ID=$(date +%s)
+PROVIDER_EMAIL="provider-smoke-${RUN_ID}@example.com"
 PASS=0
 FAIL=0
 
@@ -36,7 +38,7 @@ echo ""
 echo "--- 1. Register provider user ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d '{"email":"provider@example.com","password":"SecurePass123!"}')
+  -d '{"email":"${PROVIDER_EMAIL}","password":"SecurePass123!"}')
 HTTP=$(echo "$RESP" | tail -1)
 BODY=$(echo "$RESP" | sed '$d')
 assert_status "POST /api/auth/register" "201" "$HTTP"
@@ -64,7 +66,7 @@ echo ""
 echo "--- 5. Onboarding with provider role ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/onboarding" \
   -H "Content-Type: application/json" \
-  -d '{"full_name":"Sims Company","nationality":"KE","id_number":"KE-12345","role":"INFRASTRUCTURE_PROVIDER"}' \
+  -d '{"full_name":"Sims Company","nationality":"KE","id_number":"SMOKE-${RUN_ID}","role":"INFRASTRUCTURE_PROVIDER"}' \
   -b /tmp/cookies.txt -c /tmp/cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status "POST /api/auth/onboarding" "200" "$HTTP"
@@ -144,7 +146,6 @@ assert_status "GET /api/search (public)" "200" "$HTTP"
 # ── 14. Register a founder buyer for marketplace checkout ────────────
 echo ""
 echo "--- 14. Register founder buyer ---"
-RUN_ID=$(date +%s)
 FOUNDER_EMAIL="founder-smoke-${RUN_ID}@example.com"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/register" \
   -H "Content-Type: application/json" \
