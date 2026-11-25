@@ -38,7 +38,7 @@ echo ""
 echo "--- 1. Register provider user ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d '{"email":"${PROVIDER_EMAIL}","password":"SecurePass123!"}')
+  -d "{\"email\":\"${PROVIDER_EMAIL}\",\"password\":\"SecurePass123!\"}")
 HTTP=$(echo "$RESP" | tail -1)
 BODY=$(echo "$RESP" | sed '$d')
 assert_status "POST /api/auth/register" "201" "$HTTP"
@@ -48,7 +48,7 @@ echo ""
 echo "--- 2. Login ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"provider@example.com","password":"SecurePass123!"}' \
+  -d "{\"email\":\"${PROVIDER_EMAIL}\",\"password\":\"SecurePass123!\"}" \
   -c /tmp/cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status "POST /api/auth/login" "200" "$HTTP"
@@ -66,7 +66,7 @@ echo ""
 echo "--- 5. Onboarding with provider role ---"
 RESP=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/auth/onboarding" \
   -H "Content-Type: application/json" \
-  -d '{"full_name":"Sims Company","nationality":"KE","id_number":"SMOKE-${RUN_ID}","role":"INFRASTRUCTURE_PROVIDER"}' \
+  -d "{\"full_name\":\"Sims Company\",\"nationality\":\"KE\",\"id_number\":\"SMOKE-${RUN_ID}\",\"role\":\"INFRASTRUCTURE_PROVIDER\"}" \
   -b /tmp/cookies.txt -c /tmp/cookies.txt)
 HTTP=$(echo "$RESP" | tail -1)
 assert_status "POST /api/auth/onboarding" "200" "$HTTP"
