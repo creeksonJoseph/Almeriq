@@ -66,7 +66,9 @@ export default function AdminWaitlistPage() {
   const [data, setData] = useState({ total: 0, items: [] });
   const [providers, setProviders] = useState([]);
   const [providersLoading, setProvidersLoading] = useState(true);
-  const [verificationBusyId, setVerificationBusyId] = useState(null);\n  const [verificationHistory, setVerificationHistory] = useState({});\n  const [historyLoadingId, setHistoryLoadingId] = useState(null);
+  const [verificationBusyId, setVerificationBusyId] = useState(null);
+  const [verificationHistory, setVerificationHistory] = useState({});
+  const [historyLoadingId, setHistoryLoadingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
