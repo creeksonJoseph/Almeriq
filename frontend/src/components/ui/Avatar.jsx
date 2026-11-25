@@ -42,6 +42,7 @@ export function Avatar({ src, alt, name, size = 40, className = "", online = fal
 }
 
 export function AvatarGroup({ children, maxVisible = 5, className = "", ...props }) {
+  const sizeClasses = { 40: "w-10 h-10 text-sm" };
   const kids = React.Children.toArray(children);
   const visible = kids.slice(0, maxVisible);
   const rest = kids.length - maxVisible;
