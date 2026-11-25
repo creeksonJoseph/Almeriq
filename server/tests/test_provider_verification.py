@@ -48,3 +48,11 @@ async def test_admin_provider_verification_is_audited_and_revocable(session: Asy
     assert revoked["verified_by"] is None
     assert revoked["verification_reviewed_at"] is not None
     assert revoked["verification_reviewed_by"] == admin_user["id"]
+
+    history = await provider_repo.list_provider_verification_events(
+        profile_id=profile["id"], session=session
+    )
+    assert len(history) == 2
+    assert [event["verified"] for event in history] == [False, True]
+    assert all(event["reviewer_id"] == admin_user["id"] for event in history)
+    assert all(event["reviewed_at"] is not None for event in history)
