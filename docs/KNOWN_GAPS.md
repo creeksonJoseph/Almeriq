@@ -1,5 +1,7 @@
 # Known Gaps and Handover Checklist
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). This file separates source-confirmed findings from checks that require live access.
+
 > This is a source-review checklist, not a claim that every item is a confirmed defect. Items marked "verify" require a maintainer with runtime/dashboard access.
 
 ## 1. Historical documentation cleanup
@@ -11,22 +13,29 @@
 
 The documentation cleanup is complete at source level. The architecture audit remains only as optional historical engineering context.
 
-## 2. Runtime verification not performed in this documentation pass
+## 2. Verification status
 
-The GitHub source connection permits repository inspection and Git writes, but not execution of the application in a real local checkout. Therefore the following remain unverified here:
-- Backend pytest suite result on the proposed pull-request head.
-- Frontend Vitest, ESLint and production build on the proposed pull-request head.
+**CI verification is complete for the refactor-containing source tree.** GitHub Actions run [#50](https://github.com/creeksonJoseph/Almeriq/actions/runs/45610595905) completed successfully on PR #41 head `a05abd65e83f8a6c55e63f645917ac461a8ec12d`. Both jobs passed:
+
+- Backend pytest.
+- Frontend ESLint, Vitest and production build.
+
+That run validates the code tree at that PR head. It is not a claim that tests were run locally or that the later promotion merge itself triggered another CI run.
+
+The following still require execution or live access and are not proven by that CI result:
+
 - Clean database migration from zero to head and upgrade from a production-like prior revision.
-- Full PostgreSQL/Neon compatibility and transaction behavior.
-- End-to-end browser workflows across every role.
+- PostgreSQL/Neon compatibility and transaction behavior against the intended production database.
+- Full end-to-end browser workflows across every role.
 - Upload, email, OAuth, Gemini, Redis and Sentry integrations against live credentials.
 - Production Render/Vercel configuration, deploy health, DNS, backups and database restore procedure.
+- Production query plans and representative row counts for index/performance decisions.
 
-CI status should be checked for the exact documentation commit before calling this handover complete.
+The Docker Compose stack has been source-reviewed but was not executed in a local Docker runtime during this pass.
 
 ## 3. Configuration findings and remaining checks
 
-The source-level issues previously identified in local configuration have been corrected on this branch:
+The source-level issues previously identified in local configuration are corrected in the current `main` and `dev` source trees:
 
 - **Docker Compose auth configuration:** Compose now supplies `JWT_SECRET_KEY`, the setting read by `server/core/config.py`. The unused `ENVIRONMENT` variable has been removed. The Compose secret remains a local-only placeholder and must not be reused in a shared or hosted environment.
 - **Docker Compose database persistence:** the backend SQLite database now lives at `/data/almeriq_dev.db` on a named volume. Running `docker compose down -v` intentionally deletes that local database.
@@ -38,7 +47,7 @@ The following still require access to deployment dashboards or a live environmen
 - **Frontend deployment configuration:** root `vercel.json` builds from the repository root and enables automatic deployment for `main` while disabling it for `dev` and `feat-*`. `frontend/vercel.json` is an alternative for a Vercel project rooted at `frontend/`. Confirm which configuration and project root the live Vercel project uses.
 - **Production database and operations:** verify the actual Render branch, PostgreSQL attachment, custom domains, backups, restore procedure, deployment health and environment values in the relevant dashboards.
 
-These changes are source-reviewed but have not been executed in a local Docker environment during this pass. CI must be checked for the exact pull-request head before the changes are considered verified.
+These changes are source-reviewed. The CI result above covers the refactor-containing source tree; it does not substitute for local Compose execution or live deployment verification.
 
 
 ## 4. Product/engineering questions for the incoming maintainer
@@ -50,6 +59,7 @@ These changes are source-reviewed but have not been executed in a local Docker e
 - Confirm whether the provider verification review workflow is actively operated and who owns approvals.
 - Confirm actual payment/escrow behavior. The UI terminology must not be interpreted as real payment processing unless the provider integration and settlement flow are implemented and verified.
 - Confirm whether Redis is required in production or only optional. In-memory fallbacks behave differently across multiple instances.
+- **Sentry diagnostic endpoints:** `/sentry-test` is registered in `frontend/src/App.jsx` without a route guard, and `/sentry-test-error` is registered in `server/api/routers/health.py` without an environment guard. Gate or remove both before exposing a production deployment.
 - Confirm ownership/access for Render, Vercel, Neon, Cloudinary, Resend, Google OAuth, Upstash and Sentry.
 
 ## 5. Security review checklist

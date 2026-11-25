@@ -1,5 +1,7 @@
 # ALMERIQ Developer Handover
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md).
+
 > Last reviewed: 2026-11-25  
 > Repository: [creeksonJoseph/Almeriq](https://github.com/creeksonJoseph/Almeriq)  
 
@@ -52,7 +54,7 @@ Create task branches from the latest `dev`, open pull requests into `dev`, and p
 | ORM | SQLAlchemy 2 async |
 | Database migrations | Alembic |
 | Database drivers | SQLite via aiosqlite for local use; PostgreSQL via psycopg for hosted environments |
-| Production database | PostgreSQL; Neon is referenced in deployment examples |
+| Expected hosted database | PostgreSQL URL via `DATABASE_URL`; Neon appears in the example configuration. Confirm the actual production provider/attachment in Render. |
 | Frontend | React 19, Vite 8 |
 | Routing | React Router 7 |
 | Styling | Tailwind CSS 4 |

@@ -1,5 +1,7 @@
 # Frontend Route and State Guide
 
+> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). `frontend/src/App.jsx` is authoritative for registered paths and guards.
+
 ## Route source of truth
 
 All routes are declared in frontend/src/App.jsx. The list below is grouped for navigation; check App.jsx for the exact guard/component wrapper and redirects.
@@ -123,7 +125,7 @@ Several investor paths currently render the same dashboard component with route-
 | /sentry-test | Sentry test page |
 | * | Not found |
 
-Confirm that diagnostic routes are appropriately restricted or removed for production as part of the security review.
+The `/sentry-test` route is currently registered without a route guard, and the backend `/sentry-test-error` endpoint is also registered without an environment guard. Do not assume either is disabled in production; gate or remove both before exposing a production deployment.
 
 ## Route guards
 
