@@ -15,6 +15,7 @@ Start with **[Developer Handover](docs/DEVELOPER_HANDOVER.md)**. It links to:
 - [System architecture](docs/SYSTEM_ARCHITECTURE.md)
 - [Setup and operations](docs/SETUP_AND_OPERATIONS.md)
 - [Database, data model and migrations](docs/DATABASE_GUIDE.md)
+- [Testing and release verification](docs/TESTING_GUIDE.md)
 - [Production access transfer checklist](docs/ACCESS_TRANSFER.md)
 - [Domain and workflow guide](docs/DOMAIN_GUIDE.md)
 - [Frontend route and state guide](docs/FRONTEND_GUIDE.md)
