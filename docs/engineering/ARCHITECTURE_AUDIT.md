@@ -1,6 +1,6 @@
 # Architecture audit and refactor
 
-Audit baseline: repository tree and frontend/backend source on `main`, plus the previously merged architecture work in PR #18.
+Audit baseline: source tree at `main` commit `2760de985ed2318fe9afd149c44b6ce8f50a8c2d`, including the architecture changes merged in [PR #18](https://github.com/creeksonJoseph/Almeriq/pull/18). The source paths below are the evidence for the implementation claims.
 
 ## Applied in this refactor
 
@@ -32,6 +32,13 @@ Audit baseline: repository tree and frontend/backend source on `main`, plus the 
 
 ## Verification boundary
 
-Hook-level regression tests were added for founder legal and investor workflows, and the provider onboarding page tests were updated for the global toast feedback. These tests are written but not executed.
+The hook-level regression tests are present at:
+- `frontend/src/hooks/useFounderLegalWorkspace.test.jsx`
+- `frontend/src/hooks/useInvestorWorkspace.test.jsx`
+- `frontend/src/Pages/provider/ProviderSetupPage.test.jsx`
 
-This is a source-level audit/refactor only. The repository connection permits source and Git operations but does not provide a runnable checkout or database/browser environment in this session. Frontend build/lint/tests, backend pytest, migration execution, PostgreSQL query plans and browser visual regression remain the final verification pass.
+The Sentry filter regression cases are in `server/tests/test_error_pipeline.py` (HTTP 404, validation 422, HTTP 5xx and an exception-instance 503 case).
+
+These tests were subsequently executed by GitHub Actions run [#50](https://github.com/creeksonJoseph/Almeriq/actions/runs/45610595905) on PR #41 head `a05abd65e83f8a6c55e63f645917ac461a8ec12d`. The Backend tests job and Frontend checks job both completed successfully; the frontend job ran ESLint, Vitest and the production build. This is CI evidence for that commit, not a claim of local execution.
+
+Still not established by that CI run: browser-level visual/E2E behavior, live integrations, production migration execution, PostgreSQL query plans, production row counts, or real deployment health. Those require the relevant runtime, database and provider access.
