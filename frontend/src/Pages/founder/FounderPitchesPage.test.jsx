@@ -163,7 +163,7 @@ describe("FounderPitchesPage pitch creation", () => {
     fireEvent.change(screen.getByPlaceholderText(/company or product name/i), {
       target: { value: "Updated Pitch" },
     });
-    fireEvent.click(screen.getByText(/update pitch/i));
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => {
       expect(updatePitch).toHaveBeenCalledWith(

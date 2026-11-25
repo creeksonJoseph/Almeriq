@@ -17,6 +17,7 @@ import {
 } from "./sidebarNavigation";
 import BrandLogo from "./BrandLogo";
 import ActiveIdeaDropdown from "./ActiveIdeaDropdown";
+import { normalizeRole } from "../lib/roles";
 
 export default function AppSidebar({
   user,
@@ -28,9 +29,8 @@ export default function AppSidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = user?.role || "founder";
-  const normalizedRole = String(role).trim().toUpperCase();
-  const isFounder = normalizedRole === "FOUNDER";
+  const normalizedRole = normalizeRole(user?.role || "founder");
+  const isFounder = normalizedRole === "founder";
   const isAdmin = Boolean(user?.is_admin);
 
   const isCurrentActive = (itemPath) => {
@@ -210,7 +210,7 @@ export default function AppSidebar({
           )}
 
           {/* GROUP 2b: Provider Navigation */}
-          {normalizedRole === "INFRASTRUCTURE_PROVIDER" && (
+          {normalizedRole === "infrastructure_provider" && (
             <div>
               {!isCollapsed && (
                 <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -255,7 +255,7 @@ export default function AppSidebar({
           )}
 
                      {/* GROUP 2c: Job Seeker Navigation */}
-           {normalizedRole === "JOB_SEEKER" && (
+           {normalizedRole === "job_seeker" && (
              <div>
                {!isCollapsed && (
                  <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -299,7 +299,7 @@ export default function AppSidebar({
              </div>
             )}
             {/* GROUP 2d: Investor Navigation */}
-            {normalizedRole === "INVESTOR" && (
+            {normalizedRole === "investor" && (
               <div>
                 {!isCollapsed && (
                   <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
@@ -343,7 +343,7 @@ export default function AppSidebar({
               </div>
             )}
             {/* GROUP 2e: Expert Navigation */}
-            {normalizedRole === "EXPERT" && (
+            {normalizedRole === "expert" && (
               <div>
                 {!isCollapsed && (
                   <p className="px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-white/30">

@@ -15,12 +15,12 @@ from repositories import provider_profile as provider_repo
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 VALID_USER_ROLES = {
-    "ADMIN",
-    "FOUNDER",
-    "INVESTOR",
-    "JOB_SEEKER",
-    "INFRASTRUCTURE_PROVIDER",
-    "EXPERT",
+    "admin",
+    "founder",
+    "investor",
+    "job_seeker",
+    "infrastructure_provider",
+    "expert",
 }
 
 
@@ -33,11 +33,11 @@ class ProviderVerificationUpdateRequest(BaseModel):
 
 
 def _normalize_role(role: str) -> str:
-    normalized = normalize_role(role).upper()
+    normalized = normalize_role(role)
     if normalized not in VALID_USER_ROLES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Role must be ADMIN, FOUNDER, INVESTOR, JOB_SEEKER, INFRASTRUCTURE_PROVIDER, or EXPERT",
+            detail="Role must be admin, founder, investor, job_seeker, infrastructure_provider, or expert",
         )
     return normalized
 
@@ -133,7 +133,7 @@ async def update_user_role(
             detail="Your account could not be updated",
         )
 
-    if role == "INFRASTRUCTURE_PROVIDER":
+    if role == "infrastructure_provider":
         profile = await provider_repo.get_provider_profile_by_user_id(
             admin_user["id"],
             session=db,

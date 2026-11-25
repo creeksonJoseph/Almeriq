@@ -10,14 +10,32 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("provider_profiles", sa.Column("verified_at", sa.DateTime(timezone=True), nullable=True))
-    op.add_column("provider_profiles", sa.Column("verified_by", sa.Integer(), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True))
-    op.add_column("provider_profiles", sa.Column("verification_reviewed_at", sa.DateTime(timezone=True), nullable=True))
-    op.add_column("provider_profiles", sa.Column("verification_reviewed_by", sa.Integer(), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True))
+    with op.batch_alter_table("provider_profiles") as batch_op:
+        batch_op.add_column(sa.Column("verified_at", sa.DateTime(timezone=True), nullable=True))
+        batch_op.add_column(sa.Column("verified_by", sa.Integer(), nullable=True))
+        batch_op.add_column(sa.Column("verification_reviewed_at", sa.DateTime(timezone=True), nullable=True))
+        batch_op.add_column(sa.Column("verification_reviewed_by", sa.Integer(), nullable=True))
+        batch_op.create_foreign_key(
+            "fk_provider_profiles_verified_by_users",
+            "users",
+            ["verified_by"],
+            ["id"],
+            ondelete="SET NULL",
+        )
+        batch_op.create_foreign_key(
+            "fk_provider_profiles_verification_reviewed_by_users",
+            "users",
+            ["verification_reviewed_by"],
+            ["id"],
+            ondelete="SET NULL",
+        )
 
 
 def downgrade() -> None:
-    op.drop_column("provider_profiles", "verification_reviewed_by")
-    op.drop_column("provider_profiles", "verification_reviewed_at")
-    op.drop_column("provider_profiles", "verified_by")
-    op.drop_column("provider_profiles", "verified_at")
+    with op.batch_alter_table("provider_profiles") as batch_op:
+        batch_op.drop_constraint("fk_provider_profiles_verification_reviewed_by_users", type_="foreignkey")
+        batch_op.drop_constraint("fk_provider_profiles_verified_by_users", type_="foreignkey")
+        batch_op.drop_column("verification_reviewed_by")
+        batch_op.drop_column("verification_reviewed_at")
+        batch_op.drop_column("verified_by")
+        batch_op.drop_column("verified_at")

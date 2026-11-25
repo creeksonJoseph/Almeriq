@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ChevronRight, Check, X, CreditCard, Smartphone, Lock, Shield, ArrowRight, ArrowLeft } from "lucide-react";
@@ -30,7 +30,7 @@ export default function CheckoutPage() {
   const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [signature, setSignature] = useState("");
-    const [, setCanvasRef] = useState(null);
+  const canvasRef = useRef(null);
 
   const paymentForm = useForm({ defaultValues: { method: "visa" } });
   const amountForm = useForm({ defaultValues: { amount: "0.00" } });
@@ -207,7 +207,7 @@ export default function CheckoutPage() {
           {/* Step 4: Sign */}
           {currentStep === 3 && (
             <SignStep
-              canvasRef={setCanvasRef}
+              canvasRef={canvasRef}
               signature={signature}
               onSignatureChange={setSignature}
               onBack={handleBack}
@@ -365,24 +365,41 @@ function ConfirmStep({ providerName, assetName, paymentMethod, amount, formatAmo
 }
 
 function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loading }) {
-  const handleMouseDown = (e) => {
+  const getPoint = (e, canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches?.[0]?.clientX ?? e.clientX;
+    const clientY = e.touches?.[0]?.clientY ?? e.clientY;
+    const scaleX = rect.width ? canvas.width / rect.width : 1;
+    const scaleY = rect.height ? canvas.height / rect.height : 1;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+  };
+
+  const handleStart = (e) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
+    const { x, y } = getPoint(e, canvas);
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    canvas.onmousemove = (e) => {
-      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.moveTo(x, y);
+    const handleMove = (moveEvent) => {
+      const point = getPoint(moveEvent, canvas);
+      ctx.lineTo(point.x, point.y);
       ctx.strokeStyle = "#C9A15A";
       ctx.lineWidth = 2;
       ctx.lineCap = "round";
       ctx.stroke();
     };
-    canvas.onmouseup = () => {
+    const handleEnd = () => {
       canvas.onmousemove = null;
+      canvas.onmouseup = null;
+      canvas.ontouchmove = null;
+      canvas.ontouchend = null;
       onSignatureChange(canvas.toDataURL());
     };
+    canvas.onmousemove = handleMove;
+    canvas.ontouchmove = handleMove;
+    canvas.onmouseup = handleEnd;
+    canvas.ontouchend = handleEnd;
   };
 
   return (
@@ -397,9 +414,12 @@ function SignStep({ canvasRef, signature, onSignatureChange, onBack, onNext, loa
         </div>
         <canvas
           ref={canvasRef}
+          width={640}
+          height={176}
+          aria-label="Deal signature pad"
           className="absolute inset-0 w-full h-full touch-none"
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleMouseDown}
+          onMouseDown={handleStart}
+          onTouchStart={handleStart}
           style={{ cursor: "crosshair" }}
         />
         <div className="relative z-10 flex items-center justify-between w-full">

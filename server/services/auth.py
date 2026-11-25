@@ -15,6 +15,7 @@ from sqlalchemy.exc import IntegrityError
 
 from core.config import DOMAIN, GOOGLE_CLIENT_ID, JWT_ALGORITHM, JWT_SECRET_KEY, RESEND_API_KEY
 from core.redis_client import cache_delete, cache_get, cache_set, cache_set_if_absent
+from core.roles import normalize_role
 from core.security import create_access_token, hash_password, verify_password
 from repositories import user as user_repo
 
@@ -200,9 +201,10 @@ async def update_onboarding(
     Completion is derived here (§1 — business rules live in services, not routers).
     """
     allowed_roles = {
-        "FOUNDER", "INVESTOR", "INFRASTRUCTURE_PROVIDER", "JOB_SEEKER", "EXPERT"
+        "founder", "investor", "infrastructure_provider", "job_seeker", "expert"
     }
-    if role is not None and role.strip().upper() not in allowed_roles:
+    normalized_input_role = normalize_role(role) if role is not None else None
+    if role is not None and normalized_input_role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Choose one of the supported account roles",
@@ -214,7 +216,7 @@ async def update_onboarding(
 
     next_name = full_name.strip() if full_name is not None else (existing_user.get("full_name") or "")
     next_id_number = id_number.strip() if id_number is not None else (existing_user.get("id_number") or "")
-    next_role = role.strip().upper() if role is not None else (existing_user.get("role") or "")
+    next_role = normalized_input_role if role is not None else normalize_role(existing_user.get("role"))
     # Onboarding is complete only after the user has supplied a name, identity
     # number and a supported role. This is data collection, not identity verification.
     is_complete = bool(next_name and next_id_number and next_role in allowed_roles)
@@ -223,7 +225,7 @@ async def update_onboarding(
         full_name=full_name,
         nationality=nationality,
         id_number=id_number,
-        role=role.strip().upper() if role is not None else None,
+        role=normalized_input_role,
         onboarding_completed=is_complete,
     )
     if not updated_user:

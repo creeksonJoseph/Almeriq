@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { listVenturesApi } from "../lib/api";
+import { normalizeRole, userHasRole } from "../lib/roles";
 import { StatStrip } from "./ui/BorderlessPrimitives";
 
 const ROLE_DATA = {
@@ -305,7 +306,9 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const activeNav = searchParams.get("tab") || "overview";
-  const role = ROLE_DATA[user?.role] || {
+  const normalizedRole = normalizeRole(user?.role);
+  const roleKey = normalizedRole === "infrastructure_provider" ? "infrastructure" : normalizedRole;
+  const role = ROLE_DATA[roleKey] || {
     label: "Workspace",
     title: "Your workspace.",
     subtitle: "Your workspace activity will appear here as you use Alimeriq.",
@@ -341,7 +344,7 @@ function Dashboard({ user, onLogout, onRestartOnboarding }) {
 
       {/* OVERVIEW TAB */}
       {activeNav === "overview" && (
-        user?.role === "founder" ? (
+        userHasRole(user, "founder") ? (
           <FounderWorkspaceOverview />
         ) : (
           <>

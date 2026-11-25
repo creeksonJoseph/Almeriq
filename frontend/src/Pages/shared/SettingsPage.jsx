@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 import { useSettings } from "../../hooks/useSettings";
+import { formatRoleLabel } from "../../lib/roles";
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -106,8 +107,8 @@ export default function SettingsPage() {
             <span className="block text-[10px] font-mono uppercase tracking-wider text-white/70">
               Workspace Role
             </span>
-            <span className="mt-0.5 block text-sm font-semibold text-[#f2ca50] capitalize">
-              {user?.role || "Founder"}
+            <span className="mt-0.5 block text-sm font-semibold text-[#f2ca50]">
+              {formatRoleLabel(user?.role || "founder")}
             </span>
           </div>
         </div>

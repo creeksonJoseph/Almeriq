@@ -133,7 +133,7 @@ async def test_create_order_records_event_and_notification(session):
 async def test_duplicate_deal_rejected(session):
     buyer_id = await _make_user(session, "buyer2@example.com", role="user")
     provider_id = await _make_provider(session, await _make_user(session, "provider2@example.com"))
-    asset_id = await _make_asset(session, provider_id)
+    asset_id = await _make_asset(session, provider_id, price_monthly=50.0)
     order = await order_service.create_order(
         provider_id=provider_id,
         client_id=buyer_id,
@@ -171,7 +171,7 @@ async def test_deal_retrieval_and_signing(session):
     provider_id = await _make_provider(
         session, await _make_user(session, "provider3@example.com"), "Provider A"
     )
-    asset_id = await _make_asset(session, provider_id)
+    asset_id = await _make_asset(session, provider_id, price_monthly=75.0)
     order = await order_service.create_order(
         provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
         allocation="a", lease_amount=75.0, session=session,
@@ -478,9 +478,15 @@ async def test_provider_order_summary_counts_all_orders_and_priced_records(sessi
         provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
         allocation="confirmed", lease_amount=150.0, session=session,
     )
-    completed = await order_service.create_order(
-        provider_id=provider_id, client_id=buyer_id, asset_id=asset_id,
-        allocation="completed", lease_amount=None, session=session,
+    completed = await order_repo.create_order(
+        order_id="ORD-SUMMARY-COMPLETED",
+        client_id=buyer_id,
+        provider_id=provider_id,
+        asset_id=asset_id,
+        allocation="completed",
+        lease_amount=None,
+        status="completed",
+        session=session,
     )
     await order_repo.update_order_status(
         confirmed["id"], provider_id, "confirmed", session=session

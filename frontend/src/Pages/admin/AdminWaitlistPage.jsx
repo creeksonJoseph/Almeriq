@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import { normalizeRole } from "../../lib/roles";
 import { getAdminWaitlistApi, updateAdminRoleApi, getAdminProvidersApi, updateAdminProviderVerificationApi, getAdminProviderVerificationHistoryApi } from "../../lib/api";
 import { StatStrip } from "../../components/ui/BorderlessPrimitives";
 import { Skeleton, RouteSkeleton } from "../../components/ui";
@@ -32,16 +33,16 @@ const ROLE_BADGES = {
 };
 
 const USER_ROLES = [
-  { value: "ADMIN", label: "Admin (restore admin role)" },
-  { value: "FOUNDER", label: "Founder" },
-  { value: "INVESTOR", label: "Investor" },
-  { value: "JOB_SEEKER", label: "Job Seeker" },
-  { value: "INFRASTRUCTURE_PROVIDER", label: "Infrastructure Provider" },
-  { value: "EXPERT", label: "Expert / Advisor" },
+  { value: "admin", label: "Admin (restore admin role)" },
+  { value: "founder", label: "Founder" },
+  { value: "investor", label: "Investor" },
+  { value: "job_seeker", label: "Job Seeker" },
+  { value: "infrastructure_provider", label: "Infrastructure Provider" },
+  { value: "expert", label: "Expert / Advisor" },
 ];
 
 function toUserRole(role) {
-  return role?.toUpperCase().replaceAll(" ", "_");
+  return normalizeRole(role);
 }
 
 function formatDate(iso) {
@@ -66,12 +67,14 @@ export default function AdminWaitlistPage() {
   const [data, setData] = useState({ total: 0, items: [] });
   const [providers, setProviders] = useState([]);
   const [providersLoading, setProvidersLoading] = useState(true);
-  const [verificationBusyId, setVerificationBusyId] = useState(null);\n  const [verificationHistory, setVerificationHistory] = useState({});\n  const [historyLoadingId, setHistoryLoadingId] = useState(null);
+  const [verificationBusyId, setVerificationBusyId] = useState(null);
+  const [verificationHistory, setVerificationHistory] = useState({});
+  const [historyLoadingId, setHistoryLoadingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("all");
   const [savingRole, setSavingRole] = useState("");
-  const [myRole, setMyRole] = useState(toUserRole(user?.role) || "FOUNDER");
+  const [myRole, setMyRole] = useState(toUserRole(user?.role) || "founder");
 
   const fetchWaitlist = async () => {
     setLoading(true);

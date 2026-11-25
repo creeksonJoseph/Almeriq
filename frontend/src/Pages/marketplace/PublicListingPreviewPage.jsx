@@ -12,7 +12,8 @@ export default function PublicListingPreviewPage() {
   const [listing, setListing] = useState(null);
   const [shareMessage, setShareMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [dealLoading, setDealLoading] = useState(false);
@@ -20,12 +21,13 @@ export default function PublicListingPreviewPage() {
   useEffect(() => {
     async function loadListing() {
       setLoading(true);
+      setLoadError(null);
       try {
         const listingRes = await getMarketplaceListingApi(id);
         setListing(listingRes.data || listingRes.listing || listingRes);
 
       } catch (e) {
-        setError(e.message);
+        setLoadError(e.message);
       } finally {
         setLoading(false);
       }
@@ -39,6 +41,7 @@ export default function PublicListingPreviewPage() {
       return;
     }
     setDealLoading(true);
+    setActionError(null);
     try {
       const checkout = await createMarketplaceCheckoutApi({
         asset_id: Number(id),
@@ -50,7 +53,7 @@ export default function PublicListingPreviewPage() {
       }
       navigate(`/checkout/${checkout.deal.id}`);
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || "Unable to start this order.");
+      setActionError(e.response?.data?.detail || e.message || "Unable to start this order.");
     } finally {
       setDealLoading(false);
     }
@@ -69,10 +72,10 @@ export default function PublicListingPreviewPage() {
     );
   }
 
-  if (error || !listing) {
+  if (loadError || !listing) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-center">
-        <p className="text-gold">Listing not found</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <p className="text-gold">{loadError || "Listing not found"}</p>
         <Link to="/marketplace" className="text-gold hover:underline mt-4 inline-block">← Back to Marketplace</Link>
       </div>
     );
@@ -80,6 +83,8 @@ export default function PublicListingPreviewPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{actionError}</p>}
+      {shareMessage && <p role="status" className="rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold">{shareMessage}</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -209,7 +214,7 @@ export default function PublicListingPreviewPage() {
           </Card>
 
           <Card className="p-5 text-center border border-border bg-surface">
-            <button type="button" onClick={async () => { if (!user) { navigate(`/login?redirect=${encodeURIComponent(`/listings/${id}`)}`); return; } try { const conversation = await startProviderConversationApi(listing.provider_id); navigate(`/messages?conversation=${conversation.id}`); } catch (e) { setError(e.response?.data?.detail || e.message || "Unable to start conversation."); } }} className="text-gold hover:underline flex items-center justify-center gap-1">
+            <button type="button" onClick={async () => { if (!user) { navigate(`/login?redirect=${encodeURIComponent(`/listings/${id}`)}`); return; } setActionError(null); try { const conversation = await startProviderConversationApi(listing.provider_id); navigate(`/messages?conversation=${conversation.id}`); } catch (e) { setActionError(e.response?.data?.detail || e.message || "Unable to start conversation."); } }} className="text-gold hover:underline flex items-center justify-center gap-1">
               Chat with provider
             </button>
           </Card>

@@ -134,57 +134,57 @@ function App() {
                 <Route
                   path="/founder/intake"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <FounderIntakePage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/founder/analysis"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <FounderAnalysisPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/founder/roadmap"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <Navigate to="/founder/analysis" state={{ autoSelectTool: "execution_roadmap" }} replace />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/founder/ventures"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <VenturesPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/founder/validation"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <FounderValidationPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/founder/ai-tools"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <Navigate to="/dashboard" replace />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
                   path="/founder/product"
                   element={
-                    <ProtectedRoute>
+                    <FounderRoute>
                       <FounderProductPage />
-                    </ProtectedRoute>
+                    </FounderRoute>
                   }
                 />
                 <Route
@@ -262,9 +262,9 @@ function App() {
                     key={path}
                     path={path}
                     element={
-                      <ProtectedRoute>
+                      <FounderRoute>
                         <FounderLegalPage />
-                      </ProtectedRoute>
+                      </FounderRoute>
                     }
                   />
                 ))}

@@ -3,6 +3,7 @@ import { Bell, Check, ChevronRight, Loader2, Package, MessageSquare, Briefcase, 
 import { Button, Card, Pill, Skeleton, SkeletonText, Drawer } from "../../components/ui";
 import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { normalizeRole } from "../../lib/roles";
 
 const TYPE_META = {
   order: { label: "Orders", icon: Package },
@@ -16,19 +17,19 @@ const TYPE_META = {
 const ROLE_TYPES = {
   founder: ["order", "message", "job", "investment", "advisory", "team"],
   user: ["order", "message"],
-  INVESTOR: ["message", "investment"],
-  INFRASTRUCTURE_PROVIDER: ["order", "message", "job"],
-  JOB_SEEKER: ["message", "job", "team"],
-  EXPERT: ["message", "advisory"],
-  ADMIN: Object.keys(TYPE_META),
+  investor: ["message", "investment"],
+  infrastructure_provider: ["order", "message", "job"],
+  job_seeker: ["message", "job", "team"],
+  expert: ["message", "advisory"],
+  admin: Object.keys(TYPE_META),
 };
 
 const PAGE_SIZE = 25;
 
 export default function AlertsPage() {
   const { user } = useAuth();
-  const role = user?.role || "founder";
-  const availableTypes = ROLE_TYPES[role] || ROLE_TYPES.user;
+  const role = normalizeRole(user?.role) || "founder";
+  const availableTypes = user?.is_admin ? ROLE_TYPES.admin : (ROLE_TYPES[role] || ROLE_TYPES.user);
   const [notifications, setNotifications] = useState([]);
   const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);

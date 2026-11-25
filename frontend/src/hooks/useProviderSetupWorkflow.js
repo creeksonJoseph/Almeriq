@@ -16,11 +16,15 @@ export function useProviderSetupWorkflow({ methods, navigate, coverageToApi, fin
     async function loadProfile() {
       setLoading(true);
       try {
+        const allowMissingProfile = (err) => {
+          if (err?.status === 404 || err?.response?.status === 404) return null;
+          throw err;
+        };
         const [profile, coverage, physical, digital] = await Promise.all([
-          getProviderProfileApi(),
-          listCoverageRegionsApi(),
-          listAssetsApi({ kind: "physical" }),
-          listAssetsApi({ kind: "digital" }),
+          getProviderProfileApi().catch(allowMissingProfile),
+          listCoverageRegionsApi().catch((err) => allowMissingProfile(err) ?? { items: [] }),
+          listAssetsApi({ kind: "physical" }).catch((err) => allowMissingProfile(err) ?? { items: [] }),
+          listAssetsApi({ kind: "digital" }).catch((err) => allowMissingProfile(err) ?? { items: [] }),
         ]);
         if (!active) return;
         if (profile) {

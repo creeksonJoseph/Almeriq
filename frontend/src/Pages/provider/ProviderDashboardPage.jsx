@@ -16,18 +16,20 @@ export default function ProviderDashboardPage() {
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    let active = true;
     async function loadData() {
       setLoading(true);
       setError(null);
       try {
-        const [profileRes, ordersRes, assetsRes, conversationsRes, orderSummaryRes, conversationSummaryRes] = await Promise.all([
-          getProviderProfileApi(),
+        const profileRes = await getProviderProfileApi();
+        const [ordersRes, assetsRes, conversationsRes, orderSummaryRes, conversationSummaryRes] = await Promise.all([
           listOrdersApi(),
           listAssetsApi(),
           listConversationsApi({ limit: 100 }),
           getProviderOrderSummaryApi(),
           getConversationSummaryApi(),
         ]);
+        if (!active) return;
         setProfile(profileRes);
         setOrderSummary(orderSummaryRes);
         setUnreadConversationCount(conversationSummaryRes.unread_conversations || 0);
@@ -35,13 +37,19 @@ export default function ProviderDashboardPage() {
         setAssets(assetsRes?.items || assetsRes?.data?.items || assetsRes?.assets || assetsRes);
         setConversations(conversationsRes?.items || conversationsRes?.data?.items || conversationsRes?.conversations || conversationsRes);
       } catch (e) {
+        if (!active) return;
+        if (e?.status === 404 || e?.response?.status === 404) {
+          navigate("/provider/setup", { replace: true });
+          return;
+        }
         setError(e.message);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
     loadData();
-  }, [retryCount]);
+    return () => { active = false; };
+  }, [retryCount, navigate]);
 
   if (loading) {
     return (
@@ -254,18 +262,23 @@ export default function ProviderDashboardPage() {
               RECENT ENQUIRIES
             </div>
             <div className="space-y-3">
-              {conversations?.slice(0, 3).map((conv, i) => (
-                <Link key={conv.id || i} to="/messages" className="block p-3 rounded-lg bg-[#111318] hover:bg-[#1a1b21] transition-colors border border-transparent hover:border-[#282a2f]">
+              {conversations?.slice(0, 3).map((conv, i) => {
+                const otherName = conv.other_party_name || conv.other_participant?.full_name || conv.other_participant?.email || "—";
+                const preview = conv.last_message_preview || conv.last_message?.body || "No messages yet";
+                const timestamp = conv.last_message_at ? new Date(conv.last_message_at).toLocaleString() : "";
+                return (
+                <Link key={conv.id || i} to={`/messages?conversation=${conv.id}`} className="block p-3 rounded-lg bg-[#111318] hover:bg-[#1a1b21] transition-colors border border-transparent hover:border-[#282a2f]">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-xs font-mono text-[#f2ca50]">{conv.other_party_name || "—"}</span>
-                      <p className="text-xs text-[#ffffff]/60 mt-0.5 line-clamp-1">{conv.last_message_preview || "No messages yet"}</p>
+                      <span className="text-xs font-mono text-[#f2ca50]">{otherName}</span>
+                      <p className="text-xs text-[#ffffff]/60 mt-0.5 line-clamp-1">{preview}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-white/60 shrink-0">{conv.last_message_at || ""}</span>
+                    <span className="text-[10px] font-mono text-white/60 shrink-0">{timestamp}</span>
                   </div>
                   {conv.unread_count > 0 && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f2ca50] mt-2" />}
                 </Link>
-              ))}
+                );
+              })}
               {!conversations?.length && (
                 <div className="text-center text-[#ffffff]/60 py-4 text-sm sm:text-base">No enquiries yet.</div>
               )}
