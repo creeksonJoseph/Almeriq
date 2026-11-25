@@ -2,8 +2,6 @@
 
 > Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). Exact live contracts come from the running OpenAPI schema.
 
-> Implementation references: [Documentation source map](SOURCE_OF_TRUTH.md). Exact live contracts come from the running OpenAPI schema.
-
 ## 1. Source of truth
 
 The FastAPI OpenAPI schema is the authoritative endpoint/request/response reference for a running version of the application:
