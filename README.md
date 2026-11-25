@@ -1,163 +1,103 @@
-# ALIMERIQ Infrastructure Provider Portal
+# ALIMERIQ
 
-ALIMERIQ is an infrastructure leasing marketplace connecting providers of physical and compute assets with enterprise clients. This repository contains the full-stack provider portal: a FastAPI backend and a React/Tailwind frontend.
+Almeriq is a multi-role platform for founders, infrastructure providers, job seekers, investors and experts. It brings together venture-building tools, an infrastructure marketplace, workforce workflows, fundraising, expert advisory, messaging and notifications.
 
-## Architecture
+This repository contains the full-stack application:
+- **Backend:** FastAPI, Python 3.13+, SQLAlchemy 2 async and Alembic.
+- **Frontend:** React 19, Vite 8, React Router and Tailwind CSS 4.
+- **Database:** SQLite for local development; PostgreSQL for production deployments.
+- **Authentication:** JWT delivered using an HttpOnly cookie; bcrypt password hashing.
+- **Integrations:** Gemini, Resend, Cloudinary, optional Upstash Redis and Sentry.
 
-- **Backend**: FastAPI (Python 3.13), SQLAlchemy 2.0 async, Alembic migrations, SQLite dev / Postgres prod
-- **Frontend**: React 19, Vite, Tailwind CSS, React Router, React Hook Form, Zod
-- **Auth**: JWT in HttpOnly Secure SameSite cookies, bcrypt password hashing
-- **Architecture pattern**: Layered backend — router → service → repository → model
+## Developer documentation
 
-## Project Structure
+Start with **[Developer Handover](docs/DEVELOPER_HANDOVER.md)**. It links to:
+- [System architecture](docs/SYSTEM_ARCHITECTURE.md)
+- [Setup and operations](docs/SETUP_AND_OPERATIONS.md)
+- [Domain and workflow guide](docs/DOMAIN_GUIDE.md)
+- [API guide](docs/API_GUIDE.md)
+- [Known gaps and handover checklist](docs/KNOWN_GAPS.md)
 
-```
+The API's generated OpenAPI schema is available at /openapi.json when the backend is running; Swagger UI is at /docs.
+
+## Repository layout
+
+~~~text
 Almeriq/
-├── server/              # FastAPI backend
-│   ├── api/routers/     # Route handlers (provider, asset, order, deal, etc.)
-│   ├── services/        # Business logic
-│   ├── repositories/    # Data access layer
-│   ├── models/          # SQLAlchemy models
-│   ├── schemas/         # Pydantic schemas
-│   ├── core/db.py       # Database async engine & session
-│   ├── migrations/      # Alembic migrations
-│   ├── main.py          # App factory
-│   ├── pyproject.toml   # uv-managed dependencies
-│   └── scripts/smoke_test.sh  # Curl-based API smoke tests
-├── frontend/            # React frontend
-│   ├── src/Pages/       # Page components
-│   ├── src/components/ui/  # Shared UI components
-│   ├── src/lib/api/     # API client modules
-│   ├── src/lib/client.js  # Shared Axios instance
-│   ├── vitest.config.js   # Test config
-│   └── package.json
-├── docs/PLAN.md         # Implementation plan
-├── docker-compose.yml   # Local dev with Docker
-├── render.yaml          # Render deployment config
-└── .env.dev.example     # Dev environment variables (example)
-```
+├── server/                 # FastAPI backend
+│   ├── api/routers/        # HTTP endpoints
+│   ├── services/           # Business workflows
+│   ├── repositories/       # Data access
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Pydantic schemas
+│   ├── core/                # Settings, DB, security, integrations
+│   ├── migrations/          # Alembic revisions
+│   └── tests/               # Backend tests
+├── frontend/
+│   └── src/
+│       ├── Pages/           # Route-level screens
+│       ├── components/      # Shared UI and layout
+│       ├── context/         # Global React providers
+│       ├── hooks/           # Domain workflows
+│       └── lib/             # Shared client and domain API modules
+├── docs/                    # Developer and engineering documentation
+├── .github/workflows/       # GitHub Actions CI
+├── docker-compose.yml
+├── render.yaml
+└── vercel.json
+~~~
 
-## Design Tokens
+## Quick local start
 
-Strict palette (enforced by `.agents/rules/ui-styling-standards.md`):
-- **White**: `#F3F1EC` (background) / `text-white`
-- **Gold**: `#C9A15A` (accents)
-- **Black**: `#0A0A0B` (text)
+Prerequisites: Python 3.13+, uv, Node.js compatible with Vite 8, npm. Full environment and troubleshooting notes are in [Setup and operations](docs/SETUP_AND_OPERATIONS.md).
 
-Forbidden: emerald, rust, muted, faint, gray text. No em/en dashes — use hyphens.
+Backend terminal:
 
-## Local Development
-
-### Prerequisites
-
-- Python 3.13 + [uv](https://github.com/astral-sh/uv)
-- Node.js 20 + npm
-
-### Backend
-
-```bash
+~~~bash
 cd server
-cp .env.dev.example .env.dev   # edit values as needed
+cp .env.dev.example .env.dev
+# Set a unique JWT_SECRET_KEY in .env.dev.
 uv sync
 uv run alembic upgrade head
 uv run uvicorn main:app --reload
-```
+~~~
 
-Server runs at `http://localhost:8000`. API docs at `http://localhost:8000/docs`.
+Frontend terminal:
 
-### Frontend
-
-```bash
+~~~bash
 cd frontend
-npm install
+cp .env.example .env
+# Set VITE_API_BASE_URL=http://localhost:8000 in .env.
+npm ci
 npm run dev
-```
+~~~
 
-Frontend runs at `http://localhost:5173`. Set `VITE_API_BASE_URL=http://localhost:8000` in `.env` if needed.
+## Quality checks
 
-### Docker (both services)
+Backend, from server/:
 
-```bash
-docker compose up --build
-```
+~~~bash
+uv run pytest -q
+~~~
 
-Backend at `http://localhost:8000`, frontend at `http://localhost:5173`.
+Frontend, from frontend/:
 
-## Testing
-
-### Backend smoke tests
-
-```bash
-cd server
-bash scripts/smoke_test.sh
-```
-
-Curl-based tests covering auth, provider profile, assets, marketplace, search, orders, deals, conversations, notifications, and negative cases.
-
-### Frontend unit tests
-
-```bash
-cd frontend
+~~~bash
 npm test
-```
-
-Vitest + React Testing Library. 14 tests across API client, UI components, and provider dashboard page.
-
-### Lint
-
-```bash
-cd frontend
 npm run lint
-```
-
-### Build
-
-```bash
-cd frontend
 npm run build
-```
+~~~
 
-## Environment Variables
+These are the available commands, not a claim that the latest commit has passed them. Check the GitHub Actions run for the exact commit being reviewed.
 
-### Backend (`.env.dev`)
+## Branch and release workflow
 
-```
-DATABASE_URL=sqlite+aiosqlite:///./almeriq_dev.db
-ENVIRONMENT=development
-SECRET_KEY=your-secret-key
-ALLOWED_ORIGINS=http://localhost:5173
-```
+- dev is the integration/testing branch.
+- Create task branches from the latest dev.
+- Use pull requests and wait for CI.
+- Promote to main only after review and explicit release approval.
+- Never commit secrets or force-push shared history.
 
-### Frontend
+## Security
 
-```
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-`.env.dev` and `.env.prod` are gitignored. Examples are committed as `.env.dev.example` and `.env.prod.example` with placeholders. Never commit real secrets.
-
-## Migrations
-
-```bash
-cd server
-uv run alembic upgrade head     # apply all migrations
-uv run alembic revision --autogenerate -m "description"  # create new migration
-```
-
-Dev DB uses SQLite (`almeriq_dev.db`). Production uses PostgreSQL/Neon via `DATABASE_URL`. All migrations are dialect-neutral (no native enums, no ARRAY, no raw dialect SQL).
-
-## API Endpoints
-
-41 endpoints registered. See `http://localhost:8000/openapi.json` for full spec.
-
-Key areas:
-- `POST /api/auth/register` / `/api/auth/login` / `/api/auth/logout` / `/api/auth/me`
-- `POST /api/auth/onboarding` — set provider role
-- `GET/PUT /api/provider/profile`
-- `POST/GET /api/provider/assets`, `GET /api/provider/assets/{id}`
-- `GET/POST /api/provider/coverage-regions`
-- `GET /api/provider/orders`, `GET/PATCH /api/provider/orders/{id}`
-- `POST /api/deals`, `GET/POST /api/deals/{id}/sign`
-- `GET/POST /api/conversations`, `GET/POST /api/conversations/{id}/messages`
-- `GET /api/notifications`, `PATCH /api/notifications/read-all`
-- `GET /api/marketplace/listings`, `GET /api/search`
+Never commit real credentials. Values in .env.example files are placeholders. Rotate any secret that has been exposed; removing it from the latest commit does not invalidate it.
